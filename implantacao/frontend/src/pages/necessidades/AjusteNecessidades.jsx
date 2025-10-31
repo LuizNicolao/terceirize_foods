@@ -44,6 +44,7 @@ const AjusteNecessidades = () => {
     nutricionistas,
     opcoesSemanasConsumo,
     opcoesSemanasAbastecimento,
+    loadingSemanaAbastecimento,
     statusAtual,
     
     // Handlers
@@ -130,6 +131,7 @@ const AjusteNecessidades = () => {
           opcoesSemanasConsumo={opcoesSemanasConsumo}
           opcoesSemanasAbastecimento={opcoesSemanasAbastecimento}
           loading={loading}
+          loadingSemanaAbastecimento={loadingSemanaAbastecimento}
           onFiltroChange={handleFiltroChange}
           onFiltrar={handleCarregarNecessidades}
         />

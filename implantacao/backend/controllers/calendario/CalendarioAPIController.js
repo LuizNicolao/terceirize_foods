@@ -17,10 +17,13 @@ class CalendarioAPIController {
           semana_consumo,
           semana_consumo_inicio,
           semana_consumo_fim,
+          semana_abastecimento,
+          semana_abastecimento_inicio,
+          semana_abastecimento_fim,
           mes_referencia
         FROM calendario 
         WHERE ano = ? AND semana_consumo IS NOT NULL AND semana_consumo != ''
-        ORDER BY semana_consumo_inicio
+        ORDER BY semana_consumo_inicio DESC
       `, [ano]);
 
       // Manter o formato com parênteses e ano das semanas de consumo
@@ -307,6 +310,55 @@ class CalendarioAPIController {
 
     } catch (error) {
       console.error('Erro ao buscar semana por data:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro interno do servidor'
+      });
+    }
+  }
+
+  /**
+   * Buscar semana de abastecimento por semana de consumo
+   */
+  static async buscarSemanaAbastecimentoPorConsumo(req, res) {
+    try {
+      const { semanaConsumo } = req.params;
+
+      if (!semanaConsumo) {
+        return res.status(400).json({
+          success: false,
+          message: 'Semana de consumo é obrigatória'
+        });
+      }
+
+      const [semana] = await executeQuery(`
+        SELECT 
+          semana_abastecimento,
+          semana_abastecimento_inicio,
+          semana_abastecimento_fim,
+          semana_consumo,
+          semana_consumo_inicio,
+          semana_consumo_fim,
+          mes_referencia
+        FROM calendario 
+        WHERE semana_consumo = ?
+        LIMIT 1
+      `, [semanaConsumo]);
+
+      if (!semana) {
+        return res.status(404).json({
+          success: false,
+          message: 'Semana de consumo não encontrada'
+        });
+      }
+
+      res.json({
+        success: true,
+        data: semana
+      });
+
+    } catch (error) {
+      console.error('Erro ao buscar semana de abastecimento por consumo:', error);
       res.status(500).json({
         success: false,
         message: 'Erro interno do servidor'

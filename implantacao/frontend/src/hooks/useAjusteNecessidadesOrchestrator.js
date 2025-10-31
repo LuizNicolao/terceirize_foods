@@ -6,6 +6,7 @@ import { useNecessidadesLogistica } from './useNecessidadesLogistica';
 import { useSemanasAbastecimento } from './useSemanasAbastecimento';
 import { useSemanasConsumo } from './useSemanasConsumo';
 import necessidadesService from '../services/necessidadesService';
+import calendarioService from '../services/calendarioService';
 import toast from 'react-hot-toast';
 
 export const useAjusteNecessidadesOrchestrator = () => {
@@ -30,6 +31,7 @@ export const useAjusteNecessidadesOrchestrator = () => {
   const [necessidadesFiltradas, setNecessidadesFiltradas] = useState([]);
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
   const [produtoToDelete, setProdutoToDelete] = useState(null);
+  const [loadingSemanaAbastecimento, setLoadingSemanaAbastecimento] = useState(false);
 
   // Hooks para nutricionista
   const {
@@ -208,7 +210,90 @@ export const useAjusteNecessidadesOrchestrator = () => {
     }
   }, [activeTab, filtros, carregarNecessidadesNutricionista, carregarNecessidadesCoordenacao, carregarNecessidadesLogistica]);
 
-  const handleFiltroChange = useCallback((campo, valor) => {
+  const handleFiltroChange = useCallback(async (campo, valor) => {
+    // Se a semana de consumo mudou ou foi limpa
+    if (campo === 'semana_consumo') {
+      // Se foi limpa, limpar também a semana de abastecimento
+      if (!valor) {
+        if (activeTab === 'nutricionista') {
+          atualizarFiltrosNutricionista({ 
+            semana_consumo: null,
+            semana_abastecimento: null
+          });
+        } else if (activeTab === 'coordenacao') {
+          atualizarFiltrosCoordenacao({ 
+            semana_consumo: null,
+            semana_abastecimento: null
+          });
+        } else if (activeTab === 'logistica') {
+          atualizarFiltrosLogistica({ 
+            semana_consumo: null,
+            semana_abastecimento: null
+          });
+        }
+        return;
+      }
+      
+      // Se tem valor, buscar automaticamente a semana de abastecimento relacionada
+      setLoadingSemanaAbastecimento(true);
+      try {
+        const response = await calendarioService.buscarSemanaAbastecimentoPorConsumo(valor);
+        if (response.success && response.data && response.data.semana_abastecimento) {
+          const semanaAbastecimento = response.data.semana_abastecimento;
+          
+          // Atualizar tanto semana_consumo quanto semana_abastecimento
+          if (activeTab === 'nutricionista') {
+            atualizarFiltrosNutricionista({ 
+              semana_consumo: valor,
+              semana_abastecimento: semanaAbastecimento
+            });
+          } else if (activeTab === 'coordenacao') {
+            atualizarFiltrosCoordenacao({ 
+              semana_consumo: valor,
+              semana_abastecimento: semanaAbastecimento
+            });
+          } else if (activeTab === 'logistica') {
+            atualizarFiltrosLogistica({ 
+              semana_consumo: valor,
+              semana_abastecimento: semanaAbastecimento
+            });
+          }
+        } else {
+          // Se não encontrou semana de abastecimento, limpar o campo
+          if (activeTab === 'nutricionista') {
+            atualizarFiltrosNutricionista({ 
+              semana_consumo: valor,
+              semana_abastecimento: null
+            });
+          } else if (activeTab === 'coordenacao') {
+            atualizarFiltrosCoordenacao({ 
+              semana_consumo: valor,
+              semana_abastecimento: null
+            });
+          } else if (activeTab === 'logistica') {
+            atualizarFiltrosLogistica({ 
+              semana_consumo: valor,
+              semana_abastecimento: null
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Erro ao buscar semana de abastecimento:', error);
+        // Continuar com a atualização normal mesmo se houver erro
+        if (activeTab === 'nutricionista') {
+          atualizarFiltrosNutricionista({ semana_consumo: valor });
+        } else if (activeTab === 'coordenacao') {
+          atualizarFiltrosCoordenacao({ semana_consumo: valor });
+        } else if (activeTab === 'logistica') {
+          atualizarFiltrosLogistica({ semana_consumo: valor });
+        }
+      } finally {
+        setLoadingSemanaAbastecimento(false);
+      }
+      return;
+    }
+    
+    // Se não for semana_consumo, atualizar normalmente
     if (activeTab === 'nutricionista') {
       atualizarFiltrosNutricionista({ [campo]: valor });
     } else if (activeTab === 'coordenacao') {
@@ -643,6 +728,7 @@ export const useAjusteNecessidadesOrchestrator = () => {
       nutricionistas,
       opcoesSemanasAbastecimento,
       opcoesSemanasConsumo,
+      loadingSemanaAbastecimento,
       statusAtual: necessidades.length > 0 ? necessidades[0].status : 'NEC',
       
       // Handlers

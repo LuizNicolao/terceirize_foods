@@ -47,4 +47,7 @@ router.get('/api/verificar-feriado/:data', canView('calendario'), CalendarioAPIC
 // Semana por data
 router.get('/api/semana-por-data/:data', canView('calendario'), CalendarioAPIController.buscarSemanaPorDataConsumo);
 
+// Semana de abastecimento por semana de consumo
+router.get('/api/semana-abastecimento-por-consumo/:semanaConsumo', canView('calendario'), CalendarioAPIController.buscarSemanaAbastecimentoPorConsumo);
+
 module.exports = router;

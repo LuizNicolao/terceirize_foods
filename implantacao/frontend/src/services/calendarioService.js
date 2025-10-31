@@ -112,6 +112,19 @@ const calendarioService = {
     return response.data;
   },
 
+  // Semana de abastecimento por semana de consumo
+  buscarSemanaAbastecimentoPorConsumo: async (semanaConsumo) => {
+    try {
+      // Encodar a semana de consumo para usar na URL
+      const semanaEncoded = encodeURIComponent(semanaConsumo);
+      const response = await api.get(`/calendario/api/semana-abastecimento-por-consumo/${semanaEncoded}`);
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao buscar semana de abastecimento por consumo:', error);
+      return { success: false, data: null };
+    }
+  },
+
   // Semana de consumo por semana de abastecimento
   buscarSemanaPorAbastecimento: async (semanaAbast, ano) => {
     try {

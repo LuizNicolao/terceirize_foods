@@ -11,6 +11,7 @@ const AjusteFiltros = ({
   opcoesSemanasConsumo,
   opcoesSemanasAbastecimento,
   loading,
+  loadingSemanaAbastecimento = false,
   onFiltroChange,
   onFiltrar
 }) => {
@@ -122,16 +123,33 @@ const AjusteFiltros = ({
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Semana de Abastecimento (AB)</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Semana de Abastecimento (AB)
+              {filtros.semana_consumo && (
+                <span className="ml-2 text-xs text-gray-500 font-normal">(Preenchido automaticamente)</span>
+              )}
+            </label>
             <SearchableSelect
               value={filtros.semana_abastecimento || ''}
               onChange={(value) => {
-                const semana = opcoesSemanasAbastecimento?.find(s => s.value === value);
-                onFiltroChange('semana_abastecimento', semana?.value || null);
+                // Não permitir mudança manual - apenas informativo
+                // Campo será preenchido automaticamente quando semana_consumo for selecionada
               }}
-              options={opcoesSemanasAbastecimento || []}
-              placeholder="Selecione a semana..."
-              disabled={loading}
+              options={filtros.semana_abastecimento 
+                ? [{ value: filtros.semana_abastecimento, label: filtros.semana_abastecimento }]
+                : []
+              }
+              placeholder={
+                loadingSemanaAbastecimento
+                  ? "Carregando semana de abastecimento..."
+                  : filtros.semana_consumo && filtros.semana_abastecimento
+                  ? filtros.semana_abastecimento
+                  : filtros.semana_consumo
+                  ? "Carregando..."
+                  : "Selecione primeiro a semana de consumo"
+              }
+              disabled={true}
+              className={filtros.semana_consumo ? "bg-gray-50 cursor-not-allowed" : ""}
             />
           </div>
         </div>
