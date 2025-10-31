@@ -89,7 +89,7 @@ const rotaValidations = {
       }),
     
     body('tipo_rota_id')
-      .optional()
+      .notEmpty().withMessage('Tipo de rota é obrigatório')
       .isInt({ min: 1 }).withMessage('ID do tipo de rota deve ser um número inteiro positivo')
       .custom(async (value, { req }) => {
         if (value) {
@@ -97,7 +97,7 @@ const rotaValidations = {
           const filial_id = req.body.filial_id;
           
           if (!filial_id) {
-            return true; // Se não tiver filial_id, a validação de filial_id obrigatória já vai capturar
+            throw new Error('Filial deve ser informada antes do tipo de rota');
           }
           
           const tipoRota = await executeQuery(
