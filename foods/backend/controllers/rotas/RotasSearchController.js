@@ -163,11 +163,11 @@ class RotasSearchController {
       });
 
     } catch (error) {
-      console.error('Erro ao buscar rotas por tipo:', error);
+      console.error('Erro ao buscar rotas por frequência:', error);
       res.status(500).json({
         success: false,
         error: 'Erro interno do servidor',
-        message: 'Não foi possível buscar as rotas por tipo'
+        message: 'Não foi possível buscar as rotas por frequência'
       });
     }
   }
@@ -190,11 +190,11 @@ class RotasSearchController {
       });
 
     } catch (error) {
-      console.error('Erro ao listar tipos de rota:', error);
+      console.error('Erro ao listar frequências de entrega:', error);
       res.status(500).json({
         success: false,
         error: 'Erro interno do servidor',
-        message: 'Não foi possível listar os tipos de rota'
+        message: 'Não foi possível listar as frequências de entrega'
       });
     }
   }

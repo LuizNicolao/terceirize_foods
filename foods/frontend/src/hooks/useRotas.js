@@ -240,7 +240,7 @@ export const useRotas = () => {
     }).format(value || 0);
   }, []);
 
-  const formatTipoRota = useCallback((tipo) => {
+  const formatFrequenciaEntrega = useCallback((tipo) => {
     const tipos = {
       'semanal': 'Semanal',
       'quinzenal': 'Quinzenal',
@@ -346,7 +346,8 @@ export const useRotas = () => {
     // Funções utilitárias
     getFilialName,
     formatCurrency,
-    formatTipoRota,
+    formatFrequenciaEntrega,
+    formatTipoRota: formatFrequenciaEntrega, // Mantido para compatibilidade
     
     // Ações de ordenação
     handleSort

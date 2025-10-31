@@ -39,7 +39,7 @@ const RotasTable = ({
               <SortableTableHeader label="Código" field="codigo" currentSort={sortField} currentDirection={sortDirection} onSort={onSort} />
               <SortableTableHeader label="Nome" field="nome" currentSort={sortField} currentDirection={sortDirection} onSort={onSort} />
               <SortableTableHeader label="Filial" field="filial_id" currentSort={sortField} currentDirection={sortDirection} onSort={onSort} />
-              <SortableTableHeader label="Tipo" field="tipo_rota" currentSort={sortField} currentDirection={sortDirection} onSort={onSort} />
+              <SortableTableHeader label="Frequência" field="tipo_rota" currentSort={sortField} currentDirection={sortDirection} onSort={onSort} />
               <SortableTableHeader label="Status" field="status" currentSort={sortField} currentDirection={sortDirection} onSort={onSort} />
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
             </tr>
@@ -116,7 +116,7 @@ const RotasTable = ({
               </div>
               
               <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Tipo:</span>
+                <span className="text-gray-500">Frequência:</span>
                 <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
                   rota.tipo_rota === 'semanal' ? 'bg-blue-100 text-blue-800' :
                   rota.tipo_rota === 'quinzenal' ? 'bg-purple-100 text-purple-800' :

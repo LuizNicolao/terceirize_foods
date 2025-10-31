@@ -150,7 +150,7 @@ class RotasService {
     } catch (error) {
       return {
         success: false,
-        error: error.response?.data?.error || 'Erro ao buscar rotas por tipo',
+        error: error.response?.data?.error || 'Erro ao buscar rotas por frequência',
         data: []
       };
     }
@@ -167,7 +167,7 @@ class RotasService {
     } catch (error) {
       return {
         success: false,
-        error: error.response?.data?.error || 'Erro ao listar tipos de rota',
+        error: error.response?.data?.error || 'Erro ao listar frequências de entrega',
         data: []
       };
     }

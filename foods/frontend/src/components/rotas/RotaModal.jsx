@@ -196,12 +196,12 @@ const RotaModal = ({
             </h3>
             <div className="space-y-3">
               <Input
-                label="Tipo de Rota *"
+                label="Frequência de Entrega *"
                 type="select"
                 {...register('tipo_rota')}
                 disabled={isViewMode}
               >
-                <option value="">Selecione o tipo</option>
+                <option value="">Selecione a frequência</option>
                 <option value="semanal">Semanal</option>
                 <option value="quinzenal">Quinzenal</option>
                 <option value="mensal">Mensal</option>

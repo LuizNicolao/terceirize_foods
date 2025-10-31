@@ -27,7 +27,7 @@ const RotasStats = ({ estatisticas }) => {
         color="purple"
       />
       <StatCard
-        title="Tipos de Rota"
+        title="Frequências de Entrega"
         value={`${safeEstatisticas.rotas_semanais || 0}S / ${safeEstatisticas.rotas_mensais || 0}M`}
         icon={FaChartBar}
         color="orange"

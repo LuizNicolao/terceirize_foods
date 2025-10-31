@@ -19,7 +19,7 @@ class RotasExportController {
         { header: 'Código', key: 'codigo', width: 15 },
         { header: 'Nome', key: 'nome', width: 40 },
         { header: 'Filial', key: 'filial_nome', width: 30 },
-        { header: 'Tipo', key: 'tipo_rota', width: 15 },
+        { header: 'Frequência', key: 'tipo_rota', width: 15 },
         { header: 'Total Unidades', key: 'total_unidades', width: 15 },
         { header: 'Status', key: 'status', width: 15 }
       ];
@@ -183,7 +183,7 @@ class RotasExportController {
           doc.text(`Filial: ${rota.filial_nome}`);
         }
         
-        doc.text(`Tipo: ${rota.tipo_rota || 'N/A'}`);
+        doc.text(`Frequência: ${rota.tipo_rota || 'N/A'}`);
         doc.text(`Total de Unidades: ${rota.total_unidades || 0}`);
         doc.text(`Status: ${rota.status === 'ativo' ? 'Ativo' : 'Inativo'}`);
         

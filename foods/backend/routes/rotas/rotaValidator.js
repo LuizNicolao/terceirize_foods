@@ -50,8 +50,8 @@ const rotaValidations = {
       .isString().trim().isLength({ min: 1, max: 20 }).withMessage('Código deve ter entre 1 e 20 caracteres'),
     
     body('tipo_rota')
-      .notEmpty().withMessage('Tipo da rota é obrigatório')
-      .isIn(['semanal', 'quinzenal', 'mensal', 'transferencia']).withMessage('Tipo deve ser semanal, quinzenal, mensal ou transferencia'),
+      .notEmpty().withMessage('Frequência de entrega é obrigatória')
+      .isIn(['semanal', 'quinzenal', 'mensal', 'transferencia']).withMessage('Frequência deve ser semanal, quinzenal, mensal ou transferencia'),
     
     body('filial_id')
       .notEmpty().withMessage('Filial é obrigatória')
@@ -78,7 +78,7 @@ const rotaValidations = {
     
     body('tipo_rota')
       .optional()
-      .isIn(['semanal', 'quinzenal', 'mensal', 'transferencia']).withMessage('Tipo deve ser semanal, quinzenal, mensal ou transferencia'),
+      .isIn(['semanal', 'quinzenal', 'mensal', 'transferencia']).withMessage('Frequência deve ser semanal, quinzenal, mensal ou transferencia'),
     
     body('filial_id')
       .optional()
