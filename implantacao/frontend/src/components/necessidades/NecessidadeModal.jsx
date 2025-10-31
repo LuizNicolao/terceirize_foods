@@ -5,6 +5,7 @@ import { useNecessidades } from '../../hooks/useNecessidades';
 import { useSemanasAbastecimento } from '../../hooks/useSemanasAbastecimento';
 import { useSemanasConsumo } from '../../hooks/useSemanasConsumo';
 import { calcularSemanaAbastecimento } from '../../utils/semanasAbastecimentoUtils';
+import calendarioService from '../../services/calendarioService';
 import toast from 'react-hot-toast';
 
 // Função para obter a data atual no formato YYYY-MM-DD (sem problemas de fuso horário)
@@ -31,25 +32,60 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
   // Hook para semanas de abastecimento
   const { opcoes: opcoesSemanas, obterValorPadrao } = useSemanasAbastecimento();
   
-  // Hook para semanas de consumo do calendário
-  const { opcoes: opcoesSemanasConsumo, obterValorPadrao: obterValorPadraoConsumo } = useSemanasConsumo();
+  // Hook para semanas de consumo da tabela necessidades (não do calendário)
+  const { opcoes: opcoesSemanasConsumo, obterValorPadrao: obterValorPadraoConsumo } = useSemanasConsumo(null, false, {});
 
   const [formData, setFormData] = useState({
     escola_id: '',
     escola: null, // Objeto completo da escola
     grupo_id: '',
     grupo: null, // Objeto completo do grupo
-    data: '' // Será inicializado com semana atual
+    data: '', // Será inicializado com semana atual
+    semana_abastecimento: '' // Semana de abastecimento (preenchida automaticamente)
   });
+  
+  const [loadingSemanaAbastecimento, setLoadingSemanaAbastecimento] = useState(false);
 
-  // Inicializar com semana de consumo atual
+  // Inicializar com semana de consumo atual e buscar semana de abastecimento
   useEffect(() => {
+    const buscarSemanaAbastecimento = async (semanaConsumo) => {
+      if (!semanaConsumo) return;
+      
+      setLoadingSemanaAbastecimento(true);
+      try {
+        const response = await calendarioService.buscarSemanaAbastecimentoPorConsumo(semanaConsumo);
+        if (response.success && response.data && response.data.semana_abastecimento) {
+          setFormData(prev => ({
+            ...prev,
+            data: semanaConsumo,
+            semana_abastecimento: response.data.semana_abastecimento
+          }));
+        } else {
+          // Se não encontrou, calcular manualmente
+          const semanaCalculada = calcularSemanaAbastecimento(semanaConsumo);
+          setFormData(prev => ({
+            ...prev,
+            data: semanaConsumo,
+            semana_abastecimento: semanaCalculada
+          }));
+        }
+      } catch (error) {
+        console.error('Erro ao buscar semana de abastecimento:', error);
+        // Em caso de erro, calcular manualmente
+        const semanaCalculada = calcularSemanaAbastecimento(semanaConsumo);
+        setFormData(prev => ({
+          ...prev,
+          data: semanaConsumo,
+          semana_abastecimento: semanaCalculada
+        }));
+      } finally {
+        setLoadingSemanaAbastecimento(false);
+      }
+    };
+    
     const semanaConsumoAtual = obterValorPadraoConsumo();
     if (semanaConsumoAtual) {
-      setFormData(prev => ({
-        ...prev,
-        data: semanaConsumoAtual
-      }));
+      buscarSemanaAbastecimento(semanaConsumoAtual);
     }
   }, [obterValorPadraoConsumo]);
 
@@ -59,17 +95,19 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
   useEffect(() => {
     if (!isOpen) {
       // Limpar dados imediatamente quando modal é fechado
-      const semanaAtual = obterValorPadrao();
+      const semanaAtual = obterValorPadraoConsumo();
       setFormData({
         escola_id: '',
         escola: null,
         grupo_id: '',
         grupo: null,
-        data: semanaAtual || ''
+        data: semanaAtual || '',
+        semana_abastecimento: ''
       });
       setProdutosTabela([]);
+      setLoadingSemanaAbastecimento(false);
     }
-  }, [isOpen]);
+  }, [isOpen, obterValorPadraoConsumo]);
 
 
   // Carregar produtos quando grupo mudar
@@ -185,11 +223,60 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
     setProdutosTabela(produtosComCalculos);
   };
 
-  const handleInputChange = (field, value) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+  const handleInputChange = async (field, value) => {
+    if (field === 'data') {
+      // Quando a semana de consumo mudar, buscar automaticamente a semana de abastecimento
+      setFormData(prev => ({
+        ...prev,
+        [field]: value,
+        semana_abastecimento: '' // Limpar semana de abastecimento enquanto busca
+      }));
+      
+      if (value) {
+        setLoadingSemanaAbastecimento(true);
+        try {
+          const response = await calendarioService.buscarSemanaAbastecimentoPorConsumo(value);
+          if (response.success && response.data && response.data.semana_abastecimento) {
+            setFormData(prev => ({
+              ...prev,
+              data: value,
+              semana_abastecimento: response.data.semana_abastecimento
+            }));
+          } else {
+            // Se não encontrou, calcular manualmente
+            const semanaCalculada = calcularSemanaAbastecimento(value);
+            setFormData(prev => ({
+              ...prev,
+              data: value,
+              semana_abastecimento: semanaCalculada
+            }));
+          }
+        } catch (error) {
+          console.error('Erro ao buscar semana de abastecimento:', error);
+          // Em caso de erro, calcular manualmente
+          const semanaCalculada = calcularSemanaAbastecimento(value);
+          setFormData(prev => ({
+            ...prev,
+            data: value,
+            semana_abastecimento: semanaCalculada
+          }));
+        } finally {
+          setLoadingSemanaAbastecimento(false);
+        }
+      } else {
+        // Se limpar a semana de consumo, limpar também a semana de abastecimento
+        setFormData(prev => ({
+          ...prev,
+          data: '',
+          semana_abastecimento: ''
+        }));
+      }
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [field]: value
+      }));
+    }
   };
 
   const handleAjusteChange = (produtoId, valor) => {
@@ -315,7 +402,7 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
       escola_rota: escolaSelecionada?.rota || '',
       escola_codigo_teknisa: escolaSelecionada?.codigo_teknisa || '',
       semana_consumo: semanaFormatada,
-      semana_abastecimento: calcularSemanaAbastecimento(formData.data),
+      semana_abastecimento: formData.semana_abastecimento || calcularSemanaAbastecimento(formData.data),
       produtos: produtosComFrequencia.map(produto => ({
         produto_id: Number(produto.id), // Garantir que seja número
         produto_nome: produto.nome,
@@ -427,6 +514,30 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
               placeholder="Selecione a semana de consumo..."
               disabled={necessidadesLoading || loading}
               required
+            />
+          </div>
+          
+          <div>
+            <SearchableSelect
+              label="Semana de Abastecimento (AB)"
+              value={formData.semana_abastecimento}
+              onChange={(value) => {
+                // Não permitir mudança manual - apenas informativo
+              }}
+              options={formData.semana_abastecimento 
+                ? [{ value: formData.semana_abastecimento, label: formData.semana_abastecimento }]
+                : []
+              }
+              placeholder={
+                loadingSemanaAbastecimento
+                  ? "Carregando semana de abastecimento..."
+                  : formData.data && formData.semana_abastecimento
+                  ? formData.semana_abastecimento
+                  : formData.data
+                  ? "Carregando..."
+                  : "Selecione primeiro a semana de consumo"
+              }
+              disabled={true}
             />
           </div>
         </div>
