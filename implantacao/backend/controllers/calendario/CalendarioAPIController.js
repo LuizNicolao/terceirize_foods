@@ -26,31 +26,34 @@ class CalendarioAPIController {
         ORDER BY semana_consumo_inicio DESC
       `, [ano]);
 
-      // Formatar semanas de consumo a partir das datas, adicionando 1 dia para corrigir o deslocamento
+      // Formatar semanas de consumo a partir das datas do banco (sem adicionar dias)
+      // As datas semana_consumo_inicio e semana_consumo_fim já estão corretas (segunda a domingo)
       const semanasLimpas = semanas.map(semana => {
         let semanaFormatada = semana.semana_consumo;
         
-        // Se temos as datas de início e fim, formatar corretamente adicionando 1 dia
+        // Se temos as datas de início e fim, formatar corretamente usando UTC para evitar problemas de timezone
         if (semana.semana_consumo_inicio && semana.semana_consumo_fim) {
           try {
-            // Converter datas do MySQL (YYYY-MM-DD) para Date
-            const dataInicio = new Date(semana.semana_consumo_inicio);
-            const dataFim = new Date(semana.semana_consumo_fim);
+            // Converter datas do MySQL (YYYY-MM-DD) para Date usando UTC
+            const partesInicio = semana.semana_consumo_inicio.split('-').map(Number);
+            const partesFim = semana.semana_consumo_fim.split('-').map(Number);
             
-            // Adicionar 1 dia a cada data para corrigir o deslocamento
-            dataInicio.setDate(dataInicio.getDate() + 1);
-            dataFim.setDate(dataFim.getDate() + 1);
+            const dataInicio = new Date(Date.UTC(partesInicio[0], partesInicio[1] - 1, partesInicio[2]));
+            const dataFim = new Date(Date.UTC(partesFim[0], partesFim[1] - 1, partesFim[2]));
             
-            // Formatar como DD/MM
+            // NÃO adicionar dias - as datas já estão corretas no banco
+            // semana_consumo_inicio = segunda-feira
+            // semana_consumo_fim = domingo
+            
+            // Formatar como DD/MM usando métodos UTC
             const formatarData = (data) => {
-              const dia = String(data.getDate()).padStart(2, '0');
-              const mes = String(data.getMonth() + 1).padStart(2, '0');
+              const dia = String(data.getUTCDate()).padStart(2, '0');
+              const mes = String(data.getUTCMonth() + 1).padStart(2, '0');
               return `${dia}/${mes}`;
             };
             
             // SEMPRE usar o ano solicitado na busca (parâmetro 'ano')
             // Se o usuário busca semanas de 2025, sempre mostrar /25, mesmo se as datas cruzarem para 2026
-            // Isso garante que o dropdown mostre o ano correto que o usuário está visualizando
             const anoFormatado = ano;
             semanaFormatada = `(${formatarData(dataInicio)} a ${formatarData(dataFim)}/${anoFormatado.toString().slice(-2)})`;
           } catch (error) {
@@ -497,13 +500,13 @@ class CalendarioAPIController {
           const dataInicio = new Date(Date.UTC(partesInicio[0], partesInicio[1] - 1, partesInicio[2]));
           const dataFim = new Date(Date.UTC(partesFim[0], partesFim[1] - 1, partesFim[2]));
           
-          console.log('📅 Datas criadas (antes de ajuste):', dataInicio.toISOString(), 'a', dataFim.toISOString());
+          console.log('📅 Datas criadas do banco:', dataInicio.toISOString(), 'a', dataFim.toISOString());
           
-          // Adicionar +2 dias na data de fim para corrigir o deslocamento (03/01 -> 05/01)
-          // A data de início já está correta (30/12)
-          dataFim.setUTCDate(dataFim.getUTCDate() + 2);
+          // NÃO adicionar dias - usar as datas diretamente do banco
+          // semana_abastecimento_inicio = segunda-feira, semana_abastecimento_fim = sexta-feira
+          // As datas já estão corretas no banco, usar diretamente
           
-          console.log('📅 Datas após ajuste (fim +2 dias):', dataInicio.toISOString(), 'a', dataFim.toISOString());
+          console.log('📅 Usando datas diretamente do banco (sem ajuste)');
           
           const formatarData = (data) => {
             const dia = String(data.getUTCDate()).padStart(2, '0');
