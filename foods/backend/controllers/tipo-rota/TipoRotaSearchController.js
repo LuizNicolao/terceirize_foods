@@ -4,6 +4,7 @@
  */
 
 const { executeQuery } = require('../../config/database');
+const TipoRotaCRUDController = require('./TipoRotaCRUDController');
 
 class TipoRotaSearchController {
   // Buscar tipos de rota ativos
@@ -70,49 +71,49 @@ class TipoRotaSearchController {
       const query = `
         SELECT 
           tr.id, tr.nome, tr.status, tr.filial_id, tr.grupo_id,
-          f.filial as filial_nome,
-          g.nome as grupo_nome,
-          g.id as grupo_id_valor
+          f.filial as filial_nome
         FROM tipo_rota tr
         LEFT JOIN filiais f ON tr.filial_id = f.id
-        LEFT JOIN grupos g ON tr.grupo_id = g.id
         WHERE tr.filial_id = ? AND tr.status = 'ativo'
-        ORDER BY tr.nome ASC, g.nome ASC
+        ORDER BY tr.nome ASC
       `;
 
       const tipoRotasRaw = await executeQuery(query, [filialId]);
 
-      // Agrupar por nome para consolidar múltiplos grupos
-      const tipoRotasAgrupados = {};
-      
-      tipoRotasRaw.forEach(tr => {
-        const chave = tr.nome;
-        
-        if (!tipoRotasAgrupados[chave]) {
-          tipoRotasAgrupados[chave] = {
-            id: tr.id, // Primeiro ID
+      // Processar cada registro para parsear grupos_id
+      const tipoRotas = await Promise.all(
+        tipoRotasRaw.map(async (tr) => {
+          // Parsear grupos_id da string
+          const gruposIds = TipoRotaCRUDController.gruposToArray(tr.grupo_id);
+          
+          // Buscar nomes dos grupos se houver grupos
+          let grupos = [];
+          if (gruposIds.length > 0) {
+            const gruposPlaceholders = gruposIds.map(() => '?').join(',');
+            const gruposNomes = await executeQuery(
+              `SELECT id, nome FROM grupos WHERE id IN (${gruposPlaceholders}) ORDER BY nome ASC`,
+              gruposIds
+            );
+            grupos = gruposNomes.map(g => ({
+              id: g.id,
+              nome: g.nome
+            }));
+          }
+
+          return {
+            id: tr.id,
             nome: tr.nome,
             filial_id: tr.filial_id,
             filial_nome: tr.filial_nome,
             status: tr.status,
-            grupos: [],
-            grupos_id: []
+            grupos: grupos,
+            grupos_id: gruposIds
           };
-        }
-        
-        // Adicionar grupo se não existir
-        const grupoJaExiste = tipoRotasAgrupados[chave].grupos.some(g => g.id === tr.grupo_id_valor);
-        if (!grupoJaExiste && tr.grupo_id_valor) {
-          tipoRotasAgrupados[chave].grupos.push({
-            id: tr.grupo_id_valor,
-            nome: tr.grupo_nome
-          });
-          tipoRotasAgrupados[chave].grupos_id.push(tr.grupo_id_valor);
-        }
-      });
+        })
+      );
 
-      const tipoRotas = Object.values(tipoRotasAgrupados)
-        .sort((a, b) => a.nome.localeCompare(b.nome));
+      // Ordenar por nome
+      tipoRotas.sort((a, b) => a.nome.localeCompare(b.nome));
 
       res.json({
         success: true,
@@ -133,20 +134,52 @@ class TipoRotaSearchController {
   static async buscarTipoRotasPorGrupo(req, res) {
     try {
       const { grupoId } = req.params;
+      const grupoIdNum = parseInt(grupoId);
 
+      // Buscar tipos de rota onde grupo_id contém o ID procurado (usando FIND_IN_SET para string separada por vírgula)
       const query = `
         SELECT 
           tr.id, tr.nome, tr.status, tr.filial_id, tr.grupo_id,
-          f.filial as filial_nome,
-          g.nome as grupo_nome
+          f.filial as filial_nome
         FROM tipo_rota tr
         LEFT JOIN filiais f ON tr.filial_id = f.id
-        LEFT JOIN grupos g ON tr.grupo_id = g.id
-        WHERE tr.grupo_id = ? AND tr.status = 'ativo'
+        WHERE FIND_IN_SET(?, tr.grupo_id) > 0 AND tr.status = 'ativo'
         ORDER BY tr.nome ASC
       `;
 
-      const tipoRotas = await executeQuery(query, [grupoId]);
+      const tipoRotasRaw = await executeQuery(query, [grupoIdNum]);
+
+      // Processar cada registro para parsear grupos_id
+      const tipoRotas = await Promise.all(
+        tipoRotasRaw.map(async (tr) => {
+          // Parsear grupos_id da string
+          const gruposIds = TipoRotaCRUDController.gruposToArray(tr.grupo_id);
+          
+          // Buscar nomes dos grupos se houver grupos
+          let grupos = [];
+          if (gruposIds.length > 0) {
+            const gruposPlaceholders = gruposIds.map(() => '?').join(',');
+            const gruposNomes = await executeQuery(
+              `SELECT id, nome FROM grupos WHERE id IN (${gruposPlaceholders}) ORDER BY nome ASC`,
+              gruposIds
+            );
+            grupos = gruposNomes.map(g => ({
+              id: g.id,
+              nome: g.nome
+            }));
+          }
+
+          return {
+            id: tr.id,
+            nome: tr.nome,
+            filial_id: tr.filial_id,
+            filial_nome: tr.filial_nome,
+            status: tr.status,
+            grupos: grupos,
+            grupos_id: gruposIds
+          };
+        })
+      );
 
       res.json({
         success: true,

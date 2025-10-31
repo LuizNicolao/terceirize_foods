@@ -50,8 +50,9 @@ class TipoRotaExportController {
       }
 
       if (grupo_id) {
-        whereClause += ' AND tr.grupo_id = ?';
-        params.push(grupo_id);
+        const grupoIdNum = parseInt(grupo_id);
+        whereClause += ' AND FIND_IN_SET(?, tr.grupo_id) > 0';
+        params.push(grupoIdNum);
       }
 
       if (filial_id && filial_id !== 'todos') {
@@ -65,52 +66,52 @@ class TipoRotaExportController {
           tr.nome,
           tr.status,
           tr.filial_id,
+          tr.grupo_id,
           f.filial as filial_nome,
-          g.nome as grupo_nome,
-          g.id as grupo_id_valor,
           (SELECT COUNT(*) FROM unidades_escolares ue WHERE ue.tipo_rota_id = tr.id) as total_unidades
         FROM tipo_rota tr
         LEFT JOIN filiais f ON tr.filial_id = f.id
-        LEFT JOIN grupos g ON tr.grupo_id = g.id
         ${whereClause}
-        ORDER BY tr.nome ASC, g.nome ASC
+        ORDER BY tr.nome ASC
       `;
 
       const tipoRotasRaw = await executeQuery(query, params);
 
-      // Agrupar por nome + filial_id
-      const tipoRotasAgrupados = {};
-      
-      tipoRotasRaw.forEach(tr => {
-        const chave = `${tr.nome}|${tr.filial_id}`;
-        
-        if (!tipoRotasAgrupados[chave]) {
-          tipoRotasAgrupados[chave] = {
+      // Processar cada registro para parsear grupos_id e buscar nomes
+      const TipoRotaCRUDController = require('./TipoRotaCRUDController');
+      const tipoRotas = await Promise.all(
+        tipoRotasRaw.map(async (tr) => {
+          // Parsear grupos_id da string
+          const gruposIds = TipoRotaCRUDController.gruposToArray(tr.grupo_id);
+          
+          // Buscar nomes dos grupos se houver grupos
+          let gruposNomes = [];
+          if (gruposIds.length > 0) {
+            const gruposPlaceholders = gruposIds.map(() => '?').join(',');
+            const grupos = await executeQuery(
+              `SELECT nome FROM grupos WHERE id IN (${gruposPlaceholders}) ORDER BY nome ASC`,
+              gruposIds
+            );
+            gruposNomes = grupos.map(g => g.nome);
+          }
+
+          return {
             id: tr.id,
             nome: tr.nome,
             filial_nome: tr.filial_nome || 'Sem filial',
-            grupos: [],
-            total_unidades: 0,
+            grupos: gruposNomes,
+            total_unidades: tr.total_unidades || 0,
             status: tr.status
           };
-        }
-        
-        if (tr.grupo_nome && !tipoRotasAgrupados[chave].grupos.includes(tr.grupo_nome)) {
-          tipoRotasAgrupados[chave].grupos.push(tr.grupo_nome);
-        }
-        
-        tipoRotasAgrupados[chave].total_unidades = Math.max(
-          tipoRotasAgrupados[chave].total_unidades,
-          tr.total_unidades || 0
-        );
-      });
+        })
+      );
 
-      const tipoRotas = Object.values(tipoRotasAgrupados)
+      const tipoRotasOrdenados = tipoRotas
         .sort((a, b) => a.nome.localeCompare(b.nome))
         .slice(0, parseInt(limit));
 
       // Adicionar dados
-      tipoRotas.forEach(tipoRota => {
+      tipoRotasOrdenados.forEach(tipoRota => {
         worksheet.addRow({
           id: tipoRota.id,
           nome: tipoRota.nome,
@@ -175,8 +176,9 @@ class TipoRotaExportController {
       }
 
       if (grupo_id) {
-        whereClause += ' AND tr.grupo_id = ?';
-        params.push(grupo_id);
+        const grupoIdNum = parseInt(grupo_id);
+        whereClause += ' AND FIND_IN_SET(?, tr.grupo_id) > 0';
+        params.push(grupoIdNum);
       }
 
       if (filial_id && filial_id !== 'todos') {
@@ -190,52 +192,52 @@ class TipoRotaExportController {
           tr.nome,
           tr.status,
           tr.filial_id,
+          tr.grupo_id,
           f.filial as filial_nome,
-          g.nome as grupo_nome,
-          g.id as grupo_id_valor,
           (SELECT COUNT(*) FROM unidades_escolares ue WHERE ue.tipo_rota_id = tr.id) as total_unidades
         FROM tipo_rota tr
         LEFT JOIN filiais f ON tr.filial_id = f.id
-        LEFT JOIN grupos g ON tr.grupo_id = g.id
         ${whereClause}
-        ORDER BY tr.nome ASC, g.nome ASC
+        ORDER BY tr.nome ASC
       `;
 
       const tipoRotasRaw = await executeQuery(query, params);
 
-      // Agrupar por nome + filial_id
-      const tipoRotasAgrupados = {};
-      
-      tipoRotasRaw.forEach(tr => {
-        const chave = `${tr.nome}|${tr.filial_id}`;
-        
-        if (!tipoRotasAgrupados[chave]) {
-          tipoRotasAgrupados[chave] = {
+      // Processar cada registro para parsear grupos_id e buscar nomes
+      const TipoRotaCRUDController = require('./TipoRotaCRUDController');
+      const tipoRotas = await Promise.all(
+        tipoRotasRaw.map(async (tr) => {
+          // Parsear grupos_id da string
+          const gruposIds = TipoRotaCRUDController.gruposToArray(tr.grupo_id);
+          
+          // Buscar nomes dos grupos se houver grupos
+          let gruposNomes = [];
+          if (gruposIds.length > 0) {
+            const gruposPlaceholders = gruposIds.map(() => '?').join(',');
+            const grupos = await executeQuery(
+              `SELECT nome FROM grupos WHERE id IN (${gruposPlaceholders}) ORDER BY nome ASC`,
+              gruposIds
+            );
+            gruposNomes = grupos.map(g => g.nome);
+          }
+
+          return {
             id: tr.id,
             nome: tr.nome,
             filial_nome: tr.filial_nome || 'Sem filial',
-            grupos: [],
-            total_unidades: 0,
+            grupos: gruposNomes,
+            total_unidades: tr.total_unidades || 0,
             status: tr.status
           };
-        }
-        
-        if (tr.grupo_nome && !tipoRotasAgrupados[chave].grupos.includes(tr.grupo_nome)) {
-          tipoRotasAgrupados[chave].grupos.push(tr.grupo_nome);
-        }
-        
-        tipoRotasAgrupados[chave].total_unidades = Math.max(
-          tipoRotasAgrupados[chave].total_unidades,
-          tr.total_unidades || 0
-        );
-      });
+        })
+      );
 
-      const tipoRotas = Object.values(tipoRotasAgrupados)
+      const tipoRotasOrdenados = tipoRotas
         .sort((a, b) => a.nome.localeCompare(b.nome))
         .slice(0, parseInt(limit));
 
       // Adicionar tipos de rota ao PDF
-      tipoRotas.forEach((tipoRota, index) => {
+      tipoRotasOrdenados.forEach((tipoRota, index) => {
         if (index > 0) doc.moveDown(2);
         
         doc.fontSize(14).font('Helvetica-Bold').text(tipoRota.nome);

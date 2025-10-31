@@ -102,6 +102,25 @@ const TipoRotaModal = ({
                 ))}
               </Input>
 
+              <Input
+                label="Status"
+                type="select"
+                {...register('status')}
+                disabled={isViewMode}
+              >
+                <option value="">Selecione o status</option>
+                <option value="ativo">Ativo</option>
+                <option value="inativo">Inativo</option>
+              </Input>
+            </div>
+          </div>
+
+          {/* Card 2: Configurações */}
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">
+              Configurações
+            </h3>
+            <div className="space-y-3">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Grupos * <span className="text-gray-500 text-xs">({gruposSelecionados.length} selecionado{gruposSelecionados.length !== 1 ? 's' : ''})</span>
@@ -111,27 +130,29 @@ const TipoRotaModal = ({
                 ) : grupos.length === 0 ? (
                   <div className="text-sm text-gray-500">Nenhum grupo disponível</div>
                 ) : (
-                  <div className="border border-gray-300 rounded-lg p-3 max-h-48 overflow-y-auto bg-white">
-                    {grupos.map(grupo => {
-                      const isSelected = gruposSelecionados.includes(grupo.id);
-                      return (
-                        <label
-                          key={grupo.id}
-                          className={`flex items-center gap-2 p-2 rounded cursor-pointer hover:bg-gray-50 ${
-                            isSelected ? 'bg-green-50' : ''
-                          }`}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={isSelected}
-                            onChange={() => handleGrupoToggle(grupo.id)}
-                            disabled={isViewMode}
-                            className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-                          />
-                          <span className="text-sm text-gray-700">{grupo.nome}</span>
-                        </label>
-                      );
-                    })}
+                  <div className="border border-gray-300 rounded-lg p-3 max-h-64 overflow-y-auto bg-white">
+                    <div className="grid grid-cols-2 gap-2">
+                      {grupos.map(grupo => {
+                        const isSelected = gruposSelecionados.includes(grupo.id);
+                        return (
+                          <label
+                            key={grupo.id}
+                            className={`flex items-center gap-2 p-2 rounded cursor-pointer hover:bg-gray-50 ${
+                              isSelected ? 'bg-green-50' : ''
+                            }`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => handleGrupoToggle(grupo.id)}
+                              disabled={isViewMode}
+                              className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                            />
+                            <span className="text-sm text-gray-700">{grupo.nome}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
                 <input
@@ -146,25 +167,6 @@ const TipoRotaModal = ({
                   })}
                 />
               </div>
-            </div>
-          </div>
-
-          {/* Card 2: Configurações */}
-          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-            <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">
-              Configurações
-            </h3>
-            <div className="space-y-3">
-              <Input
-                label="Status"
-                type="select"
-                {...register('status')}
-                disabled={isViewMode}
-              >
-                <option value="">Selecione o status</option>
-                <option value="ativo">Ativo</option>
-                <option value="inativo">Inativo</option>
-              </Input>
             </div>
           </div>
         </div>

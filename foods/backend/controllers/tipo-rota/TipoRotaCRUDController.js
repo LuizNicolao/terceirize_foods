@@ -7,6 +7,24 @@
 const { executeQuery } = require('../../config/database');
 
 class TipoRotaCRUDController {
+  // Função auxiliar para converter array de IDs em string separada por vírgula
+  static gruposToString(gruposIds) {
+    if (!Array.isArray(gruposIds) || gruposIds.length === 0) {
+      return '';
+    }
+    return gruposIds.map(id => parseInt(id)).join(',');
+  }
+
+  // Função auxiliar para converter string separada por vírgula em array de IDs
+  static gruposToArray(gruposString) {
+    if (!gruposString || typeof gruposString !== 'string') {
+      return [];
+    }
+    return gruposString
+      .split(',')
+      .map(id => parseInt(id.trim()))
+      .filter(id => !isNaN(id) && id > 0);
+  }
   // Criar tipo de rota (com suporte a múltiplos grupos)
   static async criarTipoRota(req, res) {
     try {
@@ -65,51 +83,98 @@ class TipoRotaCRUDController {
         });
       }
 
-      // Inserir múltiplos registros (um para cada grupo)
+      // Validar duplicidade: verificar se algum grupo já está vinculado a outro tipo de rota nesta filial
+      const gruposConflitantes = [];
+      for (const grupoId of gruposIds) {
+        const tiposRotaExistentes = await executeQuery(
+          `SELECT tr.id, tr.nome, tr.grupo_id 
+           FROM tipo_rota tr 
+           WHERE tr.filial_id = ? AND FIND_IN_SET(?, tr.grupo_id) > 0`,
+          [filial_id, grupoId]
+        );
+
+        if (tiposRotaExistentes.length > 0) {
+          // Buscar nome do grupo para a mensagem
+          const grupoInfo = await executeQuery(
+            'SELECT nome FROM grupos WHERE id = ?',
+            [grupoId]
+          );
+          const grupoNome = grupoInfo.length > 0 ? grupoInfo[0].nome : `ID ${grupoId}`;
+          
+          // Buscar nome da filial para a mensagem
+          const filialInfo = await executeQuery(
+            'SELECT filial FROM filiais WHERE id = ?',
+            [filial_id]
+          );
+          const filialNome = filialInfo.length > 0 ? filialInfo[0].filial : `ID ${filial_id}`;
+
+          const tipoRotaExistente = tiposRotaExistentes[0];
+          gruposConflitantes.push({
+            grupoId,
+            grupoNome,
+            tipoRotaId: tipoRotaExistente.id,
+            tipoRotaNome: tipoRotaExistente.nome
+          });
+        }
+      }
+
+      if (gruposConflitantes.length > 0) {
+        const gruposNomesConflitantes = gruposConflitantes.map(gc => gc.grupoNome).join(', ');
+        const tiposRotasNomes = gruposConflitantes.map(gc => `"${gc.tipoRotaNome}"`).join(', ');
+        
+        return res.status(400).json({
+          success: false,
+          error: 'Grupo já vinculado',
+          message: `O(s) grupo(s) ${gruposNomesConflitantes} já está(ão) vinculado(s) a outro(s) tipo(s) de rota (${tiposRotasNomes}) nesta filial. Cada grupo só pode estar vinculado a um único tipo de rota por filial.`
+        });
+      }
+
+      // Converter array de grupos em string separada por vírgula
+      const gruposString = this.gruposToString(gruposIds);
+
+      // Inserir um único registro com grupos como string
       const insertQuery = `
         INSERT INTO tipo_rota (
           filial_id, grupo_id, nome, status
         ) VALUES (?, ?, ?, ?)
       `;
 
-      const insertedIds = [];
-      for (const grupoId of gruposIds) {
-        const result = await executeQuery(insertQuery, [
-          filial_id,
-          grupoId,
-          nome.trim(),
-          status
-        ]);
-        insertedIds.push(result.insertId);
-      }
+      const result = await executeQuery(insertQuery, [
+        filial_id,
+        gruposString,
+        nome.trim(),
+        status
+      ]);
 
-      // Buscar todos os tipos de rota criados (agrupados por nome)
-      const tipoRotasCriados = await executeQuery(
-        `SELECT 
-          tr.id, tr.nome, tr.status, tr.filial_id, tr.grupo_id,
-          f.filial as filial_nome,
-          g.nome as grupo_nome
-         FROM tipo_rota tr
-         LEFT JOIN filiais f ON tr.filial_id = f.id
-         LEFT JOIN grupos g ON tr.grupo_id = g.id
-         WHERE tr.id IN (${insertedIds.map(() => '?').join(',')})
-         ORDER BY g.nome ASC`,
-        insertedIds
+      // Buscar grupos para construir resposta
+      const gruposNomes = await executeQuery(
+        `SELECT id, nome FROM grupos WHERE id IN (${gruposIds.map(() => '?').join(',')}) ORDER BY nome ASC`,
+        gruposIds
       );
 
-      // Agrupar por nome e retornar estrutura consolidada
-      const grupos = tipoRotasCriados.map(tr => ({
-        id: tr.grupo_id,
-        nome: tr.grupo_nome
+      // Buscar tipo de rota criado
+      const tipoRotaCriado = await executeQuery(
+        `SELECT 
+          tr.id, tr.nome, tr.status, tr.filial_id, tr.grupo_id,
+          f.filial as filial_nome
+         FROM tipo_rota tr
+         LEFT JOIN filiais f ON tr.filial_id = f.id
+         WHERE tr.id = ?`,
+        [result.insertId]
+      );
+
+      const grupos = gruposNomes.map(g => ({
+        id: g.id,
+        nome: g.nome
       }));
 
-      const primeiroRegistro = tipoRotasCriados[0];
+      const registro = tipoRotaCriado[0];
       const data = {
-        id: primeiroRegistro.id, // Retorna o primeiro ID (para compatibilidade)
-        nome: primeiroRegistro.nome,
-        filial_id: primeiroRegistro.filial_id,
-        filial_nome: primeiroRegistro.filial_nome,
-        status: primeiroRegistro.status,
+        id: registro.id,
+        nome: registro.nome,
+        filial_id: registro.filial_id,
+        filial_nome: registro.filial_nome,
+        status: registro.status,
         grupos_id: gruposIds,
         grupos: grupos
       };
@@ -185,15 +250,11 @@ class TipoRotaCRUDController {
         }
       }
 
-      // Buscar todos os registros relacionados (mesmo nome e filial)
-      const registrosRelacionados = await executeQuery(
-        'SELECT * FROM tipo_rota WHERE nome = ? AND filial_id = ?',
-        [nomeAtual, filialAtual]
-      );
+      // Construir campos de atualização
+      const updateFields = [];
+      const updateParams = [];
 
-      const idsRelacionados = registrosRelacionados.map(r => r.id);
-
-      // Se grupos_id foi fornecido, gerenciar grupos
+      // Se grupos_id foi fornecido, converter para string e atualizar
       if (grupos_id !== undefined) {
         if (!Array.isArray(grupos_id) || grupos_id.length === 0) {
           return res.status(400).json({
@@ -219,144 +280,134 @@ class TipoRotaCRUDController {
           });
         }
 
-        // Remover registros antigos relacionados
-        if (idsRelacionados.length > 0) {
-          const deletePlaceholders = idsRelacionados.map(() => '?').join(',');
-          await executeQuery(
-            `DELETE FROM tipo_rota WHERE id IN (${deletePlaceholders})`,
-            idsRelacionados
-          );
-        }
-
-        // Criar novos registros com os grupos fornecidos
-        const insertQuery = `
-          INSERT INTO tipo_rota (
-            filial_id, grupo_id, nome, status
-          ) VALUES (?, ?, ?, ?)
-        `;
-
-        const nomeParaUsar = (nome || nomeAtual).trim();
-        const statusParaUsar = status !== undefined ? status : registroAtual.status;
-
-        const novosIds = [];
+        // Validar duplicidade: verificar se algum grupo já está vinculado a OUTRO tipo de rota nesta filial
+        const filialParaValidar = filial_id || filialAtual;
+        const gruposConflitantes = [];
+        
         for (const grupoId of gruposIds) {
-          const result = await executeQuery(insertQuery, [
-            filialParaUsar,
-            grupoId,
-            nomeParaUsar,
-            statusParaUsar
-          ]);
-          novosIds.push(result.insertId);
-        }
-
-        // Buscar tipos de rota atualizados
-        const tipoRotasAtualizados = await executeQuery(
-          `SELECT 
-            tr.id, tr.nome, tr.status, tr.filial_id, tr.grupo_id,
-            f.filial as filial_nome,
-            g.nome as grupo_nome
-           FROM tipo_rota tr
-           LEFT JOIN filiais f ON tr.filial_id = f.id
-           LEFT JOIN grupos g ON tr.grupo_id = g.id
-           WHERE tr.id IN (${novosIds.map(() => '?').join(',')})
-           ORDER BY g.nome ASC`,
-          novosIds
-        );
-
-        // Agrupar por nome e retornar estrutura consolidada
-        const grupos = tipoRotasAtualizados.map(tr => ({
-          id: tr.grupo_id,
-          nome: tr.grupo_nome
-        }));
-
-        const primeiroRegistro = tipoRotasAtualizados[0];
-        const data = {
-          id: primeiroRegistro.id,
-          nome: primeiroRegistro.nome,
-          filial_id: primeiroRegistro.filial_id,
-          filial_nome: primeiroRegistro.filial_nome,
-          status: primeiroRegistro.status,
-          grupos_id: gruposIds,
-          grupos: grupos
-        };
-
-        return res.json({
-          success: true,
-          message: 'Tipo de rota atualizado com sucesso',
-          data: data
-        });
-      } else {
-        // Se grupos_id não foi fornecido, apenas atualizar outros campos em todos os registros relacionados
-        const updateFields = [];
-        const updateParams = [];
-
-        if (filial_id !== undefined) {
-          updateFields.push('filial_id = ?');
-          updateParams.push(filial_id);
-        }
-        if (nome !== undefined) {
-          updateFields.push('nome = ?');
-          updateParams.push(nome.trim());
-        }
-        if (status !== undefined) {
-          updateFields.push('status = ?');
-          updateParams.push(status);
-        }
-
-        // Sempre atualizar o timestamp
-        updateFields.push('updated_at = CURRENT_TIMESTAMP');
-
-        if (updateFields.length > 0 && idsRelacionados.length > 0) {
-          const updatePlaceholders = idsRelacionados.map(() => '?').join(',');
-          await executeQuery(
-            `UPDATE tipo_rota SET ${updateFields.join(', ')} WHERE id IN (${updatePlaceholders})`,
-            [...updateParams, ...idsRelacionados]
+          // Buscar tipos de rota que têm este grupo na mesma filial (exceto o que está sendo editado)
+          const tiposRotaExistentes = await executeQuery(
+            `SELECT tr.id, tr.nome, tr.grupo_id 
+             FROM tipo_rota tr 
+             WHERE tr.filial_id = ? AND tr.id != ? AND FIND_IN_SET(?, tr.grupo_id) > 0`,
+            [filialParaValidar, id, grupoId]
           );
-        }
 
-        // Buscar tipo de rota atualizado (primeiro registro)
-        const updatedTipoRota = await executeQuery(
-          `SELECT 
-            tr.id, tr.nome, tr.status, tr.filial_id, tr.grupo_id,
-            f.filial as filial_nome,
-            g.nome as grupo_nome
-           FROM tipo_rota tr
-           LEFT JOIN filiais f ON tr.filial_id = f.id
-           LEFT JOIN grupos g ON tr.grupo_id = g.id
-           WHERE tr.id = ?`,
-          [id]
-        );
+          if (tiposRotaExistentes.length > 0) {
+            // Buscar nome do grupo para a mensagem
+            const grupoInfo = await executeQuery(
+              'SELECT nome FROM grupos WHERE id = ?',
+              [grupoId]
+            );
+            const grupoNome = grupoInfo.length > 0 ? grupoInfo[0].nome : `ID ${grupoId}`;
+            
+            // Buscar nome da filial para a mensagem
+            const filialInfo = await executeQuery(
+              'SELECT filial FROM filiais WHERE id = ?',
+              [filialParaValidar]
+            );
+            const filialNome = filialInfo.length > 0 ? filialInfo[0].filial : `ID ${filialParaValidar}`;
 
-        if (updatedTipoRota.length === 0) {
-          // Se o registro foi deletado (pode acontecer se grupos_id foi processado antes), buscar qualquer registro relacionado
-          const registrosAtualizados = await executeQuery(
-            `SELECT 
-              tr.id, tr.nome, tr.status, tr.filial_id, tr.grupo_id,
-              f.filial as filial_nome,
-              g.nome as grupo_nome
-             FROM tipo_rota tr
-             LEFT JOIN filiais f ON tr.filial_id = f.id
-             LEFT JOIN grupos g ON tr.grupo_id = g.id
-             WHERE tr.nome = ? AND tr.filial_id = ?
-             LIMIT 1`,
-            [nome || nomeAtual, filialParaUsar]
-          );
-          
-          if (registrosAtualizados.length > 0) {
-            return res.json({
-              success: true,
-              message: 'Tipo de rota atualizado com sucesso',
-              data: registrosAtualizados[0]
+            const tipoRotaExistente = tiposRotaExistentes[0];
+            gruposConflitantes.push({
+              grupoId,
+              grupoNome,
+              tipoRotaId: tipoRotaExistente.id,
+              tipoRotaNome: tipoRotaExistente.nome
             });
           }
         }
 
-        return res.json({
-          success: true,
-          message: 'Tipo de rota atualizado com sucesso',
-          data: updatedTipoRota[0]
+        if (gruposConflitantes.length > 0) {
+          const gruposNomesConflitantes = gruposConflitantes.map(gc => gc.grupoNome).join(', ');
+          const tiposRotasNomes = gruposConflitantes.map(gc => `"${gc.tipoRotaNome}"`).join(', ');
+          
+          return res.status(400).json({
+            success: false,
+            error: 'Grupo já vinculado',
+            message: `O(s) grupo(s) ${gruposNomesConflitantes} já está(ão) vinculado(s) a outro(s) tipo(s) de rota (${tiposRotasNomes}) nesta filial. Cada grupo só pode estar vinculado a um único tipo de rota por filial.`
+          });
+        }
+
+        // Converter grupos para string
+        const gruposString = this.gruposToString(gruposIds);
+        updateFields.push('grupo_id = ?');
+        updateParams.push(gruposString);
+      }
+
+      if (filial_id !== undefined) {
+        updateFields.push('filial_id = ?');
+        updateParams.push(filial_id);
+      }
+      if (nome !== undefined) {
+        updateFields.push('nome = ?');
+        updateParams.push(nome.trim());
+      }
+      if (status !== undefined) {
+        updateFields.push('status = ?');
+        updateParams.push(status);
+      }
+
+      // Sempre atualizar o timestamp
+      updateFields.push('updated_at = CURRENT_TIMESTAMP');
+
+      if (updateFields.length > 0) {
+        updateParams.push(id);
+        await executeQuery(
+          `UPDATE tipo_rota SET ${updateFields.join(', ')} WHERE id = ?`,
+          updateParams
+        );
+      }
+
+      // Buscar tipo de rota atualizado
+      const updatedTipoRota = await executeQuery(
+        `SELECT 
+          tr.id, tr.nome, tr.status, tr.filial_id, tr.grupo_id,
+          f.filial as filial_nome
+         FROM tipo_rota tr
+         LEFT JOIN filiais f ON tr.filial_id = f.id
+         WHERE tr.id = ?`,
+        [id]
+      );
+
+      if (updatedTipoRota.length === 0) {
+        return res.status(404).json({
+          success: false,
+          error: 'Tipo de rota não encontrado',
+          message: 'O tipo de rota não foi encontrado após a atualização'
         });
       }
+
+      // Parsear grupos_id da string
+      const gruposIdsAtualizados = this.gruposToArray(updatedTipoRota[0].grupo_id);
+      
+      // Buscar nomes dos grupos
+      const gruposNomes = gruposIdsAtualizados.length > 0 ? await executeQuery(
+        `SELECT id, nome FROM grupos WHERE id IN (${gruposIdsAtualizados.map(() => '?').join(',')}) ORDER BY nome ASC`,
+        gruposIdsAtualizados
+      ) : [];
+
+      const grupos = gruposNomes.map(g => ({
+        id: g.id,
+        nome: g.nome
+      }));
+
+      const registro = updatedTipoRota[0];
+      const data = {
+        id: registro.id,
+        nome: registro.nome,
+        filial_id: registro.filial_id,
+        filial_nome: registro.filial_nome,
+        status: registro.status,
+        grupos_id: gruposIdsAtualizados,
+        grupos: grupos
+      };
+
+      return res.json({
+        success: true,
+        message: 'Tipo de rota atualizado com sucesso',
+        data: data
+      });
 
     } catch (error) {
       console.error('Erro ao atualizar tipo de rota:', error);
@@ -392,23 +443,13 @@ class TipoRotaCRUDController {
       }
 
       const tipoRotaData = tipoRota[0];
-      
-      // Buscar todos os registros relacionados (mesmo nome e filial)
-      const registrosRelacionados = await executeQuery(
-        'SELECT id FROM tipo_rota WHERE nome = ? AND filial_id = ?',
-        [tipoRotaData.nome, tipoRotaData.filial_id]
-      );
-      
-      const idsParaExcluir = registrosRelacionados.map(r => r.id);
 
-      // Verificar se existem rotas vinculadas a qualquer um dos registros relacionados
-      const placeholders = idsParaExcluir.map(() => '?').join(',');
+      // Verificar se existem rotas vinculadas a este tipo de rota
       const rotasVinculadas = await executeQuery(
         `SELECT DISTINCT r.id, r.codigo, r.nome, r.status 
          FROM rotas r
-         INNER JOIN tipo_rota tr ON r.tipo_rota_id = tr.id
-         WHERE tr.nome = ? AND tr.filial_id = ?`,
-        [tipoRotaData.nome, tipoRotaData.filial_id]
+         WHERE r.tipo_rota_id = ?`,
+        [id]
       );
 
       // Se houver rotas vinculadas, retornar erro com informações das rotas
@@ -449,23 +490,14 @@ class TipoRotaCRUDController {
       }
 
       // Se não houver rotas vinculadas, proceder com a exclusão
-      // Remover vinculações de unidades escolares (se houver) - para todos os registros relacionados
-      if (idsParaExcluir.length > 0) {
-        const unidadesPlaceholders = idsParaExcluir.map(() => '?').join(',');
-        await executeQuery(
-          `UPDATE unidades_escolares SET tipo_rota_id = NULL, ordem_entrega = 0 WHERE tipo_rota_id IN (${unidadesPlaceholders})`,
-          idsParaExcluir
-        );
-      }
+      // Remover vinculações de unidades escolares (se houver)
+      await executeQuery(
+        'UPDATE unidades_escolares SET tipo_rota_id = NULL, ordem_entrega = 0 WHERE tipo_rota_id = ?',
+        [id]
+      );
 
-      // Excluir todos os registros relacionados (todos os grupos deste tipo de rota)
-      if (idsParaExcluir.length > 0) {
-        const deletePlaceholders = idsParaExcluir.map(() => '?').join(',');
-        await executeQuery(
-          `DELETE FROM tipo_rota WHERE id IN (${deletePlaceholders})`,
-          idsParaExcluir
-        );
-      }
+      // Excluir registro
+      await executeQuery('DELETE FROM tipo_rota WHERE id = ?', [id]);
 
       res.json({
         success: true,

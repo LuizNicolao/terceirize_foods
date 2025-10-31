@@ -4,6 +4,7 @@
  */
 
 const { executeQuery } = require('../../config/database');
+const TipoRotaCRUDController = require('./TipoRotaCRUDController');
 
 class TipoRotaListController {
   // Listar tipos de rota com paginação, busca e filtros
@@ -35,10 +36,11 @@ class TipoRotaListController {
         params.push(status);
       }
 
-      // Filtro por grupo
+      // Filtro por grupo (usando FIND_IN_SET para buscar em string separada por vírgula)
       if (grupo_id) {
-        whereConditions.push('tr.grupo_id = ?');
-        params.push(grupo_id);
+        const grupoIdNum = parseInt(grupo_id);
+        whereConditions.push('FIND_IN_SET(?, tr.grupo_id) > 0');
+        params.push(grupoIdNum);
       }
 
       // Filtro por filial
@@ -47,83 +49,74 @@ class TipoRotaListController {
         params.push(filial_id);
       }
 
-      // Query para contar total de registros únicos (nome + filial_id)
-      // Como vamos agrupar depois, precisamos contar registros únicos
+      // Query para contar total de registros
       const countQuery = `
-        SELECT COUNT(DISTINCT CONCAT(tr.nome, '|', tr.filial_id)) as total 
+        SELECT COUNT(*) as total 
         FROM tipo_rota tr
         LEFT JOIN filiais f ON tr.filial_id = f.id
-        LEFT JOIN grupos g ON tr.grupo_id = g.id
         WHERE ${whereConditions.join(' AND ')}
       `;
       const countResult = await executeQuery(countQuery, params);
       const total = countResult[0].total;
 
-      // Query principal - buscar todos os registros
+      // Query principal - buscar todos os registros (grupo_id agora é string)
       const query = `
         SELECT 
           tr.*,
           f.filial as filial_nome,
-          g.nome as grupo_nome,
-          g.id as grupo_id_valor,
           (SELECT COUNT(*) FROM unidades_escolares ue WHERE ue.tipo_rota_id = tr.id AND ue.status = 'ativo') as total_unidades
         FROM tipo_rota tr
         LEFT JOIN filiais f ON tr.filial_id = f.id
-        LEFT JOIN grupos g ON tr.grupo_id = g.id
         WHERE ${whereConditions.join(' AND ')}
-        ORDER BY tr.nome ASC, g.nome ASC
+        ORDER BY tr.nome ASC
       `;
 
       const tipoRotasRaw = await executeQuery(query, params);
 
-      // Agrupar por nome + filial_id para consolidar múltiplos grupos
-      const tipoRotasAgrupados = {};
-      
-      tipoRotasRaw.forEach(tr => {
-        const chave = `${tr.nome}|${tr.filial_id}`;
-        
-        if (!tipoRotasAgrupados[chave]) {
-          tipoRotasAgrupados[chave] = {
-            id: tr.id, // Primeiro ID (para compatibilidade)
+      // Processar cada registro para parsear grupos_id
+      const tipoRotas = await Promise.all(
+        tipoRotasRaw.map(async (tr) => {
+          // Parsear grupos_id da string
+          const gruposIds = TipoRotaCRUDController.gruposToArray(tr.grupo_id);
+          
+          // Buscar nomes dos grupos se houver grupos
+          let grupos = [];
+          if (gruposIds.length > 0) {
+            const gruposPlaceholders = gruposIds.map(() => '?').join(',');
+            const gruposNomes = await executeQuery(
+              `SELECT id, nome FROM grupos WHERE id IN (${gruposPlaceholders}) ORDER BY nome ASC`,
+              gruposIds
+            );
+            grupos = gruposNomes.map(g => ({
+              id: g.id,
+              nome: g.nome
+            }));
+          }
+
+          return {
+            id: tr.id,
             nome: tr.nome,
             filial_id: tr.filial_id,
             filial_nome: tr.filial_nome,
             status: tr.status,
             created_at: tr.created_at,
             updated_at: tr.updated_at,
-            grupos: [],
-            grupos_id: [],
-            total_unidades: 0
+            grupos: grupos,
+            grupos_id: gruposIds,
+            total_unidades: tr.total_unidades || 0
           };
-        }
-        
-        // Adicionar grupo se não existir
-        const grupoJaExiste = tipoRotasAgrupados[chave].grupos.some(g => g.id === tr.grupo_id_valor);
-        if (!grupoJaExiste && tr.grupo_id_valor) {
-          tipoRotasAgrupados[chave].grupos.push({
-            id: tr.grupo_id_valor,
-            nome: tr.grupo_nome
-          });
-          tipoRotasAgrupados[chave].grupos_id.push(tr.grupo_id_valor);
-        }
-        
-        // Somar total de unidades (pode haver duplicação, mas vamos manter o maior valor)
-        tipoRotasAgrupados[chave].total_unidades = Math.max(
-          tipoRotasAgrupados[chave].total_unidades,
-          tr.total_unidades || 0
-        );
-      });
+        })
+      );
 
-      // Converter objeto em array e ordenar
-      const tipoRotas = Object.values(tipoRotasAgrupados)
-        .sort((a, b) => a.nome.localeCompare(b.nome));
+      // Ordenar por nome
+      tipoRotas.sort((a, b) => a.nome.localeCompare(b.nome));
 
-      // Aplicar paginação manualmente
-      const totalAgrupado = tipoRotas.length;
+      // Aplicar paginação
+      const totalRegistros = tipoRotas.length;
       const tipoRotasPaginados = tipoRotas.slice(offset, offset + Number(limit));
 
       // Calcular metadados de paginação
-      const totalPages = Math.ceil(totalAgrupado / limit);
+      const totalPages = Math.ceil(total / limit);
       const hasNextPage = page < totalPages;
       const hasPrevPage = page > 1;
 
@@ -133,7 +126,7 @@ class TipoRotaListController {
         pagination: {
           page: parseInt(page),
           limit: parseInt(limit),
-          total: totalAgrupado,
+          total: total,
           totalPages,
           hasNextPage,
           hasPrevPage
@@ -177,46 +170,57 @@ class TipoRotaListController {
 
       const registro = registroInicial[0];
 
-      // Buscar todos os registros relacionados (mesmo nome e filial)
+      // Buscar dados do registro
       const query = `
         SELECT 
           tr.*,
           f.filial as filial_nome,
-          g.nome as grupo_nome,
-          g.id as grupo_id_valor,
           (SELECT COUNT(*) FROM unidades_escolares ue WHERE ue.tipo_rota_id = tr.id AND ue.status = 'ativo') as total_unidades
         FROM tipo_rota tr
         LEFT JOIN filiais f ON tr.filial_id = f.id
-        LEFT JOIN grupos g ON tr.grupo_id = g.id
-        WHERE tr.nome = ? AND tr.filial_id = ?
-        ORDER BY g.nome ASC
+        WHERE tr.id = ?
       `;
 
-      const tipoRotas = await executeQuery(query, [registro.nome, registro.filial_id]);
+      const tipoRotas = await executeQuery(query, [id]);
 
-      // Consolidar grupos
-      const grupos = tipoRotas
-        .filter(tr => tr.grupo_id_valor)
-        .map(tr => ({
-          id: tr.grupo_id_valor,
-          nome: tr.grupo_nome
+      if (tipoRotas.length === 0) {
+        return res.status(404).json({
+          success: false,
+          error: 'Tipo de rota não encontrado',
+          message: 'O tipo de rota especificado não foi encontrado no sistema'
+        });
+      }
+
+      const tr = tipoRotas[0];
+
+      // Parsear grupos_id da string
+      const gruposIds = TipoRotaCRUDController.gruposToArray(tr.grupo_id);
+      
+      // Buscar nomes dos grupos se houver grupos
+      let grupos = [];
+      if (gruposIds.length > 0) {
+        const gruposPlaceholders = gruposIds.map(() => '?').join(',');
+        const gruposNomes = await executeQuery(
+          `SELECT id, nome FROM grupos WHERE id IN (${gruposPlaceholders}) ORDER BY nome ASC`,
+          gruposIds
+        );
+        grupos = gruposNomes.map(g => ({
+          id: g.id,
+          nome: g.nome
         }));
+      }
 
-      const grupos_id = grupos.map(g => g.id);
-      const total_unidades = Math.max(...tipoRotas.map(tr => tr.total_unidades || 0), 0);
-
-      const primeiroRegistro = tipoRotas[0];
       const data = {
-        id: primeiroRegistro.id,
-        nome: primeiroRegistro.nome,
-        filial_id: primeiroRegistro.filial_id,
-        filial_nome: primeiroRegistro.filial_nome,
-        status: primeiroRegistro.status,
-        created_at: primeiroRegistro.created_at,
-        updated_at: primeiroRegistro.updated_at,
+        id: tr.id,
+        nome: tr.nome,
+        filial_id: tr.filial_id,
+        filial_nome: tr.filial_nome,
+        status: tr.status,
+        created_at: tr.created_at,
+        updated_at: tr.updated_at,
         grupos: grupos,
-        grupos_id: grupos_id,
-        total_unidades: total_unidades
+        grupos_id: gruposIds,
+        total_unidades: tr.total_unidades || 0
       };
 
       res.json({

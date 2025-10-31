@@ -402,16 +402,21 @@ class RotasSearchController {
       // Se grupoId não for fornecido, buscar todos os grupos do tipo de rota da rota atual
       let gruposIds = grupoId ? [grupoId] : [];
       if (gruposIds.length === 0 && rotaId) {
-        // Buscar todos os grupos do tipo de rota vinculado a esta rota
+        // Buscar grupo_id (agora string) do tipo de rota vinculado a esta rota
         const tipoRotaQuery = `
-          SELECT DISTINCT tr.grupo_id
+          SELECT tr.grupo_id
           FROM rotas r
           INNER JOIN tipo_rota tr ON r.tipo_rota_id = tr.id
-          WHERE r.id = ? AND tr.grupo_id IS NOT NULL
+          WHERE r.id = ? AND tr.grupo_id IS NOT NULL AND tr.grupo_id != ''
         `;
         const tipoRotaResult = await executeQuery(tipoRotaQuery, [rotaId]);
-        if (tipoRotaResult.length > 0) {
-          gruposIds = tipoRotaResult.map(tr => tr.grupo_id);
+        if (tipoRotaResult.length > 0 && tipoRotaResult[0].grupo_id) {
+          // Parsear grupos_id da string separada por vírgula
+          const grupoIdString = tipoRotaResult[0].grupo_id;
+          gruposIds = grupoIdString
+            .split(',')
+            .map(id => parseInt(id.trim()))
+            .filter(id => !isNaN(id) && id > 0);
         }
       }
 

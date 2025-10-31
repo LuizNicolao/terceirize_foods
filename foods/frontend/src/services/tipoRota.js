@@ -51,13 +51,22 @@ class TipoRotaService {
         return {
           success: false,
           error: error.response?.data?.message || 'Dados inválidos',
+          message: error.response?.data?.message || 'Dados inválidos',
           validationErrors: error.response?.data?.errors,
           errorCategories: error.response?.data?.errorCategories
         };
       }
+      if (error.response?.status === 400) {
+        return {
+          success: false,
+          error: error.response?.data?.error || 'Erro ao criar tipo de rota',
+          message: error.response?.data?.message || error.response?.data?.error || 'Erro ao criar tipo de rota'
+        };
+      }
       return {
         success: false,
-        error: error.response?.data?.error || 'Erro ao criar tipo de rota'
+        error: error.response?.data?.error || 'Erro ao criar tipo de rota',
+        message: error.response?.data?.message || error.response?.data?.error || 'Erro ao criar tipo de rota'
       };
     }
   }
@@ -76,13 +85,22 @@ class TipoRotaService {
         return {
           success: false,
           error: error.response?.data?.message || 'Dados inválidos',
+          message: error.response?.data?.message || 'Dados inválidos',
           validationErrors: error.response?.data?.errors,
           errorCategories: error.response?.data?.errorCategories
         };
       }
+      if (error.response?.status === 400) {
+        return {
+          success: false,
+          error: error.response?.data?.error || 'Erro ao atualizar tipo de rota',
+          message: error.response?.data?.message || error.response?.data?.error || 'Erro ao atualizar tipo de rota'
+        };
+      }
       return {
         success: false,
-        error: error.response?.data?.error || 'Erro ao atualizar tipo de rota'
+        error: error.response?.data?.error || 'Erro ao atualizar tipo de rota',
+        message: error.response?.data?.message || error.response?.data?.error || 'Erro ao atualizar tipo de rota'
       };
     }
   }
