@@ -113,10 +113,29 @@ const ReceitaModal = ({
   const [ingredientesLista, setIngredientesLista] = useState([]);
   const [novoIngrediente, setNovoIngrediente] = useState('');
 
-  // Função para converter string de ingredientes em lista
-  const converterParaLista = (ingredientesString) => {
-    if (!ingredientesString) return [];
-    return ingredientesString.split(',').map(i => i.trim()).filter(i => i.length > 0);
+  // Função para converter string ou array de ingredientes em lista
+  const converterParaLista = (ingredientes) => {
+    if (!ingredientes) return [];
+    
+    // Se já é um array, retornar direto (pode ser array de objetos ou strings)
+    if (Array.isArray(ingredientes)) {
+      return ingredientes.map(item => {
+        // Se é objeto, extrair nome
+        if (typeof item === 'object' && item !== null) {
+          return item.nome || item.ingrediente || String(item);
+        }
+        // Se é string, retornar direto
+        return String(item);
+      }).filter(i => i && i.length > 0);
+    }
+    
+    // Se é string, fazer split por vírgula
+    if (typeof ingredientes === 'string') {
+      return ingredientes.split(',').map(i => i.trim()).filter(i => i.length > 0);
+    }
+    
+    // Fallback: converter para string e tentar split
+    return String(ingredientes).split(',').map(i => i.trim()).filter(i => i.length > 0);
   };
 
   // Função para converter lista em string
@@ -148,21 +167,71 @@ const ReceitaModal = ({
   useEffect(() => {
     if (isOpen && receita) {
       const nomeLimpo = extrairNomeLimpo(receita.nome);
-      const ingredientesExtraidos = extrairIngredientes(receita.descricao);
+      
+      // Tratar ingredientes - pode vir como array (do PDF) ou string (do banco)
+      let ingredientesParaForm = '';
+      let ingredientesParaLista = [];
+      
+      if (receita.ingredientes) {
+        if (Array.isArray(receita.ingredientes)) {
+          // Se é array (vindo do PDF processado), converter para lista de strings
+          ingredientesParaLista = receita.ingredientes.map(item => {
+            if (typeof item === 'object' && item !== null) {
+              // Se é objeto com nome, quantidade, etc
+              const nomeIng = item.nome || item.ingrediente || '';
+              const quantidade = item.quantidade || item.quantidade_per_capita || '';
+              const unidade = item.unidade || item.unidade_medida || '';
+              
+              if (nomeIng && quantidade) {
+                return `${nomeIng} (${quantidade} ${unidade})`.trim();
+              }
+              return nomeIng;
+            }
+            return String(item);
+          }).filter(i => i && i.length > 0);
+          
+          ingredientesParaForm = ingredientesParaLista.join(', ');
+        } else if (typeof receita.ingredientes === 'string') {
+          // Se é string JSON, tentar parsear
+          try {
+            const parsed = JSON.parse(receita.ingredientes);
+            if (Array.isArray(parsed)) {
+              ingredientesParaLista = converterParaLista(parsed);
+              ingredientesParaForm = converterParaString(ingredientesParaLista);
+            } else {
+              ingredientesParaLista = converterParaLista(receita.ingredientes);
+              ingredientesParaForm = receita.ingredientes;
+            }
+          } catch {
+            // Se não é JSON válido, tratar como string comum
+            ingredientesParaLista = converterParaLista(receita.ingredientes);
+            ingredientesParaForm = receita.ingredientes;
+          }
+        } else {
+          // Fallback
+          ingredientesParaLista = converterParaLista(receita.ingredientes);
+          ingredientesParaForm = String(receita.ingredientes);
+        }
+      } else {
+        // Se não tem ingredientes na receita, tentar extrair da descrição
+        const ingredientesExtraidos = extrairIngredientes(receita.descricao);
+        ingredientesParaForm = ingredientesExtraidos;
+        ingredientesParaLista = converterParaLista(ingredientesExtraidos);
+      }
       
       reset({
         codigo_referencia: receita.codigo_referencia || '',
         codigo_interno: receita.codigo_interno || '',
         nome: nomeLimpo,
-        ingredientes: ingredientesExtraidos,
-        descricao: '', // Deixar vazio para o usuário preencher
-        texto_extraido: receita.texto_extraido || '',
-        tipo: receita.tipo || 'almoco',
-        status: receita.status || 'ativo'
+        ingredientes: ingredientesParaForm,
+        descricao: receita.descricao || receita.texto_extraido || '', 
+        texto_extraido: receita.texto_extraido || receita.texto_extraido_pdf || '',
+        tipo: receita.tipo || 'receita',
+        status: receita.status || 'rascunho'
       });
       
       // Inicializar lista de ingredientes
-      setIngredientesLista(converterParaLista(ingredientesExtraidos));
+      setIngredientesLista(ingredientesParaLista);
     } else if (isOpen && !receita) {
       // Resetar formulário para nova receita
       reset({
