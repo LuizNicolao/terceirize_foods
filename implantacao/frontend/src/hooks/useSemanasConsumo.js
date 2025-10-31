@@ -1,23 +1,34 @@
 import { useState, useEffect, useCallback } from 'react';
 import calendarioService from '../services/calendarioService';
+import necessidadesService from '../services/necessidadesService';
 
 /**
  * Hook para gerenciar semanas de consumo do calendário
+ * @param {number} ano - Ano para buscar semanas (quando usarCalendario = true)
+ * @param {boolean} usarCalendario - Se true, busca do calendário. Se false, busca da tabela necessidades
+ * @param {object} filtros - Filtros opcionais (escola_id) quando usarCalendario = false
  */
-export const useSemanasConsumo = (ano = new Date().getFullYear()) => {
+export const useSemanasConsumo = (ano = new Date().getFullYear(), usarCalendario = true, filtros = {}) => {
   const [opcoes, setOpcoes] = useState([]);
   const [semanas, setSemanas] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Carregar semanas de consumo do calendário
-  const carregarSemanasConsumo = useCallback(async (anoSelecionado) => {
+  // Carregar semanas de consumo
+  const carregarSemanasConsumo = useCallback(async (anoSelecionado, usarCalend = usarCalendario, filtrosData = filtros) => {
     setLoading(true);
     setError(null);
     
     try {
-      // Usar endpoint específico para semanas de consumo
-      const response = await calendarioService.buscarSemanasConsumo(anoSelecionado);
+      let response;
+      
+      if (usarCalend) {
+        // Usar endpoint do calendário
+        response = await calendarioService.buscarSemanasConsumo(anoSelecionado);
+      } else {
+        // Usar endpoint da tabela necessidades
+        response = await necessidadesService.buscarSemanasConsumoDisponiveis(filtrosData);
+      }
       
       if (response.success && response.data) {
         // response.data contém array de objetos com semana_consumo
@@ -50,12 +61,16 @@ export const useSemanasConsumo = (ano = new Date().getFullYear()) => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [usarCalendario, filtros]);
 
-  // Carregar semanas quando o ano mudar
+  // Carregar semanas quando o ano mudar ou filtros mudarem
   useEffect(() => {
-    carregarSemanasConsumo(ano);
-  }, [ano, carregarSemanasConsumo]);
+    if (usarCalendario) {
+      carregarSemanasConsumo(ano, true, {});
+    } else {
+      carregarSemanasConsumo(null, false, filtros);
+    }
+  }, [ano, usarCalendario, filtros, carregarSemanasConsumo]);
 
   /**
    * Obtém o valor padrão para o estado inicial
@@ -69,8 +84,12 @@ export const useSemanasConsumo = (ano = new Date().getFullYear()) => {
    * Recarrega as semanas de consumo
    */
   const recarregar = useCallback(() => {
-    carregarSemanasConsumo(ano);
-  }, [ano, carregarSemanasConsumo]);
+    if (usarCalendario) {
+      carregarSemanasConsumo(ano, true, {});
+    } else {
+      carregarSemanasConsumo(null, false, filtros);
+    }
+  }, [ano, usarCalendario, filtros, carregarSemanasConsumo]);
 
   return {
     opcoes,

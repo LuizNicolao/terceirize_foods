@@ -1,5 +1,96 @@
 const { executeQuery } = require('../../config/database');
 
+// Buscar semanas de consumo disponíveis na tabela necessidades
+const buscarSemanasConsumoDisponiveis = async (req, res) => {
+  try {
+    const { escola_id } = req.query;
+    const usuario_id = req.user.id;
+    const tipo_usuario = req.user.tipo_de_acesso;
+
+    let query = `
+      SELECT DISTINCT 
+        n.semana_consumo,
+        n.semana_abastecimento
+      FROM necessidades n
+      WHERE n.semana_consumo IS NOT NULL 
+        AND n.semana_consumo != ''
+        AND n.status IN ('NEC', 'NEC NUTRI', 'CONF NUTRI', 'NEC COORD', 'CONF COORD', 'NEC LOG')
+    `;
+
+    const params = [];
+
+    // Se for nutricionista, filtrar apenas pelas escolas da rota dela
+    if (tipo_usuario === 'nutricionista') {
+      try {
+        const axios = require('axios');
+        const foodsApiUrl = process.env.FOODS_API_URL || 'http://localhost:3001';
+        const userEmail = req.user.email;
+        
+        const response = await axios.get(`${foodsApiUrl}/rotas-nutricionistas?email=${encodeURIComponent(userEmail)}&status=ativo`, {
+          headers: {
+            'Authorization': `Bearer ${req.headers.authorization?.replace('Bearer ', '')}`
+          },
+          timeout: 5000
+        });
+
+        if (response.data && response.data.success) {
+          let rotas = response.data.data?.rotas || response.data.data || response.data || [];
+          if (!Array.isArray(rotas)) {
+            rotas = rotas.rotas || [];
+          }
+          
+          const escolasIds = [];
+          rotas.forEach(rota => {
+            if (rota.escolas_responsaveis) {
+              const ids = rota.escolas_responsaveis.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
+              escolasIds.push(...ids);
+            }
+          });
+
+          if (escolasIds.length > 0) {
+            query += ` AND n.escola_id IN (${escolasIds.map(() => '?').join(',')})`;
+            params.push(...escolasIds);
+          } else {
+            query += ' AND 1=0';
+          }
+        } else {
+          query += ' AND 1=0';
+        }
+      } catch (apiError) {
+        console.error('Erro ao buscar rotas do foods:', apiError);
+        query += ' AND 1=0';
+      }
+    }
+
+    // Filtro opcional por escola
+    if (escola_id) {
+      query += ` AND n.escola_id = ?`;
+      params.push(escola_id);
+    }
+
+    query += ` ORDER BY n.semana_consumo DESC`;
+
+    const semanas = await executeQuery(query, params);
+
+    // Extrair semanas de consumo únicas e ordenadas
+    const semanasUnicas = [...new Set(semanas.map(s => s.semana_consumo).filter(s => s))];
+
+    res.json({
+      success: true,
+      data: semanasUnicas.map(semana => ({
+        semana_consumo: semana
+      }))
+    });
+  } catch (error) {
+    console.error('Erro ao buscar semanas de consumo disponíveis:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Erro interno do servidor',
+      message: 'Erro ao buscar semanas de consumo disponíveis'
+    });
+  }
+};
+
 // Listar necessidades para ajuste (status = 'NEC')
 const listarParaAjuste = async (req, res) => {
   try {
@@ -647,6 +738,7 @@ const excluirProdutoAjuste = async (req, res) => {
 };
 
 module.exports = {
+  buscarSemanasConsumoDisponiveis,
   listarParaAjuste,
   salvarAjustes,
   incluirProdutoExtra,

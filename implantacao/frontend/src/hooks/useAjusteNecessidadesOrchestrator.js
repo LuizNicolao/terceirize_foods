@@ -87,7 +87,8 @@ export const useAjusteNecessidadesOrchestrator = () => {
 
   // Hooks para semanas
   const { opcoes: opcoesSemanasAbastecimento } = useSemanasAbastecimento();
-  const { opcoes: opcoesSemanasConsumo } = useSemanasConsumo();
+  // Usar semanas de consumo da tabela necessidades (não do calendário)
+  const { opcoes: opcoesSemanasConsumo } = useSemanasConsumo(null, false, {});
 
   // Dados baseados na aba ativa
   const getActiveData = () => {

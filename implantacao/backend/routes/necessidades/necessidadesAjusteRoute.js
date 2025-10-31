@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { authenticateToken } = require('../../middleware/auth');
 const {
+  buscarSemanasConsumoDisponiveis,
   listarParaAjuste,
   salvarAjustes,
   incluirProdutoExtra,
@@ -23,6 +24,9 @@ const hasAccessToAdjustment = (req, res, next) => {
   }
   next();
 };
+
+// GET /api/necessidades/semanas-consumo-disponiveis - Buscar semanas de consumo da tabela necessidades
+router.get('/semanas-consumo-disponiveis', authenticateToken, hasAccessToAdjustment, buscarSemanasConsumoDisponiveis);
 
 // GET /api/necessidades/ajuste - Listar necessidades para ajuste
 router.get('/ajuste', authenticateToken, hasAccessToAdjustment, listarParaAjuste);

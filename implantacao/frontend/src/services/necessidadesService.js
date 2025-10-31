@@ -96,6 +96,15 @@ const necessidadesService = {
 
   // ===== ENDPOINTS PARA AJUSTE DE NECESSIDADES =====
 
+  // Buscar semanas de consumo disponíveis na tabela necessidades
+  buscarSemanasConsumoDisponiveis: async (filtros = {}) => {
+    const params = new URLSearchParams();
+    if (filtros.escola_id) params.append('escola_id', filtros.escola_id);
+    
+    const response = await api.get(`/necessidades/semanas-consumo-disponiveis?${params.toString()}`);
+    return response.data;
+  },
+
   // Listar necessidades para ajuste (status = 'NEC')
   listarParaAjuste: async (filtros) => {
     const params = new URLSearchParams();
