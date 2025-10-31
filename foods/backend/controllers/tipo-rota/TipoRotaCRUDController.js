@@ -130,7 +130,7 @@ class TipoRotaCRUDController {
       }
 
       // Converter array de grupos em string separada por vírgula
-      const gruposString = this.gruposToString(gruposIds);
+      const gruposString = TipoRotaCRUDController.gruposToString(gruposIds);
 
       // Inserir um único registro com grupos como string
       const insertQuery = `
@@ -330,7 +330,7 @@ class TipoRotaCRUDController {
         }
 
         // Converter grupos para string
-        const gruposString = this.gruposToString(gruposIds);
+        const gruposString = TipoRotaCRUDController.gruposToString(gruposIds);
         updateFields.push('grupo_id = ?');
         updateParams.push(gruposString);
       }
@@ -379,7 +379,7 @@ class TipoRotaCRUDController {
       }
 
       // Parsear grupos_id da string
-      const gruposIdsAtualizados = this.gruposToArray(updatedTipoRota[0].grupo_id);
+      const gruposIdsAtualizados = TipoRotaCRUDController.gruposToArray(updatedTipoRota[0].grupo_id);
       
       // Buscar nomes dos grupos
       const gruposNomes = gruposIdsAtualizados.length > 0 ? await executeQuery(
