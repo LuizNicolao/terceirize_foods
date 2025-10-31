@@ -481,24 +481,35 @@ class CalendarioAPIController {
       
       if (semana.semana_abastecimento_inicio && semana.semana_abastecimento_fim) {
         try {
-          // Converter datas do MySQL (YYYY-MM-DD) para Date
-          const dataInicio = new Date(semana.semana_abastecimento_inicio);
-          const dataFim = new Date(semana.semana_abastecimento_fim);
+          console.log('📅 Datas originais do banco:', semana.semana_abastecimento_inicio, 'a', semana.semana_abastecimento_fim);
+          
+          // Converter datas do MySQL (YYYY-MM-DD) para Date usando UTC para evitar problemas de timezone
+          // Usar Date.UTC para garantir que as datas sejam interpretadas corretamente
+          const partesInicio = semana.semana_abastecimento_inicio.split('-').map(Number);
+          const partesFim = semana.semana_abastecimento_fim.split('-').map(Number);
+          
+          // Criar datas em UTC (mês é 0-indexed em Date)
+          const dataInicio = new Date(Date.UTC(partesInicio[0], partesInicio[1] - 1, partesInicio[2]));
+          const dataFim = new Date(Date.UTC(partesFim[0], partesFim[1] - 1, partesFim[2]));
+          
+          console.log('📅 Datas criadas (antes de +1):', dataInicio.toISOString(), 'a', dataFim.toISOString());
           
           // Adicionar 1 dia a cada data para corrigir o deslocamento
-          dataInicio.setDate(dataInicio.getDate() + 1);
-          dataFim.setDate(dataFim.getDate() + 1);
+          dataInicio.setUTCDate(dataInicio.getUTCDate() + 1);
+          dataFim.setUTCDate(dataFim.getUTCDate() + 1);
           
-          // Formatar como DD/MM
+          console.log('📅 Datas após +1 dia:', dataInicio.toISOString(), 'a', dataFim.toISOString());
+          
+          // Formatar como DD/MM usando métodos UTC para evitar problemas de timezone
           const formatarData = (data) => {
-            const dia = String(data.getDate()).padStart(2, '0');
-            const mes = String(data.getMonth() + 1).padStart(2, '0');
+            const dia = String(data.getUTCDate()).padStart(2, '0');
+            const mes = String(data.getUTCMonth() + 1).padStart(2, '0');
             return `${dia}/${mes}`;
           };
           
           // Usar o ano solicitado na semana de consumo, ou ano da data de início como fallback
-          const anoInicio = dataInicio.getFullYear();
-          const anoFim = dataFim.getFullYear();
+          const anoInicio = dataInicio.getUTCFullYear();
+          const anoFim = dataFim.getUTCFullYear();
           let anoFormatado = anoSolicitado || anoInicio;
           
           // Se o ano solicitado não corresponde às datas, usar o ano da data de início
@@ -507,7 +518,11 @@ class CalendarioAPIController {
             anoFormatado = anoInicio;
           }
           
-          semanaAbastecimentoFormatada = `(${formatarData(dataInicio)} a ${formatarData(dataFim)}/${anoFormatado.toString().slice(-2)})`;
+          const dataInicioFormatada = formatarData(dataInicio);
+          const dataFimFormatada = formatarData(dataFim);
+          console.log('📅 Datas formatadas:', dataInicioFormatada, 'a', dataFimFormatada, '/', anoFormatado.toString().slice(-2));
+          
+          semanaAbastecimentoFormatada = `(${dataInicioFormatada} a ${dataFimFormatada}/${anoFormatado.toString().slice(-2)})`;
         } catch (error) {
           // Se houver erro na formatação, usar o valor original do banco
           console.error('Erro ao formatar semana de abastecimento:', error);
