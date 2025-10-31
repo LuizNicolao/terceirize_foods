@@ -108,20 +108,20 @@ const RotaModal = ({
       const tiposRotaProntos = !loadingTiposRota && (tiposRota.length > 0 || !rota.tipo_rota_id);
       
       if (frequenciasProntas && tiposRotaProntos) {
-        // Preencher formulário com dados da rota
-        Object.keys(rota).forEach(key => {
-          if (rota[key] !== null && rota[key] !== undefined) {
-            setValue(key, rota[key]);
-          }
-        });
+      // Preencher formulário com dados da rota
+      Object.keys(rota).forEach(key => {
+        if (rota[key] !== null && rota[key] !== undefined) {
+          setValue(key, rota[key]);
+        }
+      });
         formularioPreenchidoRef.current = true;
       }
     } else {
       // Resetar formulário para nova rota (apenas se frequências já estiverem carregadas)
       // E só se ainda não resetou (para evitar resetar valores que o usuário preencheu)
       if (!loadingFrequencias && frequencias.length > 0 && !formularioPreenchidoRef.current) {
-        reset();
-        setValue('status', 'ativo');
+      reset();
+      setValue('status', 'ativo');
         setValue('frequencia_entrega', 'semanal');
         formularioPreenchidoRef.current = true;
       }
@@ -183,7 +183,7 @@ const RotaModal = ({
       const tipoRotaAtual = watch('tipo_rota_id');
       if (filialAnteriorRef.current && filialAnteriorRef.current !== filialId && tipoRotaAtual) {
         setValue('tipo_rota_id', '', { shouldValidate: false });
-        setUnidadesSelecionadas([]);
+      setUnidadesSelecionadas([]);
         setBuscaUnidades('');
       }
       
