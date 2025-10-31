@@ -68,7 +68,7 @@ export const useNecessidadesLogistica = () => {
   const carregarGrupos = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await produtosPerCapita.listarGrupos();
+      const response = await necessidadesService.buscarGruposComPercapita();
       if (response.success) {
         setGrupos(response.data);
       } else {
