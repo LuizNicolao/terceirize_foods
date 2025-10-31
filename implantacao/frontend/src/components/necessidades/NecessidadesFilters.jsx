@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaSchool, FaBox, FaCalendarAlt, FaSearch, FaTimes, FaCalendarWeek } from 'react-icons/fa';
 import { Input, SearchableSelect, Button } from '../ui';
-import { useSemanasAbastecimento } from '../../hooks/useSemanasAbastecimento';
 import { useSemanasConsumo } from '../../hooks/useSemanasConsumo';
+import calendarioService from '../../services/calendarioService';
 
 const NecessidadesFilters = ({ 
   escolas = [], 
@@ -12,11 +12,72 @@ const NecessidadesFilters = ({
   onClearFilters,
   loading = false 
 }) => {
-  // Hook para semanas de abastecimento
-  const { opcoes: opcoesSemanas, obterValorPadrao } = useSemanasAbastecimento();
+  // Hook para semanas de consumo da tabela necessidades (não do calendário)
+  const { opcoes: opcoesSemanasConsumo } = useSemanasConsumo(null, false, {});
   
-  // Hook para semanas de consumo do calendário
-  const { opcoes: opcoesSemanasConsumo } = useSemanasConsumo();
+  const [opcoesSemanasAbastecimento, setOpcoesSemanasAbastecimento] = useState([]);
+  const [loadingSemanaAbastecimento, setLoadingSemanaAbastecimento] = useState(false);
+  
+  // Buscar semana de abastecimento quando semana de consumo mudar
+  useEffect(() => {
+    const buscarSemanaAbastecimento = async (semanaConsumo) => {
+      if (!semanaConsumo) {
+        setOpcoesSemanasAbastecimento([]);
+        // Só limpar se o filtro atual tiver semana_abastecimento
+        if (filtros.semana_abastecimento) {
+          onFilterChange({ semana_abastecimento: '' });
+        }
+        return;
+      }
+      
+      // Evitar busca duplicada se já está carregado
+      if (filtros.semana_abastecimento && filtros.data === semanaConsumo) {
+        setOpcoesSemanasAbastecimento([{ 
+          value: filtros.semana_abastecimento, 
+          label: filtros.semana_abastecimento 
+        }]);
+        return;
+      }
+      
+      setLoadingSemanaAbastecimento(true);
+      try {
+        const response = await calendarioService.buscarSemanaAbastecimentoPorConsumo(semanaConsumo);
+        if (response.success && response.data && response.data.semana_abastecimento) {
+          const semanaAbastecimento = response.data.semana_abastecimento;
+          setOpcoesSemanasAbastecimento([{ 
+            value: semanaAbastecimento, 
+            label: semanaAbastecimento 
+          }]);
+          // Só atualizar se mudou
+          if (filtros.semana_abastecimento !== semanaAbastecimento) {
+            onFilterChange({ 
+              semana_abastecimento: semanaAbastecimento 
+            });
+          }
+        } else {
+          setOpcoesSemanasAbastecimento([]);
+          if (filtros.semana_abastecimento) {
+            onFilterChange({ semana_abastecimento: '' });
+          }
+        }
+      } catch (error) {
+        console.error('Erro ao buscar semana de abastecimento:', error);
+        setOpcoesSemanasAbastecimento([]);
+        if (filtros.semana_abastecimento) {
+          onFilterChange({ semana_abastecimento: '' });
+        }
+      } finally {
+        setLoadingSemanaAbastecimento(false);
+      }
+    };
+    
+    if (filtros.data) {
+      buscarSemanaAbastecimento(filtros.data);
+    } else {
+      setOpcoesSemanasAbastecimento([]);
+    }
+  }, [filtros.data, filtros.semana_abastecimento]); // eslint-disable-line react-hooks/exhaustive-deps
+  
   const handleEscolaChange = (escola) => {
     onFilterChange({ escola });
   };
@@ -34,7 +95,7 @@ const NecessidadesFilters = ({
   };
 
   const handleSemanaChange = (semana) => {
-    onFilterChange({ semana_abastecimento: semana });
+    // Não permitir mudança manual - apenas informativo
   };
 
   const hasActiveFilters = filtros.escola || filtros.grupo || filtros.data || filtros.search || filtros.semana_abastecimento;
@@ -126,11 +187,19 @@ const NecessidadesFilters = ({
         <div>
           <SearchableSelect
             label="Semana de Abastecimento (AB)"
-            value={filtros.semana_abastecimento}
+            value={filtros.semana_abastecimento || ''}
             onChange={handleSemanaChange}
-            options={opcoesSemanas || []}
-            placeholder="Selecione a semana..."
-            disabled={loading}
+            options={opcoesSemanasAbastecimento || []}
+            placeholder={
+              loadingSemanaAbastecimento
+                ? "Carregando semana de abastecimento..."
+                : filtros.data && filtros.semana_abastecimento
+                ? filtros.semana_abastecimento
+                : filtros.data
+                ? "Carregando..."
+                : "Selecione primeiro a semana de consumo"
+            }
+            disabled={true}
           />
         </div>
 
