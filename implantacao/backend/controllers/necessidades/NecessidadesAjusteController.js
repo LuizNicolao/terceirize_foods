@@ -112,8 +112,9 @@ const listarParaAjuste = async (req, res) => {
     }
 
     if (semana_abastecimento) {
-      query += ` AND n.semana_abastecimento = ?`;
-      params.push(semana_abastecimento);
+      // Usar LIKE para comparação flexível, pois a formatação pode ter pequenas variações
+      query += ` AND (n.semana_abastecimento = ? OR n.semana_abastecimento LIKE ?)`;
+      params.push(semana_abastecimento, `%${semana_abastecimento.replace(/[()]/g, '')}%`);
     }
 
     query += ` ORDER BY n.produto ASC`;
