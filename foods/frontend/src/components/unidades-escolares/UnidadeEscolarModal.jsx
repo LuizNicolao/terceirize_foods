@@ -311,11 +311,23 @@ const UnidadeEscolarModal = ({
                 <option value="">
                   {loadingRotas ? 'Carregando rotas...' : 'Selecione uma rota'}
                 </option>
-                {rotas.map(rota => (
-                  <option key={rota.id} value={rota.id}>
-                    {rota.nome} ({rota.codigo})
-                  </option>
-                ))}
+                {rotas.map(rota => {
+                  const formatFrequencia = (freq) => {
+                    const tipos = {
+                      'semanal': 'Semanal',
+                      'quinzenal': 'Quinzenal',
+                      'mensal': 'Mensal',
+                      'transferencia': 'Transferência'
+                    };
+                    return tipos[freq] || freq || '';
+                  };
+                  const frequenciaTexto = rota.frequencia_entrega ? ` - ${formatFrequencia(rota.frequencia_entrega)}` : '';
+                  return (
+                    <option key={rota.id} value={rota.id}>
+                      {rota.nome} ({rota.codigo}){frequenciaTexto}
+                    </option>
+                  );
+                })}
               </Input>
 
               <Input
