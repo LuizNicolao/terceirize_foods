@@ -120,8 +120,7 @@ export const useTipoRota = () => {
 
       if (response.success) {
         toast.success(response.message || 'Tipo de rota excluído com sucesso!');
-        baseEntity.setShowDeleteConfirmModal(false);
-        baseEntity.setItemToDelete(null);
+        baseEntity.handleCloseDeleteModal();
         await baseEntity.loadData();
         await loadEstatisticasTipoRotas();
       } else {
