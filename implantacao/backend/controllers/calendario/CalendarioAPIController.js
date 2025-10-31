@@ -48,8 +48,14 @@ class CalendarioAPIController {
               return `${dia}/${mes}`;
             };
             
-            const anoFormatado = dataFim.getFullYear().toString().slice(-2);
-            semanaFormatada = `(${formatarData(dataInicio)} a ${formatarData(dataFim)}/${anoFormatado})`;
+            // Usar o ano da data de início (mais confiável) ou ano da data de fim se cruzar ano
+            // Mas se a semana cruzar o ano, preferir o ano onde a maior parte da semana está
+            const anoInicio = dataInicio.getFullYear();
+            const anoFim = dataFim.getFullYear();
+            // Se as datas estão no mesmo ano ou se a semana de fim está no início do ano seguinte,
+            // usar o ano da data de início (maior parte da semana)
+            const anoFormatado = (anoFim > anoInicio && dataFim.getMonth() === 0) ? anoFim : anoInicio;
+            semanaFormatada = `(${formatarData(dataInicio)} a ${formatarData(dataFim)}/${anoFormatado.toString().slice(-2)})`;
           } catch (error) {
             // Se houver erro na formatação, usar o valor original do banco
             console.error('Erro ao formatar semana de consumo:', error);
@@ -460,9 +466,46 @@ class CalendarioAPIController {
 
       console.log('✅ Semana encontrada:', semana.semana_abastecimento);
 
+      // Formatar semana de abastecimento a partir das datas, adicionando 1 dia para corrigir o deslocamento
+      let semanaAbastecimentoFormatada = semana.semana_abastecimento;
+      
+      if (semana.semana_abastecimento_inicio && semana.semana_abastecimento_fim) {
+        try {
+          // Converter datas do MySQL (YYYY-MM-DD) para Date
+          const dataInicio = new Date(semana.semana_abastecimento_inicio);
+          const dataFim = new Date(semana.semana_abastecimento_fim);
+          
+          // Adicionar 1 dia a cada data para corrigir o deslocamento
+          dataInicio.setDate(dataInicio.getDate() + 1);
+          dataFim.setDate(dataFim.getDate() + 1);
+          
+          // Formatar como DD/MM
+          const formatarData = (data) => {
+            const dia = String(data.getDate()).padStart(2, '0');
+            const mes = String(data.getMonth() + 1).padStart(2, '0');
+            return `${dia}/${mes}`;
+          };
+          
+          // Usar o ano da data de início (mais confiável) ou ano da data de fim se cruzar ano
+          // Mas se a semana cruzar o ano, preferir o ano onde a maior parte da semana está
+          const anoInicio = dataInicio.getFullYear();
+          const anoFim = dataFim.getFullYear();
+          // Se as datas estão no mesmo ano ou se a semana de fim está no início do ano seguinte,
+          // usar o ano da data de início (maior parte da semana)
+          const anoFormatado = (anoFim > anoInicio && dataFim.getMonth() === 0) ? anoFim : anoInicio;
+          semanaAbastecimentoFormatada = `(${formatarData(dataInicio)} a ${formatarData(dataFim)}/${anoFormatado.toString().slice(-2)})`;
+        } catch (error) {
+          // Se houver erro na formatação, usar o valor original do banco
+          console.error('Erro ao formatar semana de abastecimento:', error);
+        }
+      }
+
       res.json({
         success: true,
-        data: semana
+        data: {
+          ...semana,
+          semana_abastecimento: semanaAbastecimentoFormatada
+        }
       });
 
     } catch (error) {
