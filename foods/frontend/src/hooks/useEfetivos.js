@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import EfetivosService from '../services/efetivos';
 import { useValidation } from './common/useValidation';
+import { useDebouncedSearch } from './common/useDebouncedSearch';
 
 export const useEfetivos = (unidadeEscolarId) => {
 
@@ -22,6 +23,9 @@ export const useEfetivos = (unidadeEscolarId) => {
   // Estados para modal de confirmação
   const [showConfirmDeleteModal, setShowConfirmDeleteModal] = useState(false);
   const [efetivoToDelete, setEfetivoToDelete] = useState(null);
+
+  // Hook de busca com debounce
+  const debouncedSearch = useDebouncedSearch(500);
 
   // Hook de validação
   const {
