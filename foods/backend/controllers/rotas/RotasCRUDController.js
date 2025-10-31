@@ -27,20 +27,20 @@ class RotasCRUDController {
 
   // Função auxiliar para adicionar um rota_id a uma string existente
   static adicionarRotaId(rotasString, novaRotaId) {
-    const rotas = this.rotasToArray(rotasString);
+    const rotas = RotasCRUDController.rotasToArray(rotasString);
     const novaRotaIdInt = parseInt(novaRotaId);
     if (!rotas.includes(novaRotaIdInt)) {
       rotas.push(novaRotaIdInt);
     }
-    return this.rotasToString(rotas);
+    return RotasCRUDController.rotasToString(rotas);
   }
 
   // Função auxiliar para remover um rota_id de uma string existente
   static removerRotaId(rotasString, rotaIdParaRemover) {
-    const rotas = this.rotasToArray(rotasString);
+    const rotas = RotasCRUDController.rotasToArray(rotasString);
     const rotaIdInt = parseInt(rotaIdParaRemover);
     const rotasFiltradas = rotas.filter(id => id !== rotaIdInt);
-    return rotasFiltradas.length > 0 ? this.rotasToString(rotasFiltradas) : null;
+    return rotasFiltradas.length > 0 ? RotasCRUDController.rotasToString(rotasFiltradas) : null;
   }
 
   // Criar rota
@@ -145,7 +145,7 @@ class RotasCRUDController {
 
             if (unidadeExistente.length > 0) {
               // Adicionar esta rota à lista de rotas da unidade (pode ter múltiplas)
-              const rotaIdAtualizado = this.adicionarRotaId(
+              const rotaIdAtualizado = RotasCRUDController.adicionarRotaId(
                 unidadeExistente[0].rota_id || null,
                 result.insertId
               );
@@ -341,7 +341,7 @@ class RotasCRUDController {
         );
         
         for (const unidade of todasUnidades) {
-          const rotasAtualizadas = this.removerRotaId(unidade.rota_id, id);
+          const rotasAtualizadas = RotasCRUDController.removerRotaId(unidade.rota_id, id);
           await executeQuery(
             'UPDATE unidades_escolares SET rota_id = ? WHERE id = ?',
             [rotasAtualizadas, unidade.id]
@@ -360,7 +360,7 @@ class RotasCRUDController {
 
               if (unidadeExistente.length > 0) {
                 // Adicionar esta rota à lista de rotas da unidade (pode ter múltiplas)
-                const rotaIdAtualizado = this.adicionarRotaId(
+                const rotaIdAtualizado = RotasCRUDController.adicionarRotaId(
                   unidadeExistente[0].rota_id || null,
                   id
                 );
