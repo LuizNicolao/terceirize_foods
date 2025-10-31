@@ -41,6 +41,16 @@ const RotaModal = ({
   const tipoRotaSelecionado = tiposRota.find(t => t.id === parseInt(tipoRotaId));
   const grupoId = tipoRotaSelecionado?.grupo_id || null;
 
+  // Log para rastrear mudanças em tiposRota
+  React.useEffect(() => {
+    console.log('🔄 tiposRota mudou no RotaModal:', {
+      length: tiposRota.length,
+      tiposRota: tiposRota,
+      loadingTiposRota,
+      filialId
+    });
+  }, [tiposRota, loadingTiposRota, filialId]);
+
   // Carregar frequências do ENUM
   const loadFrequencias = React.useCallback(async () => {
     try {
