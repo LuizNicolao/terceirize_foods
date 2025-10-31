@@ -105,8 +105,11 @@ const RotaModal = ({
     onFilialChangeRef.current = onFilialChange;
   }, [onFilialChange]);
   
+  // Debug: log do estado do useEffect
   React.useEffect(() => {
-    console.log('🔍 useEffect [filial] - isOpen:', isOpen, 'rota?.filial_id:', rota?.filial_id, 'filialId (watch):', filialId);
+    if (isOpen) {
+      console.log('🔍 useEffect [filial] - isOpen:', isOpen, 'rota?.filial_id:', rota?.filial_id, 'filialId (watch):', filialId);
+    }
     
     // Resetar ref quando modal fechar
     if (!isOpen) {
@@ -376,22 +379,12 @@ const RotaModal = ({
                   {tiposRota.length === 0 && !loadingTiposRota && filialId && (
                     <option value="" disabled>Nenhum tipo de rota encontrado para esta filial</option>
                   )}
-                  {tiposRota.map(tipo => {
-                    console.log('📋 Renderizando tipo de rota:', tipo.id, tipo.nome);
-                    return (
-                      <option key={tipo.id} value={tipo.id}>
-                        {tipo.nome} {tipo.grupo_nome ? `(${tipo.grupo_nome})` : ''}
-                      </option>
-                    );
-                  })}
+                  {tiposRota.map(tipo => (
+                    <option key={tipo.id} value={tipo.id}>
+                      {tipo.nome} {tipo.grupo_nome ? `(${tipo.grupo_nome})` : ''}
+                    </option>
+                  ))}
                 </select>
-                {/* Log para debug */}
-                {console.log('🔍 Debug tiposRota no render:', {
-                  total: tiposRota.length,
-                  loading: loadingTiposRota,
-                  filialId: filialId,
-                  tipos: tiposRota.map(t => ({ id: t.id, nome: t.nome }))
-                })}
               </div>
 
               <div>
