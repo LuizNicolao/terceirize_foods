@@ -324,6 +324,7 @@ class ReceitasCRUDController {
       
       // Buscar nome da receita - procurar por linhas com código de receita (R25.xxx, LL25.xxx, etc)
       let nomeReceita = '';
+      let codigoReferencia = null;
       let inicioTexto = 0;
       const palavrasCabeçalho = [
         'SECRETARIA', 'DIRETORIA', 'GERÊNCIA', 'ESTADO', 'EDUCAÇÃO', 
@@ -344,20 +345,25 @@ class ReceitasCRUDController {
         
         // Verificar se a linha começa com código de receita
         if (padraoCodigoReceita.test(linha)) {
-          // Extrair nome da receita (tudo após o código)
-          const match = linha.match(/^[A-Z]{1,2}\d{2}\.\d{2,3}\s+(.+)/);
-          if (match && match[1]) {
+          // Extrair código e nome da receita
+          const match = linha.match(/^([A-Z]{1,2}\d{2}\.\d{2,3})\s+(.+)/);
+          if (match && match[1] && match[2]) {
+            codigoReferencia = match[1].trim(); // Salvar código de referência
+            console.log(`   📌 Código de referência encontrado: "${codigoReferencia}"`);
+            
             // Pegar nome da receita e algumas linhas seguintes que podem continuar a descrição
-            let nomeCompleto = match[1].trim();
+            let nomeCompleto = match[2].trim();
             let j = i + 1;
             let linhasDescricao = [];
             
-            // Pegar até 3 linhas seguintes que não sejam códigos de receita e não sejam muito curtas
-            while (j < linhas.length && linhasDescricao.length < 3) {
+            // Pegar até 5 linhas seguintes que não sejam códigos de receita e não sejam muito curtas
+            while (j < linhas.length && linhasDescricao.length < 5) {
               const linhaSeg = linhas[j].trim();
               if (!padraoCodigoReceita.test(linhaSeg) && 
-                  linhaSeg.length > 5 && 
-                  !palavrasCabeçalho.some(p => linhaSeg.toUpperCase().includes(p))) {
+                  linhaSeg.length > 3 && 
+                  !palavrasCabeçalho.some(p => linhaSeg.toUpperCase().includes(p)) &&
+                  !linhaSeg.match(/^\d{1,2}\/\d{1,2}\/\d{4}/) && // Não é data
+                  !linhaSeg.match(/^(Matutino|Vespertino|Noturno|Semana)/i)) { // Não é turno ou semana
                 linhasDescricao.push(linhaSeg);
               } else {
                 break;
@@ -369,7 +375,7 @@ class ReceitasCRUDController {
               nomeCompleto += ' ' + linhasDescricao.join(' ');
             }
             
-            nomeReceita = nomeCompleto.substring(0, 200).trim();
+            nomeReceita = nomeCompleto.substring(0, 255).trim(); // Aumentar limite para 255
             inicioTexto = i;
             console.log(`   ✅ Nome encontrado na linha ${i + 1}: "${nomeReceita}"`);
             break;
@@ -428,17 +434,23 @@ class ReceitasCRUDController {
       console.log('\n📦 Preparando dados extraídos para retorno...');
       const dadosExtraidos = {
         nome: nomeReceita || 'Receita Extraída do PDF',
+        codigo_referencia: codigoReferencia,
         descricao: descricao,
         texto_extraido_pdf: textoExtraido,
         ingredientes: ingredientesExtraidos,
-        instrucoes: instrucoes || 'Instruções extraídas do PDF...'
+        instrucoes: instrucoes || 'Instruções extraídas do PDF...',
+        tipo: 'receita',
+        status: 'rascunho'
       };
 
       console.log('\n✅ PROCESSAMENTO CONCLUÍDO:');
       console.log('='.repeat(80));
       console.log('📋 Resumo dos dados extraídos:');
+      console.log('   - Código de Referência:', dadosExtraidos.codigo_referencia || 'Não encontrado');
       console.log('   - Nome:', dadosExtraidos.nome);
       console.log('   - Descrição:', dadosExtraidos.descricao);
+      console.log('   - Tipo:', dadosExtraidos.tipo);
+      console.log('   - Status:', dadosExtraidos.status);
       console.log('   - Total de ingredientes:', dadosExtraidos.ingredientes.length);
       console.log('   - Tamanho do texto extraído:', dadosExtraidos.texto_extraido_pdf.length, 'caracteres');
       console.log('   - Tamanho das instruções:', dadosExtraidos.instrucoes.length, 'caracteres');

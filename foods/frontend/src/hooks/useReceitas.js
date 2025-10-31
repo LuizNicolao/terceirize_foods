@@ -238,10 +238,13 @@ export const useReceitas = () => {
       // Criar nova receita com os dados extraídos
       const novaReceita = {
         nome: dadosProcessados.nome || 'Receita do PDF',
-        descricao: dadosProcessados.textoExtraido || '',
+        codigo_referencia: dadosProcessados.codigo_referencia || null,
+        descricao: dadosProcessados.descricao || '',
+        texto_extraido_pdf: dadosProcessados.texto_extraido_pdf || '',
         ingredientes: dadosProcessados.ingredientes || [],
         instrucoes: dadosProcessados.instrucoes || '',
-        texto_extraido_pdf: dadosProcessados.textoExtraido || ''
+        tipo: dadosProcessados.tipo || 'receita',
+        status: dadosProcessados.status || 'rascunho'
       };
       
       // Salvar no banco de dados
