@@ -14,7 +14,7 @@ class RotasCRUDController {
         codigo,
         nome,
         status = 'ativo',
-        tipo_rota = 'semanal',
+        frequencia_entrega = 'semanal',
         unidades_selecionadas = []
       } = req.body;
 
@@ -66,7 +66,7 @@ class RotasCRUDController {
       // Inserir rota
       const insertQuery = `
         INSERT INTO rotas (
-          filial_id, codigo, nome, status, tipo_rota
+          filial_id, codigo, nome, status, frequencia_entrega
         ) VALUES (?, ?, ?, ?, ?)
       `;
 
@@ -75,7 +75,7 @@ class RotasCRUDController {
         codigo.trim(),
         nome.trim(),
         status,
-        tipo_rota
+        frequencia_entrega
       ]);
 
       // Vincular unidades escolares selecionadas à rota
@@ -131,7 +131,7 @@ class RotasCRUDController {
         codigo,
         nome,
         status,
-        tipo_rota,
+        frequencia_entrega,
         unidades_selecionadas = []
       } = req.body;
 
@@ -218,9 +218,9 @@ class RotasCRUDController {
         updateFields.push('status = ?');
         updateParams.push(status);
       }
-      if (tipo_rota !== undefined) {
-        updateFields.push('tipo_rota = ?');
-        updateParams.push(tipo_rota);
+      if (frequencia_entrega !== undefined) {
+        updateFields.push('frequencia_entrega = ?');
+        updateParams.push(frequencia_entrega);
       }
 
       // Sempre atualizar o timestamp

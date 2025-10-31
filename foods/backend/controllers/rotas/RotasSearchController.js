@@ -11,7 +11,7 @@ class RotasSearchController {
     try {
       const query = `
         SELECT 
-          r.id, r.codigo, r.nome, r.tipo_rota, r.status, r.filial_id,
+          r.id, r.codigo, r.nome, r.frequencia_entrega, r.status, r.filial_id,
           f.filial as filial_nome
         FROM rotas r
         LEFT JOIN filiais f ON r.filial_id = f.id
@@ -67,7 +67,7 @@ class RotasSearchController {
 
       const query = `
         SELECT 
-          r.id, r.codigo, r.nome, r.tipo_rota, r.status, r.filial_id,
+          r.id, r.codigo, r.nome, r.frequencia_entrega, r.status, r.filial_id,
           f.filial as filial_nome
         FROM rotas r
         LEFT JOIN filiais f ON r.filial_id = f.id
@@ -123,11 +123,11 @@ class RotasSearchController {
 
       const query = `
         SELECT 
-          r.id, r.codigo, r.nome, r.tipo_rota, r.status, r.filial_id,
+          r.id, r.codigo, r.nome, r.frequencia_entrega, r.status, r.filial_id,
           f.filial as filial_nome
         FROM rotas r
         LEFT JOIN filiais f ON r.filial_id = f.id
-        WHERE r.tipo_rota = ? AND r.status = 'ativo'
+        WHERE r.frequencia_entrega = ? AND r.status = 'ativo'
         ORDER BY r.codigo ASC
       `;
 
@@ -176,17 +176,17 @@ class RotasSearchController {
   static async listarTiposRota(req, res) {
     try {
       const query = `
-        SELECT DISTINCT tipo_rota 
+        SELECT DISTINCT frequencia_entrega 
         FROM rotas 
-        WHERE tipo_rota IS NOT NULL AND tipo_rota != ''
-        ORDER BY tipo_rota ASC
+        WHERE frequencia_entrega IS NOT NULL AND frequencia_entrega != ''
+        ORDER BY frequencia_entrega ASC
       `;
 
       const tipos = await executeQuery(query);
 
       res.json({
         success: true,
-        data: tipos.map(item => item.tipo_rota)
+        data: tipos.map(item => item.frequencia_entrega)
       });
 
     } catch (error) {

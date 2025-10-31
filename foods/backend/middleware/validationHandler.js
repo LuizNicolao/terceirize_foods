@@ -100,7 +100,7 @@ const validationConfigs = {
   rotas: {
     categories: {
       basicInfo: ['nome', 'codigo', 'status'],
-      routeInfo: ['tipo_rota', 'filial_id', 'observacoes'],
+      routeInfo: ['frequencia_entrega', 'filial_id', 'observacoes'],
       schedule: ['frequencia', 'dia_semana', 'data_inicio', 'data_fim'],
       metrics: ['distancia_km', 'custo_diario']
     },

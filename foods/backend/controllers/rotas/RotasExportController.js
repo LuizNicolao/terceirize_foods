@@ -19,7 +19,7 @@ class RotasExportController {
         { header: 'Código', key: 'codigo', width: 15 },
         { header: 'Nome', key: 'nome', width: 40 },
         { header: 'Filial', key: 'filial_nome', width: 30 },
-        { header: 'Frequência', key: 'tipo_rota', width: 15 },
+        { header: 'Frequência', key: 'frequencia_entrega', width: 15 },
         { header: 'Total Unidades', key: 'total_unidades', width: 15 },
         { header: 'Status', key: 'status', width: 15 }
       ];
@@ -34,7 +34,7 @@ class RotasExportController {
       worksheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
 
       // Buscar rotas com filtros
-      const { search, status, tipo_rota, filial_id, limit = 1000 } = req.query;
+      const { search, status, frequencia_entrega, filial_id, limit = 1000 } = req.query;
       
       let whereClause = 'WHERE 1=1';
       const params = [];
@@ -50,9 +50,9 @@ class RotasExportController {
         params.push(status);
       }
 
-      if (tipo_rota) {
-        whereClause += ' AND r.tipo_rota = ?';
-        params.push(tipo_rota);
+      if (frequencia_entrega) {
+        whereClause += ' AND r.frequencia_entrega = ?';
+        params.push(frequencia_entrega);
       }
 
       if (filial_id && filial_id !== 'todos') {
@@ -65,7 +65,7 @@ class RotasExportController {
           r.id,
           r.codigo,
           r.nome,
-          r.tipo_rota,
+          r.frequencia_entrega,
           r.status,
           f.filial as filial_nome,
           (SELECT COUNT(*) FROM unidades_escolares ue WHERE ue.rota_id = r.id) as total_unidades
@@ -85,7 +85,7 @@ class RotasExportController {
           codigo: rota.codigo,
           nome: rota.nome,
           filial_nome: rota.filial_nome || 'Sem filial',
-          tipo_rota: rota.tipo_rota || 'N/A',
+          frequencia_entrega: rota.frequencia_entrega || 'N/A',
           total_unidades: rota.total_unidades || 0,
           status: rota.status === 'ativo' ? 'Ativo' : 'Inativo'
         });
@@ -128,7 +128,7 @@ class RotasExportController {
       doc.moveDown(2);
 
       // Buscar rotas
-      const { search, status, tipo_rota, filial_id, limit = 1000 } = req.query;
+      const { search, status, frequencia_entrega, filial_id, limit = 1000 } = req.query;
       
       let whereClause = 'WHERE 1=1';
       const params = [];
@@ -144,9 +144,9 @@ class RotasExportController {
         params.push(status);
       }
 
-      if (tipo_rota) {
-        whereClause += ' AND r.tipo_rota = ?';
-        params.push(tipo_rota);
+      if (frequencia_entrega) {
+        whereClause += ' AND r.frequencia_entrega = ?';
+        params.push(frequencia_entrega);
       }
 
       if (filial_id && filial_id !== 'todos') {
@@ -159,7 +159,7 @@ class RotasExportController {
           r.id,
           r.codigo,
           r.nome,
-          r.tipo_rota,
+          r.frequencia_entrega,
           r.status,
           f.filial as filial_nome,
           (SELECT COUNT(*) FROM unidades_escolares ue WHERE ue.rota_id = r.id) as total_unidades
@@ -183,7 +183,7 @@ class RotasExportController {
           doc.text(`Filial: ${rota.filial_nome}`);
         }
         
-        doc.text(`Frequência: ${rota.tipo_rota || 'N/A'}`);
+        doc.text(`Frequência: ${rota.frequencia_entrega || 'N/A'}`);
         doc.text(`Total de Unidades: ${rota.total_unidades || 0}`);
         doc.text(`Status: ${rota.status === 'ativo' ? 'Ativo' : 'Inativo'}`);
         

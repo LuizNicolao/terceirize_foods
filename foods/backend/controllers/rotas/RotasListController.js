@@ -14,7 +14,7 @@ class RotasListController {
         limit = 10, 
         search = '', 
         status,
-        tipo_rota,
+        frequencia_entrega,
         filial_id
       } = req.query;
 
@@ -35,10 +35,10 @@ class RotasListController {
         params.push(status);
       }
 
-      // Filtro por tipo de rota
-      if (tipo_rota) {
-        whereConditions.push('r.tipo_rota = ?');
-        params.push(tipo_rota);
+      // Filtro por frequência de entrega
+      if (frequencia_entrega) {
+        whereConditions.push('r.frequencia_entrega = ?');
+        params.push(frequencia_entrega);
       }
 
       // Filtro por filial
@@ -92,7 +92,7 @@ class RotasListController {
         filters: {
           search: search || null,
           status: status !== undefined && status !== '' ? status : null,
-          tipo_rota: tipo_rota || null,
+          frequencia_entrega: frequencia_entrega || null,
           filial_id: filial_id || null
         }
       });

@@ -39,7 +39,7 @@ const RotasTable = ({
               <SortableTableHeader label="Código" field="codigo" currentSort={sortField} currentDirection={sortDirection} onSort={onSort} />
               <SortableTableHeader label="Nome" field="nome" currentSort={sortField} currentDirection={sortDirection} onSort={onSort} />
               <SortableTableHeader label="Filial" field="filial_id" currentSort={sortField} currentDirection={sortDirection} onSort={onSort} />
-              <SortableTableHeader label="Frequência" field="tipo_rota" currentSort={sortField} currentDirection={sortDirection} onSort={onSort} />
+              <SortableTableHeader label="Frequência" field="frequencia_entrega" currentSort={sortField} currentDirection={sortDirection} onSort={onSort} />
               <SortableTableHeader label="Status" field="status" currentSort={sortField} currentDirection={sortDirection} onSort={onSort} />
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
             </tr>
@@ -54,13 +54,13 @@ const RotasTable = ({
                 </td>
                 <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                   <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
-                    rota.tipo_rota === 'semanal' ? 'bg-blue-100 text-blue-800' :
-                    rota.tipo_rota === 'quinzenal' ? 'bg-purple-100 text-purple-800' :
-                    rota.tipo_rota === 'mensal' ? 'bg-green-100 text-green-800' :
-                    rota.tipo_rota === 'transferencia' ? 'bg-orange-100 text-orange-800' :
+                    rota.frequencia_entrega === 'semanal' ? 'bg-blue-100 text-blue-800' :
+                    rota.frequencia_entrega === 'quinzenal' ? 'bg-purple-100 text-purple-800' :
+                    rota.frequencia_entrega === 'mensal' ? 'bg-green-100 text-green-800' :
+                    rota.frequencia_entrega === 'transferencia' ? 'bg-orange-100 text-orange-800' :
                     'bg-gray-100 text-gray-800'
                   }`}>
-                    {formatTipoRota(rota.tipo_rota)}
+                    {formatTipoRota(rota.frequencia_entrega)}
                   </span>
                 </td>
                 <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
@@ -118,13 +118,13 @@ const RotasTable = ({
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Frequência:</span>
                 <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
-                  rota.tipo_rota === 'semanal' ? 'bg-blue-100 text-blue-800' :
-                  rota.tipo_rota === 'quinzenal' ? 'bg-purple-100 text-purple-800' :
-                  rota.tipo_rota === 'mensal' ? 'bg-green-100 text-green-800' :
-                  rota.tipo_rota === 'transferencia' ? 'bg-orange-100 text-orange-800' :
+                  rota.frequencia_entrega === 'semanal' ? 'bg-blue-100 text-blue-800' :
+                  rota.frequencia_entrega === 'quinzenal' ? 'bg-purple-100 text-purple-800' :
+                  rota.frequencia_entrega === 'mensal' ? 'bg-green-100 text-green-800' :
+                  rota.frequencia_entrega === 'transferencia' ? 'bg-orange-100 text-orange-800' :
                   'bg-gray-100 text-gray-800'
                 }`}>
-                  {formatTipoRota(rota.tipo_rota)}
+                  {formatTipoRota(rota.frequencia_entrega)}
                 </span>
               </div>
               

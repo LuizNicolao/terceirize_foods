@@ -14,10 +14,10 @@ class RotasStatsController {
           COUNT(*) as total_rotas,
           COUNT(CASE WHEN status = 'ativo' THEN 1 END) as rotas_ativas,
           COUNT(CASE WHEN status = 'inativo' THEN 1 END) as rotas_inativas,
-          COUNT(CASE WHEN tipo_rota = 'semanal' THEN 1 END) as rotas_semanais,
-          COUNT(CASE WHEN tipo_rota = 'quinzenal' THEN 1 END) as rotas_quinzenais,
-          COUNT(CASE WHEN tipo_rota = 'mensal' THEN 1 END) as rotas_mensais,
-          COUNT(CASE WHEN tipo_rota = 'transferencia' THEN 1 END) as rotas_transferencia,
+          COUNT(CASE WHEN frequencia_entrega = 'semanal' THEN 1 END) as rotas_semanais,
+          COUNT(CASE WHEN frequencia_entrega = 'quinzenal' THEN 1 END) as rotas_quinzenais,
+          COUNT(CASE WHEN frequencia_entrega = 'mensal' THEN 1 END) as rotas_mensais,
+          COUNT(CASE WHEN frequencia_entrega = 'transferencia' THEN 1 END) as rotas_transferencia,
           COUNT(DISTINCT filial_id) as total_filiais
         FROM rotas
       `;

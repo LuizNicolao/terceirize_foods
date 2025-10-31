@@ -39,7 +39,7 @@ const RotaModal = ({
       // Resetar formulário para nova rota
       reset();
       setValue('status', 'ativo');
-      setValue('tipo_rota', 'semanal');
+      setValue('frequencia_entrega', 'semanal');
     }
   }, [rota, isOpen, setValue, reset]);
 
@@ -198,7 +198,7 @@ const RotaModal = ({
               <Input
                 label="Frequência de Entrega *"
                 type="select"
-                {...register('tipo_rota')}
+                {...register('frequencia_entrega')}
                 disabled={isViewMode}
               >
                 <option value="">Selecione a frequência</option>
