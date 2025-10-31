@@ -492,13 +492,13 @@ class CalendarioAPIController {
           const dataInicio = new Date(Date.UTC(partesInicio[0], partesInicio[1] - 1, partesInicio[2]));
           const dataFim = new Date(Date.UTC(partesFim[0], partesFim[1] - 1, partesFim[2]));
           
-          console.log('📅 Datas criadas (antes de +1):', dataInicio.toISOString(), 'a', dataFim.toISOString());
+          console.log('📅 Datas criadas (antes de ajuste):', dataInicio.toISOString(), 'a', dataFim.toISOString());
           
-          // Adicionar 1 dia a cada data para corrigir o deslocamento
-          dataInicio.setUTCDate(dataInicio.getUTCDate() + 1);
+          // Para semana de abastecimento, adicionar +1 dia apenas na data de fim para corrigir o deslocamento
+          // A data de início já está correta (30/12), mas a data de fim precisa de +1 (04/01 -> 05/01)
           dataFim.setUTCDate(dataFim.getUTCDate() + 1);
           
-          console.log('📅 Datas após +1 dia:', dataInicio.toISOString(), 'a', dataFim.toISOString());
+          console.log('📅 Datas após ajuste (fim +1):', dataInicio.toISOString(), 'a', dataFim.toISOString());
           
           // Formatar como DD/MM usando métodos UTC para evitar problemas de timezone
           const formatarData = (data) => {
