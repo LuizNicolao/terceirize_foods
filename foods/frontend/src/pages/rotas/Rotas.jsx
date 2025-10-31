@@ -204,17 +204,18 @@ const Rotas = () => {
         onToggleUnidades={toggleUnidades}
         unidadesDisponiveis={unidadesDisponiveis}
         loadingUnidadesDisponiveis={loadingUnidadesDisponiveis}
-        onFilialChange={(filialId, grupoId = null, rotaId = null) => {
+        onFilialChange={(filialId, grupoId = null, rotaId = null, tipoRotaId = null) => {
           // Carregar tipos de rota quando filial mudar
           loadTiposRota(filialId);
           // Carregar unidades disponíveis considerando o grupo da rota
           // Regra: Escola só não aparece se já está em uma rota do mesmo grupo
+          // Enviar tipoRotaId para buscar todos os grupos do tipo de rota
           if (editingRota) {
             // Em edição, usar rotaId para permitir escolas já vinculadas a esta rota
-            loadUnidadesDisponiveisPorFilial(filialId, grupoId, editingRota.id);
+            loadUnidadesDisponiveisPorFilial(filialId, grupoId, editingRota.id, tipoRotaId);
           } else {
-            // Em criação, usar grupoId do tipo de rota selecionado (se houver)
-            loadUnidadesDisponiveisPorFilial(filialId, grupoId);
+            // Em criação, usar tipoRotaId para buscar todos os grupos do tipo de rota
+            loadUnidadesDisponiveisPorFilial(filialId, grupoId, null, tipoRotaId);
           }
         }}
       />

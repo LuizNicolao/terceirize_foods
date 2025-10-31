@@ -210,15 +210,12 @@ const RotaModal = ({
       
       // Só carregar se ainda não carregou para esta combinação
       if (unidadesCarregadasRef.current !== chaveUnidades) {
-        const tipoSelecionado = tiposRota.find(t => t.id === parseInt(tipoRotaId));
-        // Para compatibilidade: passar primeiro grupo ou null
-        const gruposIdsDoTipo = tipoSelecionado?.grupos_id || (tipoSelecionado?.grupo_id ? [tipoSelecionado.grupo_id] : []);
-        const grupoIdDoTipo = gruposIdsDoTipo.length > 0 ? gruposIdsDoTipo[0] : null;
+        const tipoRotaIdParaBusca = tipoRotaId ? parseInt(tipoRotaId) : null;
         const rotaIdParaBusca = rota?.id || null;
         
         unidadesCarregadasRef.current = chaveUnidades;
-        // Carregar unidades considerando grupo do tipo de rota
-        onFilialChangeRef.current && onFilialChangeRef.current(filialId, grupoIdDoTipo, rotaIdParaBusca);
+        // Carregar unidades enviando tipoRotaId para buscar todos os grupos do tipo de rota
+        onFilialChangeRef.current && onFilialChangeRef.current(filialId, null, rotaIdParaBusca, tipoRotaIdParaBusca);
       }
     } else {
       // Se tipo de rota foi removido, resetar ref
@@ -432,12 +429,10 @@ const RotaModal = ({
                     setValue('tipo_rota_id', e.target.value);
                     // Recarregar unidades quando tipo de rota mudar (para atualizar grupo)
                     if (filialId && !isViewMode) {
-                      const tipoSelecionado = tiposRota.find(t => t.id === parseInt(e.target.value));
-                      // Para compatibilidade: passar primeiro grupo ou null
-                      const novosGruposIds = tipoSelecionado?.grupos_id || (tipoSelecionado?.grupo_id ? [tipoSelecionado.grupo_id] : []);
-                      const novoGrupoId = novosGruposIds.length > 0 ? novosGruposIds[0] : null;
+                      const novoTipoRotaId = e.target.value ? parseInt(e.target.value) : null;
                       const rotaIdParaBusca = rota?.id || null;
-                      onFilialChange && onFilialChange(filialId, novoGrupoId, rotaIdParaBusca);
+                      // Enviar tipoRotaId para buscar todos os grupos do tipo de rota
+                      onFilialChange && onFilialChange(filialId, null, rotaIdParaBusca, novoTipoRotaId);
                     }
                   }}
                   className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100 disabled:cursor-not-allowed"

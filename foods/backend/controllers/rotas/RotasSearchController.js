@@ -389,7 +389,7 @@ class RotasSearchController {
   static async buscarUnidadesDisponiveisParaRota(req, res) {
     try {
       const { filialId } = req.params;
-      const { grupoId, rotaId } = req.query;
+      const { grupoId, rotaId, tipoRotaId } = req.query;
 
       if (!filialId) {
         return res.status(400).json({
@@ -399,9 +399,26 @@ class RotasSearchController {
         });
       }
 
-      // Se grupoId não for fornecido, buscar todos os grupos do tipo de rota da rota atual
-      let gruposIds = grupoId ? [grupoId] : [];
-      if (gruposIds.length === 0 && rotaId) {
+      // Buscar todos os grupos do tipo de rota
+      let gruposIds = [];
+      
+      // Prioridade: tipoRotaId > rotaId > grupoId
+      if (tipoRotaId) {
+        // Buscar grupos do tipo de rota informado
+        const tipoRotaQuery = `
+          SELECT tr.grupo_id
+          FROM tipo_rota tr
+          WHERE tr.id = ? AND tr.grupo_id IS NOT NULL AND tr.grupo_id != ''
+        `;
+        const tipoRotaResult = await executeQuery(tipoRotaQuery, [tipoRotaId]);
+        if (tipoRotaResult.length > 0 && tipoRotaResult[0].grupo_id) {
+          const grupoIdString = tipoRotaResult[0].grupo_id;
+          gruposIds = grupoIdString
+            .split(',')
+            .map(id => parseInt(id.trim()))
+            .filter(id => !isNaN(id) && id > 0);
+        }
+      } else if (rotaId) {
         // Buscar grupo_id (agora string) do tipo de rota vinculado a esta rota
         const tipoRotaQuery = `
           SELECT tr.grupo_id
@@ -418,6 +435,8 @@ class RotasSearchController {
             .map(id => parseInt(id.trim()))
             .filter(id => !isNaN(id) && id > 0);
         }
+      } else if (grupoId) {
+        gruposIds = [parseInt(grupoId)].filter(id => !isNaN(id) && id > 0);
       }
 
       // Query para buscar unidades disponíveis
@@ -459,7 +478,11 @@ class RotasSearchController {
         }
         
         // Construir condição para verificar se a escola está em uma rota com grupo diferente
-        const gruposPlaceholders = gruposIds.map(() => '?').join(',');
+        // Verificar se há algum grupo em comum usando FIND_IN_SET
+        // Se houver grupo em comum, a escola NÃO deve aparecer
+        const gruposConditions = gruposIds.map(() => 'FIND_IN_SET(?, tr.grupo_id) > 0').join(' OR ');
+        params.push(...gruposIds);
+        
         query += `
             OR
             -- Unidades vinculadas a rotas que NÃO têm nenhum grupo em comum
@@ -469,9 +492,10 @@ class RotasSearchController {
               FROM rotas r
               INNER JOIN tipo_rota tr ON r.tipo_rota_id = tr.id
               WHERE r.id = ue.rota_id 
-                AND tr.grupo_id IN (${gruposPlaceholders})
+                AND tr.grupo_id IS NOT NULL
+                AND tr.grupo_id != ''
+                AND (${gruposConditions})
         `;
-        params.push(...gruposIds);
         
         if (rotaId) {
           query += `

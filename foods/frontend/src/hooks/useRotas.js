@@ -156,7 +156,7 @@ export const useRotas = () => {
    * Carrega unidades escolares disponíveis por filial considerando grupo da rota
    * Regra: Escola só não aparece se já está em uma rota do mesmo grupo
    */
-  const loadUnidadesDisponiveisPorFilial = useCallback(async (filialId, grupoId = null, rotaId = null) => {
+  const loadUnidadesDisponiveisPorFilial = useCallback(async (filialId, grupoId = null, rotaId = null, tipoRotaId = null) => {
     if (!filialId) {
       setUnidadesDisponiveis([]);
       setFilialSelecionada(null);
@@ -167,7 +167,8 @@ export const useRotas = () => {
       setLoadingUnidadesDisponiveis(true);
       setFilialSelecionada(filialId);
       
-      const result = await RotasService.buscarUnidadesDisponiveisParaRota(filialId, grupoId, rotaId);
+      // Prioridade: enviar tipoRotaId para buscar todos os grupos do tipo de rota
+      const result = await RotasService.buscarUnidadesDisponiveisParaRota(filialId, grupoId, rotaId, tipoRotaId);
       
       if (result.success) {
         setUnidadesDisponiveis(result.data || []);

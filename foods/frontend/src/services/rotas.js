@@ -225,10 +225,15 @@ class RotasService {
   }
 
   // Buscar unidades escolares disponíveis para uma rota (considerando grupo)
-  static async buscarUnidadesDisponiveisParaRota(filialId, grupoId = null, rotaId = null) {
+  static async buscarUnidadesDisponiveisParaRota(filialId, grupoId = null, rotaId = null, tipoRotaId = null) {
     try {
       const params = {};
-      if (grupoId) params.grupoId = grupoId;
+      // Prioridade: tipoRotaId > grupoId (para buscar todos os grupos do tipo de rota)
+      if (tipoRotaId) {
+        params.tipoRotaId = tipoRotaId;
+      } else if (grupoId) {
+        params.grupoId = grupoId;
+      }
       if (rotaId) params.rotaId = rotaId;
       
       const response = await api.get(`/rotas/disponiveis/filial/${filialId}`, { params });
