@@ -106,8 +106,11 @@ const RotaModal = ({
   }, [onFilialChange]);
   
   React.useEffect(() => {
+    console.log('🔍 useEffect [filial] - isOpen:', isOpen, 'rota?.filial_id:', rota?.filial_id, 'filialId (watch):', filialId);
+    
     // Resetar ref quando modal fechar
     if (!isOpen) {
+      console.log('🔄 Modal fechado, resetando estados');
       filialProcessadaRef.current = null;
       setUnidadesSelecionadas([]);
       setBuscaUnidades('');
@@ -117,15 +120,19 @@ const RotaModal = ({
     // Se modal abriu e tem rota com filial, mas filialId ainda não foi setado no form
     if (rota?.filial_id && !filialId) {
       const key = `rota-${rota.id}`;
+      console.log('📋 Modal aberto com rota existente, filialId ainda não setado no form');
       if (filialProcessadaRef.current !== key) {
+        console.log('⏳ Aguardando preenchimento do formulário antes de carregar tipos de rota...');
         // Aguardar um ciclo para que o formulário seja preenchido primeiro
         const timer = setTimeout(() => {
           const filialIdDaRota = rota.filial_id;
+          console.log('✅ FilialId da rota após timeout:', filialIdDaRota);
           if (filialIdDaRota && filialProcessadaRef.current !== key) {
             filialProcessadaRef.current = key;
+            console.log('📞 Chamando onFilialChange para carregar tipos de rota e unidades');
             onFilialChangeRef.current && onFilialChangeRef.current(filialIdDaRota, null, rota.id);
           }
-        }, 200);
+        }, 300); // Aumentar timeout para garantir que form foi preenchido
         return () => clearTimeout(timer);
       }
       return;
@@ -134,11 +141,15 @@ const RotaModal = ({
     // Se filialId mudou (via watch) e não é o mesmo que já foi processado
     if (filialId && !isViewMode) {
       const key = `filial-${filialId}`;
+      console.log('🔄 FilialId mudou via watch:', filialId);
       if (filialProcessadaRef.current !== key) {
+        console.log('📞 Processando nova filial, chamando onFilialChange');
         filialProcessadaRef.current = key;
         // Passar grupoId e rotaId para buscar unidades considerando grupo
         const rotaIdParaBusca = rota?.id || null;
         onFilialChangeRef.current && onFilialChangeRef.current(filialId, grupoId, rotaIdParaBusca);
+      } else {
+        console.log('⏭️ Filial já foi processada, ignorando');
       }
     }
   }, [isOpen, rota?.filial_id, rota?.id, filialId, grupoId, isViewMode]);
@@ -346,12 +357,14 @@ const RotaModal = ({
                   {...register('tipo_rota_id', { required: 'Tipo de rota é obrigatório' })}
                   disabled={isViewMode || loadingTiposRota || !filialId}
                   onChange={(e) => {
+                    console.log('🔄 Tipo de rota selecionado:', e.target.value);
                     setValue('tipo_rota_id', e.target.value);
                     // Recarregar unidades quando tipo de rota mudar (para atualizar grupo)
                     if (filialId && !isViewMode) {
                       const tipoSelecionado = tiposRota.find(t => t.id === parseInt(e.target.value));
                       const novoGrupoId = tipoSelecionado?.grupo_id || null;
                       const rotaIdParaBusca = rota?.id || null;
+                      console.log('📞 Recarregando unidades com grupoId:', novoGrupoId);
                       onFilialChange && onFilialChange(filialId, novoGrupoId, rotaIdParaBusca);
                     }
                   }}
@@ -360,12 +373,25 @@ const RotaModal = ({
                   <option value="">
                     {loadingTiposRota ? 'Carregando tipos de rota...' : !filialId ? 'Selecione uma filial primeiro' : 'Selecione o tipo de rota'}
                   </option>
-                  {tiposRota.map(tipo => (
-                    <option key={tipo.id} value={tipo.id}>
-                      {tipo.nome} {tipo.grupo_nome ? `(${tipo.grupo_nome})` : ''}
-                    </option>
-                  ))}
+                  {tiposRota.length === 0 && !loadingTiposRota && filialId && (
+                    <option value="" disabled>Nenhum tipo de rota encontrado para esta filial</option>
+                  )}
+                  {tiposRota.map(tipo => {
+                    console.log('📋 Renderizando tipo de rota:', tipo.id, tipo.nome);
+                    return (
+                      <option key={tipo.id} value={tipo.id}>
+                        {tipo.nome} {tipo.grupo_nome ? `(${tipo.grupo_nome})` : ''}
+                      </option>
+                    );
+                  })}
                 </select>
+                {/* Log para debug */}
+                {console.log('🔍 Debug tiposRota no render:', {
+                  total: tiposRota.length,
+                  loading: loadingTiposRota,
+                  filialId: filialId,
+                  tipos: tiposRota.map(t => ({ id: t.id, nome: t.nome }))
+                })}
               </div>
 
               <div>
