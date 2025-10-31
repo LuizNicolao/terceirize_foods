@@ -48,13 +48,17 @@ class CalendarioAPIController {
               return `${dia}/${mes}`;
             };
             
-            // Usar o ano da data de início (mais confiável) ou ano da data de fim se cruzar ano
-            // Mas se a semana cruzar o ano, preferir o ano onde a maior parte da semana está
+            // Usar o ano passado como parâmetro na busca (ano solicitado pelo usuário)
+            // Se a semana cruzar o ano, ainda mostrar o ano solicitado (maior parte da semana está nele)
             const anoInicio = dataInicio.getFullYear();
             const anoFim = dataFim.getFullYear();
-            // Se as datas estão no mesmo ano ou se a semana de fim está no início do ano seguinte,
-            // usar o ano da data de início (maior parte da semana)
-            const anoFormatado = (anoFim > anoInicio && dataFim.getMonth() === 0) ? anoFim : anoInicio;
+            // Usar o ano passado como parâmetro se as datas estiverem próximas dele
+            // Se a semana cruzar o ano mas a maior parte está no ano solicitado, usar o ano solicitado
+            let anoFormatado = ano;
+            if (anoInicio !== ano && anoFim !== ano) {
+              // Se nenhuma das datas está no ano solicitado, usar o ano da data de início
+              anoFormatado = anoInicio;
+            }
             semanaFormatada = `(${formatarData(dataInicio)} a ${formatarData(dataFim)}/${anoFormatado.toString().slice(-2)})`;
           } catch (error) {
             // Se houver erro na formatação, usar o valor original do banco
@@ -466,6 +470,19 @@ class CalendarioAPIController {
 
       console.log('✅ Semana encontrada:', semana.semana_abastecimento);
 
+      // Extrair ano da semana de consumo solicitada (ex: "(06/01 a 12/01/25)" -> 2025)
+      let anoSolicitado = null;
+      try {
+        const anoMatch = semanaConsumo.match(/\/(\d{2})[)]?$/);
+        if (anoMatch) {
+          const ano2digitos = parseInt(anoMatch[1]);
+          // Assumir que anos 00-30 são 2000-2030, anos 31-99 são 1931-1999
+          anoSolicitado = ano2digitos <= 30 ? 2000 + ano2digitos : 1900 + ano2digitos;
+        }
+      } catch (e) {
+        console.log('⚠️ Não foi possível extrair ano da semana de consumo:', e);
+      }
+
       // Formatar semana de abastecimento a partir das datas, adicionando 1 dia para corrigir o deslocamento
       let semanaAbastecimentoFormatada = semana.semana_abastecimento;
       
@@ -486,13 +503,17 @@ class CalendarioAPIController {
             return `${dia}/${mes}`;
           };
           
-          // Usar o ano da data de início (mais confiável) ou ano da data de fim se cruzar ano
-          // Mas se a semana cruzar o ano, preferir o ano onde a maior parte da semana está
+          // Usar o ano solicitado na semana de consumo, ou ano da data de início como fallback
           const anoInicio = dataInicio.getFullYear();
           const anoFim = dataFim.getFullYear();
-          // Se as datas estão no mesmo ano ou se a semana de fim está no início do ano seguinte,
-          // usar o ano da data de início (maior parte da semana)
-          const anoFormatado = (anoFim > anoInicio && dataFim.getMonth() === 0) ? anoFim : anoInicio;
+          let anoFormatado = anoSolicitado || anoInicio;
+          
+          // Se o ano solicitado não corresponde às datas, usar o ano da data de início
+          if (anoSolicitado && anoInicio !== anoSolicitado && anoFim !== anoSolicitado) {
+            // Apenas usar ano da data se realmente não corresponder ao solicitado
+            anoFormatado = anoInicio;
+          }
+          
           semanaAbastecimentoFormatada = `(${formatarData(dataInicio)} a ${formatarData(dataFim)}/${anoFormatado.toString().slice(-2)})`;
         } catch (error) {
           // Se houver erro na formatação, usar o valor original do banco
