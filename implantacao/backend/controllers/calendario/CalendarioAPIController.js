@@ -370,27 +370,53 @@ class CalendarioAPIController {
       }
 
       console.log('🔍 Buscando semana de abastecimento para:', semanaConsumo);
-      console.log('🔍 Tipo do valor:', typeof semanaConsumo);
-      console.log('🔍 Tamanho da string:', semanaConsumo.length);
 
-      // Primeiro, tentar busca exata
-      let [semana] = await executeQuery(`
-        SELECT 
-          semana_abastecimento,
-          semana_abastecimento_inicio,
-          semana_abastecimento_fim,
-          semana_consumo,
-          semana_consumo_inicio,
-          semana_consumo_fim,
-          mes_referencia
-        FROM calendario 
-        WHERE semana_consumo = ?
-        LIMIT 1
-      `, [semanaConsumo]);
+      // Extrair datas do valor formatado (ex: "(06/01 a 12/01/26)" -> 06/01 e 12/01)
+      // O valor formatado tem +1 dia em relação ao banco, então precisamos subtrair 1 dia
+      let dataInicioFormatada, dataFimFormatada;
+      
+      try {
+        // Remover parênteses e ano do final
+        const semanaLimpa = semanaConsumo.replace(/[()]/g, '').replace(/\/\d{2}$/, '');
+        const [inicioStr, fimStr] = semanaLimpa.split(' a ');
+        
+        if (inicioStr && fimStr) {
+          const [diaInicio, mesInicio] = inicioStr.split('/');
+          const [diaFim, mesFim] = fimStr.split('/');
+          
+          // Extrair ano da string original ou usar ano atual
+          const anoMatch = semanaConsumo.match(/\/(\d{2})[)]?$/);
+          const ano2digitos = anoMatch ? anoMatch[1] : new Date().getFullYear().toString().slice(-2);
+          const ano = parseInt(`20${ano2digitos}`);
+          
+          // Criar datas e subtrair 1 dia para obter as datas originais do banco
+          const dataInicio = new Date(ano, parseInt(mesInicio) - 1, parseInt(diaInicio));
+          const dataFim = new Date(ano, parseInt(mesFim) - 1, parseInt(diaFim));
+          
+          dataInicio.setDate(dataInicio.getDate() - 1);
+          dataFim.setDate(dataFim.getDate() - 1);
+          
+          // Formatar como YYYY-MM-DD para buscar no banco
+          const formatarParaMySQL = (data) => {
+            const ano = data.getFullYear();
+            const mes = String(data.getMonth() + 1).padStart(2, '0');
+            const dia = String(data.getDate()).padStart(2, '0');
+            return `${ano}-${mes}-${dia}`;
+          };
+          
+          dataInicioFormatada = formatarParaMySQL(dataInicio);
+          dataFimFormatada = formatarParaMySQL(dataFim);
+          
+          console.log('📅 Datas extraídas e ajustadas:', dataInicioFormatada, 'a', dataFimFormatada);
+        }
+      } catch (error) {
+        console.error('❌ Erro ao extrair datas:', error);
+      }
 
-      // Se não encontrar, tentar com TRIM para remover espaços
-      if (!semana) {
-        console.log('❌ Busca exata não encontrou. Tentando com TRIM...');
+      // Buscar usando as datas diretamente (mais confiável que a string formatada)
+      let semana = null;
+      
+      if (dataInicioFormatada && dataFimFormatada) {
         [semana] = await executeQuery(`
           SELECT 
             semana_abastecimento,
@@ -401,25 +427,27 @@ class CalendarioAPIController {
             semana_consumo_fim,
             mes_referencia
           FROM calendario 
-          WHERE TRIM(semana_consumo) = TRIM(?)
+          WHERE semana_consumo_inicio = ? AND semana_consumo_fim = ?
           LIMIT 1
-        `, [semanaConsumo]);
+        `, [dataInicioFormatada, dataFimFormatada]);
       }
 
-      // Se ainda não encontrar, buscar valores similares para debug
+      // Se não encontrou pelas datas, tentar busca pela string formatada (fallback)
       if (!semana) {
-        console.log('❌ Busca com TRIM não encontrou. Buscando valores similares...');
-        const semanasSimilares = await executeQuery(`
-          SELECT DISTINCT semana_consumo
+        console.log('⚠️ Busca por datas não encontrou. Tentando busca pela string...');
+        [semana] = await executeQuery(`
+          SELECT 
+            semana_abastecimento,
+            semana_abastecimento_inicio,
+            semana_abastecimento_fim,
+            semana_consumo,
+            semana_consumo_inicio,
+            semana_consumo_fim,
+            mes_referencia
           FROM calendario 
-          WHERE semana_consumo LIKE ?
-          LIMIT 5
-        `, [`%${semanaConsumo.substring(0, Math.min(20, semanaConsumo.length))}%`]);
-        
-        console.log('🔍 Valores similares encontrados no banco:');
-        semanasSimilares.forEach(s => {
-          console.log('  -', s.semana_consumo, '| Tamanho:', s.semana_consumo?.length);
-        });
+          WHERE semana_consumo = ? OR TRIM(semana_consumo) = TRIM(?)
+          LIMIT 1
+        `, [semanaConsumo, semanaConsumo]);
       }
 
       if (!semana) {
