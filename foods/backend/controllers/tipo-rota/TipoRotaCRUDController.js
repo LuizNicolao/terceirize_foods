@@ -226,7 +226,11 @@ class TipoRotaCRUDController {
 
       // Verificar se o tipo de rota existe
       const tipoRota = await executeQuery(
-        'SELECT * FROM tipo_rota WHERE id = ?',
+        `SELECT tr.*, f.filial as filial_nome, g.nome as grupo_nome
+         FROM tipo_rota tr
+         LEFT JOIN filiais f ON tr.filial_id = f.id
+         LEFT JOIN grupos g ON tr.grupo_id = g.id
+         WHERE tr.id = ?`,
         [id]
       );
 
@@ -238,7 +242,46 @@ class TipoRotaCRUDController {
         });
       }
 
-      // Remover vinculações de unidades escolares (via CASCADE ou manualmente)
+      const tipoRotaData = tipoRota[0];
+
+      // Verificar se existem rotas vinculadas a este tipo de rota
+      const rotasVinculadas = await executeQuery(
+        `SELECT id, codigo, nome, status 
+         FROM rotas 
+         WHERE tipo_rota_id = ?`,
+        [id]
+      );
+
+      // Se houver rotas vinculadas, retornar erro com informações das rotas
+      if (rotasVinculadas.length > 0) {
+        const rotasList = rotasVinculadas.map(r => 
+          `"${r.nome}" (${r.codigo})`
+        ).join(', ');
+
+        return res.status(400).json({
+          success: false,
+          error: 'Não é possível excluir o tipo de rota',
+          message: `O tipo de rota "${tipoRotaData.nome}" não pode ser excluído pois está vinculado a ${rotasVinculadas.length} rota(s) no sistema.`,
+          details: {
+            tipoRota: {
+              id: tipoRotaData.id,
+              nome: tipoRotaData.nome,
+              filial: tipoRotaData.filial_nome,
+              grupo: tipoRotaData.grupo_nome
+            },
+            rotasVinculadas: rotasVinculadas.map(r => ({
+              id: r.id,
+              codigo: r.codigo,
+              nome: r.nome,
+              status: r.status
+            })),
+            rotasList: rotasList
+          }
+        });
+      }
+
+      // Se não houver rotas vinculadas, proceder com a exclusão
+      // Remover vinculações de unidades escolares (se houver)
       await executeQuery(
         'UPDATE unidades_escolares SET tipo_rota_id = NULL, ordem_entrega = 0 WHERE tipo_rota_id = ?',
         [id]
@@ -249,7 +292,11 @@ class TipoRotaCRUDController {
 
       res.json({
         success: true,
-        message: 'Tipo de rota excluído com sucesso'
+        message: `Tipo de rota "${tipoRotaData.nome}" excluído com sucesso!`,
+        data: {
+          id: tipoRotaData.id,
+          nome: tipoRotaData.nome
+        }
       });
 
     } catch (error) {

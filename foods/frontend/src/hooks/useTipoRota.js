@@ -109,11 +109,70 @@ export const useTipoRota = () => {
   }, [baseEntity, loadEstatisticasTipoRotas]);
 
   /**
-   * Exclusão customizada que recarrega estatísticas
+   * Exclusão customizada que recarrega estatísticas e trata erros de vínculo
    */
   const handleDeleteCustom = useCallback(async () => {
-    await baseEntity.handleConfirmDelete();
-    await loadEstatisticasTipoRotas();
+    if (!baseEntity.itemToDelete) return;
+
+    try {
+      const TipoRotaService = (await import('../services/tipoRota')).default;
+      const response = await TipoRotaService.excluir(baseEntity.itemToDelete.id);
+
+      if (response.success) {
+        toast.success(response.message || 'Tipo de rota excluído com sucesso!');
+        baseEntity.setShowDeleteConfirmModal(false);
+        baseEntity.setItemToDelete(null);
+        await baseEntity.loadData();
+        await loadEstatisticasTipoRotas();
+      } else {
+        // Verificar se há detalhes sobre rotas vinculadas
+        if (response.details?.rotasVinculadas && response.details.rotasVinculadas.length > 0) {
+          const rotasList = response.details.rotasVinculadas
+            .map(r => `• "${r.nome}" (${r.codigo})`)
+            .join('\n');
+          
+          toast.error(
+            `${response.message}\n\nRotas vinculadas:\n${rotasList}`,
+            {
+              duration: 6000,
+              style: {
+                whiteSpace: 'pre-line',
+                maxWidth: '500px'
+              }
+            }
+          );
+        } else {
+          toast.error(response.message || response.error || 'Erro ao excluir tipo de rota');
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao excluir tipo de rota:', error);
+      
+      // Tratar erro de resposta com detalhes
+      if (error.response?.data) {
+        const errorData = error.response.data;
+        if (errorData.details?.rotasVinculadas && errorData.details.rotasVinculadas.length > 0) {
+          const rotasList = errorData.details.rotasVinculadas
+            .map(r => `• "${r.nome}" (${r.codigo})`)
+            .join('\n');
+          
+          toast.error(
+            `${errorData.message}\n\nRotas vinculadas:\n${rotasList}`,
+            {
+              duration: 6000,
+              style: {
+                whiteSpace: 'pre-line',
+                maxWidth: '500px'
+              }
+            }
+          );
+        } else {
+          toast.error(errorData.message || errorData.error || 'Erro ao excluir tipo de rota');
+        }
+      } else {
+        toast.error('Erro ao excluir tipo de rota');
+      }
+    }
   }, [baseEntity, loadEstatisticasTipoRotas]);
 
   /**
