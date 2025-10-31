@@ -1,7 +1,9 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
-import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import { FaChevronDown, FaChevronUp, FaPlus } from 'react-icons/fa';
 import { Button, Input, Modal, Table } from '../ui';
+import RotasService from '../../services/rotas';
+import toast from 'react-hot-toast';
 
 const RotaModal = ({ 
   isOpen, 
@@ -24,8 +26,40 @@ const RotaModal = ({
   const { register, handleSubmit, reset, setValue, watch } = useForm();
   const [unidadesSelecionadas, setUnidadesSelecionadas] = React.useState([]);
   const [buscaUnidades, setBuscaUnidades] = React.useState('');
+  const [frequencias, setFrequencias] = React.useState([]);
+  const [loadingFrequencias, setLoadingFrequencias] = React.useState(false);
+  const [showModalNovaFrequencia, setShowModalNovaFrequencia] = React.useState(false);
+  const [novaFrequenciaNome, setNovaFrequenciaNome] = React.useState('');
+  const [salvandoFrequencia, setSalvandoFrequencia] = React.useState(false);
   
   const filialId = watch('filial_id');
+
+  // Carregar frequências do ENUM
+  const loadFrequencias = React.useCallback(async () => {
+    try {
+      setLoadingFrequencias(true);
+      const result = await RotasService.listarFrequenciasEntrega();
+      if (result.success) {
+        setFrequencias(result.data || []);
+      } else {
+        // Fallback para valores padrão se houver erro
+        setFrequencias(['semanal', 'quinzenal', 'mensal', 'transferencia']);
+        console.error('Erro ao carregar frequências:', result.error);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar frequências:', error);
+      setFrequencias(['semanal', 'quinzenal', 'mensal', 'transferencia']);
+    } finally {
+      setLoadingFrequencias(false);
+    }
+  }, []);
+
+  // Carregar frequências disponíveis quando o modal abrir
+  React.useEffect(() => {
+    if (isOpen && !isViewMode) {
+      loadFrequencias();
+    }
+  }, [isOpen, isViewMode, loadFrequencias]);
 
   React.useEffect(() => {
     if (rota && isOpen) {
@@ -137,6 +171,60 @@ const RotaModal = ({
     );
   }, [unidadesDisponiveis, buscaUnidades]);
 
+  // Função para formatar nome da frequência (capitalizar primeira letra)
+  const formatarFrequencia = (freq) => {
+    if (!freq) return '';
+    const freqLower = freq.toLowerCase();
+    const traducoes = {
+      'semanal': 'Semanal',
+      'quinzenal': 'Quinzenal',
+      'mensal': 'Mensal',
+      'transferencia': 'Transferência'
+    };
+    return traducoes[freqLower] || freqLower.charAt(0).toUpperCase() + freqLower.slice(1);
+  };
+
+  // Função para abrir modal de nova frequência
+  const handleAbrirModalNovaFrequencia = () => {
+    setShowModalNovaFrequencia(true);
+    setNovaFrequenciaNome('');
+  };
+
+  // Função para salvar nova frequência
+  const handleSalvarNovaFrequencia = async () => {
+    if (!novaFrequenciaNome.trim()) {
+      toast.error('Digite o nome da frequência');
+      return;
+    }
+
+    try {
+      setSalvandoFrequencia(true);
+      const result = await RotasService.adicionarFrequenciaEntrega(novaFrequenciaNome);
+      
+      if (result.success) {
+        toast.success(result.message || 'Frequência adicionada com sucesso!');
+        
+        // Recarregar frequências e atualizar dropdown
+        await loadFrequencias();
+        
+        // Selecionar automaticamente a nova frequência
+        const nomeLimpo = novaFrequenciaNome.trim().toLowerCase();
+        setValue('frequencia_entrega', nomeLimpo);
+        
+        // Fechar modal
+        setShowModalNovaFrequencia(false);
+        setNovaFrequenciaNome('');
+      } else {
+        toast.error(result.error || 'Erro ao adicionar frequência');
+      }
+    } catch (error) {
+      console.error('Erro ao adicionar frequência:', error);
+      toast.error('Erro ao adicionar frequência de entrega');
+    } finally {
+      setSalvandoFrequencia(false);
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -195,18 +283,38 @@ const RotaModal = ({
               Configurações
             </h3>
             <div className="space-y-3">
-              <Input
-                label="Frequência de Entrega *"
-                type="select"
-                {...register('frequencia_entrega')}
-                disabled={isViewMode}
-              >
-                <option value="">Selecione a frequência</option>
-                <option value="semanal">Semanal</option>
-                <option value="quinzenal">Quinzenal</option>
-                <option value="mensal">Mensal</option>
-                <option value="transferencia">Transferência</option>
-              </Input>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Frequência de Entrega *
+                </label>
+                <select
+                  {...register('frequencia_entrega')}
+                  disabled={isViewMode || loadingFrequencias}
+                  onChange={(e) => {
+                    if (e.target.value === '__nova__') {
+                      handleAbrirModalNovaFrequencia();
+                      setValue('frequencia_entrega', '');
+                    } else {
+                      setValue('frequencia_entrega', e.target.value);
+                    }
+                  }}
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                >
+                  <option value="">
+                    {loadingFrequencias ? 'Carregando frequências...' : 'Selecione a frequência'}
+                  </option>
+                  {frequencias.map(freq => (
+                    <option key={freq} value={freq}>
+                      {formatarFrequencia(freq)}
+                    </option>
+                  ))}
+                  {!isViewMode && !loadingFrequencias && (
+                    <option value="__nova__" style={{ fontWeight: 'bold', color: '#16a34a' }}>
+                      ➕ Adicionar nova frequência...
+                    </option>
+                  )}
+                </select>
+              </div>
 
               <Input
                 label="Status"
@@ -490,6 +598,67 @@ const RotaModal = ({
           )}
         </div>
       </form>
+
+      {/* Modal para adicionar nova frequência */}
+      {showModalNovaFrequencia && (
+        <Modal
+          isOpen={showModalNovaFrequencia}
+          onClose={() => {
+            setShowModalNovaFrequencia(false);
+            setNovaFrequenciaNome('');
+            setValue('frequencia_entrega', '');
+          }}
+          title="Adicionar Nova Frequência de Entrega"
+          size="sm"
+        >
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Nome da Frequência *
+            </label>
+            <input
+              type="text"
+              value={novaFrequenciaNome}
+              onChange={(e) => setNovaFrequenciaNome(e.target.value)}
+              placeholder="Ex: bimestral, trimestral..."
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleSalvarNovaFrequencia();
+                }
+              }}
+              autoFocus
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              Use apenas letras minúsculas e underscore. Ex: bimestral, trimestral, semanal_especial
+            </p>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setShowModalNovaFrequencia(false);
+                setNovaFrequenciaNome('');
+                setValue('frequencia_entrega', '');
+              }}
+              disabled={salvandoFrequencia}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              onClick={handleSalvarNovaFrequencia}
+              disabled={salvandoFrequencia || !novaFrequenciaNome.trim()}
+            >
+              {salvandoFrequencia ? 'Salvando...' : 'Salvar'}
+            </Button>
+          </div>
+        </div>
+        </Modal>
+      )}
     </Modal>
   );
 };

@@ -172,7 +172,7 @@ class RotasSearchController {
     }
   }
 
-  // Listar tipos de rota
+  // Listar tipos de rota (DEPRECATED - usar listarFrequenciasEntrega)
   static async listarTiposRota(req, res) {
     try {
       const query = `
@@ -195,6 +195,158 @@ class RotasSearchController {
         success: false,
         error: 'Erro interno do servidor',
         message: 'Não foi possível listar as frequências de entrega'
+      });
+    }
+  }
+
+  // Listar frequências de entrega disponíveis no ENUM
+  static async listarFrequenciasEntrega(req, res) {
+    try {
+      // Buscar os valores do ENUM diretamente da tabela
+      const query = `
+        SELECT COLUMN_TYPE 
+        FROM INFORMATION_SCHEMA.COLUMNS 
+        WHERE TABLE_SCHEMA = DATABASE()
+          AND TABLE_NAME = 'rotas'
+          AND COLUMN_NAME = 'frequencia_entrega'
+      `;
+
+      const result = await executeQuery(query);
+
+      if (result.length === 0) {
+        return res.json({
+          success: true,
+          data: []
+        });
+      }
+
+      // Extrair valores do ENUM: ENUM('semanal','quinzenal','mensal','transferencia')
+      const enumStr = result[0].COLUMN_TYPE;
+      const enumValues = enumStr
+        .replace(/^enum\(|\)$/gi, '')
+        .split(',')
+        .map(val => val.replace(/^'|'$/g, '').trim())
+        .filter(val => val.length > 0);
+
+      res.json({
+        success: true,
+        data: enumValues
+      });
+
+    } catch (error) {
+      console.error('Erro ao listar frequências de entrega:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro interno do servidor',
+        message: 'Não foi possível listar as frequências de entrega'
+      });
+    }
+  }
+
+  // Adicionar nova frequência de entrega ao ENUM
+  static async adicionarFrequenciaEntrega(req, res) {
+    try {
+      const { nome } = req.body;
+
+      if (!nome || nome.trim().length === 0) {
+        return res.status(400).json({
+          success: false,
+          error: 'Nome inválido',
+          message: 'O nome da frequência é obrigatório'
+        });
+      }
+
+      const nomeLimpo = nome.trim().toLowerCase();
+
+      // Validar formato (sem espaços, caracteres especiais, etc)
+      if (!/^[a-z_]+$/.test(nomeLimpo)) {
+        return res.status(400).json({
+          success: false,
+          error: 'Formato inválido',
+          message: 'O nome deve conter apenas letras minúsculas e underscore'
+        });
+      }
+
+      // Verificar se já existe
+      const enumQuery = `
+        SELECT COLUMN_TYPE 
+        FROM INFORMATION_SCHEMA.COLUMNS 
+        WHERE TABLE_SCHEMA = DATABASE()
+          AND TABLE_NAME = 'rotas'
+          AND COLUMN_NAME = 'frequencia_entrega'
+      `;
+      const enumResult = await executeQuery(enumQuery);
+
+      if (enumResult.length === 0) {
+        return res.status(500).json({
+          success: false,
+          error: 'Erro ao buscar ENUM',
+          message: 'Não foi possível acessar a definição da coluna'
+        });
+      }
+
+      // Extrair valores atuais do ENUM
+      const enumStr = enumResult[0].COLUMN_TYPE;
+      const valoresAtuais = enumStr
+        .replace(/^enum\(|\)$/gi, '')
+        .split(',')
+        .map(val => val.replace(/^'|'$/g, '').trim())
+        .filter(val => val.length > 0);
+
+      // Verificar se já existe
+      if (valoresAtuais.includes(nomeLimpo)) {
+        return res.status(400).json({
+          success: false,
+          error: 'Frequência já existe',
+          message: 'Esta frequência de entrega já está cadastrada'
+        });
+      }
+
+      // Construir novo ENUM com todos os valores + novo
+      const novosValores = [...valoresAtuais, nomeLimpo];
+      const enumNovo = novosValores.map(val => `'${val}'`).join(',');
+
+      // Executar ALTER TABLE (usar connection direto para DDL)
+      const { pool } = require('../../config/database');
+      const connection = await pool.getConnection();
+      
+      try {
+        // Usar query() ao invés de execute() para DDL
+        const alterQuery = `
+          ALTER TABLE rotas 
+          MODIFY frequencia_entrega ENUM(${enumNovo}) DEFAULT 'semanal'
+        `;
+        
+        await connection.query(alterQuery);
+      } finally {
+        connection.release();
+      }
+
+      res.json({
+        success: true,
+        message: 'Frequência de entrega adicionada com sucesso',
+        data: {
+          nome: nomeLimpo,
+          todas_frequencias: novosValores
+        }
+      });
+
+    } catch (error) {
+      console.error('Erro ao adicionar frequência de entrega:', error);
+      
+      // Verificar se é erro de duplicação do MySQL
+      if (error.code === 'ER_DUP_ENTRY' || error.message?.includes('Duplicate')) {
+        return res.status(400).json({
+          success: false,
+          error: 'Frequência já existe',
+          message: 'Esta frequência de entrega já está cadastrada'
+        });
+      }
+
+      res.status(500).json({
+        success: false,
+        error: 'Erro interno do servidor',
+        message: 'Não foi possível adicionar a frequência de entrega'
       });
     }
   }

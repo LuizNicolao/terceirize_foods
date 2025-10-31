@@ -51,7 +51,42 @@ const rotaValidations = {
     
     body('frequencia_entrega')
       .notEmpty().withMessage('Frequência de entrega é obrigatória')
-      .isIn(['semanal', 'quinzenal', 'mensal', 'transferencia']).withMessage('Frequência deve ser semanal, quinzenal, mensal ou transferencia'),
+      .isString().trim()
+      .custom(async (value) => {
+        // Buscar valores válidos do ENUM dinamicamente
+        const { executeQuery } = require('../../config/database');
+        try {
+          const query = `
+            SELECT COLUMN_TYPE 
+            FROM INFORMATION_SCHEMA.COLUMNS 
+            WHERE TABLE_SCHEMA = DATABASE()
+              AND TABLE_NAME = 'rotas'
+              AND COLUMN_NAME = 'frequencia_entrega'
+          `;
+          const result = await executeQuery(query);
+          
+          if (result.length > 0) {
+            const enumStr = result[0].COLUMN_TYPE;
+            const enumValues = enumStr
+              .replace(/^enum\(|\)$/gi, '')
+              .split(',')
+              .map(val => val.replace(/^'|'$/g, '').trim())
+              .filter(val => val.length > 0);
+            
+            if (!enumValues.includes(value)) {
+              throw new Error(`Frequência deve ser uma das seguintes: ${enumValues.join(', ')}`);
+            }
+          }
+          return true;
+        } catch (error) {
+          // Se houver erro ao buscar ENUM, usar valores padrão como fallback
+          const valoresPadrao = ['semanal', 'quinzenal', 'mensal', 'transferencia'];
+          if (!valoresPadrao.includes(value)) {
+            throw new Error(`Frequência deve ser uma das seguintes: ${valoresPadrao.join(', ')}`);
+          }
+          return true;
+        }
+      }),
     
     body('filial_id')
       .notEmpty().withMessage('Filial é obrigatória')

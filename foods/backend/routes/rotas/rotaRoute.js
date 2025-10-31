@@ -48,11 +48,23 @@ router.get('/tipo/:tipo',
   rotasController.buscarRotasPorTipo
 );
 
-// Listar tipos de rota
+// Listar tipos de rota (DEPRECATED)
 router.get('/tipos/listar', 
   checkScreenPermission('rotas', 'visualizar'),
   rotasController.listarTiposRota
 );
+
+// Listar frequências de entrega disponíveis no ENUM
+router.get('/frequencias/listar', 
+  checkScreenPermission('rotas', 'visualizar'),
+  rotasController.listarFrequenciasEntrega
+);
+
+// Adicionar nova frequência de entrega
+router.post('/frequencias/adicionar', [
+  checkScreenPermission('rotas', 'criar'),
+  rotasController.adicionarFrequenciaEntrega
+]);
 
 // Buscar estatísticas das rotas
 router.get('/estatisticas', 

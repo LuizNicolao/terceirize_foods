@@ -156,7 +156,7 @@ class RotasService {
     }
   }
 
-  // Listar tipos de rota
+  // Listar tipos de rota (DEPRECATED - usar listarFrequenciasEntrega)
   static async listarTipos() {
     try {
       const response = await api.get('/rotas/tipos/listar');
@@ -169,6 +169,40 @@ class RotasService {
         success: false,
         error: error.response?.data?.error || 'Erro ao listar frequências de entrega',
         data: []
+      };
+    }
+  }
+
+  // Listar frequências de entrega disponíveis no ENUM
+  static async listarFrequenciasEntrega() {
+    try {
+      const response = await api.get('/rotas/frequencias/listar');
+      return {
+        success: true,
+        data: response.data.data || []
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Erro ao listar frequências de entrega',
+        data: []
+      };
+    }
+  }
+
+  // Adicionar nova frequência de entrega
+  static async adicionarFrequenciaEntrega(nome) {
+    try {
+      const response = await api.post('/rotas/frequencias/adicionar', { nome });
+      return {
+        success: true,
+        data: response.data.data,
+        message: response.data.message || 'Frequência adicionada com sucesso!'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.error || error.response?.data?.message || 'Erro ao adicionar frequência de entrega'
       };
     }
   }
