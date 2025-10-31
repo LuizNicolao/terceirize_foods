@@ -122,11 +122,12 @@ const calendarioService = {
       
       console.log('📤 Enviando semana_consumo para backend:', semanaConsumo);
       
-      // Encodar a semana de consumo para usar na URL (importante para caracteres especiais como parênteses)
-      const semanaEncoded = encodeURIComponent(semanaConsumo);
-      console.log('📤 Semana encoded:', semanaEncoded);
-      
-      const response = await api.get(`/calendario/api/semana-abastecimento-por-consumo/${semanaEncoded}`);
+      // Usar query parameter em vez de path parameter para evitar problemas com caracteres especiais
+      const response = await api.get(`/calendario/api/semana-abastecimento-por-consumo`, {
+        params: {
+          semanaConsumo: semanaConsumo
+        }
+      });
       
       if (response.data && response.data.success) {
         console.log('✅ Semana de abastecimento encontrada:', response.data.data?.semana_abastecimento);

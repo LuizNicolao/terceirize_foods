@@ -322,7 +322,8 @@ class CalendarioAPIController {
    */
   static async buscarSemanaAbastecimentoPorConsumo(req, res) {
     try {
-      let { semanaConsumo } = req.params;
+      // Usar query parameter em vez de path parameter para evitar problemas com caracteres especiais
+      let semanaConsumo = req.query.semanaConsumo || req.params.semanaConsumo;
 
       if (!semanaConsumo) {
         return res.status(400).json({
