@@ -108,7 +108,7 @@ const RotaModal = ({
     onFilialChangeRef.current = onFilialChange;
   }, [onFilialChange]);
   
-  // Carregar tipos de rota e unidades quando filial mudar ou modal abrir
+  // Carregar tipos de rota quando filial mudar ou modal abrir
   React.useEffect(() => {
     // Resetar ref quando modal fechar
     if (!isOpen) {
@@ -127,6 +127,7 @@ const RotaModal = ({
           const filialIdDaRota = rota.filial_id;
           if (filialIdDaRota && filialProcessadaRef.current !== key) {
             filialProcessadaRef.current = key;
+            // Carregar apenas tipos de rota, não unidades ainda
             onFilialChangeRef.current && onFilialChangeRef.current(filialIdDaRota, null, rota.id);
           }
         }, 300);
@@ -140,12 +141,27 @@ const RotaModal = ({
       const key = `filial-${filialId}`;
       if (filialProcessadaRef.current !== key) {
         filialProcessadaRef.current = key;
-        // Passar grupoId e rotaId para buscar unidades considerando grupo
-        const rotaIdParaBusca = rota?.id || null;
-        onFilialChangeRef.current && onFilialChangeRef.current(filialId, grupoId, rotaIdParaBusca);
+        // Carregar apenas tipos de rota quando filial mudar, não unidades ainda
+        // Unidades serão carregadas quando tipo de rota for selecionado
+        onFilialChangeRef.current && onFilialChangeRef.current(filialId, null, null);
       }
     }
-  }, [isOpen, rota?.filial_id, rota?.id, filialId, grupoId, isViewMode]);
+  }, [isOpen, rota?.filial_id, rota?.id, filialId, isViewMode]);
+
+  // Carregar unidades quando tipo de rota for selecionado (além da filial)
+  React.useEffect(() => {
+    if (!isOpen || isViewMode) return;
+
+    // Só carregar unidades se filial E tipo de rota estiverem selecionados
+    if (filialId && tipoRotaId) {
+      const tipoSelecionado = tiposRota.find(t => t.id === parseInt(tipoRotaId));
+      const grupoIdDoTipo = tipoSelecionado?.grupo_id || null;
+      const rotaIdParaBusca = rota?.id || null;
+      
+      // Carregar unidades considerando grupo do tipo de rota
+      onFilialChangeRef.current && onFilialChangeRef.current(filialId, grupoIdDoTipo, rotaIdParaBusca);
+    }
+  }, [isOpen, filialId, tipoRotaId, tiposRota, rota?.id, isViewMode]);
 
   // No modo de edição, marcar unidades já vinculadas como selecionadas
   React.useEffect(() => {
