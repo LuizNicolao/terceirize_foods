@@ -61,28 +61,39 @@ const RotaModal = ({
     }
   }, []);
 
-  // Carregar frequências disponíveis quando o modal abrir
+  // Carregar frequências disponíveis quando o modal abrir (sempre, inclusive em viewMode)
   React.useEffect(() => {
-    if (isOpen && !isViewMode) {
+    if (isOpen) {
       loadFrequencias();
     }
-  }, [isOpen, isViewMode, loadFrequencias]);
+  }, [isOpen, loadFrequencias]);
 
+  // Preencher formulário com dados da rota quando rota e frequências estiverem disponíveis
+  // Este useEffect só executa quando as frequências terminarem de carregar (ou já estiverem carregadas)
   React.useEffect(() => {
-    if (rota && isOpen) {
-      // Preencher formulário com dados da rota
-      Object.keys(rota).forEach(key => {
-        if (rota[key] !== null && rota[key] !== undefined) {
-          setValue(key, rota[key]);
-        }
-      });
-    } else if (!rota && isOpen) {
-      // Resetar formulário para nova rota
-      reset();
-      setValue('status', 'ativo');
-      setValue('frequencia_entrega', 'semanal');
+    // Só processar se modal está aberto
+    if (!isOpen) return;
+
+    if (rota) {
+      // Só preencher se frequências já foram carregadas (não está mais carregando)
+      // Isso garante que o dropdown já tem as opções disponíveis antes de setar o valor
+      if (!loadingFrequencias && frequencias.length > 0) {
+        // Preencher formulário com dados da rota
+        Object.keys(rota).forEach(key => {
+          if (rota[key] !== null && rota[key] !== undefined) {
+            setValue(key, rota[key]);
+          }
+        });
+      }
+    } else {
+      // Resetar formulário para nova rota (apenas se frequências já estiverem carregadas)
+      if (!loadingFrequencias && frequencias.length > 0) {
+        reset();
+        setValue('status', 'ativo');
+        setValue('frequencia_entrega', 'semanal');
+      }
     }
-  }, [rota, isOpen, setValue, reset]);
+  }, [rota, isOpen, setValue, reset, frequencias, loadingFrequencias]);
 
   // Carregar tipos de rota e unidades disponíveis quando a filial ou tipo de rota mudar
   React.useEffect(() => {
