@@ -116,11 +116,8 @@ const calendarioService = {
   buscarSemanaAbastecimentoPorConsumo: async (semanaConsumo) => {
     try {
       if (!semanaConsumo) {
-        console.warn('⚠️ semanaConsumo está vazio');
         return { success: false, data: null };
       }
-      
-      console.log('📤 Enviando semana_consumo para backend:', semanaConsumo);
       
       // Usar query parameter em vez de path parameter para evitar problemas com caracteres especiais
       const response = await api.get(`/calendario/api/semana-abastecimento-por-consumo`, {
@@ -129,14 +126,9 @@ const calendarioService = {
         }
       });
       
-      if (response.data && response.data.success) {
-        console.log('✅ Semana de abastecimento encontrada:', response.data.data?.semana_abastecimento);
-      }
-      
       return response.data;
     } catch (error) {
-      console.error('❌ Erro ao buscar semana de abastecimento por consumo:', error);
-      console.error('❌ Erro detalhes:', error.response?.data || error.message);
+      console.error('Erro ao buscar semana de abastecimento por consumo:', error);
       return { success: false, data: null };
     }
   },
