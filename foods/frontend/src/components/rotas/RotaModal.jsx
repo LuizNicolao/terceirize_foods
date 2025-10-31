@@ -13,6 +13,9 @@ const RotaModal = ({
   isViewMode = false,
   filiais = [],
   loadingFiliais = false,
+  tiposRota = [],
+  loadingTiposRota = false,
+  onFilialChange,
   unidadesEscolares = [],
   loadingUnidades = false,
   showUnidades = false,
@@ -20,7 +23,6 @@ const RotaModal = ({
   onToggleUnidades,
   unidadesDisponiveis = [],
   loadingUnidadesDisponiveis = false,
-  onFilialChange,
   onSelecionarUnidades
 }) => {
   const { register, handleSubmit, reset, setValue, watch } = useForm();
@@ -77,10 +79,11 @@ const RotaModal = ({
     }
   }, [rota, isOpen, setValue, reset]);
 
-  // Carregar unidades disponíveis quando a filial mudar
+  // Carregar tipos de rota e unidades disponíveis quando a filial mudar
   React.useEffect(() => {
     if (filialId && !isViewMode) {
       onFilialChange && onFilialChange(filialId);
+      // onFilialChange deve incluir loadTiposRota
     } else if (!filialId) {
       setUnidadesSelecionadas([]);
     }
@@ -283,6 +286,26 @@ const RotaModal = ({
               Configurações
             </h3>
             <div className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Tipo de Rota
+                </label>
+                <select
+                  {...register('tipo_rota_id')}
+                  disabled={isViewMode || loadingTiposRota || !filialId}
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                >
+                  <option value="">
+                    {loadingTiposRota ? 'Carregando tipos de rota...' : !filialId ? 'Selecione uma filial primeiro' : 'Selecione o tipo de rota (opcional)'}
+                  </option>
+                  {tiposRota.map(tipo => (
+                    <option key={tipo.id} value={tipo.id}>
+                      {tipo.nome} {tipo.grupo_nome ? `(${tipo.grupo_nome})` : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Frequência de Entrega *

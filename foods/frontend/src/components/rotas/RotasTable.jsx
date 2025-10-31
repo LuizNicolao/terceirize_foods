@@ -39,6 +39,7 @@ const RotasTable = ({
               <SortableTableHeader label="Código" field="codigo" currentSort={sortField} currentDirection={sortDirection} onSort={onSort} />
               <SortableTableHeader label="Nome" field="nome" currentSort={sortField} currentDirection={sortDirection} onSort={onSort} />
               <SortableTableHeader label="Filial" field="filial_id" currentSort={sortField} currentDirection={sortDirection} onSort={onSort} />
+              <SortableTableHeader label="Tipo de Rota" field="tipo_rota_nome" currentSort={sortField} currentDirection={sortDirection} onSort={onSort} />
               <SortableTableHeader label="Frequência" field="frequencia_entrega" currentSort={sortField} currentDirection={sortDirection} onSort={onSort} />
               <SortableTableHeader label="Status" field="status" currentSort={sortField} currentDirection={sortDirection} onSort={onSort} />
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
@@ -51,6 +52,9 @@ const RotasTable = ({
                 <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{rota.nome}</td>
                 <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                   {loadingFiliais ? 'Carregando...' : getFilialName(rota.filial_id)}
+                </td>
+                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
+                  {rota.tipo_rota_nome || <span className="text-gray-400 italic">Não informado</span>}
                 </td>
                 <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                   <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
@@ -95,6 +99,9 @@ const RotasTable = ({
               <div>
                 <h3 className="text-sm font-semibold text-gray-900">{rota.nome}</h3>
                 <p className="text-xs text-gray-500">Código: {rota.codigo}</p>
+                {rota.tipo_rota_nome && (
+                  <p className="text-xs text-gray-600 mt-1">Tipo: {rota.tipo_rota_nome}</p>
+                )}
               </div>
               <RotasActions
                 rota={rota}
@@ -114,6 +121,13 @@ const RotasTable = ({
                   {loadingFiliais ? 'Carregando...' : getFilialName(rota.filial_id)}
                 </span>
               </div>
+              
+              {rota.tipo_rota_nome && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Tipo de Rota:</span>
+                  <span className="text-gray-900">{rota.tipo_rota_nome}</span>
+                </div>
+              )}
               
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Frequência:</span>

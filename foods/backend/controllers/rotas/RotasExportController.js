@@ -19,6 +19,7 @@ class RotasExportController {
         { header: 'Código', key: 'codigo', width: 15 },
         { header: 'Nome', key: 'nome', width: 40 },
         { header: 'Filial', key: 'filial_nome', width: 30 },
+        { header: 'Tipo de Rota', key: 'tipo_rota_nome', width: 25 },
         { header: 'Frequência', key: 'frequencia_entrega', width: 15 },
         { header: 'Total Unidades', key: 'total_unidades', width: 15 },
         { header: 'Status', key: 'status', width: 15 }
@@ -85,6 +86,7 @@ class RotasExportController {
           codigo: rota.codigo,
           nome: rota.nome,
           filial_nome: rota.filial_nome || 'Sem filial',
+          tipo_rota_nome: rota.tipo_rota_nome || 'Não informado',
           frequencia_entrega: rota.frequencia_entrega || 'N/A',
           total_unidades: rota.total_unidades || 0,
           status: rota.status === 'ativo' ? 'Ativo' : 'Inativo'
@@ -162,9 +164,11 @@ class RotasExportController {
           r.frequencia_entrega,
           r.status,
           f.filial as filial_nome,
+          tr.nome as tipo_rota_nome,
           (SELECT COUNT(*) FROM unidades_escolares ue WHERE ue.rota_id = r.id) as total_unidades
         FROM rotas r
         LEFT JOIN filiais f ON r.filial_id = f.id
+        LEFT JOIN tipo_rota tr ON r.tipo_rota_id = tr.id
         ${whereClause}
         ORDER BY r.codigo ASC
         LIMIT ${parseInt(limit)}
@@ -181,6 +185,10 @@ class RotasExportController {
         
         if (rota.filial_nome) {
           doc.text(`Filial: ${rota.filial_nome}`);
+        }
+        
+        if (rota.tipo_rota_nome) {
+          doc.text(`Tipo de Rota: ${rota.tipo_rota_nome}`);
         }
         
         doc.text(`Frequência: ${rota.frequencia_entrega || 'N/A'}`);

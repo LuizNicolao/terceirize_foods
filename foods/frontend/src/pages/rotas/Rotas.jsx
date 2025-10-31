@@ -35,6 +35,9 @@ const Rotas = () => {
     showUnidades,
     totalUnidades,
     validationErrors,
+    tiposRota,
+    loadingTiposRota,
+    loadTiposRota,
     unidadesDisponiveis,
     loadingUnidadesDisponiveis,
     loadUnidadesDisponiveisPorFilial,
@@ -192,6 +195,8 @@ const Rotas = () => {
         isViewMode={viewMode}
         filiais={filiais}
         loadingFiliais={loadingFiliais}
+        tiposRota={tiposRota}
+        loadingTiposRota={loadingTiposRota}
         unidadesEscolares={unidadesEscolares}
         loadingUnidades={loadingUnidades}
         showUnidades={showUnidades}
@@ -200,6 +205,8 @@ const Rotas = () => {
         unidadesDisponiveis={unidadesDisponiveis}
         loadingUnidadesDisponiveis={loadingUnidadesDisponiveis}
         onFilialChange={(filialId) => {
+          // Carregar tipos de rota quando filial mudar
+          loadTiposRota(filialId);
           // Se está editando uma rota, carregar todas as unidades (incluindo as já vinculadas)
           // Se está criando, carregar apenas as disponíveis
           if (editingRota) {

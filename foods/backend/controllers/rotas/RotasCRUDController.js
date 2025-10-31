@@ -15,6 +15,7 @@ class RotasCRUDController {
         nome,
         status = 'ativo',
         frequencia_entrega = 'semanal',
+        tipo_rota_id,
         unidades_selecionadas = []
       } = req.body;
 
@@ -63,11 +64,27 @@ class RotasCRUDController {
         });
       }
 
+      // Verificar se tipo_rota_id existe (se fornecido)
+      if (tipo_rota_id) {
+        const tipoRota = await executeQuery(
+          'SELECT id FROM tipo_rota WHERE id = ? AND filial_id = ?',
+          [tipo_rota_id, filial_id]
+        );
+
+        if (tipoRota.length === 0) {
+          return res.status(400).json({
+            success: false,
+            error: 'Tipo de rota não encontrado',
+            message: 'O tipo de rota especificado não foi encontrado ou não pertence a esta filial'
+          });
+        }
+      }
+
       // Inserir rota
       const insertQuery = `
         INSERT INTO rotas (
-          filial_id, codigo, nome, status, frequencia_entrega
-        ) VALUES (?, ?, ?, ?, ?)
+          filial_id, codigo, nome, status, frequencia_entrega, tipo_rota_id
+        ) VALUES (?, ?, ?, ?, ?, ?)
       `;
 
       const result = await executeQuery(insertQuery, [
@@ -75,7 +92,8 @@ class RotasCRUDController {
         codigo.trim(),
         nome.trim(),
         status,
-        frequencia_entrega
+        frequencia_entrega,
+        tipo_rota_id || null
       ]);
 
       // Vincular unidades escolares selecionadas à rota
@@ -102,7 +120,17 @@ class RotasCRUDController {
 
       // Buscar rota criada
       const newRota = await executeQuery(
-        'SELECT r.*, f.filial as filial_nome FROM rotas r LEFT JOIN filiais f ON r.filial_id = f.id WHERE r.id = ?',
+        `SELECT 
+          r.*, 
+          f.filial as filial_nome,
+          tr.nome as tipo_rota_nome,
+          tr.grupo_id,
+          g.nome as grupo_nome
+        FROM rotas r 
+        LEFT JOIN filiais f ON r.filial_id = f.id
+        LEFT JOIN tipo_rota tr ON r.tipo_rota_id = tr.id
+        LEFT JOIN grupos g ON tr.grupo_id = g.id
+        WHERE r.id = ?`,
         [result.insertId]
       );
 
@@ -132,6 +160,7 @@ class RotasCRUDController {
         nome,
         status,
         frequencia_entrega,
+        tipo_rota_id,
         unidades_selecionadas = []
       } = req.body;
 
@@ -198,6 +227,25 @@ class RotasCRUDController {
         }
       }
 
+      // Verificar se tipo_rota_id existe (se fornecido)
+      if (tipo_rota_id !== undefined) {
+        const filialIdParaVerificacao = filial_id || existingRota[0].filial_id;
+        if (tipo_rota_id) {
+          const tipoRota = await executeQuery(
+            'SELECT id FROM tipo_rota WHERE id = ? AND filial_id = ?',
+            [tipo_rota_id, filialIdParaVerificacao]
+          );
+
+          if (tipoRota.length === 0) {
+            return res.status(400).json({
+              success: false,
+              error: 'Tipo de rota não encontrado',
+              message: 'O tipo de rota especificado não foi encontrado ou não pertence a esta filial'
+            });
+          }
+        }
+      }
+
       // Construir query de atualização dinamicamente
       const updateFields = [];
       const updateParams = [];
@@ -221,6 +269,10 @@ class RotasCRUDController {
       if (frequencia_entrega !== undefined) {
         updateFields.push('frequencia_entrega = ?');
         updateParams.push(frequencia_entrega);
+      }
+      if (tipo_rota_id !== undefined) {
+        updateFields.push('tipo_rota_id = ?');
+        updateParams.push(tipo_rota_id || null);
       }
 
       // Sempre atualizar o timestamp
@@ -273,7 +325,17 @@ class RotasCRUDController {
 
       // Buscar rota atualizada
       const updatedRota = await executeQuery(
-        'SELECT r.*, f.filial as filial_nome FROM rotas r LEFT JOIN filiais f ON r.filial_id = f.id WHERE r.id = ?',
+        `SELECT 
+          r.*, 
+          f.filial as filial_nome,
+          tr.nome as tipo_rota_nome,
+          tr.grupo_id,
+          g.nome as grupo_nome
+        FROM rotas r 
+        LEFT JOIN filiais f ON r.filial_id = f.id
+        LEFT JOIN tipo_rota tr ON r.tipo_rota_id = tr.id
+        LEFT JOIN grupos g ON tr.grupo_id = g.id
+        WHERE r.id = ?`,
         [id]
       );
 

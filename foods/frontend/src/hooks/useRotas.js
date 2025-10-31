@@ -30,6 +30,8 @@ export const useRotas = () => {
   // Estados específicos das rotas
   const [filiais, setFiliais] = useState([]);
   const [loadingFiliais, setLoadingFiliais] = useState(false);
+  const [tiposRota, setTiposRota] = useState([]);
+  const [loadingTiposRota, setLoadingTiposRota] = useState(false);
   const [unidadesEscolares, setUnidadesEscolares] = useState([]);
   const [loadingUnidades, setLoadingUnidades] = useState(false);
   const [showUnidades, setShowUnidades] = useState(false);
@@ -67,6 +69,35 @@ export const useRotas = () => {
       toast.error('Erro ao carregar filiais');
     } finally {
       setLoadingFiliais(false);
+    }
+  }, []);
+
+  /**
+   * Carrega tipos de rota por filial
+   */
+  const loadTiposRota = useCallback(async (filialId) => {
+    if (!filialId || filialId === 'todos') {
+      setTiposRota([]);
+      return;
+    }
+
+    try {
+      setLoadingTiposRota(true);
+      const TipoRotaService = (await import('../services/tipoRota')).default;
+      const result = await TipoRotaService.buscarPorFilial(filialId);
+      
+      if (result.success) {
+        setTiposRota(result.data || []);
+      } else {
+        setTiposRota([]);
+        toast.error(result.error || 'Erro ao carregar tipos de rota');
+      }
+    } catch (error) {
+      console.error('Erro ao carregar tipos de rota:', error);
+      setTiposRota([]);
+      toast.error('Erro ao carregar tipos de rota');
+    } finally {
+      setLoadingTiposRota(false);
     }
   }, []);
 
@@ -342,6 +373,7 @@ export const useRotas = () => {
     loadUnidadesEscolares,
     loadUnidadesDisponiveisPorFilial,
     loadTodasUnidadesPorFilial,
+    loadTiposRota,
     
     // Funções utilitárias
     getFilialName,
