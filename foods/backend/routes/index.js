@@ -10,6 +10,7 @@ const fornecedoresRoutes = require('./fornecedores');
 const clientesRoutes = require('./clientes');
 const filiaisRoutes = require('./filiais');
 const rotasRoutes = require('./rotas');
+const tipoRotaRoutes = require('./tipo-rota');
 const unidadesEscolaresRoutes = require('./unidades_escolares');
 const produtosRoutes = require('./produtos');
 const gruposRoutes = require('./grupos');
@@ -46,6 +47,7 @@ const routes = [
   { path: '/clientes', router: clientesRoutes },
   { path: '/filiais', router: filiaisRoutes },
   { path: '/rotas', router: rotasRoutes },
+  { path: '/tipo-rota', router: tipoRotaRoutes },
   { path: '/unidades-escolares', router: unidadesEscolaresRoutes },
   { path: '/produtos', router: produtosRoutes },
   { path: '/grupos', router: gruposRoutes },

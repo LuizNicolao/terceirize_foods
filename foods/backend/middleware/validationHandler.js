@@ -113,6 +113,21 @@ const validationConfigs = {
     defaultCategory: 'basicInfo'
   },
 
+  // Configuração para Tipo de Rota
+  tipo_rota: {
+    categories: {
+      basicInfo: ['nome', 'status'],
+      routeInfo: ['filial_id', 'grupo_id'],
+      additionalInfo: ['observacoes']
+    },
+    categoryNames: {
+      basicInfo: 'Informações Básicas',
+      routeInfo: 'Informações da Rota',
+      additionalInfo: 'Informações Adicionais'
+    },
+    defaultCategory: 'basicInfo'
+  },
+
   // Configuração para Usuários
   usuarios: {
     categories: {

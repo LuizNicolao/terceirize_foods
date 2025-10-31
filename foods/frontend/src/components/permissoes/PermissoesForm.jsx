@@ -44,7 +44,8 @@ const PermissoesForm = ({
       { key: 'veiculos', label: 'Veículos' },
       { key: 'motoristas', label: 'Motoristas' },
       { key: 'ajudantes', label: 'Ajudantes' },
-      { key: 'rotas', label: 'Rotas' }
+      { key: 'rotas', label: 'Rotas' },
+      { key: 'tipo_rota', label: 'Tipo de Rota' }
     ],
     'Sistema': [
       { key: 'cotacao', label: 'Cotação' },

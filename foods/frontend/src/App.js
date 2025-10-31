@@ -10,6 +10,7 @@ import Fornecedores from './pages/fornecedores/Fornecedores';
 import Clientes from './pages/clientes/Clientes';
 import Filiais from './pages/filiais/Filiais';
 import Rotas from './pages/rotas/Rotas';
+import TipoRota from './pages/tipo-rota/TipoRota';
 import UnidadesEscolares from './pages/unidades-escolares/UnidadesEscolares';
 import Produtos from './pages/produtos/Produtos';
 import Grupos from './pages/grupos/Grupos';
@@ -136,6 +137,17 @@ const App = () => {
           <AuthenticatedRoute>
             <ProtectedRoute screen="rotas">
               <Rotas />
+            </ProtectedRoute>
+          </AuthenticatedRoute>
+        } 
+      />
+
+      <Route 
+        path="/foods/tipo-rota" 
+        element={
+          <AuthenticatedRoute>
+            <ProtectedRoute screen="tipo_rota">
+              <TipoRota />
             </ProtectedRoute>
           </AuthenticatedRoute>
         } 
