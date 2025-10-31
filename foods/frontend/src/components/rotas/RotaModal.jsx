@@ -136,11 +136,15 @@ const RotaModal = ({
     onFilialChangeRef.current = onFilialChange;
   }, [onFilialChange]);
   
+  // Ref para rastrear a filial anterior e limpar tipo de rota quando filial mudar
+  const filialAnteriorRef = React.useRef(null);
+
   // Carregar tipos de rota quando filial mudar ou modal abrir
   React.useEffect(() => {
     // Resetar ref quando modal fechar
     if (!isOpen) {
       filialProcessadaRef.current = null;
+      filialAnteriorRef.current = null;
       setUnidadesSelecionadas([]);
       setBuscaUnidades('');
       return;
@@ -155,6 +159,7 @@ const RotaModal = ({
           const filialIdDaRota = rota.filial_id;
           if (filialIdDaRota && filialProcessadaRef.current !== key) {
             filialProcessadaRef.current = key;
+            filialAnteriorRef.current = filialIdDaRota;
             // Carregar apenas tipos de rota, não unidades ainda
             onFilialChangeRef.current && onFilialChangeRef.current(filialIdDaRota, null, rota.id);
           }
@@ -167,14 +172,26 @@ const RotaModal = ({
     // Se filialId mudou (via watch) e não é o mesmo que já foi processado
     if (filialId && !isViewMode) {
       const key = `filial-${filialId}`;
+      
+      // Se a filial realmente mudou (não apenas foi inicializada), limpar tipo de rota
+      if (filialAnteriorRef.current && filialAnteriorRef.current !== filialId && tipoRotaId) {
+        setValue('tipo_rota_id', '');
+        setUnidadesSelecionadas([]);
+        setBuscaUnidades('');
+      }
+      
       if (filialProcessadaRef.current !== key) {
         filialProcessadaRef.current = key;
+        filialAnteriorRef.current = filialId;
         // Carregar apenas tipos de rota quando filial mudar, não unidades ainda
         // Unidades serão carregadas quando tipo de rota for selecionado
         onFilialChangeRef.current && onFilialChangeRef.current(filialId, null, null);
       }
+    } else if (filialId && filialAnteriorRef.current !== filialId) {
+      // Atualizar referência mesmo se não processar (para rastrear mudanças)
+      filialAnteriorRef.current = filialId;
     }
-  }, [isOpen, rota?.filial_id, rota?.id, filialId, isViewMode]);
+  }, [isOpen, rota?.filial_id, rota?.id, filialId, tipoRotaId, isViewMode, setValue]);
 
   // Carregar unidades quando tipo de rota for selecionado (além da filial)
   React.useEffect(() => {
