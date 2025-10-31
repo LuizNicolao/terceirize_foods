@@ -424,7 +424,7 @@ const RotaModal = ({
 
 
         {/* Seção de Seleção de Unidades Escolares (para criação e edição) */}
-        {!isViewMode && filialId && (
+        {!isViewMode && filialId && tipoRotaId && (
           <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
             <div className="flex justify-between items-center mb-3 pb-2 border-b-2 border-green-500">
               <h3 className="text-sm font-semibold text-gray-700">
@@ -474,7 +474,7 @@ const RotaModal = ({
                 <div className="text-gray-500">
                   {buscaUnidades.trim() 
                     ? `Nenhuma unidade encontrada para "${buscaUnidades}"`
-                    : 'Nenhuma unidade escolar disponível para esta filial'
+                    : 'Nenhuma unidade escolar disponível para esta filial e tipo de rota'
                   }
                 </div>
                 {buscaUnidades.trim() && (
