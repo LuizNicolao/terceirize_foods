@@ -322,26 +322,82 @@ class ReceitasCRUDController {
         console.log(`   ${idx + 1}. "${linha.trim()}"`);
       });
       
-      // Primeiras linhas geralmente contêm o nome (pular cabeçalhos comuns)
+      // Buscar nome da receita - procurar por linhas com código de receita (R25.xxx, LL25.xxx, etc)
       let nomeReceita = '';
       let inicioTexto = 0;
-      const palavrasCabeçalho = ['SECRETARIA', 'DIRETORIA', 'GERÊNCIA', 'ESTADO', 'EDUCAÇÃO'];
+      const palavrasCabeçalho = [
+        'SECRETARIA', 'DIRETORIA', 'GERÊNCIA', 'ESTADO', 'EDUCAÇÃO', 
+        'PROGRAMA NACIONAL', 'PNAE', 'CARDÁPIO', 'PARCIAL', 'OUTUBRO',
+        'JANEIRO', 'FEVEREIRO', 'MARÇO', 'ABRIL', 'MAIO', 'JUNHO',
+        'JULHO', 'AGOSTO', 'SETEMBRO', 'NOVEMBRO', 'DEZEMBRO'
+      ];
       
-      console.log('\n🔍 Buscando nome da receita (pulando cabeçalhos)...');
-      for (let i = 0; i < Math.min(10, linhas.length); i++) {
+      // Padrão para código de receita: R25.375, LL25.228, etc
+      const padraoCodigoReceita = /^[A-Z]{1,2}\d{2}\.\d{2,3}/;
+      
+      console.log('\n🔍 Buscando nome da receita (procurando código de receita e pulando cabeçalhos)...');
+      
+      // Primeiro: procurar por linha com código de receita
+      for (let i = 0; i < Math.min(50, linhas.length); i++) {
         const linha = linhas[i].trim();
         console.log(`   Linha ${i + 1}: "${linha}"`);
-        if (linha.length > 10 && !palavrasCabeçalho.some(p => linha.toUpperCase().includes(p))) {
-          nomeReceita = linha.substring(0, 200);
-          inicioTexto = i;
-          console.log(`   ✅ Nome encontrado na linha ${i + 1}: "${nomeReceita}"`);
-          break;
+        
+        // Verificar se a linha começa com código de receita
+        if (padraoCodigoReceita.test(linha)) {
+          // Extrair nome da receita (tudo após o código)
+          const match = linha.match(/^[A-Z]{1,2}\d{2}\.\d{2,3}\s+(.+)/);
+          if (match && match[1]) {
+            // Pegar nome da receita e algumas linhas seguintes que podem continuar a descrição
+            let nomeCompleto = match[1].trim();
+            let j = i + 1;
+            let linhasDescricao = [];
+            
+            // Pegar até 3 linhas seguintes que não sejam códigos de receita e não sejam muito curtas
+            while (j < linhas.length && linhasDescricao.length < 3) {
+              const linhaSeg = linhas[j].trim();
+              if (!padraoCodigoReceita.test(linhaSeg) && 
+                  linhaSeg.length > 5 && 
+                  !palavrasCabeçalho.some(p => linhaSeg.toUpperCase().includes(p))) {
+                linhasDescricao.push(linhaSeg);
+              } else {
+                break;
+              }
+              j++;
+            }
+            
+            if (linhasDescricao.length > 0) {
+              nomeCompleto += ' ' + linhasDescricao.join(' ');
+            }
+            
+            nomeReceita = nomeCompleto.substring(0, 200).trim();
+            inicioTexto = i;
+            console.log(`   ✅ Nome encontrado na linha ${i + 1}: "${nomeReceita}"`);
+            break;
+          }
         }
       }
       
+      // Fallback: procurar primeira linha que não seja cabeçalho
+      if (!nomeReceita) {
+        console.log('   ⚠️ Código de receita não encontrado, procurando primeira linha válida...');
+        for (let i = 0; i < Math.min(20, linhas.length); i++) {
+          const linha = linhas[i].trim();
+          if (linha.length > 10 && 
+              !palavrasCabeçalho.some(p => linha.toUpperCase().includes(p)) &&
+              !linha.match(/^\d{1,2}\/\d{1,2}\/\d{4}/) && // Não é data
+              !linha.match(/^(Matutino|Vespertino|Noturno|Semana)/i)) { // Não é turno ou semana
+            nomeReceita = linha.substring(0, 200);
+            inicioTexto = i;
+            console.log(`   ✅ Nome encontrado na linha ${i + 1}: "${nomeReceita}"`);
+            break;
+          }
+        }
+      }
+      
+      // Último fallback
       if (!nomeReceita && linhas.length > 0) {
-        nomeReceita = linhas[0].trim().substring(0, 200);
-        console.log(`   ⚠️ Usando primeira linha como nome: "${nomeReceita}"`);
+        nomeReceita = 'Receita Extraída do PDF';
+        console.log(`   ⚠️ Nome não encontrado, usando padrão: "${nomeReceita}"`);
       }
 
       // Buscar seção de instruções/preparo
