@@ -139,12 +139,16 @@ const RotaModal = ({
   // Ref para rastrear a filial anterior e limpar tipo de rota quando filial mudar
   const filialAnteriorRef = React.useRef(null);
 
+  // Ref para rastrear se unidades já foram carregadas para esta combinação de filial + tipo de rota
+  const unidadesCarregadasRef = React.useRef(null);
+
   // Carregar tipos de rota quando filial mudar ou modal abrir
   React.useEffect(() => {
-    // Resetar ref quando modal fechar
+    // Resetar refs quando modal fechar
     if (!isOpen) {
       filialProcessadaRef.current = null;
       filialAnteriorRef.current = null;
+      unidadesCarregadasRef.current = null;
       setUnidadesSelecionadas([]);
       setBuscaUnidades('');
       return;
@@ -174,8 +178,10 @@ const RotaModal = ({
       const key = `filial-${filialId}`;
       
       // Se a filial realmente mudou (não apenas foi inicializada), limpar tipo de rota
-      if (filialAnteriorRef.current && filialAnteriorRef.current !== filialId && tipoRotaId) {
-        setValue('tipo_rota_id', '');
+      // Usar watch para obter valor atual sem adicionar como dependência
+      const tipoRotaAtual = watch('tipo_rota_id');
+      if (filialAnteriorRef.current && filialAnteriorRef.current !== filialId && tipoRotaAtual) {
+        setValue('tipo_rota_id', '', { shouldValidate: false });
         setUnidadesSelecionadas([]);
         setBuscaUnidades('');
       }
@@ -191,7 +197,10 @@ const RotaModal = ({
       // Atualizar referência mesmo se não processar (para rastrear mudanças)
       filialAnteriorRef.current = filialId;
     }
-  }, [isOpen, rota?.filial_id, rota?.id, filialId, tipoRotaId, isViewMode, setValue]);
+  }, [isOpen, rota?.filial_id, rota?.id, filialId, isViewMode, setValue, watch]);
+
+  // Ref para rastrear se unidades já foram carregadas para esta combinação de filial + tipo de rota
+  const unidadesCarregadasRef = React.useRef(null);
 
   // Carregar unidades quando tipo de rota for selecionado (além da filial)
   React.useEffect(() => {
@@ -199,12 +208,21 @@ const RotaModal = ({
 
     // Só carregar unidades se filial E tipo de rota estiverem selecionados
     if (filialId && tipoRotaId) {
-      const tipoSelecionado = tiposRota.find(t => t.id === parseInt(tipoRotaId));
-      const grupoIdDoTipo = tipoSelecionado?.grupo_id || null;
-      const rotaIdParaBusca = rota?.id || null;
+      const chaveUnidades = `${filialId}-${tipoRotaId}-${rota?.id || 'new'}`;
       
-      // Carregar unidades considerando grupo do tipo de rota
-      onFilialChangeRef.current && onFilialChangeRef.current(filialId, grupoIdDoTipo, rotaIdParaBusca);
+      // Só carregar se ainda não carregou para esta combinação
+      if (unidadesCarregadasRef.current !== chaveUnidades) {
+        const tipoSelecionado = tiposRota.find(t => t.id === parseInt(tipoRotaId));
+        const grupoIdDoTipo = tipoSelecionado?.grupo_id || null;
+        const rotaIdParaBusca = rota?.id || null;
+        
+        unidadesCarregadasRef.current = chaveUnidades;
+        // Carregar unidades considerando grupo do tipo de rota
+        onFilialChangeRef.current && onFilialChangeRef.current(filialId, grupoIdDoTipo, rotaIdParaBusca);
+      }
+    } else {
+      // Se tipo de rota foi removido, resetar ref
+      unidadesCarregadasRef.current = null;
     }
   }, [isOpen, filialId, tipoRotaId, tiposRota, rota?.id, isViewMode]);
 
