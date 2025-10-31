@@ -1,10 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import necessidadesLogisticaService from '../services/necessidadesLogisticaService';
+import necessidadesService from '../services/necessidadesService';
 import escolasService from '../services/escolasService';
-import produtosPerCapita from '../services/produtosPerCapita';
 import toast from 'react-hot-toast';
 import { useAuth } from '../contexts/AuthContext';
-import { useExport } from './common/useExport';
 
 export const useNecessidadesLogistica = () => {
   const { user } = useAuth();
