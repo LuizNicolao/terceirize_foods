@@ -299,6 +299,76 @@ class TipoRotaSearchController {
       });
     }
   }
+
+  // Buscar grupos disponíveis para uma filial (excluindo grupos já vinculados a outros tipos de rota)
+  static async buscarGruposDisponiveisPorFilial(req, res) {
+    try {
+      const { filialId } = req.params;
+      const { tipoRotaId } = req.query; // Opcional: se estiver editando, manter grupos do próprio tipo_rota
+
+      // Buscar todos os grupos ativos
+      const todosGruposQuery = `
+        SELECT id, nome
+        FROM grupos
+        WHERE status = 'ativo'
+        ORDER BY nome ASC
+      `;
+      const todosGrupos = await executeQuery(todosGruposQuery);
+
+      // Se não há filial selecionada, retornar todos os grupos
+      if (!filialId) {
+        return res.json({
+          success: true,
+          data: todosGrupos
+        });
+      }
+
+      // Buscar grupos já vinculados a outros tipos de rota na mesma filial
+      const gruposVinculadosQuery = `
+        SELECT DISTINCT tr.id as tipo_rota_id, tr.grupo_id
+        FROM tipo_rota tr
+        WHERE tr.filial_id = ?
+      `;
+      const tiposRotasComGrupos = await executeQuery(gruposVinculadosQuery, [filialId]);
+
+      // Coletar todos os IDs de grupos vinculados
+      const gruposVinculadosIds = new Set();
+      
+      tiposRotasComGrupos.forEach(tr => {
+        // Parsear grupos_id da string (pode ser "15,7" ou apenas "15")
+        const gruposIds = TipoRotaCRUDController.gruposToArray(tr.grupo_id);
+        
+        // Se estiver editando um tipo_rota, não excluir os grupos desse tipo_rota
+        if (tipoRotaId && parseInt(tr.tipo_rota_id) === parseInt(tipoRotaId)) {
+          // Não adicionar grupos deste tipo_rota ao conjunto de excluídos
+          return;
+        }
+        
+        // Adicionar todos os grupos deste tipo_rota aos excluídos
+        gruposIds.forEach(grupoId => {
+          gruposVinculadosIds.add(grupoId);
+        });
+      });
+
+      // Filtrar grupos disponíveis (não vinculados)
+      const gruposDisponiveis = todosGrupos.filter(grupo => 
+        !gruposVinculadosIds.has(grupo.id)
+      );
+
+      res.json({
+        success: true,
+        data: gruposDisponiveis
+      });
+
+    } catch (error) {
+      console.error('Erro ao buscar grupos disponíveis:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro interno do servidor',
+        message: 'Não foi possível buscar os grupos disponíveis'
+      });
+    }
+  }
 }
 
 module.exports = TipoRotaSearchController;

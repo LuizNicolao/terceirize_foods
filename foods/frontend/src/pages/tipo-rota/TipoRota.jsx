@@ -22,6 +22,9 @@ const TipoRota = () => {
     loading,
     loadingFiliais,
     loadingGrupos,
+    gruposDisponiveis,
+    loadingGruposDisponiveis,
+    loadGruposDisponiveisPorFilial,
     showModal,
     viewMode,
     editingTipoRota,
@@ -198,6 +201,9 @@ const TipoRota = () => {
         loadingFiliais={loadingFiliais}
         grupos={grupos}
         loadingGrupos={loadingGrupos}
+        gruposDisponiveis={gruposDisponiveis}
+        loadingGruposDisponiveis={loadingGruposDisponiveis}
+        loadGruposDisponiveisPorFilial={loadGruposDisponiveisPorFilial}
       />
 
       {/* Modal de Auditoria */}

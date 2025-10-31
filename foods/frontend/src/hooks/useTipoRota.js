@@ -32,6 +32,8 @@ export const useTipoRota = () => {
   const [loadingFiliais, setLoadingFiliais] = useState(false);
   const [grupos, setGrupos] = useState([]);
   const [loadingGrupos, setLoadingGrupos] = useState(false);
+  const [gruposDisponiveis, setGruposDisponiveis] = useState([]);
+  const [loadingGruposDisponiveis, setLoadingGruposDisponiveis] = useState(false);
 
   // Estados de estatísticas específicas
   const [estatisticasTipoRotas, setEstatisticasTipoRotas] = useState({
@@ -76,6 +78,33 @@ export const useTipoRota = () => {
       setLoadingGrupos(false);
     }
   }, []);
+
+  /**
+   * Carrega grupos disponíveis por filial (excluindo grupos já vinculados)
+   */
+  const loadGruposDisponiveisPorFilial = useCallback(async (filialId, tipoRotaId = null) => {
+    if (!filialId) {
+      // Se não há filial, usar todos os grupos
+      setGruposDisponiveis(grupos);
+      return;
+    }
+
+    try {
+      setLoadingGruposDisponiveis(true);
+      const result = await TipoRotaService.buscarGruposDisponiveisPorFilial(filialId, tipoRotaId);
+      if (result.success) {
+        setGruposDisponiveis(result.data || []);
+      } else {
+        console.error('Erro ao carregar grupos disponíveis:', result.error);
+        setGruposDisponiveis([]);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar grupos disponíveis:', error);
+      setGruposDisponiveis([]);
+    } finally {
+      setLoadingGruposDisponiveis(false);
+    }
+  }, [grupos]);
 
   /**
    * Carrega estatísticas específicas
@@ -253,6 +282,9 @@ export const useTipoRota = () => {
     loadingFiliais,
     grupos,
     loadingGrupos,
+    gruposDisponiveis,
+    loadingGruposDisponiveis,
+    loadGruposDisponiveisPorFilial,
     
     // Ações de modal
     handleAddTipoRota: baseEntity.handleAdd,

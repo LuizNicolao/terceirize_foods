@@ -207,6 +207,24 @@ class TipoRotaService {
     }
   }
 
+  // Buscar grupos disponíveis por filial (excluindo grupos já vinculados)
+  static async buscarGruposDisponiveisPorFilial(filialId, tipoRotaId = null) {
+    try {
+      const params = tipoRotaId ? { tipoRotaId } : {};
+      const response = await api.get(`/tipo-rota/grupos-disponiveis/filial/${filialId}`, { params });
+      return {
+        success: true,
+        data: response.data.data || []
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Erro ao buscar grupos disponíveis',
+        data: []
+      };
+    }
+  }
+
   // Buscar estatísticas dos tipos de rota
   static async buscarEstatisticas() {
     try {

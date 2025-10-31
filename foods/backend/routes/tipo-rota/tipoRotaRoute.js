@@ -66,6 +66,12 @@ router.get('/disponiveis/filial/:filialId/grupo/:grupoId',
   tipoRotaController.buscarUnidadesEscolaresDisponiveis
 );
 
+// Buscar grupos disponíveis por filial (excluindo grupos já vinculados a outros tipos de rota)
+router.get('/grupos-disponiveis/filial/:filialId', 
+  checkScreenPermission('tipo_rota', 'visualizar'),
+  tipoRotaController.buscarGruposDisponiveisPorFilial
+);
+
 // ===== ROTAS CRUD PRINCIPAIS =====
 
 // Buscar tipo de rota por ID

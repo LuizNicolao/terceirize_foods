@@ -11,11 +11,20 @@ const TipoRotaModal = ({
   filiais = [],
   loadingFiliais = false,
   grupos = [],
-  loadingGrupos = false
+  loadingGrupos = false,
+  gruposDisponiveis = [],
+  loadingGruposDisponiveis = false,
+  loadGruposDisponiveisPorFilial
 }) => {
-  const { register, handleSubmit, reset, setValue } = useForm();
+  const { register, handleSubmit, reset, setValue, watch } = useForm();
   const [gruposSelecionados, setGruposSelecionados] = useState([]);
   const [buscaGrupo, setBuscaGrupo] = useState('');
+  
+  const filialId = watch('filial_id');
+  
+  // Usar grupos disponíveis se filial estiver selecionada, senão usar todos os grupos
+  const gruposParaExibir = filialId ? gruposDisponiveis : grupos;
+  const loadingGruposParaExibir = filialId ? loadingGruposDisponiveis : loadingGrupos;
 
   React.useEffect(() => {
     if (tipoRota && isOpen) {
@@ -35,6 +44,11 @@ const TipoRotaModal = ({
         setGruposSelecionados([tipoRota.grupo_id]);
         setValue('grupos_id', [tipoRota.grupo_id]);
       }
+      
+      // Carregar grupos disponíveis para a filial do tipo_rota sendo editado
+      if (tipoRota.filial_id && loadGruposDisponiveisPorFilial) {
+        loadGruposDisponiveisPorFilial(tipoRota.filial_id, tipoRota.id);
+      }
     } else if (!tipoRota && isOpen) {
       reset();
       setGruposSelecionados([]);
@@ -47,7 +61,7 @@ const TipoRotaModal = ({
     if (!isOpen) {
       setBuscaGrupo('');
     }
-  }, [tipoRota, isOpen, setValue, reset]);
+  }, [tipoRota, isOpen, setValue, reset, loadGruposDisponiveisPorFilial]);
 
   const handleGrupoToggle = (grupoId) => {
     const grupoIdNum = parseInt(grupoId);
@@ -96,7 +110,20 @@ const TipoRotaModal = ({
               <Input
                 label="Filial *"
                 type="select"
-                {...register('filial_id')}
+                {...register('filial_id', {
+                  onChange: (e) => {
+                    const novaFilialId = e.target.value;
+                    // Limpar grupos selecionados quando filial mudar
+                    if (novaFilialId) {
+                      setGruposSelecionados([]);
+                      setValue('grupos_id', []);
+                      // Carregar grupos disponíveis para a nova filial
+                      if (loadGruposDisponiveisPorFilial) {
+                        loadGruposDisponiveisPorFilial(novaFilialId, tipoRota?.id || null);
+                      }
+                    }
+                  }
+                })}
                 disabled={isViewMode || loadingFiliais}
               >
                 <option value="">
@@ -132,10 +159,16 @@ const TipoRotaModal = ({
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Grupos * <span className="text-gray-500 text-xs">({gruposSelecionados.length} selecionado{gruposSelecionados.length !== 1 ? 's' : ''})</span>
                 </label>
-                {loadingGrupos ? (
+                {!filialId ? (
+                  <div className="text-sm text-gray-500 p-2 border border-gray-300 rounded-lg bg-gray-50">
+                    Selecione uma filial para visualizar os grupos disponíveis
+                  </div>
+                ) : loadingGruposParaExibir ? (
                   <div className="text-sm text-gray-500">Carregando grupos...</div>
-                ) : grupos.length === 0 ? (
-                  <div className="text-sm text-gray-500">Nenhum grupo disponível</div>
+                ) : gruposParaExibir.length === 0 ? (
+                  <div className="text-sm text-gray-500 p-2 border border-gray-300 rounded-lg bg-yellow-50">
+                    Nenhum grupo disponível para esta filial. Todos os grupos já estão vinculados a outros tipos de rota.
+                  </div>
                 ) : (
                   <div className="border border-gray-300 rounded-lg bg-white">
                     {/* Campo de busca */}
@@ -153,7 +186,7 @@ const TipoRotaModal = ({
                     {/* Lista de grupos filtrados */}
                     <div className="p-2 max-h-56 overflow-y-auto">
                       {(() => {
-                        const gruposFiltrados = grupos.filter(grupo =>
+                        const gruposFiltrados = gruposParaExibir.filter(grupo =>
                           grupo.nome.toLowerCase().includes(buscaGrupo.toLowerCase())
                         );
                         

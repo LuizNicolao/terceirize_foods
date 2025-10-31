@@ -25,6 +25,7 @@ module.exports = {
   buscarTipoRotasPorGrupo: TipoRotaSearchController.buscarTipoRotasPorGrupo,
   buscarUnidadesEscolaresTipoRota: TipoRotaSearchController.buscarUnidadesEscolaresTipoRota,
   buscarUnidadesEscolaresDisponiveis: TipoRotaSearchController.buscarUnidadesEscolaresDisponiveis,
+  buscarGruposDisponiveisPorFilial: TipoRotaSearchController.buscarGruposDisponiveisPorFilial,
   
   // Métodos de Estatísticas
   buscarEstatisticasTipoRotas: TipoRotaStatsController.buscarEstatisticasTipoRotas,
