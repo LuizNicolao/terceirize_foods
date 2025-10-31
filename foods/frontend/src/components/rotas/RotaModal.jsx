@@ -68,11 +68,36 @@ const RotaModal = ({
     }
   }, [isOpen, loadFrequencias]);
 
+  // Ref para rastrear se o formulário já foi preenchido (para evitar sobrescrever seleções do usuário)
+  const formularioPreenchidoRef = React.useRef(false);
+  const rotaAnteriorRef = React.useRef(null);
+
+  // Resetar ref quando modal fechar ou rota mudar
+  React.useEffect(() => {
+    if (!isOpen) {
+      formularioPreenchidoRef.current = false;
+      rotaAnteriorRef.current = null;
+      return;
+    }
+
+    // Se a rota mudou (ID diferente), resetar flag de preenchimento
+    if (rota?.id !== rotaAnteriorRef.current?.id) {
+      formularioPreenchidoRef.current = false;
+      rotaAnteriorRef.current = rota;
+    }
+  }, [isOpen, rota]);
+
   // Preencher formulário com dados da rota quando rota, frequências e tipos de rota estiverem disponíveis
   // Este useEffect só executa quando as frequências e tipos de rota terminarem de carregar
   React.useEffect(() => {
     // Só processar se modal está aberto
     if (!isOpen) return;
+
+    // Se já preencheu uma vez e está editando a mesma rota, não preencher novamente
+    // (evita sobrescrever valores que o usuário pode ter alterado)
+    if (rota && formularioPreenchidoRef.current) {
+      return;
+    }
 
     if (rota) {
       // Só preencher se frequências e tipos de rota já foram carregadas (não estão mais carregando)
@@ -87,13 +112,16 @@ const RotaModal = ({
             setValue(key, rota[key]);
           }
         });
+        formularioPreenchidoRef.current = true;
       }
     } else {
       // Resetar formulário para nova rota (apenas se frequências já estiverem carregadas)
-      if (!loadingFrequencias && frequencias.length > 0) {
+      // E só se ainda não resetou (para evitar resetar valores que o usuário preencheu)
+      if (!loadingFrequencias && frequencias.length > 0 && !formularioPreenchidoRef.current) {
         reset();
         setValue('status', 'ativo');
         setValue('frequencia_entrega', 'semanal');
+        formularioPreenchidoRef.current = true;
       }
     }
   }, [rota, isOpen, setValue, reset, frequencias, loadingFrequencias, tiposRota, loadingTiposRota]);
