@@ -37,9 +37,9 @@ export const calcularSemanaAbastecimento = (dataConsumo) => {
     const inicioSemanaAnterior = new Date(data);
     inicioSemanaAnterior.setDate(data.getDate() - 7 - data.getDay() + 1); // -7 dias + ajuste para segunda-feira
     
-    // Calcular o fim da semana anterior (domingo)
+    // Calcular o fim da semana anterior (sexta-feira - apenas 5 dias úteis)
     const fimSemanaAnterior = new Date(inicioSemanaAnterior);
-    fimSemanaAnterior.setDate(inicioSemanaAnterior.getDate() + 6);
+    fimSemanaAnterior.setDate(inicioSemanaAnterior.getDate() + 4); // segunda + 4 dias = sexta (5 dias úteis)
     
     // Formatar as datas
     const formatarDataSemana = (data) => {
