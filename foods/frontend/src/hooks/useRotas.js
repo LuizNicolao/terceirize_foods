@@ -152,9 +152,10 @@ export const useRotas = () => {
   }, []);
 
   /**
-   * Carrega unidades escolares disponíveis por filial (não vinculadas a rota) - para criação
+   * Carrega unidades escolares disponíveis por filial considerando grupo da rota
+   * Regra: Escola só não aparece se já está em uma rota do mesmo grupo
    */
-  const loadUnidadesDisponiveisPorFilial = useCallback(async (filialId) => {
+  const loadUnidadesDisponiveisPorFilial = useCallback(async (filialId, grupoId = null, rotaId = null) => {
     if (!filialId) {
       setUnidadesDisponiveis([]);
       setFilialSelecionada(null);
@@ -165,13 +166,13 @@ export const useRotas = () => {
       setLoadingUnidadesDisponiveis(true);
       setFilialSelecionada(filialId);
       
-      const result = await api.get(`/unidades-escolares/disponiveis/filial/${filialId}`);
+      const result = await RotasService.buscarUnidadesDisponiveisParaRota(filialId, grupoId, rotaId);
       
-      if (result.data.success) {
-        setUnidadesDisponiveis(result.data.data || []);
+      if (result.success) {
+        setUnidadesDisponiveis(result.data || []);
       } else {
         setUnidadesDisponiveis([]);
-        toast.error('Erro ao carregar unidades disponíveis');
+        toast.error(result.error || 'Erro ao carregar unidades disponíveis');
       }
     } catch (error) {
       console.error('Erro ao carregar unidades disponíveis:', error);

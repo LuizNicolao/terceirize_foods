@@ -384,6 +384,126 @@ class RotasSearchController {
       });
     }
   }
+
+  // Buscar unidades escolares disponíveis para uma rota (considerando grupo)
+  static async buscarUnidadesDisponiveisParaRota(req, res) {
+    try {
+      const { filialId } = req.params;
+      const { grupoId, rotaId } = req.query;
+
+      if (!filialId) {
+        return res.status(400).json({
+          success: false,
+          error: 'Filial é obrigatória',
+          message: 'ID da filial é obrigatório'
+        });
+      }
+
+      // Se grupoId não for fornecido, buscar grupo da rota atual
+      let grupoIdFinal = grupoId;
+      if (!grupoIdFinal && rotaId) {
+        const rotaQuery = `
+          SELECT tr.grupo_id
+          FROM rotas r
+          LEFT JOIN tipo_rota tr ON r.tipo_rota_id = tr.id
+          WHERE r.id = ?
+        `;
+        const rotaResult = await executeQuery(rotaQuery, [rotaId]);
+        if (rotaResult.length > 0 && rotaResult[0].grupo_id) {
+          grupoIdFinal = rotaResult[0].grupo_id;
+        }
+      }
+
+      // Query para buscar unidades disponíveis
+      // Regra: Se escola já está em uma rota do mesmo grupo, não deve aparecer
+      // Se está em uma rota de outro grupo, pode aparecer
+      let query = `
+        SELECT 
+          ue.id,
+          ue.codigo_teknisa,
+          ue.nome_escola,
+          ue.cidade,
+          ue.estado,
+          ue.endereco,
+          ue.numero,
+          ue.bairro,
+          ue.centro_distribuicao
+        FROM unidades_escolares ue
+        WHERE ue.filial_id = ? 
+          AND ue.status = 'ativo'
+      `;
+
+      const params = [filialId];
+
+      // Se temos um grupoId, aplicar filtro de grupo
+      if (grupoIdFinal) {
+        query += `
+          AND (
+            -- Unidades não vinculadas a nenhuma rota
+            ue.rota_id IS NULL
+        `;
+        
+        if (rotaId) {
+          query += `
+            OR
+            -- Unidades já vinculadas a esta rota (modo edição - permite manter)
+            ue.rota_id = ?
+          `;
+          params.push(rotaId);
+        }
+        
+        query += `
+            OR
+            -- Unidades vinculadas a rotas que NÃO são do mesmo grupo
+            -- (ou seja, de outros grupos ou sem tipo_rota definido)
+            NOT EXISTS (
+              SELECT 1 
+              FROM rotas r
+              INNER JOIN tipo_rota tr ON r.tipo_rota_id = tr.id
+              WHERE r.id = ue.rota_id 
+                AND tr.grupo_id = ?
+        `;
+        params.push(grupoIdFinal);
+        
+        if (rotaId) {
+          query += `
+                AND r.id != ?
+          `;
+          params.push(rotaId);
+        }
+        
+        query += `
+            )
+          )
+        `;
+      } else {
+        // Se não tem grupo, mostrar todas as unidades não vinculadas ou vinculadas a esta rota
+        if (rotaId) {
+          query += ` AND (ue.rota_id IS NULL OR ue.rota_id = ?)`;
+          params.push(rotaId);
+        } else {
+          query += ` AND ue.rota_id IS NULL`;
+        }
+      }
+
+      query += ` ORDER BY ue.nome_escola ASC`;
+
+      const unidades = await executeQuery(query, params);
+
+      res.json({
+        success: true,
+        data: unidades
+      });
+
+    } catch (error) {
+      console.error('Erro ao buscar unidades disponíveis para rota:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro interno do servidor',
+        message: 'Não foi possível buscar as unidades disponíveis'
+      });
+    }
+  }
 }
 
 module.exports = RotasSearchController;

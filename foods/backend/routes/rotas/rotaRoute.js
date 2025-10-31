@@ -78,6 +78,12 @@ router.get('/:id/unidades-escolares',
   rotasController.buscarUnidadesEscolaresRota
 );
 
+// Buscar unidades escolares disponíveis para uma rota (considerando grupo)
+router.get('/disponiveis/filial/:filialId', 
+  checkScreenPermission('rotas', 'visualizar'),
+  rotasController.buscarUnidadesDisponiveisParaRota
+);
+
 // ===== ROTAS CRUD PRINCIPAIS =====
 
 // Buscar rota por ID

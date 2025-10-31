@@ -32,16 +32,6 @@ export const useTipoRota = () => {
   const [loadingFiliais, setLoadingFiliais] = useState(false);
   const [grupos, setGrupos] = useState([]);
   const [loadingGrupos, setLoadingGrupos] = useState(false);
-  const [unidadesEscolares, setUnidadesEscolares] = useState([]);
-  const [loadingUnidades, setLoadingUnidades] = useState(false);
-  const [showUnidades, setShowUnidades] = useState(false);
-  const [totalUnidades, setTotalUnidades] = useState(0);
-  
-  // Estados para unidades disponíveis por filial e grupo
-  const [unidadesDisponiveis, setUnidadesDisponiveis] = useState([]);
-  const [loadingUnidadesDisponiveis, setLoadingUnidadesDisponiveis] = useState(false);
-  const [filialSelecionada, setFilialSelecionada] = useState(null);
-  const [grupoSelecionado, setGrupoSelecionado] = useState(null);
 
   // Estados de estatísticas específicas
   const [estatisticasTipoRotas, setEstatisticasTipoRotas] = useState({
@@ -109,64 +99,6 @@ export const useTipoRota = () => {
     }
   }, []);
 
-  /**
-   * Carrega unidades escolares de um tipo de rota
-   */
-  const loadUnidadesEscolares = useCallback(async (tipoRotaId) => {
-    try {
-      setLoadingUnidades(true);
-      
-      const result = await TipoRotaService.buscarUnidadesEscolares(tipoRotaId);
-      
-      if (result.success) {
-        setUnidadesEscolares(result.data?.unidades || []);
-        setTotalUnidades(result.data?.total || 0);
-      } else {
-        setUnidadesEscolares([]);
-        setTotalUnidades(0);
-      }
-    } catch (error) {
-      console.error('Erro ao carregar unidades escolares:', error);
-      setUnidadesEscolares([]);
-      setTotalUnidades(0);
-    } finally {
-      setLoadingUnidades(false);
-    }
-  }, []);
-
-  /**
-   * Carrega unidades escolares disponíveis por filial e grupo
-   * Não mostra escolas já vinculadas ao mesmo grupo
-   */
-  const loadUnidadesDisponiveisPorFilialEGrupo = useCallback(async (filialId, grupoId, tipoRotaId = null) => {
-    if (!filialId || !grupoId) {
-      setUnidadesDisponiveis([]);
-      setFilialSelecionada(null);
-      setGrupoSelecionado(null);
-      return;
-    }
-
-    try {
-      setLoadingUnidadesDisponiveis(true);
-      setFilialSelecionada(filialId);
-      setGrupoSelecionado(grupoId);
-      
-      const result = await TipoRotaService.buscarUnidadesDisponiveis(filialId, grupoId, tipoRotaId);
-      
-      if (result.success) {
-        setUnidadesDisponiveis(result.data || []);
-      } else {
-        setUnidadesDisponiveis([]);
-        toast.error('Erro ao carregar unidades disponíveis');
-      }
-    } catch (error) {
-      console.error('Erro ao carregar unidades disponíveis:', error);
-      setUnidadesDisponiveis([]);
-      toast.error('Erro ao carregar unidades disponíveis');
-    } finally {
-      setLoadingUnidadesDisponiveis(false);
-    }
-  }, []);
 
   /**
    * Submissão customizada que recarrega estatísticas
@@ -189,19 +121,14 @@ export const useTipoRota = () => {
    */
   const handleViewTipoRota = useCallback((tipoRota) => {
     baseEntity.handleView(tipoRota);
-    loadUnidadesEscolares(tipoRota.id);
-  }, [baseEntity, loadUnidadesEscolares]);
+  }, [baseEntity]);
 
   const handleEditTipoRota = useCallback((tipoRota) => {
     baseEntity.handleEdit(tipoRota);
-    loadUnidadesEscolares(tipoRota.id);
-  }, [baseEntity, loadUnidadesEscolares]);
+  }, [baseEntity]);
 
   const handleCloseModalCustom = useCallback(() => {
     baseEntity.handleCloseModal();
-    setShowUnidades(false);
-    setUnidadesEscolares([]);
-    setTotalUnidades(0);
   }, [baseEntity]);
 
   /**
@@ -218,10 +145,6 @@ export const useTipoRota = () => {
     const grupo = grupos.find(g => g.id === parseInt(grupoId));
     return grupo ? grupo.nome : 'Grupo não encontrado';
   }, [grupos]);
-
-  const toggleUnidades = useCallback(() => {
-    setShowUnidades(!showUnidades);
-  }, [showUnidades]);
 
   // Carregar dados iniciais
   useEffect(() => {
@@ -272,14 +195,6 @@ export const useTipoRota = () => {
     loadingFiliais,
     grupos,
     loadingGrupos,
-    unidadesEscolares,
-    loadingUnidades,
-    showUnidades,
-    totalUnidades,
-    unidadesDisponiveis,
-    loadingUnidadesDisponiveis,
-    filialSelecionada,
-    grupoSelecionado,
     
     // Ações de modal
     handleAddTipoRota: baseEntity.handleAdd,
@@ -306,11 +221,6 @@ export const useTipoRota = () => {
     
     // Ações de validação
     handleCloseValidationModal: baseEntity.handleCloseValidationModal,
-    
-    // Ações específicas
-    toggleUnidades,
-    loadUnidadesEscolares,
-    loadUnidadesDisponiveisPorFilialEGrupo,
     
     // Funções utilitárias
     getFilialName,

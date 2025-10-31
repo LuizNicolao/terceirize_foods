@@ -33,14 +33,7 @@ const TipoRota = () => {
     totalItems,
     itemsPerPage,
     estatisticas,
-    unidadesEscolares,
-    loadingUnidades,
-    showUnidades,
-    totalUnidades,
     validationErrors,
-    unidadesDisponiveis,
-    loadingUnidadesDisponiveis,
-    loadUnidadesDisponiveisPorFilialEGrupo,
     showValidationModal,
     showDeleteConfirmModal,
     tipoRotaToDelete,
@@ -58,7 +51,6 @@ const TipoRota = () => {
     handleKeyPress,
     setFilialFilter,
     setGrupoFilter,
-    toggleUnidades,
     getFilialName,
     getGrupoName,
     handleCloseValidationModal,
@@ -206,21 +198,6 @@ const TipoRota = () => {
         loadingFiliais={loadingFiliais}
         grupos={grupos}
         loadingGrupos={loadingGrupos}
-        unidadesEscolares={unidadesEscolares}
-        loadingUnidades={loadingUnidades}
-        showUnidades={showUnidades}
-        totalUnidades={totalUnidades}
-        onToggleUnidades={toggleUnidades}
-        unidadesDisponiveis={unidadesDisponiveis}
-        loadingUnidadesDisponiveis={loadingUnidadesDisponiveis}
-        onFilialEGrupoChange={(filialId, grupoId, tipoRotaId) => {
-          // Se está editando, passar o ID do tipo de rota para excluir da busca
-          if (editingTipoRota) {
-            loadUnidadesDisponiveisPorFilialEGrupo(filialId, grupoId, tipoRotaId);
-          } else {
-            loadUnidadesDisponiveisPorFilialEGrupo(filialId, grupoId);
-          }
-        }}
       />
 
       {/* Modal de Auditoria */}

@@ -27,6 +27,7 @@ module.exports = {
   listarFrequenciasEntrega: RotasSearchController.listarFrequenciasEntrega,
   adicionarFrequenciaEntrega: RotasSearchController.adicionarFrequenciaEntrega,
   buscarUnidadesEscolaresRota: RotasSearchController.buscarUnidadesEscolaresRota,
+  buscarUnidadesDisponiveisParaRota: RotasSearchController.buscarUnidadesDisponiveisParaRota,
   
   // Métodos de Estatísticas
   buscarEstatisticasRotas: RotasStatsController.buscarEstatisticasRotas,

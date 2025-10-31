@@ -224,6 +224,27 @@ class RotasService {
     }
   }
 
+  // Buscar unidades escolares disponíveis para uma rota (considerando grupo)
+  static async buscarUnidadesDisponiveisParaRota(filialId, grupoId = null, rotaId = null) {
+    try {
+      const params = {};
+      if (grupoId) params.grupoId = grupoId;
+      if (rotaId) params.rotaId = rotaId;
+      
+      const response = await api.get(`/rotas/disponiveis/filial/${filialId}`, { params });
+      return {
+        success: true,
+        data: response.data.data || []
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Erro ao buscar unidades disponíveis',
+        data: []
+      };
+    }
+  }
+
   // Buscar estatísticas das rotas
   static async buscarEstatisticas() {
     try {

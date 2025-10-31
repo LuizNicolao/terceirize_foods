@@ -14,8 +14,7 @@ class TipoRotaCRUDController {
         filial_id,
         grupo_id,
         nome,
-        status = 'ativo',
-        unidades_selecionadas = []
+        status = 'ativo'
       } = req.body;
 
       // Validações específicas
@@ -69,41 +68,6 @@ class TipoRotaCRUDController {
         status
       ]);
 
-      // Vincular unidades escolares selecionadas ao tipo de rota
-      if (unidades_selecionadas && unidades_selecionadas.length > 0) {
-        for (const unidade of unidades_selecionadas) {
-          if (unidade.id) {
-            // Verificar se a unidade existe e se já está vinculada a outra rota do MESMO grupo
-            const unidadeExistente = await executeQuery(
-              `SELECT ue.id, ue.tipo_rota_id, tr.grupo_id as grupo_atual
-               FROM unidades_escolares ue
-               LEFT JOIN tipo_rota tr ON ue.tipo_rota_id = tr.id
-               WHERE ue.id = ?`,
-              [unidade.id]
-            );
-
-            if (unidadeExistente.length > 0) {
-              const unidadeData = unidadeExistente[0];
-              
-              // Se a unidade já está vinculada a uma rota do MESMO grupo, não permitir
-              if (unidadeData.tipo_rota_id && unidadeData.grupo_atual == grupo_id) {
-                return res.status(400).json({
-                  success: false,
-                  error: 'Unidade já vinculada',
-                  message: `A unidade escolar "${unidade.nome_escola || unidade.codigo_teknisa}" já está vinculada a uma rota do grupo selecionado. Uma escola só pode estar em uma rota por grupo.`
-                });
-              }
-            }
-
-            // Vincular a unidade ao tipo de rota
-            await executeQuery(
-              'UPDATE unidades_escolares SET tipo_rota_id = ?, ordem_entrega = ? WHERE id = ?',
-              [result.insertId, unidade.ordem_entrega || 0, unidade.id]
-            );
-          }
-        }
-      }
-
       // Buscar tipo de rota criado
       const newTipoRota = await executeQuery(
         `SELECT tr.*, f.filial as filial_nome, g.nome as grupo_nome
@@ -138,8 +102,7 @@ class TipoRotaCRUDController {
         filial_id,
         grupo_id,
         nome,
-        status,
-        unidades_selecionadas = []
+        status
       } = req.body;
 
       // Verificar se o tipo de rota existe
@@ -228,45 +191,6 @@ class TipoRotaCRUDController {
           `UPDATE tipo_rota SET ${updateFields.join(', ')} WHERE id = ?`,
           updateParams
         );
-      }
-
-      // Atualizar unidades escolares vinculadas se fornecidas
-      if (unidades_selecionadas !== undefined) {
-        // Primeiro, remover todas as vinculações existentes deste tipo de rota
-        await executeQuery(
-          'UPDATE unidades_escolares SET tipo_rota_id = NULL, ordem_entrega = 0 WHERE tipo_rota_id = ?',
-          [id]
-        );
-
-        // Depois, vincular as novas unidades selecionadas com validação de grupo
-        if (unidades_selecionadas && unidades_selecionadas.length > 0) {
-          for (const unidade of unidades_selecionadas) {
-            if (unidade.id) {
-              // Verificar se a unidade já está vinculada a outra rota do MESMO grupo
-              const unidadeExistente = await executeQuery(
-                `SELECT ue.id, ue.tipo_rota_id, tr.grupo_id as grupo_atual
-                 FROM unidades_escolares ue
-                 LEFT JOIN tipo_rota tr ON ue.tipo_rota_id = tr.id
-                 WHERE ue.id = ? AND ue.tipo_rota_id != ?`,
-                [unidade.id, id]
-              );
-
-              if (unidadeExistente.length > 0 && unidadeExistente[0].grupo_atual == grupoIdParaValidacao) {
-                return res.status(400).json({
-                  success: false,
-                  error: 'Unidade já vinculada',
-                  message: `A unidade escolar já está vinculada a outra rota do mesmo grupo. Uma escola só pode estar em uma rota por grupo.`
-                });
-              }
-
-              // Vincular a unidade ao tipo de rota
-              await executeQuery(
-                'UPDATE unidades_escolares SET tipo_rota_id = ?, ordem_entrega = ? WHERE id = ?',
-                [id, unidade.ordem_entrega || 0, unidade.id]
-              );
-            }
-          }
-        }
       }
 
       // Buscar tipo de rota atualizado

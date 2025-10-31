@@ -35,6 +35,11 @@ const RotaModal = ({
   const [salvandoFrequencia, setSalvandoFrequencia] = React.useState(false);
   
   const filialId = watch('filial_id');
+  const tipoRotaId = watch('tipo_rota_id');
+  
+  // Buscar grupo_id do tipo de rota selecionado
+  const tipoRotaSelecionado = tiposRota.find(t => t.id === parseInt(tipoRotaId));
+  const grupoId = tipoRotaSelecionado?.grupo_id || null;
 
   // Carregar frequências do ENUM
   const loadFrequencias = React.useCallback(async () => {
@@ -79,17 +84,18 @@ const RotaModal = ({
     }
   }, [rota, isOpen, setValue, reset]);
 
-  // Carregar tipos de rota e unidades disponíveis quando a filial mudar
+  // Carregar tipos de rota e unidades disponíveis quando a filial ou tipo de rota mudar
   React.useEffect(() => {
     if (filialId && !isViewMode) {
-      onFilialChange && onFilialChange(filialId);
-      // onFilialChange deve incluir loadTiposRota
+      // Passar grupoId e rotaId para buscar unidades considerando grupo
+      const rotaIdParaBusca = rota?.id || null;
+      onFilialChange && onFilialChange(filialId, grupoId, rotaIdParaBusca);
     } else if (!filialId) {
       setUnidadesSelecionadas([]);
     }
-    // Limpar busca quando filial mudar
+    // Limpar busca quando filial ou tipo de rota mudar
     setBuscaUnidades('');
-  }, [filialId, isViewMode]);
+  }, [filialId, tipoRotaId, grupoId, isViewMode, rota?.id]);
 
   // No modo de edição, marcar unidades já vinculadas como selecionadas
   React.useEffect(() => {
@@ -293,6 +299,16 @@ const RotaModal = ({
                 <select
                   {...register('tipo_rota_id')}
                   disabled={isViewMode || loadingTiposRota || !filialId}
+                  onChange={(e) => {
+                    setValue('tipo_rota_id', e.target.value);
+                    // Recarregar unidades quando tipo de rota mudar (para atualizar grupo)
+                    if (filialId && !isViewMode) {
+                      const tipoSelecionado = tiposRota.find(t => t.id === parseInt(e.target.value));
+                      const novoGrupoId = tipoSelecionado?.grupo_id || null;
+                      const rotaIdParaBusca = rota?.id || null;
+                      onFilialChange && onFilialChange(filialId, novoGrupoId, rotaIdParaBusca);
+                    }
+                  }}
                   className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                 >
                   <option value="">
