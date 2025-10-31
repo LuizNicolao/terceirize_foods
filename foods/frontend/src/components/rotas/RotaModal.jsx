@@ -41,16 +41,6 @@ const RotaModal = ({
   const tipoRotaSelecionado = tiposRota.find(t => t.id === parseInt(tipoRotaId));
   const grupoId = tipoRotaSelecionado?.grupo_id || null;
 
-  // Log para rastrear mudanças em tiposRota
-  React.useEffect(() => {
-    console.log('🔄 tiposRota mudou no RotaModal:', {
-      length: tiposRota.length,
-      tiposRota: tiposRota,
-      loadingTiposRota,
-      filialId
-    });
-  }, [tiposRota, loadingTiposRota, filialId]);
-
   // Carregar frequências do ENUM
   const loadFrequencias = React.useCallback(async () => {
     try {
@@ -115,15 +105,10 @@ const RotaModal = ({
     onFilialChangeRef.current = onFilialChange;
   }, [onFilialChange]);
   
-  // Debug: log do estado do useEffect
+  // Carregar tipos de rota e unidades quando filial mudar ou modal abrir
   React.useEffect(() => {
-    if (isOpen) {
-      console.log('🔍 useEffect [filial] - isOpen:', isOpen, 'rota?.filial_id:', rota?.filial_id, 'filialId (watch):', filialId);
-    }
-    
     // Resetar ref quando modal fechar
     if (!isOpen) {
-      console.log('🔄 Modal fechado, resetando estados');
       filialProcessadaRef.current = null;
       setUnidadesSelecionadas([]);
       setBuscaUnidades('');
@@ -133,19 +118,15 @@ const RotaModal = ({
     // Se modal abriu e tem rota com filial, mas filialId ainda não foi setado no form
     if (rota?.filial_id && !filialId) {
       const key = `rota-${rota.id}`;
-      console.log('📋 Modal aberto com rota existente, filialId ainda não setado no form');
       if (filialProcessadaRef.current !== key) {
-        console.log('⏳ Aguardando preenchimento do formulário antes de carregar tipos de rota...');
         // Aguardar um ciclo para que o formulário seja preenchido primeiro
         const timer = setTimeout(() => {
           const filialIdDaRota = rota.filial_id;
-          console.log('✅ FilialId da rota após timeout:', filialIdDaRota);
           if (filialIdDaRota && filialProcessadaRef.current !== key) {
             filialProcessadaRef.current = key;
-            console.log('📞 Chamando onFilialChange para carregar tipos de rota e unidades');
             onFilialChangeRef.current && onFilialChangeRef.current(filialIdDaRota, null, rota.id);
           }
-        }, 300); // Aumentar timeout para garantir que form foi preenchido
+        }, 300);
         return () => clearTimeout(timer);
       }
       return;
@@ -154,15 +135,11 @@ const RotaModal = ({
     // Se filialId mudou (via watch) e não é o mesmo que já foi processado
     if (filialId && !isViewMode) {
       const key = `filial-${filialId}`;
-      console.log('🔄 FilialId mudou via watch:', filialId);
       if (filialProcessadaRef.current !== key) {
-        console.log('📞 Processando nova filial, chamando onFilialChange');
         filialProcessadaRef.current = key;
         // Passar grupoId e rotaId para buscar unidades considerando grupo
         const rotaIdParaBusca = rota?.id || null;
         onFilialChangeRef.current && onFilialChangeRef.current(filialId, grupoId, rotaIdParaBusca);
-      } else {
-        console.log('⏭️ Filial já foi processada, ignorando');
       }
     }
   }, [isOpen, rota?.filial_id, rota?.id, filialId, grupoId, isViewMode]);
@@ -370,14 +347,12 @@ const RotaModal = ({
                   {...register('tipo_rota_id', { required: 'Tipo de rota é obrigatório' })}
                   disabled={isViewMode || loadingTiposRota || !filialId}
                   onChange={(e) => {
-                    console.log('🔄 Tipo de rota selecionado:', e.target.value);
                     setValue('tipo_rota_id', e.target.value);
                     // Recarregar unidades quando tipo de rota mudar (para atualizar grupo)
                     if (filialId && !isViewMode) {
                       const tipoSelecionado = tiposRota.find(t => t.id === parseInt(e.target.value));
                       const novoGrupoId = tipoSelecionado?.grupo_id || null;
                       const rotaIdParaBusca = rota?.id || null;
-                      console.log('📞 Recarregando unidades com grupoId:', novoGrupoId);
                       onFilialChange && onFilialChange(filialId, novoGrupoId, rotaIdParaBusca);
                     }
                   }}

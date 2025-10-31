@@ -76,37 +76,25 @@ export const useRotas = () => {
    * Carrega tipos de rota por filial
    */
   const loadTiposRota = useCallback(async (filialId) => {
-    console.log('🔍 loadTiposRota chamado com filialId:', filialId);
-    
     if (!filialId || filialId === 'todos') {
-      console.log('⚠️ FilialId inválido ou "todos", limpando tipos de rota');
       setTiposRota([]);
       return;
     }
 
     try {
-      console.log('📡 Carregando tipos de rota para filial:', filialId);
       setLoadingTiposRota(true);
       const TipoRotaService = (await import('../services/tipoRota')).default;
       const result = await TipoRotaService.buscarPorFilial(filialId);
       
-      console.log('📦 Resultado da busca de tipos de rota:', result);
-      
       if (result.success) {
         const tipos = result.data || [];
-        console.log('✅ Tipos de rota carregados:', tipos.length, 'tipos encontrados');
-        tipos.forEach((tipo, idx) => {
-          console.log(`   ${idx + 1}. ID: ${tipo.id}, Nome: "${tipo.nome}", Grupo: "${tipo.grupo_nome || 'N/A'}"`);
-        });
         setTiposRota(tipos);
       } else {
-        console.error('❌ Erro ao carregar tipos de rota:', result.error);
         setTiposRota([]);
         toast.error(result.error || 'Erro ao carregar tipos de rota');
       }
     } catch (error) {
-      console.error('❌ Erro ao carregar tipos de rota:', error);
-      console.error('   Detalhes:', error.response?.data || error.message);
+      console.error('Erro ao carregar tipos de rota:', error);
       setTiposRota([]);
       toast.error('Erro ao carregar tipos de rota');
     } finally {
