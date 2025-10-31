@@ -138,7 +138,6 @@ const RotaModal = ({
   
   // Ref para rastrear a filial anterior e limpar tipo de rota quando filial mudar
   const filialAnteriorRef = React.useRef(null);
-
   // Ref para rastrear se unidades já foram carregadas para esta combinação de filial + tipo de rota
   const unidadesCarregadasRef = React.useRef(null);
 
@@ -198,9 +197,6 @@ const RotaModal = ({
       filialAnteriorRef.current = filialId;
     }
   }, [isOpen, rota?.filial_id, rota?.id, filialId, isViewMode, setValue, watch]);
-
-  // Ref para rastrear se unidades já foram carregadas para esta combinação de filial + tipo de rota
-  const unidadesCarregadasRef = React.useRef(null);
 
   // Carregar unidades quando tipo de rota for selecionado (além da filial)
   React.useEffect(() => {
