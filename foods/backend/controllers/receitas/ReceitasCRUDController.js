@@ -258,19 +258,47 @@ class ReceitasCRUDController {
       const pdf = require('pdf-parse');
       const pdfProcessor = require('../../utils/pdfProcessor');
 
-      console.log('📄 Iniciando processamento de PDF de receita...');
+      console.log('\n' + '='.repeat(80));
+      console.log('📄 INICIANDO PROCESSAMENTO DE PDF DE RECEITA');
+      console.log('='.repeat(80));
       console.log('📊 Tamanho do arquivo:', req.file.size, 'bytes');
+      console.log('📋 Nome do arquivo:', req.file.originalname);
+      console.log('📋 Tipo MIME:', req.file.mimetype);
 
       // 1. Extrair texto do PDF
+      console.log('\n🔍 Extraindo texto do PDF...');
       const pdfData = await pdf(req.file.buffer);
+      
+      console.log('📄 Metadados do PDF:');
+      console.log('   - Número de páginas:', pdfData.numpages);
+      console.log('   - Informações:', JSON.stringify(pdfData.info, null, 2));
+      
       const textoExtraido = pdfData.text;
 
-      console.log('✅ Texto extraído:', textoExtraido.length, 'caracteres');
-      console.log('📝 Primeiros 300 caracteres:', textoExtraido.substring(0, 300));
+      console.log('\n✅ Texto extraído com sucesso!');
+      console.log('📏 Tamanho total do texto:', textoExtraido.length, 'caracteres');
+      console.log('📏 Número de linhas:', textoExtraido.split('\n').length);
+      
+      console.log('\n📝 TEXTO COMPLETO EXTRAÍDO DO PDF:');
+      console.log('-'.repeat(80));
+      console.log(textoExtraido);
+      console.log('-'.repeat(80));
+      
+      console.log('\n📝 Primeiros 500 caracteres:');
+      console.log(textoExtraido.substring(0, 500));
+      
+      console.log('\n📝 Últimos 500 caracteres:');
+      console.log(textoExtraido.substring(Math.max(0, textoExtraido.length - 500)));
 
       // 2. Extrair ingredientes usando PDFProcessor
-      console.log('📋 Extraindo ingredientes do texto...');
+      console.log('\n📋 Extraindo ingredientes do texto...');
       const ingredientesBrutos = pdfProcessor.extrairIngredientes(textoExtraido);
+      
+      console.log('📊 Ingredientes brutos encontrados:', ingredientesBrutos.length);
+      console.log('📋 Lista de ingredientes brutos:');
+      ingredientesBrutos.forEach((ing, idx) => {
+        console.log(`   ${idx + 1}. Nome: "${ing.nome}", Quantidade: "${ing.quantidade_per_capita || ing.quantidade}", Unidade: "${ing.unidade_medida}"`);
+      });
       
       const ingredientesExtraidos = ingredientesBrutos.map(ing => ({
         nome: ing.nome || '',
@@ -278,30 +306,46 @@ class ReceitasCRUDController {
         unidade: ing.unidade_medida || ''
       }));
 
-      console.log('✅ Extração encontrou', ingredientesExtraidos.length, 'ingredientes');
+      console.log('\n✅ Extração encontrou', ingredientesExtraidos.length, 'ingredientes');
+      console.log('📋 Ingredientes processados (primeiros 10):');
+      ingredientesExtraidos.slice(0, 10).forEach((ing, idx) => {
+        console.log(`   ${idx + 1}. ${ing.nome} - ${ing.quantidade} ${ing.unidade}`);
+      });
 
       // 3. Tentar identificar nome da receita e instruções do texto
+      console.log('\n🔍 Analisando estrutura do texto para extrair nome e instruções...');
       const linhas = textoExtraido.split('\n').filter(l => l.trim());
+      
+      console.log('📊 Total de linhas:', linhas.length);
+      console.log('📋 Primeiras 20 linhas:');
+      linhas.slice(0, 20).forEach((linha, idx) => {
+        console.log(`   ${idx + 1}. "${linha.trim()}"`);
+      });
       
       // Primeiras linhas geralmente contêm o nome (pular cabeçalhos comuns)
       let nomeReceita = '';
       let inicioTexto = 0;
       const palavrasCabeçalho = ['SECRETARIA', 'DIRETORIA', 'GERÊNCIA', 'ESTADO', 'EDUCAÇÃO'];
       
+      console.log('\n🔍 Buscando nome da receita (pulando cabeçalhos)...');
       for (let i = 0; i < Math.min(10, linhas.length); i++) {
         const linha = linhas[i].trim();
+        console.log(`   Linha ${i + 1}: "${linha}"`);
         if (linha.length > 10 && !palavrasCabeçalho.some(p => linha.toUpperCase().includes(p))) {
           nomeReceita = linha.substring(0, 200);
           inicioTexto = i;
+          console.log(`   ✅ Nome encontrado na linha ${i + 1}: "${nomeReceita}"`);
           break;
         }
       }
       
       if (!nomeReceita && linhas.length > 0) {
         nomeReceita = linhas[0].trim().substring(0, 200);
+        console.log(`   ⚠️ Usando primeira linha como nome: "${nomeReceita}"`);
       }
 
       // Buscar seção de instruções/preparo
+      console.log('\n🔍 Buscando seção de instruções/preparo...');
       let instrucoes = '';
       const palavrasChave = ['modo de preparo', 'instruções', 'preparo', 'como fazer', 'modo de fazer'];
       const indiceInstrucoes = linhas.findIndex((l, idx) => 
@@ -312,15 +356,20 @@ class ReceitasCRUDController {
         instrucoes = linhas.slice(indiceInstrucoes + 1, indiceInstrucoes + 20)
           .join('\n')
           .trim();
+        console.log(`   ✅ Instruções encontradas a partir da linha ${indiceInstrucoes + 1}`);
+        console.log(`   📝 Primeiros 200 caracteres: "${instrucoes.substring(0, 200)}"`);
       } else {
         // Usar parte do meio do texto como instruções
         const meioTexto = Math.floor(textoExtraido.length / 2);
         instrucoes = textoExtraido.substring(meioTexto).trim().substring(0, 1000);
+        console.log(`   ⚠️ Instruções não encontradas, usando parte do meio do texto`);
+        console.log(`   📝 Primeiros 200 caracteres: "${instrucoes.substring(0, 200)}"`);
       }
 
       const descricao = 'Receita extraída automaticamente do PDF';
 
       // 4. Preparar dados extraídos
+      console.log('\n📦 Preparando dados extraídos para retorno...');
       const dadosExtraidos = {
         nome: nomeReceita || 'Receita Extraída do PDF',
         descricao: descricao,
@@ -329,10 +378,15 @@ class ReceitasCRUDController {
         instrucoes: instrucoes || 'Instruções extraídas do PDF...'
       };
 
-      console.log('✅ Processamento concluído:', {
-        nome: dadosExtraidos.nome,
-        ingredientes: dadosExtraidos.ingredientes.length
-      });
+      console.log('\n✅ PROCESSAMENTO CONCLUÍDO:');
+      console.log('='.repeat(80));
+      console.log('📋 Resumo dos dados extraídos:');
+      console.log('   - Nome:', dadosExtraidos.nome);
+      console.log('   - Descrição:', dadosExtraidos.descricao);
+      console.log('   - Total de ingredientes:', dadosExtraidos.ingredientes.length);
+      console.log('   - Tamanho do texto extraído:', dadosExtraidos.texto_extraido_pdf.length, 'caracteres');
+      console.log('   - Tamanho das instruções:', dadosExtraidos.instrucoes.length, 'caracteres');
+      console.log('='.repeat(80));
 
       res.json({
         success: true,
