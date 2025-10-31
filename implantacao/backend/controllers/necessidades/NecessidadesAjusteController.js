@@ -3,9 +3,22 @@ const { executeQuery } = require('../../config/database');
 // Buscar semanas de consumo disponíveis na tabela necessidades
 const buscarSemanasConsumoDisponiveis = async (req, res) => {
   try {
-    const { escola_id } = req.query;
+    const { escola_id, aba } = req.query;
     const usuario_id = req.user.id;
     const tipo_usuario = req.user.tipo_de_acesso;
+
+    // Definir status permitidos baseado na aba
+    let statusPermitidos = [];
+    if (aba === 'nutricionista') {
+      statusPermitidos = ['NEC', 'NEC NUTRI', 'CONF NUTRI'];
+    } else if (aba === 'coordenacao') {
+      statusPermitidos = ['NEC COORD', 'CONF COORD'];
+    } else if (aba === 'logistica') {
+      statusPermitidos = ['NEC LOG'];
+    } else {
+      // Se não especificar aba, usar todos os status (comportamento padrão)
+      statusPermitidos = ['NEC', 'NEC NUTRI', 'CONF NUTRI', 'NEC COORD', 'CONF COORD', 'NEC LOG'];
+    }
 
     let query = `
       SELECT DISTINCT 
@@ -14,10 +27,10 @@ const buscarSemanasConsumoDisponiveis = async (req, res) => {
       FROM necessidades n
       WHERE n.semana_consumo IS NOT NULL 
         AND n.semana_consumo != ''
-        AND n.status IN ('NEC', 'NEC NUTRI', 'CONF NUTRI', 'NEC COORD', 'CONF COORD', 'NEC LOG')
+        AND n.status IN (${statusPermitidos.map(() => '?').join(',')})
     `;
 
-    const params = [];
+    const params = [...statusPermitidos];
 
     // Se for nutricionista, filtrar apenas pelas escolas da rota dela
     if (tipo_usuario === 'nutricionista') {

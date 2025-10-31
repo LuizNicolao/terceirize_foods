@@ -87,8 +87,12 @@ export const useAjusteNecessidadesOrchestrator = () => {
 
   // Hooks para semanas
   const { opcoes: opcoesSemanasAbastecimento } = useSemanasAbastecimento();
-  // Usar semanas de consumo da tabela necessidades (não do calendário)
-  const { opcoes: opcoesSemanasConsumo } = useSemanasConsumo(null, false, {});
+  // Usar semanas de consumo da tabela necessidades filtradas por aba (status)
+  // Passar aba como filtro para buscar apenas semanas com status apropriado para cada aba:
+  // - nutricionista: NEC, NEC NUTRI, CONF NUTRI
+  // - coordenacao: NEC COORD, CONF COORD
+  // - logistica: NEC LOG
+  const { opcoes: opcoesSemanasConsumo } = useSemanasConsumo(null, false, { aba: activeTab });
 
   // Dados baseados na aba ativa
   const getActiveData = () => {

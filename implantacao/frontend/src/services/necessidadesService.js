@@ -100,6 +100,7 @@ const necessidadesService = {
   buscarSemanasConsumoDisponiveis: async (filtros = {}) => {
     const params = new URLSearchParams();
     if (filtros.escola_id) params.append('escola_id', filtros.escola_id);
+    if (filtros.aba) params.append('aba', filtros.aba);
     
     const response = await api.get(`/necessidades/semanas-consumo-disponiveis?${params.toString()}`);
     return response.data;

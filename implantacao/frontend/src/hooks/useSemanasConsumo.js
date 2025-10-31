@@ -32,7 +32,7 @@ export const useSemanasConsumo = (ano = new Date().getFullYear(), usarCalendario
       
       if (usarCalend) {
         // Usar endpoint do calendário
-        response = await calendarioService.buscarSemanasConsumo(anoSelecionado);
+        response = await calendarioService.buscarSemanasConsumo(anoSelecionado || new Date().getFullYear());
       } else {
         // Usar endpoint da tabela necessidades
         response = await necessidadesService.buscarSemanasConsumoDisponiveis(filtrosParaUsar);
