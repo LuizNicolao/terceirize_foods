@@ -98,6 +98,19 @@ class ReceitasCRUDController {
       // Gerar código interno único
       const codigoInterno = `REC-${Date.now()}`;
       
+      // Preparar ingredientes - converter array para JSON string se necessário
+      let ingredientesJson = null;
+      if (dados.ingredientes) {
+        if (Array.isArray(dados.ingredientes)) {
+          ingredientesJson = JSON.stringify(dados.ingredientes);
+        } else if (typeof dados.ingredientes === 'string') {
+          ingredientesJson = dados.ingredientes;
+        }
+      }
+      
+      // Preparar texto extraído (pode vir como texto_extraido_pdf)
+      const textoExtraido = dados.texto_extraido || dados.texto_extraido_pdf || null;
+      
       const query = `
         INSERT INTO receitas_processadas (
           codigo_interno, codigo_referencia, nome, descricao, texto_extraido, ingredientes,
@@ -107,13 +120,13 @@ class ReceitasCRUDController {
       
       const params = [
         codigoInterno,
-        dados.codigo_referencia,
-        dados.nome,
+        dados.codigo_referencia || null,
+        dados.nome || null,
         dados.descricao || null,
-        dados.texto_extraido || null,
-        dados.ingredientes || null,
-        dados.origem || 'manual',
-        dados.tipo,
+        textoExtraido,
+        ingredientesJson,
+        dados.origem || 'pdf',
+        dados.tipo || null,
         dados.status || 'ativo',
         dados.observacoes || null,
         dados.criado_por || null
