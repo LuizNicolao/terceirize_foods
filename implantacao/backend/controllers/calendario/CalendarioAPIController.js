@@ -48,19 +48,10 @@ class CalendarioAPIController {
               return `${dia}/${mes}`;
             };
             
-            // Usar o ano da data de início (onde a semana começa)
-            // Se a semana cruzar o ano, usar o ano onde a semana começa (maior parte está nele)
-            const anoInicio = dataInicio.getFullYear();
-            const anoFim = dataFim.getFullYear();
-            // Sempre usar o ano da data de início, a menos que esteja muito longe do ano solicitado
-            // Isso garante consistência: semanas que começam em 2025 mostram /25, mesmo se terminarem em 2026
-            let anoFormatado = anoInicio;
-            // Só usar o ano solicitado se a data de início não corresponder ao ano solicitado
-            // e a data de fim também não corresponder (caso raro de dados inconsistentes)
-            if (anoInicio !== ano && anoFim !== ano && Math.abs(anoInicio - ano) > 1) {
-              // Caso muito raro: usar o ano solicitado se as datas estiverem muito longe
-              anoFormatado = ano;
-            }
+            // SEMPRE usar o ano solicitado na busca (parâmetro 'ano')
+            // Se o usuário busca semanas de 2025, sempre mostrar /25, mesmo se as datas cruzarem para 2026
+            // Isso garante que o dropdown mostre o ano correto que o usuário está visualizando
+            const anoFormatado = ano;
             semanaFormatada = `(${formatarData(dataInicio)} a ${formatarData(dataFim)}/${anoFormatado.toString().slice(-2)})`;
           } catch (error) {
             // Se houver erro na formatação, usar o valor original do banco
