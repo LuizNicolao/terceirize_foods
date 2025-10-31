@@ -15,6 +15,7 @@ const TipoRotaModal = ({
 }) => {
   const { register, handleSubmit, reset, setValue } = useForm();
   const [gruposSelecionados, setGruposSelecionados] = useState([]);
+  const [buscaGrupo, setBuscaGrupo] = useState('');
 
   React.useEffect(() => {
     if (tipoRota && isOpen) {
@@ -37,8 +38,14 @@ const TipoRotaModal = ({
     } else if (!tipoRota && isOpen) {
       reset();
       setGruposSelecionados([]);
+      setBuscaGrupo('');
       setValue('status', 'ativo');
       setValue('grupos_id', []);
+    }
+    
+    // Resetar busca quando modal fecha
+    if (!isOpen) {
+      setBuscaGrupo('');
     }
   }, [tipoRota, isOpen, setValue, reset]);
 
@@ -130,28 +137,59 @@ const TipoRotaModal = ({
                 ) : grupos.length === 0 ? (
                   <div className="text-sm text-gray-500">Nenhum grupo disponível</div>
                 ) : (
-                  <div className="border border-gray-300 rounded-lg p-3 max-h-64 overflow-y-auto bg-white">
-                    <div className="grid grid-cols-2 gap-2">
-                      {grupos.map(grupo => {
-                        const isSelected = gruposSelecionados.includes(grupo.id);
-                        return (
-                          <label
-                            key={grupo.id}
-                            className={`flex items-center gap-2 p-2 rounded cursor-pointer hover:bg-gray-50 ${
-                              isSelected ? 'bg-green-50' : ''
-                            }`}
-                          >
-                            <input
-                              type="checkbox"
-                              checked={isSelected}
-                              onChange={() => handleGrupoToggle(grupo.id)}
-                              disabled={isViewMode}
-                              className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-                            />
-                            <span className="text-sm text-gray-700">{grupo.nome}</span>
-                          </label>
+                  <div className="border border-gray-300 rounded-lg bg-white">
+                    {/* Campo de busca */}
+                    <div className="p-2 border-b border-gray-200">
+                      <input
+                        type="text"
+                        placeholder="Buscar grupo..."
+                        value={buscaGrupo}
+                        onChange={(e) => setBuscaGrupo(e.target.value)}
+                        disabled={isViewMode}
+                        className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                      />
+                    </div>
+                    
+                    {/* Lista de grupos filtrados */}
+                    <div className="p-2 max-h-56 overflow-y-auto">
+                      {(() => {
+                        const gruposFiltrados = grupos.filter(grupo =>
+                          grupo.nome.toLowerCase().includes(buscaGrupo.toLowerCase())
                         );
-                      })}
+                        
+                        if (gruposFiltrados.length === 0) {
+                          return (
+                            <div className="text-sm text-gray-500 text-center py-4">
+                              Nenhum grupo encontrado com "{buscaGrupo}"
+                            </div>
+                          );
+                        }
+                        
+                        return (
+                          <div className="grid grid-cols-2 gap-x-1 gap-y-0.5">
+                            {gruposFiltrados.map(grupo => {
+                              const isSelected = gruposSelecionados.includes(grupo.id);
+                              return (
+                                <label
+                                  key={grupo.id}
+                                  className={`flex items-center gap-1.5 px-2 py-1 rounded cursor-pointer hover:bg-gray-50 ${
+                                    isSelected ? 'bg-green-50' : ''
+                                  }`}
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={isSelected}
+                                    onChange={() => handleGrupoToggle(grupo.id)}
+                                    disabled={isViewMode}
+                                    className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded flex-shrink-0"
+                                  />
+                                  <span className="text-sm text-gray-700">{grupo.nome}</span>
+                                </label>
+                              );
+                            })}
+                          </div>
+                        );
+                      })()}
                     </div>
                   </div>
                 )}
