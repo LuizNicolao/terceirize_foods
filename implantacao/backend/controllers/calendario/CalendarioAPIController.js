@@ -322,7 +322,7 @@ class CalendarioAPIController {
    */
   static async buscarSemanaAbastecimentoPorConsumo(req, res) {
     try {
-      const { semanaConsumo } = req.params;
+      let { semanaConsumo } = req.params;
 
       if (!semanaConsumo) {
         return res.status(400).json({
@@ -331,7 +331,19 @@ class CalendarioAPIController {
         });
       }
 
-      const [semana] = await executeQuery(`
+      // Decodificar o parâmetro (pode vir encoded da URL)
+      try {
+        semanaConsumo = decodeURIComponent(semanaConsumo);
+      } catch (e) {
+        // Se já estiver decodificado, continuar
+      }
+
+      console.log('🔍 Buscando semana de abastecimento para:', semanaConsumo);
+      console.log('🔍 Tipo do valor:', typeof semanaConsumo);
+      console.log('🔍 Tamanho da string:', semanaConsumo.length);
+
+      // Primeiro, tentar busca exata
+      let [semana] = await executeQuery(`
         SELECT 
           semana_abastecimento,
           semana_abastecimento_inicio,
@@ -345,12 +357,49 @@ class CalendarioAPIController {
         LIMIT 1
       `, [semanaConsumo]);
 
+      // Se não encontrar, tentar com TRIM para remover espaços
       if (!semana) {
+        console.log('❌ Busca exata não encontrou. Tentando com TRIM...');
+        [semana] = await executeQuery(`
+          SELECT 
+            semana_abastecimento,
+            semana_abastecimento_inicio,
+            semana_abastecimento_fim,
+            semana_consumo,
+            semana_consumo_inicio,
+            semana_consumo_fim,
+            mes_referencia
+          FROM calendario 
+          WHERE TRIM(semana_consumo) = TRIM(?)
+          LIMIT 1
+        `, [semanaConsumo]);
+      }
+
+      // Se ainda não encontrar, buscar valores similares para debug
+      if (!semana) {
+        console.log('❌ Busca com TRIM não encontrou. Buscando valores similares...');
+        const semanasSimilares = await executeQuery(`
+          SELECT DISTINCT semana_consumo
+          FROM calendario 
+          WHERE semana_consumo LIKE ?
+          LIMIT 5
+        `, [`%${semanaConsumo.substring(0, Math.min(20, semanaConsumo.length))}%`]);
+        
+        console.log('🔍 Valores similares encontrados no banco:');
+        semanasSimilares.forEach(s => {
+          console.log('  -', s.semana_consumo, '| Tamanho:', s.semana_consumo?.length);
+        });
+      }
+
+      if (!semana) {
+        console.log('❌ Semana não encontrada no banco para:', semanaConsumo);
         return res.status(404).json({
           success: false,
           message: 'Semana de consumo não encontrada'
         });
       }
+
+      console.log('✅ Semana encontrada:', semana.semana_abastecimento);
 
       res.json({
         success: true,
