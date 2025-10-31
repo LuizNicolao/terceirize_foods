@@ -38,7 +38,6 @@ const TipoRotaTable = ({
               <SortableTableHeader label="Nome" field="nome" currentSort={sortField} currentDirection={sortDirection} onSort={onSort} />
               <SortableTableHeader label="Filial" field="filial_id" currentSort={sortField} currentDirection={sortDirection} onSort={onSort} />
               <SortableTableHeader label="Grupo" field="grupo_id" currentSort={sortField} currentDirection={sortDirection} onSort={onSort} />
-              <SortableTableHeader label="Unidades" field="total_unidades" currentSort={sortField} currentDirection={sortDirection} onSort={onSort} />
               <SortableTableHeader label="Status" field="status" currentSort={sortField} currentDirection={sortDirection} onSort={onSort} />
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
             </tr>
@@ -52,9 +51,6 @@ const TipoRotaTable = ({
                 </td>
                 <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                   {loadingGrupos ? 'Carregando...' : getGrupoName(tipoRota.grupo_id)}
-                </td>
-                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
-                  {tipoRota.total_unidades || 0}
                 </td>
                 <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                   <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
@@ -112,11 +108,6 @@ const TipoRotaTable = ({
                 <span className="text-gray-900">
                   {loadingGrupos ? 'Carregando...' : getGrupoName(tipoRota.grupo_id)}
                 </span>
-              </div>
-
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Unidades:</span>
-                <span className="text-gray-900">{tipoRota.total_unidades || 0}</span>
               </div>
               
               <div className="flex justify-between text-sm">
