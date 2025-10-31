@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { FaUpload, FaTimes, FaFilePdf, FaSpinner } from 'react-icons/fa';
 import { Button, Modal } from '../ui';
 import toast from 'react-hot-toast';
+import api from '../../services/api';
 
 const ReceitaUploadModal = ({ isOpen, onClose, onProcessar }) => {
   const [arquivo, setArquivo] = useState(null);
@@ -30,20 +31,15 @@ const ReceitaUploadModal = ({ isOpen, onClose, onProcessar }) => {
       const formData = new FormData();
       formData.append('pdf', arquivo);
       
-      // Enviar para o backend para processamento real
-      const response = await fetch('/api/receitas/processar-pdf', {
-        method: 'POST',
-        body: formData,
+      // Enviar para o backend usando o serviço api configurado
+      const response = await api.post('/receitas/processar-pdf', formData, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+          'Content-Type': 'multipart/form-data'
+        },
+        timeout: 60000 // 60 segundos para processar PDF
       });
       
-      if (!response.ok) {
-        throw new Error(`Erro ${response.status}: ${response.statusText}`);
-      }
-      
-      const resultado = await response.json();
+      const resultado = response.data;
       
       if (resultado.success) {
         toast.success('PDF processado com sucesso!');
@@ -54,7 +50,8 @@ const ReceitaUploadModal = ({ isOpen, onClose, onProcessar }) => {
       }
     } catch (error) {
       console.error('Erro ao processar PDF:', error);
-      toast.error('Erro ao processar PDF: ' + error.message);
+      const errorMessage = error.response?.data?.error || error.message || 'Erro ao processar PDF';
+      toast.error('Erro ao processar PDF: ' + errorMessage);
     } finally {
       setProcessando(false);
     }
