@@ -69,7 +69,7 @@ class RotasExportController {
           r.frequencia_entrega,
           r.status,
           f.filial as filial_nome,
-          (SELECT COUNT(*) FROM unidades_escolares ue WHERE ue.rota_id = r.id) as total_unidades
+          (SELECT COUNT(*) FROM unidades_escolares ue WHERE ue.rota_id IS NOT NULL AND ue.rota_id != "" AND FIND_IN_SET(r.id, ue.rota_id) > 0) as total_unidades
         FROM rotas r
         LEFT JOIN filiais f ON r.filial_id = f.id
         ${whereClause}
@@ -165,7 +165,7 @@ class RotasExportController {
           r.status,
           f.filial as filial_nome,
           tr.nome as tipo_rota_nome,
-          (SELECT COUNT(*) FROM unidades_escolares ue WHERE ue.rota_id = r.id) as total_unidades
+          (SELECT COUNT(*) FROM unidades_escolares ue WHERE ue.rota_id IS NOT NULL AND ue.rota_id != "" AND FIND_IN_SET(r.id, ue.rota_id) > 0) as total_unidades
         FROM rotas r
         LEFT JOIN filiais f ON r.filial_id = f.id
         LEFT JOIN tipo_rota tr ON r.tipo_rota_id = tr.id

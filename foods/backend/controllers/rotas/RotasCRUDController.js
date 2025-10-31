@@ -6,6 +6,43 @@
 const { executeQuery } = require('../../config/database');
 
 class RotasCRUDController {
+  // Função auxiliar para converter array de IDs em string separada por vírgula
+  static rotasToString(rotasIds) {
+    if (!Array.isArray(rotasIds) || rotasIds.length === 0) {
+      return null;
+    }
+    return rotasIds.map(id => parseInt(id)).filter(id => !isNaN(id) && id > 0).join(',');
+  }
+
+  // Função auxiliar para converter string separada por vírgula em array de IDs
+  static rotasToArray(rotasString) {
+    if (!rotasString || typeof rotasString !== 'string') {
+      return [];
+    }
+    return rotasString
+      .split(',')
+      .map(id => parseInt(id.trim()))
+      .filter(id => !isNaN(id) && id > 0);
+  }
+
+  // Função auxiliar para adicionar um rota_id a uma string existente
+  static adicionarRotaId(rotasString, novaRotaId) {
+    const rotas = this.rotasToArray(rotasString);
+    const novaRotaIdInt = parseInt(novaRotaId);
+    if (!rotas.includes(novaRotaIdInt)) {
+      rotas.push(novaRotaIdInt);
+    }
+    return this.rotasToString(rotas);
+  }
+
+  // Função auxiliar para remover um rota_id de uma string existente
+  static removerRotaId(rotasString, rotaIdParaRemover) {
+    const rotas = this.rotasToArray(rotasString);
+    const rotaIdInt = parseInt(rotaIdParaRemover);
+    const rotasFiltradas = rotas.filter(id => id !== rotaIdInt);
+    return rotasFiltradas.length > 0 ? this.rotasToString(rotasFiltradas) : null;
+  }
+
   // Criar rota
   static async criarRota(req, res) {
     try {
@@ -100,18 +137,22 @@ class RotasCRUDController {
       if (unidades_selecionadas && unidades_selecionadas.length > 0) {
         for (const unidade of unidades_selecionadas) {
           if (unidade.id) {
-            // Verificar se a unidade existe e não está vinculada a outra rota
+            // Verificar se a unidade existe
             const unidadeExistente = await executeQuery(
               'SELECT id, rota_id FROM unidades_escolares WHERE id = ?',
               [unidade.id]
             );
 
-            if (unidadeExistente.length > 0 && !unidadeExistente[0].rota_id) {
-              // Vincular a unidade à rota e definir ordem de entrega individual
+            if (unidadeExistente.length > 0) {
+              // Adicionar esta rota à lista de rotas da unidade (pode ter múltiplas)
+              const rotaIdAtualizado = this.adicionarRotaId(
+                unidadeExistente[0].rota_id || null,
+                result.insertId
+              );
               const ordemEntrega = unidade.ordem_entrega || 0;
               await executeQuery(
                 'UPDATE unidades_escolares SET rota_id = ?, ordem_entrega = ? WHERE id = ?',
-                [result.insertId, ordemEntrega, unidade.id]
+                [rotaIdAtualizado, ordemEntrega, unidade.id]
               );
             }
           }
@@ -294,28 +335,39 @@ class RotasCRUDController {
 
       // Atualizar unidades escolares vinculadas se fornecidas
       if (unidades_selecionadas !== undefined) {
-        // Primeiro, remover todas as vinculações existentes desta rota
-        await executeQuery(
-          'UPDATE unidades_escolares SET rota_id = NULL, ordem_entrega = 0 WHERE rota_id = ?',
-          [id]
+        // Primeiro, remover todas as vinculações existentes desta rota de todas as unidades
+        const todasUnidades = await executeQuery(
+          'SELECT id, rota_id FROM unidades_escolares WHERE rota_id IS NOT NULL AND rota_id != ""'
         );
+        
+        for (const unidade of todasUnidades) {
+          const rotasAtualizadas = this.removerRotaId(unidade.rota_id, id);
+          await executeQuery(
+            'UPDATE unidades_escolares SET rota_id = ? WHERE id = ?',
+            [rotasAtualizadas, unidade.id]
+          );
+        }
 
         // Depois, vincular as novas unidades selecionadas
         if (unidades_selecionadas && unidades_selecionadas.length > 0) {
           for (const unidade of unidades_selecionadas) {
             if (unidade.id) {
-              // Verificar se a unidade existe e não está vinculada a outra rota
+              // Verificar se a unidade existe
               const unidadeExistente = await executeQuery(
                 'SELECT id, rota_id FROM unidades_escolares WHERE id = ?',
                 [unidade.id]
               );
 
-              if (unidadeExistente.length > 0 && (!unidadeExistente[0].rota_id || unidadeExistente[0].rota_id == id)) {
-                // Vincular a unidade à rota e definir ordem de entrega individual
+              if (unidadeExistente.length > 0) {
+                // Adicionar esta rota à lista de rotas da unidade (pode ter múltiplas)
+                const rotaIdAtualizado = this.adicionarRotaId(
+                  unidadeExistente[0].rota_id || null,
+                  id
+                );
                 const ordemEntrega = unidade.ordem_entrega || 0;
                 await executeQuery(
                   'UPDATE unidades_escolares SET rota_id = ?, ordem_entrega = ? WHERE id = ?',
-                  [id, ordemEntrega, unidade.id]
+                  [rotaIdAtualizado, ordemEntrega, unidade.id]
                 );
               }
             }
@@ -374,9 +426,9 @@ class RotasCRUDController {
         });
       }
 
-      // Verificar se há unidades escolares vinculadas
+      // Verificar se há unidades escolares vinculadas (usando FIND_IN_SET para buscar na string)
       const unidadesVinculadas = await executeQuery(
-        'SELECT COUNT(*) as total FROM unidades_escolares WHERE rota_id = ?',
+        'SELECT COUNT(*) as total FROM unidades_escolares WHERE rota_id IS NOT NULL AND rota_id != "" AND FIND_IN_SET(?, rota_id) > 0',
         [id]
       );
 

@@ -26,9 +26,9 @@ class RotasSearchController {
         rotas.map(async (rota) => {
           try {
             const unidadesQuery = `
-              SELECT COUNT(*) as total_unidades 
-              FROM unidades_escolares 
-              WHERE rota_id = ? AND status = 'ativo'
+              SELECT COUNT(*) as total_unidades
+              FROM unidades_escolares
+              WHERE rota_id IS NOT NULL AND rota_id != "" AND FIND_IN_SET(?, rota_id) > 0 AND status = 'ativo'
             `;
             const unidadesResult = await executeQuery(unidadesQuery, [rota.id]);
             return {
@@ -82,9 +82,9 @@ class RotasSearchController {
         rotas.map(async (rota) => {
           try {
             const unidadesQuery = `
-              SELECT COUNT(*) as total_unidades 
-              FROM unidades_escolares 
-              WHERE rota_id = ? AND status = 'ativo'
+              SELECT COUNT(*) as total_unidades
+              FROM unidades_escolares
+              WHERE rota_id IS NOT NULL AND rota_id != "" AND FIND_IN_SET(?, rota_id) > 0 AND status = 'ativo'
             `;
             const unidadesResult = await executeQuery(unidadesQuery, [rota.id]);
             return {
@@ -138,9 +138,9 @@ class RotasSearchController {
         rotas.map(async (rota) => {
           try {
             const unidadesQuery = `
-              SELECT COUNT(*) as total_unidades 
-              FROM unidades_escolares 
-              WHERE rota_id = ? AND status = 'ativo'
+              SELECT COUNT(*) as total_unidades
+              FROM unidades_escolares
+              WHERE rota_id IS NOT NULL AND rota_id != "" AND FIND_IN_SET(?, rota_id) > 0 AND status = 'ativo'
             `;
             const unidadesResult = await executeQuery(unidadesQuery, [rota.id]);
             return {
@@ -361,7 +361,7 @@ class RotasSearchController {
           ue.id, ue.codigo_teknisa, ue.nome_escola, ue.cidade, ue.estado,
           ue.endereco, ue.ordem_entrega, ue.status
         FROM unidades_escolares ue
-        WHERE ue.rota_id = ? AND ue.status = 'ativo'
+        WHERE ue.rota_id IS NOT NULL AND ue.rota_id != "" AND FIND_IN_SET(?, ue.rota_id) > 0 AND ue.status = 'ativo'
         ORDER BY ue.ordem_entrega ASC, ue.nome_escola ASC
       `;
 
@@ -472,7 +472,7 @@ class RotasSearchController {
           query += `
             OR
             -- Unidades já vinculadas a esta rota (modo edição - permite manter)
-            ue.rota_id = ?
+            (ue.rota_id IS NOT NULL AND ue.rota_id != "" AND FIND_IN_SET(?, ue.rota_id) > 0)
           `;
           params.push(rotaId);
         }
@@ -491,7 +491,7 @@ class RotasSearchController {
               SELECT 1 
               FROM rotas r
               INNER JOIN tipo_rota tr ON r.tipo_rota_id = tr.id
-              WHERE r.id = ue.rota_id 
+              WHERE FIND_IN_SET(r.id, ue.rota_id) > 0 
                 AND tr.grupo_id IS NOT NULL
                 AND tr.grupo_id != ''
                 AND (${gruposConditions})
@@ -511,10 +511,10 @@ class RotasSearchController {
       } else {
         // Se não tem grupo, mostrar todas as unidades não vinculadas ou vinculadas a esta rota
         if (rotaId) {
-          query += ` AND (ue.rota_id IS NULL OR ue.rota_id = ?)`;
+          query += ` AND (ue.rota_id IS NULL OR ue.rota_id = "" OR (ue.rota_id IS NOT NULL AND FIND_IN_SET(?, ue.rota_id) > 0))`;
           params.push(rotaId);
         } else {
-          query += ` AND ue.rota_id IS NULL`;
+          query += ` AND (ue.rota_id IS NULL OR ue.rota_id = "")`;
         }
       }
 

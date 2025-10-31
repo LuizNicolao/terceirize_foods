@@ -65,8 +65,8 @@ class RotasListController {
           tr.nome as tipo_rota_nome,
           tr.grupo_id as tipo_rota_grupo_id,
           g.nome as grupo_nome,
-          (SELECT COUNT(*) FROM unidades_escolares ue WHERE ue.rota_id = r.id AND ue.status = 'ativo') as total_unidades,
-          (SELECT ordem_entrega FROM unidades_escolares ue WHERE ue.rota_id = r.id LIMIT 1) as ordem_entrega
+          (SELECT COUNT(*) FROM unidades_escolares ue WHERE ue.rota_id IS NOT NULL AND ue.rota_id != "" AND FIND_IN_SET(r.id, ue.rota_id) > 0 AND ue.status = 'ativo') as total_unidades,
+          (SELECT ordem_entrega FROM unidades_escolares ue WHERE ue.rota_id IS NOT NULL AND ue.rota_id != "" AND FIND_IN_SET(r.id, ue.rota_id) > 0 LIMIT 1) as ordem_entrega
         FROM rotas r
         LEFT JOIN filiais f ON r.filial_id = f.id
         LEFT JOIN tipo_rota tr ON r.tipo_rota_id = tr.id
@@ -124,8 +124,8 @@ class RotasListController {
           tr.nome as tipo_rota_nome,
           tr.grupo_id as tipo_rota_grupo_id,
           g.nome as grupo_nome,
-          (SELECT COUNT(*) FROM unidades_escolares ue WHERE ue.rota_id = r.id AND ue.status = 'ativo') as total_unidades,
-          (SELECT ordem_entrega FROM unidades_escolares ue WHERE ue.rota_id = r.id LIMIT 1) as ordem_entrega
+          (SELECT COUNT(*) FROM unidades_escolares ue WHERE ue.rota_id IS NOT NULL AND ue.rota_id != "" AND FIND_IN_SET(r.id, ue.rota_id) > 0 AND ue.status = 'ativo') as total_unidades,
+          (SELECT ordem_entrega FROM unidades_escolares ue WHERE ue.rota_id IS NOT NULL AND ue.rota_id != "" AND FIND_IN_SET(r.id, ue.rota_id) > 0 LIMIT 1) as ordem_entrega
         FROM rotas r
         LEFT JOIN filiais f ON r.filial_id = f.id
         LEFT JOIN tipo_rota tr ON r.tipo_rota_id = tr.id

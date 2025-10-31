@@ -130,17 +130,16 @@ class UnidadesEscolaresSearchController {
           ue.endereco, ue.numero, ue.bairro, ue.cep,
           ue.centro_distribuicao, ue.rota_id, ue.ordem_entrega, ue.status,
           ue.filial_id,
-          r.nome as rota_nome,
+          (SELECT nome FROM rotas WHERE id = ?) as rota_nome,
           f.filial as filial_nome,
           f.codigo_filial as filial_codigo
         FROM unidades_escolares ue
-        LEFT JOIN rotas r ON ue.rota_id = r.id
         LEFT JOIN filiais f ON ue.filial_id = f.id
-        WHERE ue.rota_id = ? AND ue.status = 'ativo'
+        WHERE ue.rota_id IS NOT NULL AND ue.rota_id != "" AND FIND_IN_SET(?, ue.rota_id) > 0 AND ue.status = 'ativo'
         ORDER BY ue.ordem_entrega ASC, ue.nome_escola ASC
       `;
 
-      const unidades = await executeQuery(query, [rotaId]);
+      const unidades = await executeQuery(query, [rotaId, rotaId]);
 
       res.json({
         success: true,
