@@ -84,14 +84,6 @@ const RotaModal = ({
             setValue(key, rota[key]);
           }
         });
-        
-        // Após preencher o formulário, se tiver filial_id na rota, carregar tipos de rota
-        if (rota.filial_id && !isViewMode) {
-          // Aguardar um ciclo para garantir que o filialId foi setado no form
-          setTimeout(() => {
-            onFilialChange && onFilialChange(rota.filial_id, null, rota.id);
-          }, 50);
-        }
       }
     } else {
       // Resetar formulário para nova rota (apenas se frequências já estiverem carregadas)
@@ -101,34 +93,55 @@ const RotaModal = ({
         setValue('frequencia_entrega', 'semanal');
       }
     }
-  }, [rota, isOpen, setValue, reset, frequencias, loadingFrequencias, isViewMode, onFilialChange]);
+  }, [rota, isOpen, setValue, reset, frequencias, loadingFrequencias]);
 
-  // Carregar tipos de rota quando modal abrir (se já tiver filial na rota) ou quando filial mudar
+  // Carregar tipos de rota quando filial mudar OU quando modal abrir com rota que já tem filial
+  // Usar ref para evitar múltiplas chamadas e loops
+  const filialProcessadaRef = React.useRef(null);
+  const onFilialChangeRef = React.useRef(onFilialChange);
+  
+  // Atualizar ref quando onFilialChange mudar
   React.useEffect(() => {
-    if (isOpen && rota?.filial_id && !filialId) {
-      // Se modal abriu com rota que já tem filial, mas filialId ainda não foi setado no form
-      // Isso acontece quando o formulário ainda está sendo preenchido
-      // Aguardar um ciclo para que o formulário seja preenchido primeiro
-      const timer = setTimeout(() => {
-        const filialIdDaRota = rota.filial_id;
-        if (filialIdDaRota) {
-          onFilialChange && onFilialChange(filialIdDaRota, null, rota.id);
-        }
-      }, 100);
-      return () => clearTimeout(timer);
-    } else if (filialId) {
-      // Filial já está setada, carregar tipos e unidades
-      if (!isViewMode) {
+    onFilialChangeRef.current = onFilialChange;
+  }, [onFilialChange]);
+  
+  React.useEffect(() => {
+    // Resetar ref quando modal fechar
+    if (!isOpen) {
+      filialProcessadaRef.current = null;
+      setUnidadesSelecionadas([]);
+      setBuscaUnidades('');
+      return;
+    }
+
+    // Se modal abriu e tem rota com filial, mas filialId ainda não foi setado no form
+    if (rota?.filial_id && !filialId) {
+      const key = `rota-${rota.id}`;
+      if (filialProcessadaRef.current !== key) {
+        // Aguardar um ciclo para que o formulário seja preenchido primeiro
+        const timer = setTimeout(() => {
+          const filialIdDaRota = rota.filial_id;
+          if (filialIdDaRota && filialProcessadaRef.current !== key) {
+            filialProcessadaRef.current = key;
+            onFilialChangeRef.current && onFilialChangeRef.current(filialIdDaRota, null, rota.id);
+          }
+        }, 200);
+        return () => clearTimeout(timer);
+      }
+      return;
+    }
+    
+    // Se filialId mudou (via watch) e não é o mesmo que já foi processado
+    if (filialId && !isViewMode) {
+      const key = `filial-${filialId}`;
+      if (filialProcessadaRef.current !== key) {
+        filialProcessadaRef.current = key;
         // Passar grupoId e rotaId para buscar unidades considerando grupo
         const rotaIdParaBusca = rota?.id || null;
-        onFilialChange && onFilialChange(filialId, grupoId, rotaIdParaBusca);
+        onFilialChangeRef.current && onFilialChangeRef.current(filialId, grupoId, rotaIdParaBusca);
       }
-    } else if (!filialId) {
-      setUnidadesSelecionadas([]);
     }
-    // Limpar busca quando filial ou tipo de rota mudar
-    setBuscaUnidades('');
-  }, [isOpen, rota, filialId, tipoRotaId, grupoId, isViewMode, onFilialChange]);
+  }, [isOpen, rota?.filial_id, rota?.id, filialId, grupoId, isViewMode]);
 
   // No modo de edição, marcar unidades já vinculadas como selecionadas
   React.useEffect(() => {
