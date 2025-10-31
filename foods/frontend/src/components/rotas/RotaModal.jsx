@@ -68,16 +68,19 @@ const RotaModal = ({
     }
   }, [isOpen, loadFrequencias]);
 
-  // Preencher formulário com dados da rota quando rota e frequências estiverem disponíveis
-  // Este useEffect só executa quando as frequências terminarem de carregar (ou já estiverem carregadas)
+  // Preencher formulário com dados da rota quando rota, frequências e tipos de rota estiverem disponíveis
+  // Este useEffect só executa quando as frequências e tipos de rota terminarem de carregar
   React.useEffect(() => {
     // Só processar se modal está aberto
     if (!isOpen) return;
 
     if (rota) {
-      // Só preencher se frequências já foram carregadas (não está mais carregando)
-      // Isso garante que o dropdown já tem as opções disponíveis antes de setar o valor
-      if (!loadingFrequencias && frequencias.length > 0) {
+      // Só preencher se frequências e tipos de rota já foram carregadas (não estão mais carregando)
+      // Isso garante que os dropdowns já têm as opções disponíveis antes de setar os valores
+      const frequenciasProntas = !loadingFrequencias && frequencias.length > 0;
+      const tiposRotaProntos = !loadingTiposRota && (tiposRota.length > 0 || !rota.tipo_rota_id);
+      
+      if (frequenciasProntas && tiposRotaProntos) {
         // Preencher formulário com dados da rota
         Object.keys(rota).forEach(key => {
           if (rota[key] !== null && rota[key] !== undefined) {
@@ -93,7 +96,7 @@ const RotaModal = ({
         setValue('frequencia_entrega', 'semanal');
       }
     }
-  }, [rota, isOpen, setValue, reset, frequencias, loadingFrequencias]);
+  }, [rota, isOpen, setValue, reset, frequencias, loadingFrequencias, tiposRota, loadingTiposRota]);
 
   // Carregar tipos de rota quando filial mudar OU quando modal abrir com rota que já tem filial
   // Usar ref para evitar múltiplas chamadas e loops
