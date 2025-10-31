@@ -461,7 +461,10 @@ class CalendarioAPIController {
         });
       }
 
-      console.log('✅ Semana encontrada:', semana.semana_abastecimento);
+      console.log('✅ Semana encontrada:');
+      console.log('  - semana_abastecimento (string):', semana.semana_abastecimento);
+      console.log('  - semana_abastecimento_inicio:', semana.semana_abastecimento_inicio);
+      console.log('  - semana_abastecimento_fim:', semana.semana_abastecimento_fim);
 
       // Extrair ano da semana de consumo solicitada (ex: "(06/01 a 12/01/25)" -> 2025)
       let anoSolicitado = null;
@@ -471,6 +474,7 @@ class CalendarioAPIController {
           const ano2digitos = parseInt(anoMatch[1]);
           // Assumir que anos 00-30 são 2000-2030, anos 31-99 são 1931-1999
           anoSolicitado = ano2digitos <= 30 ? 2000 + ano2digitos : 1900 + ano2digitos;
+          console.log('📅 Ano solicitado extraído:', anoSolicitado);
         }
       } catch (e) {
         console.log('⚠️ Não foi possível extrair ano da semana de consumo:', e);
@@ -482,7 +486,8 @@ class CalendarioAPIController {
       let semanaAbastecimentoFormatada = semana.semana_abastecimento;
       
       // Se o campo semana_abastecimento já existe e está formatado, usar diretamente
-      if (semana.semana_abastecimento && typeof semana.semana_abastecimento === 'string') {
+      if (semana.semana_abastecimento && typeof semana.semana_abastecimento === 'string' && semana.semana_abastecimento.trim() !== '') {
+        console.log('📅 Usando campo semana_abastecimento diretamente do banco');
         // Verificar se precisa ajustar o ano (extrair ano da semana de consumo)
         if (anoSolicitado) {
           // Extrair ano atual da semana de abastecimento
@@ -500,33 +505,37 @@ class CalendarioAPIController {
             }
           }
         }
-      } else if (semana.semana_abastecimento_inicio && semana.semana_abastecimento_fim) {
+      } else {
+        console.log('⚠️ Campo semana_abastecimento vazio ou inválido, usando fallback com datas');
+        
         // Fallback: se não tiver a string formatada, formatar a partir das datas
         // As datas no banco já estão corretas, usar diretamente sem adicionar dias
-        try {
-          console.log('📅 Usando fallback - datas do banco:', semana.semana_abastecimento_inicio, 'a', semana.semana_abastecimento_fim);
-          
-          const partesInicio = semana.semana_abastecimento_inicio.split('-').map(Number);
-          const partesFim = semana.semana_abastecimento_fim.split('-').map(Number);
-          
-          const dataInicio = new Date(Date.UTC(partesInicio[0], partesInicio[1] - 1, partesInicio[2]));
-          const dataFim = new Date(Date.UTC(partesFim[0], partesFim[1] - 1, partesFim[2]));
-          
-          console.log('📅 Datas criadas do banco:', dataInicio.toISOString(), 'a', dataFim.toISOString());
-          
-          // Usar as datas diretamente, sem adicionar dias (já estão corretas no banco)
-          const formatarData = (data) => {
-            const dia = String(data.getUTCDate()).padStart(2, '0');
-            const mes = String(data.getUTCMonth() + 1).padStart(2, '0');
-            return `${dia}/${mes}`;
-          };
-          
-          const anoFormatado = anoSolicitado || dataInicio.getUTCFullYear();
-          semanaAbastecimentoFormatada = `(${formatarData(dataInicio)} a ${formatarData(dataFim)}/${anoFormatado.toString().slice(-2)})`;
-          
-          console.log('📅 Semana formatada:', semanaAbastecimentoFormatada);
-        } catch (error) {
-          console.error('Erro ao formatar semana de abastecimento:', error);
+        if (semana.semana_abastecimento_inicio && semana.semana_abastecimento_fim) {
+          try {
+            console.log('📅 Usando fallback - datas do banco:', semana.semana_abastecimento_inicio, 'a', semana.semana_abastecimento_fim);
+            
+            const partesInicio = semana.semana_abastecimento_inicio.split('-').map(Number);
+            const partesFim = semana.semana_abastecimento_fim.split('-').map(Number);
+            
+            const dataInicio = new Date(Date.UTC(partesInicio[0], partesInicio[1] - 1, partesInicio[2]));
+            const dataFim = new Date(Date.UTC(partesFim[0], partesFim[1] - 1, partesFim[2]));
+            
+            console.log('📅 Datas criadas do banco:', dataInicio.toISOString(), 'a', dataFim.toISOString());
+            
+            // Usar as datas diretamente, sem adicionar dias (já estão corretas no banco)
+            const formatarData = (data) => {
+              const dia = String(data.getUTCDate()).padStart(2, '0');
+              const mes = String(data.getUTCMonth() + 1).padStart(2, '0');
+              return `${dia}/${mes}`;
+            };
+            
+            const anoFormatado = anoSolicitado || dataInicio.getUTCFullYear();
+            semanaAbastecimentoFormatada = `(${formatarData(dataInicio)} a ${formatarData(dataFim)}/${anoFormatado.toString().slice(-2)})`;
+            
+            console.log('📅 Semana formatada:', semanaAbastecimentoFormatada);
+          } catch (error) {
+            console.error('Erro ao formatar semana de abastecimento:', error);
+          }
         }
       }
 
