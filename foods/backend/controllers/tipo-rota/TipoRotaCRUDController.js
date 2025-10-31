@@ -254,14 +254,23 @@ class TipoRotaCRUDController {
 
       // Se houver rotas vinculadas, retornar erro com informações das rotas
       if (rotasVinculadas.length > 0) {
+        // Criar lista de códigos e nomes das rotas para a mensagem principal
+        const rotasCodigos = rotasVinculadas
+          .map(r => `${r.codigo} - ${r.nome}`)
+          .join(', ');
+
         const rotasList = rotasVinculadas.map(r => 
           `"${r.nome}" (${r.codigo})`
         ).join(', ');
 
+        const mensagemPrincipal = rotasVinculadas.length === 1
+          ? `O tipo de rota "${tipoRotaData.nome}" não pode ser excluído pois está vinculado à rota ${rotasCodigos}.`
+          : `O tipo de rota "${tipoRotaData.nome}" não pode ser excluído pois está vinculado a ${rotasVinculadas.length} rotas no sistema: ${rotasCodigos}.`;
+
         return res.status(400).json({
           success: false,
           error: 'Não é possível excluir o tipo de rota',
-          message: `O tipo de rota "${tipoRotaData.nome}" não pode ser excluído pois está vinculado a ${rotasVinculadas.length} rota(s) no sistema.`,
+          message: mensagemPrincipal,
           details: {
             tipoRota: {
               id: tipoRotaData.id,
