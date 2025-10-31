@@ -76,7 +76,7 @@ const NecessidadesFilters = ({
     } else {
       setOpcoesSemanasAbastecimento([]);
     }
-  }, [filtros.data, filtros.semana_abastecimento]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [filtros.data, filtros.semana_abastecimento, onFilterChange]);
   
   const handleEscolaChange = (escola) => {
     onFilterChange({ escola });
