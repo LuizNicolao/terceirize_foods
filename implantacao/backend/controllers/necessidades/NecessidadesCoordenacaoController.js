@@ -170,7 +170,9 @@ class NecessidadesCoordenacaoController {
     }
   }
 
-  // Liberar para logística (mudar status para CONF)
+  // Liberar para logística (mudar status para NEC LOG)
+  // Fluxo: ajuste > ajuste_nutricionista > ajuste_coordenacao > ajuste_logistica > ajuste_conf_nutri > ajuste_conf_coord
+  // Ao mudar NEC COORD -> NEC LOG, copiar ajuste_coordenacao para ajuste_logistica
   static async liberarParaLogistica(req, res) {
     try {
       const { necessidade_ids } = req.body;
@@ -189,7 +191,8 @@ class NecessidadesCoordenacaoController {
         try {
           const updateQuery = `
             UPDATE necessidades 
-            SET status = 'NEC LOG', 
+            SET status = 'NEC LOG',
+                ajuste_logistica = COALESCE(ajuste_logistica, ajuste_coordenacao, ajuste_nutricionista, ajuste),
                 data_atualizacao = NOW()
             WHERE necessidade_id = ? AND status = 'NEC COORD'
           `;
