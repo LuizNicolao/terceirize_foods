@@ -195,7 +195,7 @@ const SearchableSelect = ({
 
         {/* Dropdown */}
         {isOpen && !disabled && (
-          <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-hidden">
+          <div className="absolute z-[9999] w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-hidden">
             {/* Lista de opções */}
             <div className="max-h-60 overflow-y-auto" style={{ maxHeight }}>
               {loading ? (

@@ -288,21 +288,23 @@ const SubstituicoesTableNutricionista = ({
                       {selectedProdutosGenericos[chaveUnica]?.split('|')[0] || necessidade.produto_generico_codigo || '-'}
                     </span>
                   </td>
-                  <td className="px-4 py-2 whitespace-nowrap">
-                    <SearchableSelect
-                      value={selectedProdutosGenericos[chaveUnica] || ''}
-                      onChange={(value) => handleProdutoGenericoChange(chaveUnica, value, necessidade.quantidade_total_origem)}
-                      options={produtosGenericos[necessidade.codigo_origem]?.map(produto => ({
-                        value: `${produto.id || produto.codigo}|${produto.nome}|${produto.unidade_medida_sigla || produto.unidade || produto.unidade_medida || ''}|${produto.fator_conversao || 1}`,
-                        label: produto.nome
-                      })) || []}
-                      placeholder="Selecione..."
-                      disabled={!ajustesAtivados || loadingGenericos[necessidade.codigo_origem]}
-                      className="text-xs"
-                      filterBy={(option, searchTerm) => {
-                        return option.label.toLowerCase().includes(searchTerm.toLowerCase());
-                      }}
-                    />
+                  <td className="px-4 py-2 whitespace-nowrap relative z-10">
+                    <div className="relative z-10">
+                      <SearchableSelect
+                        value={selectedProdutosGenericos[chaveUnica] || ''}
+                        onChange={(value) => handleProdutoGenericoChange(chaveUnica, value, necessidade.quantidade_total_origem)}
+                        options={produtosGenericos[necessidade.codigo_origem]?.map(produto => ({
+                          value: `${produto.id || produto.codigo}|${produto.nome}|${produto.unidade_medida_sigla || produto.unidade || produto.unidade_medida || ''}|${produto.fator_conversao || 1}`,
+                          label: produto.nome
+                        })) || []}
+                        placeholder="Selecione..."
+                        disabled={!ajustesAtivados || loadingGenericos[necessidade.codigo_origem]}
+                        className="text-xs"
+                        filterBy={(option, searchTerm) => {
+                          return option.label.toLowerCase().includes(searchTerm.toLowerCase());
+                        }}
+                      />
+                    </div>
                   </td>
                   <td className="px-4 py-2 whitespace-nowrap text-center">
                     <span className="text-xs text-gray-700">
@@ -380,26 +382,28 @@ const SubstituicoesTableNutricionista = ({
                                   <td className="px-4 py-2 whitespace-nowrap text-xs font-semibold text-purple-600">
                                     {codigoProduto}
                                   </td>
-                                  <td className="px-4 py-2 whitespace-nowrap">
-                                    <SearchableSelect
-                                      value={produtoSelecionado}
-                                      onChange={(value) => {
-                                        setSelectedProdutosPorEscola(prev => ({ ...prev, [chaveEscola]: value }));
-                                        escola.selectedProdutoGenerico = value;
-                                      }}
-                                      options={produtosGenericos[necessidade.codigo_origem]?.map(produto => {
-                                        const unidade = produto.unidade_medida_sigla || produto.unidade || produto.unidade_medida || '';
-                                        return {
-                                          value: `${produto.id || produto.codigo}|${produto.nome}|${unidade}|${produto.fator_conversao || 1}`,
-                                          label: produto.nome
-                                        };
-                                      }) || []}
-                                      placeholder="Selecione..."
-                                      disabled={!ajustesAtivados}
-                                      filterBy={(option, searchTerm) => {
-                                        return option.label.toLowerCase().includes(searchTerm.toLowerCase());
-                                      }}
-                                    />
+                                  <td className="px-4 py-2 whitespace-nowrap relative z-10">
+                                    <div className="relative z-10">
+                                      <SearchableSelect
+                                        value={produtoSelecionado}
+                                        onChange={(value) => {
+                                          setSelectedProdutosPorEscola(prev => ({ ...prev, [chaveEscola]: value }));
+                                          escola.selectedProdutoGenerico = value;
+                                        }}
+                                        options={produtosGenericos[necessidade.codigo_origem]?.map(produto => {
+                                          const unidade = produto.unidade_medida_sigla || produto.unidade || produto.unidade_medida || '';
+                                          return {
+                                            value: `${produto.id || produto.codigo}|${produto.nome}|${unidade}|${produto.fator_conversao || 1}`,
+                                            label: produto.nome
+                                          };
+                                        }) || []}
+                                        placeholder="Selecione..."
+                                        disabled={!ajustesAtivados}
+                                        filterBy={(option, searchTerm) => {
+                                          return option.label.toLowerCase().includes(searchTerm.toLowerCase());
+                                        }}
+                                      />
+                                    </div>
                                   </td>
                                   <td className="px-4 py-2 whitespace-nowrap text-center">
                                     <span className="text-xs text-gray-700">
