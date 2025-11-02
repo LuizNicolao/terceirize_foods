@@ -567,7 +567,8 @@ const liberarCoordenacao = async (req, res) => {
           ELSE status
         END,
         ajuste_coordenacao = CASE
-          WHEN status IN ('NEC', 'NEC NUTRI') THEN COALESCE(ajuste_coordenacao, ajuste_nutricionista, ajuste)
+          WHEN status = 'NEC' THEN COALESCE(ajuste_coordenacao, ajuste)
+          WHEN status = 'NEC NUTRI' THEN COALESCE(ajuste_coordenacao, ajuste_nutricionista, ajuste)
           ELSE ajuste_coordenacao
         END,
         ajuste_conf_coord = CASE
