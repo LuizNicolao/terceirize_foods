@@ -270,14 +270,27 @@ export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
 
   // Efeito para carregar necessidades quando filtros mudarem
   useEffect(() => {
-    // Só carrega se tiver AMBOS os filtros: grupo E semana de abastecimento
-    if (filtros.grupo && filtros.semana_abastecimento) {
-      carregarNecessidades();
+    // Para aba nutricionista: exige AMBOS os filtros (grupo E semana de abastecimento)
+    // Para aba coordenação: os filtros são independentes, qualquer combinação é válida
+    if (tipo === 'coordenacao') {
+      // Na coordenação, pode carregar mesmo sem todos os filtros preenchidos
+      // Mas precisa ter pelo menos algum filtro para fazer sentido carregar
+      if (filtros.grupo || filtros.semana_abastecimento || filtros.tipo_rota_id) {
+        carregarNecessidades();
+      } else {
+        // Limpar necessidades se não tiver nenhum filtro
+        setNecessidades([]);
+      }
     } else {
-      // Limpar necessidades se não tiver ambos os filtros
-      setNecessidades([]);
+      // Na nutricionista, exige AMBOS os filtros: grupo E semana de abastecimento
+      if (filtros.grupo && filtros.semana_abastecimento) {
+        carregarNecessidades();
+      } else {
+        // Limpar necessidades se não tiver ambos os filtros
+        setNecessidades([]);
+      }
     }
-  }, [filtros.grupo, filtros.semana_abastecimento, filtros.semana_consumo, filtros.tipo_rota_id, carregarNecessidades]);
+  }, [filtros.grupo, filtros.semana_abastecimento, filtros.semana_consumo, filtros.tipo_rota_id, tipo, carregarNecessidades]);
 
   return {
     // Estados
