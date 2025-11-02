@@ -10,30 +10,28 @@ const AjusteTabelaCoordenacao = ({
   canEdit
 }) => {
   // Função para calcular quantidade anterior baseado no status
-  // Fluxo: ajuste > ajuste_nutricionista > ajuste_coordenacao > ajuste_logistica > ajuste_conf_nutri > ajuste_conf_coord
   const getQuantidadeAnterior = (necessidade) => {
-    // Para CONF COORD, mostrar ajuste_conf_nutri (confirmação da nutricionista)
+    // Para CONF COORD, mostrar ajuste_conf_nutri
     if (necessidade.status === 'CONF COORD') {
       return necessidade.ajuste_conf_nutri ?? 0;
     }
-    // Para NEC COORD, mostrar ajuste_logistica (se existir), senão ajuste_coordenacao, senão ajuste_nutricionista, senão ajuste
+    // Para NEC COORD, mostrar ajuste_nutricionista
     if (necessidade.status === 'NEC COORD') {
-      return necessidade.ajuste_logistica ?? necessidade.ajuste_coordenacao ?? necessidade.ajuste_nutricionista ?? necessidade.ajuste ?? 0;
+      return necessidade.ajuste_nutricionista ?? 0;
     }
     // Para outros status, não há anterior
     return 0;
   };
 
   // Função para calcular quantidade atual baseado no status
-  // Fluxo: ajuste > ajuste_nutricionista > ajuste_coordenacao > ajuste_logistica > ajuste_conf_nutri > ajuste_conf_coord
   const getQuantidadeAtual = (necessidade) => {
     if (necessidade.status === 'CONF COORD') {
-      return necessidade.ajuste_conf_coord ?? necessidade.ajuste_conf_nutri ?? necessidade.ajuste_logistica ?? necessidade.ajuste_coordenacao ?? necessidade.ajuste_nutricionista ?? necessidade.ajuste ?? 0;
+      return necessidade.ajuste_conf_coord ?? necessidade.ajuste_conf_nutri ?? necessidade.ajuste_nutricionista ?? necessidade.ajuste_coordenacao ?? necessidade.ajuste ?? 0;
     }
     if (necessidade.status === 'NEC COORD') {
-      return necessidade.ajuste_coordenacao ?? necessidade.ajuste_logistica ?? necessidade.ajuste_nutricionista ?? necessidade.ajuste ?? 0;
+      return necessidade.ajuste_coordenacao ?? necessidade.ajuste_nutricionista ?? necessidade.ajuste ?? 0;
     }
-    return necessidade.ajuste_nutricionista ?? necessidade.ajuste_coordenacao ?? necessidade.ajuste_logistica ?? necessidade.ajuste ?? 0;
+    return necessidade.ajuste_nutricionista ?? necessidade.ajuste_coordenacao ?? necessidade.ajuste ?? 0;
   };
 
   // Função para calcular a diferença
@@ -99,7 +97,11 @@ const AjusteTabelaCoordenacao = ({
                 {necessidade.produto_unidade}
               </td>
               <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900 text-center">
-                {getQuantidadeAtual(necessidade)}
+                {necessidade.status === 'CONF COORD'
+                  ? (necessidade.ajuste_conf_coord ?? necessidade.ajuste_conf_nutri ?? necessidade.ajuste_nutricionista ?? necessidade.ajuste_coordenacao ?? necessidade.ajuste ?? 0)
+                  : necessidade.status === 'NEC COORD'
+                  ? (necessidade.ajuste_coordenacao ?? necessidade.ajuste_nutricionista ?? necessidade.ajuste ?? 0)
+                  : (necessidade.ajuste_nutricionista ?? necessidade.ajuste_coordenacao ?? necessidade.ajuste ?? 0)}
               </td>
               <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-500 text-center">
                 {getQuantidadeAnterior(necessidade)}

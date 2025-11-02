@@ -298,14 +298,10 @@ const salvarAjustes = async (req, res) => {
     }
 
     // Atualizar status do conjunto para 'NEC NUTRI' se houve atualizações
-    // Fluxo: ajuste > ajuste_nutricionista > ajuste_coordenacao > ajuste_logistica > ajuste_conf_nutri > ajuste_conf_coord
-    // Ao mudar NEC -> NEC NUTRI, copiar ajuste para ajuste_nutricionista se não existir
     if (updatedCount > 0) {
       await executeQuery(`
         UPDATE necessidades 
-        SET status = 'NEC NUTRI',
-            ajuste_nutricionista = COALESCE(ajuste_nutricionista, ajuste),
-            data_atualizacao = CURRENT_TIMESTAMP
+        SET status = 'NEC NUTRI', data_atualizacao = CURRENT_TIMESTAMP
         WHERE escola_id = ? 
           AND status = 'NEC'
           AND produto_id IN (
@@ -319,9 +315,7 @@ const salvarAjustes = async (req, res) => {
       if (periodo && periodo.consumo_de && periodo.consumo_ate) {
         await executeQuery(`
           UPDATE necessidades 
-          SET status = 'NEC NUTRI',
-              ajuste_nutricionista = COALESCE(ajuste_nutricionista, ajuste),
-              data_atualizacao = CURRENT_TIMESTAMP
+          SET status = 'NEC NUTRI', data_atualizacao = CURRENT_TIMESTAMP
           WHERE escola_id = ? 
             AND status = 'NEC'
             AND semana_consumo BETWEEN ? AND ?
@@ -350,7 +344,7 @@ const salvarAjustes = async (req, res) => {
 // Incluir produto extra
 const incluirProdutoExtra = async (req, res) => {
   try {
-    const { escola_id, grupo, periodo, produto_id, quantidade, semana_consumo, semana_abastecimento } = req.body;
+    const { escola_id, grupo, periodo, produto_id, quantidade } = req.body;
 
     // Validar dados obrigatórios
     if (!escola_id || !grupo || !produto_id) {
@@ -382,11 +376,7 @@ const incluirProdutoExtra = async (req, res) => {
     let whereClause = `escola_id = ? AND produto_id = ?`;
     const params = [escola_id, produto_id];
 
-    // Se semana_consumo foi enviada, usar para verificar duplicidade
-    if (semana_consumo) {
-      whereClause += ` AND semana_consumo = ?`;
-      params.push(semana_consumo);
-    } else if (periodo && periodo.consumo_de && periodo.consumo_ate) {
+    if (periodo && periodo.consumo_de && periodo.consumo_ate) {
       whereClause += ` AND semana_consumo BETWEEN ? AND ?`;
       params.push(periodo.consumo_de, periodo.consumo_ate);
     }
@@ -404,22 +394,16 @@ const incluirProdutoExtra = async (req, res) => {
     }
 
     // Buscar dados da escola e necessidade_id das necessidades existentes
-    // Usar semana_consumo enviada pelo frontend se disponível, senão buscar qualquer necessidade
-    let escolaQuery = `
-      SELECT escola, escola_rota, codigo_teknisa, necessidade_id, semana_consumo, semana_abastecimento, usuario_email, usuario_id
+    // IMPORTANTE: Buscar também usuario_email e usuario_id para manter consistência
+    // Usar semana_consumo e semana_abastecimento enviados pelo frontend
+    const { semana_consumo, semana_abastecimento } = req.body;
+    
+    const escolaExistente = await executeQuery(`
+      SELECT escola, escola_rota, codigo_teknisa, necessidade_id, usuario_email, usuario_id
       FROM necessidades 
-      WHERE escola_id = ?
-    `;
-    let escolaParams = [escola_id];
-
-    if (semana_consumo) {
-      escolaQuery += ` AND semana_consumo = ?`;
-      escolaParams.push(semana_consumo);
-    }
-
-    escolaQuery += ` LIMIT 1`;
-
-    const escolaExistente = await executeQuery(escolaQuery, escolaParams);
+      WHERE escola_id = ? 
+      LIMIT 1
+    `, [escola_id]);
 
     if (escolaExistente.length === 0) {
       return res.status(404).json({
@@ -429,7 +413,6 @@ const incluirProdutoExtra = async (req, res) => {
       });
     }
 
-    // Usar semanas enviadas pelo frontend, ou das necessidades existentes como fallback
     const escolaData = {
       nome_escola: escolaExistente[0].escola,
       rota: escolaExistente[0].escola_rota,
@@ -555,25 +538,22 @@ const liberarCoordenacao = async (req, res) => {
       });
     }
 
-    // Atualizar status conforme fluxo:
-    // Fluxo: ajuste > ajuste_nutricionista > ajuste_coordenacao > ajuste_logistica > ajuste_conf_nutri > ajuste_conf_coord
-    // - De NEC/NEC NUTRI -> NEC COORD: copiar ajuste_nutricionista (ou ajuste) para ajuste_coordenacao
-    // - De CONF NUTRI -> CONF COORD: copiar ajuste_conf_nutri para ajuste_conf_coord
-    let query = `
+  // Atualizar status conforme fluxo:
+  // NEC > NEC NUTRI > NEC COORD > NEC LOG > CONF NUTRI > CONF COORD > CONF
+  // - De NEC -> NEC COORD: copiar ajuste para ajuste_nutricionista
+  // - De NEC NUTRI -> NEC COORD: manter ajuste_nutricionista (já existe)
+  // - De CONF NUTRI -> CONF COORD: manter ajuste_conf_nutri (já existe)
+  let query = `
       UPDATE necessidades 
       SET status = CASE 
-          WHEN status IN ('NEC', 'NEC NUTRI') THEN 'NEC COORD'
+          WHEN status = 'NEC' THEN 'NEC COORD'
+          WHEN status = 'NEC NUTRI' THEN 'NEC COORD'
           WHEN status = 'CONF NUTRI' THEN 'CONF COORD'
           ELSE status
         END,
-        ajuste_coordenacao = CASE
-          WHEN status = 'NEC' THEN COALESCE(ajuste_coordenacao, ajuste)
-          WHEN status = 'NEC NUTRI' THEN COALESCE(ajuste_coordenacao, ajuste_nutricionista, ajuste)
-          ELSE ajuste_coordenacao
-        END,
-        ajuste_conf_coord = CASE
-          WHEN status = 'CONF NUTRI' THEN COALESCE(ajuste_conf_coord, ajuste_conf_nutri, ajuste_logistica, ajuste_coordenacao, ajuste_nutricionista, ajuste)
-          ELSE ajuste_conf_coord
+        ajuste_nutricionista = CASE
+          WHEN status = 'NEC' THEN ajuste
+          ELSE ajuste_nutricionista
         END,
         data_atualizacao = CURRENT_TIMESTAMP
       WHERE escola_id = ? 
