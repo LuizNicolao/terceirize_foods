@@ -12,7 +12,7 @@ class SubstituicoesListController {
    */
   static async listarParaSubstituicao(req, res) {
     try {
-      const { grupo, semana_abastecimento, semana_consumo, tipo_rota_id } = req.query;
+      const { grupo, semana_abastecimento, semana_consumo, tipo_rota_id, rota_id } = req.query;
 
       let whereConditions = ["n.status = 'CONF'", "(n.substituicao_processada = 0 OR n.substituicao_processada IS NULL)"];
       let params = [];
@@ -31,6 +31,20 @@ class SubstituicoesListController {
             AND ue.rota_id != ''
         )`);
         params.push(tipo_rota_id);
+      }
+
+      // Filtro por rota específica
+      if (rota_id) {
+        // Buscar escolas que têm esta rota específica no rota_id
+        whereConditions.push(`n.escola_id IN (
+          SELECT DISTINCT ue.id
+          FROM foods_db.unidades_escolares ue
+          WHERE FIND_IN_SET(?, ue.rota_id) > 0
+            AND ue.status = 'ativo'
+            AND ue.rota_id IS NOT NULL
+            AND ue.rota_id != ''
+        )`);
+        params.push(rota_id);
       }
 
       // Filtro por grupo
@@ -293,7 +307,7 @@ class SubstituicoesListController {
    */
   static async listarParaCoordenacao(req, res) {
     try {
-      const { grupo, semana_abastecimento, semana_consumo, tipo_rota_id } = req.query;
+      const { grupo, semana_abastecimento, semana_consumo, tipo_rota_id, rota_id } = req.query;
 
       // Construir query base
       let whereConditions = ['status = "conf log"', 'ativo = 1'];
@@ -313,6 +327,20 @@ class SubstituicoesListController {
             AND ue.rota_id != ''
         )`);
         params.push(tipo_rota_id);
+      }
+
+      // Filtro por rota específica
+      if (rota_id) {
+        // Buscar escolas que têm esta rota específica no rota_id
+        whereConditions.push(`escola_id IN (
+          SELECT DISTINCT ue.id
+          FROM foods_db.unidades_escolares ue
+          WHERE FIND_IN_SET(?, ue.rota_id) > 0
+            AND ue.status = 'ativo'
+            AND ue.rota_id IS NOT NULL
+            AND ue.rota_id != ''
+        )`);
+        params.push(rota_id);
       }
 
       if (grupo) {
@@ -519,6 +547,90 @@ class SubstituicoesListController {
       res.status(500).json({
         success: false,
         message: 'Erro ao buscar tipos de rota disponíveis'
+      });
+    }
+  }
+
+  /**
+   * Buscar rotas disponíveis
+   * Busca rotas que têm escolas vinculadas nas necessidades
+   * E que têm grupos vinculados que existem nas necessidades
+   * Suporta duas abas:
+   * - nutricionista: busca rotas com escolas em necessidades (status CONF)
+   * - coordenacao: busca rotas com escolas em necessidades_substituicoes (status conf log)
+   */
+  static async buscarRotasDisponiveis(req, res) {
+    try {
+      const { aba } = req.query;
+      
+      let rotas;
+      
+      if (aba === 'coordenacao') {
+        // Buscar rotas que:
+        // 1. Têm escolas na tabela necessidades_substituicoes com status conf log
+        // 2. Têm grupos vinculados que existem nas necessidades_substituicoes
+        rotas = await executeQuery(`
+          SELECT DISTINCT
+            r.id,
+            r.nome
+          FROM foods_db.rotas r
+          INNER JOIN foods_db.unidades_escolares ue ON FIND_IN_SET(r.id, ue.rota_id) > 0
+          INNER JOIN necessidades_substituicoes ns ON ns.escola_id = ue.id
+          INNER JOIN foods_db.grupos g ON g.nome COLLATE utf8mb4_unicode_ci = ns.grupo COLLATE utf8mb4_unicode_ci
+          INNER JOIN foods_db.tipo_rota tr ON r.tipo_rota_id = tr.id
+          WHERE r.status = 'ativo'
+            AND ue.status = 'ativo'
+            AND ns.ativo = 1
+            AND ns.status = 'conf log'
+            AND ue.rota_id IS NOT NULL
+            AND ue.rota_id != ''
+            AND tr.grupo_id IS NOT NULL
+            AND tr.grupo_id != ''
+            AND ns.grupo IS NOT NULL
+            AND ns.grupo != ''
+            -- Validar se o grupo existe no grupo_id do tipo_rota
+            AND FIND_IN_SET(g.id, tr.grupo_id) > 0
+          ORDER BY r.nome ASC
+        `);
+      } else {
+        // Buscar rotas que:
+        // 1. Têm escolas na tabela necessidades com status CONF (padrão: nutricionista)
+        // 2. Têm grupos vinculados que existem nas necessidades
+        rotas = await executeQuery(`
+          SELECT DISTINCT
+            r.id,
+            r.nome
+          FROM foods_db.rotas r
+          INNER JOIN foods_db.unidades_escolares ue ON FIND_IN_SET(r.id, ue.rota_id) > 0
+          INNER JOIN necessidades n ON n.escola_id = ue.id
+          INNER JOIN produtos_per_capita ppc ON n.produto_id = ppc.produto_id
+          INNER JOIN foods_db.grupos g ON g.nome COLLATE utf8mb4_unicode_ci = ppc.grupo COLLATE utf8mb4_unicode_ci
+          INNER JOIN foods_db.tipo_rota tr ON r.tipo_rota_id = tr.id
+          WHERE r.status = 'ativo'
+            AND ue.status = 'ativo'
+            AND n.status = 'CONF'
+            AND (n.substituicao_processada = 0 OR n.substituicao_processada IS NULL)
+            AND ue.rota_id IS NOT NULL
+            AND ue.rota_id != ''
+            AND tr.grupo_id IS NOT NULL
+            AND tr.grupo_id != ''
+            AND ppc.grupo IS NOT NULL
+            AND ppc.grupo != ''
+            -- Validar se o grupo existe no grupo_id do tipo_rota
+            AND FIND_IN_SET(g.id, tr.grupo_id) > 0
+          ORDER BY r.nome ASC
+        `);
+      }
+
+      res.json({
+        success: true,
+        data: rotas
+      });
+    } catch (error) {
+      console.error('Erro ao buscar rotas disponíveis:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro ao buscar rotas disponíveis'
       });
     }
   }

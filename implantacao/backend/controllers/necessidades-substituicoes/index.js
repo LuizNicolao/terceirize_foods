@@ -13,6 +13,7 @@ module.exports = {
   buscarSemanaConsumo: SubstituicoesListController.buscarSemanaConsumo,
   buscarProdutosGenericos: SubstituicoesListController.buscarProdutosGenericos,
   buscarTiposRotaDisponiveis: SubstituicoesListController.buscarTiposRotaDisponiveis,
+  buscarRotasDisponiveis: SubstituicoesListController.buscarRotasDisponiveis,
   buscarGruposDisponiveisParaSubstituicao: SubstituicoesListController.buscarGruposDisponiveisParaSubstituicao,
   buscarSemanasAbastecimentoDisponiveisParaSubstituicao: SubstituicoesListController.buscarSemanasAbastecimentoDisponiveisParaSubstituicao,
 

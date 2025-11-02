@@ -15,6 +15,7 @@ const AnaliseCoordenacao = () => {
     semanasAbastecimento,
     semanasConsumo,
     tiposRota,
+    rotas,
     filtros,
     produtosGenericos,
     loadingGenericos,
@@ -63,6 +64,7 @@ const AnaliseCoordenacao = () => {
         semanasAbastecimento={semanasAbastecimento}
         semanasConsumo={semanasConsumo}
         tiposRota={tiposRota}
+        rotas={rotas}
         filtros={filtros}
         loading={loading}
         onFiltroChange={atualizarFiltros}

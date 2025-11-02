@@ -16,6 +16,7 @@ class SubstituicoesNecessidadesService {
     if (filtros.semana_abastecimento) params.append('semana_abastecimento', filtros.semana_abastecimento);
     if (filtros.semana_consumo) params.append('semana_consumo', filtros.semana_consumo);
     if (filtros.tipo_rota_id) params.append('tipo_rota_id', filtros.tipo_rota_id);
+    if (filtros.rota_id) params.append('rota_id', filtros.rota_id);
 
     const response = await api.get(`/necessidades-substituicoes/listar?${params.toString()}`);
     return response.data;
@@ -32,6 +33,7 @@ class SubstituicoesNecessidadesService {
     if (filtros.semana_abastecimento) params.append('semana_abastecimento', filtros.semana_abastecimento);
     if (filtros.semana_consumo) params.append('semana_consumo', filtros.semana_consumo);
     if (filtros.tipo_rota_id) params.append('tipo_rota_id', filtros.tipo_rota_id);
+    if (filtros.rota_id) params.append('rota_id', filtros.rota_id);
 
     const response = await api.get(`/necessidades-substituicoes/listar-coordenacao?${params.toString()}`);
     return response.data;
@@ -119,6 +121,17 @@ class SubstituicoesNecessidadesService {
     const params = new URLSearchParams();
     if (aba) params.append('aba', aba);
     const response = await api.get(`/necessidades-substituicoes/tipos-rota-disponiveis?${params.toString()}`);
+    return response.data;
+  }
+
+  /**
+   * Buscar rotas disponíveis
+   * @param {String} aba - 'nutricionista' ou 'coordenacao'
+   */
+  static async buscarRotasDisponiveis(aba = 'nutricionista') {
+    const params = new URLSearchParams();
+    if (aba) params.append('aba', aba);
+    const response = await api.get(`/necessidades-substituicoes/rotas-disponiveis?${params.toString()}`);
     return response.data;
   }
 }

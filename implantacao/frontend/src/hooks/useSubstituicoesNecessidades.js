@@ -14,6 +14,7 @@ export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
   const [semanasAbastecimento, setSemanasAbastecimento] = useState([]);
   const [semanasConsumo, setSemanasConsumo] = useState([]);
   const [tiposRota, setTiposRota] = useState([]);
+  const [rotas, setRotas] = useState([]);
   
   const [produtosGenericos, setProdutosGenericos] = useState({});
   const [loadingGenericos, setLoadingGenericos] = useState({});
@@ -22,7 +23,8 @@ export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
     grupo: '',
     semana_abastecimento: '',
     semana_consumo: '',
-    tipo_rota_id: ''
+    tipo_rota_id: '',
+    rota_id: ''
   });
 
   /**
@@ -72,6 +74,22 @@ export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
       }
     } catch (error) {
       console.error('Erro ao carregar tipos de rota:', error);
+    }
+  }, [tipo]);
+
+  /**
+   * Carregar rotas disponíveis (baseado no tipo: nutricionista ou coordenação)
+   */
+  const carregarRotas = useCallback(async () => {
+    try {
+      // tipo pode ser 'nutricionista' (padrão) ou 'coordenacao'
+      const aba = tipo === 'coordenacao' ? 'coordenacao' : 'nutricionista';
+      const response = await SubstituicoesNecessidadesService.buscarRotasDisponiveis(aba);
+      if (response.success) {
+        setRotas(response.data || []);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar rotas:', error);
     }
   }, [tipo]);
 
@@ -239,7 +257,8 @@ export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
       grupo: '',
       semana_abastecimento: '',
       semana_consumo: '',
-      tipo_rota_id: ''
+      tipo_rota_id: '',
+      rota_id: ''
     });
   }, []);
 
@@ -261,6 +280,12 @@ export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
     carregarTiposRota();
   }, [tipo, carregarTiposRota]);
 
+  // Efeito para carregar rotas - independente de outros filtros
+  // Recarrega quando tipo mudar para garantir dados corretos
+  useEffect(() => {
+    carregarRotas();
+  }, [tipo, carregarRotas]);
+
   // Efeito para carregar semana de consumo quando abastecimento mudar
   useEffect(() => {
     if (filtros.semana_abastecimento) {
@@ -277,7 +302,7 @@ export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
     if (tipo === 'coordenacao') {
       // Na coordenação, pode carregar mesmo sem todos os filtros preenchidos
       // Mas precisa ter pelo menos algum filtro para fazer sentido carregar
-      if (filtros.grupo || filtros.semana_abastecimento || filtros.tipo_rota_id) {
+      if (filtros.grupo || filtros.semana_abastecimento || filtros.tipo_rota_id || filtros.rota_id) {
         carregarNecessidades();
       } else {
         // Limpar necessidades se não tiver nenhum filtro
@@ -292,7 +317,7 @@ export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
         setNecessidades([]);
       }
     }
-  }, [filtros.grupo, filtros.semana_abastecimento, filtros.semana_consumo, filtros.tipo_rota_id, tipo, carregarNecessidades]);
+  }, [filtros.grupo, filtros.semana_abastecimento, filtros.semana_consumo, filtros.tipo_rota_id, filtros.rota_id, tipo, carregarNecessidades]);
 
   return {
     // Estados
@@ -303,6 +328,7 @@ export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
     semanasAbastecimento,
     semanasConsumo,
     tiposRota,
+    rotas,
     filtros,
     produtosGenericos,
     loadingGenericos,
