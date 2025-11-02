@@ -187,6 +187,17 @@ class NecessidadesCoordenacaoController {
 
       for (const necessidade_id of necessidade_ids) {
         try {
+          // Primeiro: copiar ajuste_nutricionista para ajuste_coordenacao quando status = 'NEC COORD'
+          // (só se ajuste_coordenacao estiver NULL)
+          await executeQuery(`
+            UPDATE necessidades 
+            SET ajuste_coordenacao = COALESCE(ajuste_nutricionista, ajuste)
+            WHERE necessidade_id = ? 
+              AND status = 'NEC COORD'
+              AND (ajuste_coordenacao IS NULL OR ajuste_coordenacao = 0)
+          `, [necessidade_id]);
+
+          // Segundo: atualizar status para NEC LOG
           const updateQuery = `
             UPDATE necessidades 
             SET status = 'NEC LOG', 
