@@ -8,7 +8,7 @@ class SubstituicoesImpressaoController {
   /**
    * Buscar dados para impressão de romaneio
    * Filtros obrigatórios: tipo_rota_id, rota_id, semana_abastecimento
-   * Status: conf log, conf, impressao
+   * Status: apenas 'conf log' (só pode imprimir necessidades que ainda não foram impressas)
    */
   static async buscarDadosImpressao(req, res) {
     try {
@@ -63,10 +63,10 @@ class SubstituicoesImpressaoController {
         }
       }
 
-      // Construir condições WHERE
+      // Construir condições WHERE - APENAS status 'conf log'
       let whereConditions = [
         'ns.ativo = 1',
-        `ns.status IN ('impressao', 'conf', 'conf log')`,
+        `ns.status = 'conf log'`,
         'ns.semana_abastecimento = ?',
         'ns.escola_id IN (SELECT DISTINCT ue.id FROM foods_db.unidades_escolares ue INNER JOIN foods_db.rotas r ON FIND_IN_SET(r.id, ue.rota_id) > 0 WHERE r.id = ? AND r.tipo_rota_id = ? AND ue.status = \'ativo\' AND ue.rota_id IS NOT NULL AND ue.rota_id != \'\')'
       ];
@@ -130,6 +130,67 @@ class SubstituicoesImpressaoController {
         success: false,
         error: 'Erro interno do servidor',
         message: 'Erro ao buscar dados para impressão'
+      });
+    }
+  }
+
+  /**
+   * Marcar como impresso (conf log → impressao)
+   * Atualiza o status das necessidades_substituicoes para 'impressao'
+   */
+  static async marcarComoImpresso(req, res) {
+    try {
+      const { tipo_rota_id, rota_id, semana_abastecimento, semana_consumo, grupo } = req.body;
+      const usuario_id = req.user.id;
+
+      // Validar filtros obrigatórios
+      if (!tipo_rota_id || !rota_id || !semana_abastecimento) {
+        return res.status(400).json({
+          success: false,
+          message: 'Filtros obrigatórios: tipo_rota_id, rota_id e semana_abastecimento'
+        });
+      }
+
+      // Construir condições WHERE
+      let whereConditions = [
+        'ativo = 1',
+        `status = 'conf log'`,
+        'semana_abastecimento = ?',
+        'escola_id IN (SELECT DISTINCT ue.id FROM foods_db.unidades_escolares ue INNER JOIN foods_db.rotas r ON FIND_IN_SET(r.id, ue.rota_id) > 0 WHERE r.id = ? AND r.tipo_rota_id = ? AND ue.status = \'ativo\' AND ue.rota_id IS NOT NULL AND ue.rota_id != \'\')'
+      ];
+      let params = [semana_abastecimento, rota_id, tipo_rota_id];
+
+      if (grupo) {
+        whereConditions.push('grupo = ?');
+        params.push(grupo);
+      }
+
+      if (semana_consumo) {
+        whereConditions.push('semana_consumo = ?');
+        params.push(semana_consumo);
+      }
+
+      // Atualizar status para 'impressao'
+      const result = await executeQuery(`
+        UPDATE necessidades_substituicoes 
+        SET 
+          status = 'impressao',
+          data_atualizacao = NOW()
+        WHERE ${whereConditions.join(' AND ')}
+      `, params);
+
+      res.json({
+        success: true,
+        message: 'Status atualizado para impressão com sucesso',
+        affectedRows: result.affectedRows
+      });
+
+    } catch (error) {
+      console.error('Erro ao marcar como impresso:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro interno do servidor',
+        message: 'Erro ao marcar como impresso'
       });
     }
   }

@@ -81,6 +81,14 @@ router.get(
   SubstituicoesController.buscarDadosImpressao
 );
 
+// POST /api/necessidades-substituicoes/marcar-como-impresso
+// Marca necessidades como impressas (conf log → impressao)
+router.post(
+  '/marcar-como-impresso',
+  checkScreenPermission('necessidades', 'editar'),
+  SubstituicoesController.marcarComoImpresso
+);
+
 // ===== ROTAS CRUD =====
 
 // POST /api/necessidades-substituicoes

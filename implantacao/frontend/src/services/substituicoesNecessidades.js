@@ -155,6 +155,15 @@ class SubstituicoesNecessidadesService {
     const response = await api.get(`/necessidades-substituicoes/buscar-dados-impressao?${params.toString()}`);
     return response.data;
   }
+
+  /**
+   * Marcar como impresso (atualiza status de conf log para impressao)
+   * @param {Object} filtros - Filtros: tipo_rota_id (obrigatório), rota_id (obrigatório), semana_abastecimento (obrigatório), grupo (opcional), semana_consumo (opcional)
+   */
+  static async marcarComoImpresso(filtros) {
+    const response = await api.post('/necessidades-substituicoes/marcar-como-impresso', filtros);
+    return response.data;
+  }
 }
 
 export default SubstituicoesNecessidadesService;

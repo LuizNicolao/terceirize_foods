@@ -21,6 +21,7 @@ const AnaliseImpressao = () => {
 
   const [dadosImpressao, setDadosImpressao] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [marcandoImpresso, setMarcandoImpresso] = useState(false);
   const [error, setError] = useState(null);
 
   // Validar se os filtros obrigatórios estão preenchidos
@@ -54,13 +55,45 @@ const AnaliseImpressao = () => {
     }
   };
 
-  const handleImprimir = () => {
+  const handleImprimir = async () => {
     if (!dadosImpressao) {
       toast.error('Carregue os dados antes de imprimir');
       return;
     }
 
-    window.print();
+    if (!filtrosValidos) {
+      toast.error('Filtros obrigatórios não estão preenchidos');
+      return;
+    }
+
+    setMarcandoImpresso(true);
+
+    try {
+      // Marcar como impresso antes de imprimir
+      const response = await SubstituicoesNecessidadesService.marcarComoImpresso(filtros);
+      
+      if (response.success) {
+        toast.success(`Status atualizado para impressão (${response.affectedRows} registro(s) atualizado(s))`);
+        
+        // Aguardar um momento antes de imprimir para garantir que a atualização foi processada
+        setTimeout(() => {
+          window.print();
+          setMarcandoImpresso(false);
+        }, 500);
+      } else {
+        toast.error(response.message || 'Erro ao marcar como impresso');
+        setMarcandoImpresso(false);
+      }
+    } catch (error) {
+      console.error('Erro ao marcar como impresso:', error);
+      toast.error('Erro ao marcar como impresso. Tentando imprimir mesmo assim...');
+      setMarcandoImpresso(false);
+      
+      // Tenta imprimir mesmo se houver erro
+      setTimeout(() => {
+        window.print();
+      }, 500);
+    }
   };
 
   return (
@@ -101,10 +134,20 @@ const AnaliseImpressao = () => {
               <Button
                 variant="success"
                 onClick={handleImprimir}
+                disabled={marcandoImpresso}
                 className="flex items-center gap-2"
               >
-                <FaPrint className="w-4 h-4" />
-                Imprimir
+                {marcandoImpresso ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    Marcando como impresso...
+                  </>
+                ) : (
+                  <>
+                    <FaPrint className="w-4 h-4" />
+                    Imprimir
+                  </>
+                )}
               </Button>
             )}
           </div>
@@ -132,6 +175,10 @@ const AnaliseImpressao = () => {
           </h3>
           <p className="text-gray-600">
             Preencha os filtros obrigatórios (Tipo de Rota, Rota e Semana de Abastecimento) e clique em "Carregar Dados" para visualizar o romaneio.
+            <br />
+            <span className="text-sm text-gray-500 mt-2 block">
+              Apenas necessidades com status "conf log" podem ser impressas. Ao imprimir, o status será atualizado para "impressao".
+            </span>
           </p>
         </div>
       )}

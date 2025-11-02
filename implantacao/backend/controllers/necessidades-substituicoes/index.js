@@ -24,5 +24,6 @@ module.exports = {
   liberarAnalise: SubstituicoesCRUDController.liberarAnalise,
 
   // Impressão
-  buscarDadosImpressao: SubstituicoesImpressaoController.buscarDadosImpressao
+  buscarDadosImpressao: SubstituicoesImpressaoController.buscarDadosImpressao,
+  marcarComoImpresso: SubstituicoesImpressaoController.marcarComoImpresso
 };
