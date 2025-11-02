@@ -550,7 +550,7 @@ const liberarCoordenacao = async (req, res) => {
     }
 
     // Atualizar status conforme fluxo:
-    // Fluxo: ajuste > ajuste_nutricionista > ajuste_coordenacao > ajuste_conf_nutri > ajuste_conf_coord
+    // Fluxo: ajuste > ajuste_nutricionista > ajuste_coordenacao > ajuste_logistica > ajuste_conf_nutri > ajuste_conf_coord
     // - De NEC/NEC NUTRI -> NEC COORD (apenas muda status, não copia valores)
     // - De CONF NUTRI -> CONF COORD (copia ajuste_conf_nutri para ajuste_conf_coord)
     let query = `
@@ -561,7 +561,7 @@ const liberarCoordenacao = async (req, res) => {
           ELSE status
         END,
         ajuste_conf_coord = CASE
-          WHEN status = 'CONF NUTRI' THEN COALESCE(ajuste_conf_coord, ajuste_conf_nutri, ajuste_coordenacao, ajuste_nutricionista, ajuste)
+          WHEN status = 'CONF NUTRI' THEN COALESCE(ajuste_conf_coord, ajuste_conf_nutri, ajuste_logistica, ajuste_coordenacao, ajuste_nutricionista, ajuste)
           ELSE ajuste_conf_coord
         END,
         data_atualizacao = CURRENT_TIMESTAMP

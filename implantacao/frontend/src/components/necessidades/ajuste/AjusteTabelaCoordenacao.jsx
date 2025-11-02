@@ -10,15 +10,15 @@ const AjusteTabelaCoordenacao = ({
   canEdit
 }) => {
   // Função para calcular quantidade anterior baseado no status
-  // Fluxo: ajuste > ajuste_nutricionista > ajuste_coordenacao > ajuste_conf_nutri > ajuste_conf_coord
+  // Fluxo: ajuste > ajuste_nutricionista > ajuste_coordenacao > ajuste_logistica > ajuste_conf_nutri > ajuste_conf_coord
   const getQuantidadeAnterior = (necessidade) => {
     // Para CONF COORD, mostrar ajuste_conf_nutri (confirmação da nutricionista)
     if (necessidade.status === 'CONF COORD') {
       return necessidade.ajuste_conf_nutri ?? 0;
     }
-    // Para NEC COORD, mostrar ajuste_nutricionista (ou ajuste como fallback se nutricionista não ajustou)
+    // Para NEC COORD, mostrar ajuste_logistica (se existir), senão ajuste_coordenacao, senão ajuste_nutricionista, senão ajuste
     if (necessidade.status === 'NEC COORD') {
-      return necessidade.ajuste_nutricionista ?? necessidade.ajuste ?? 0;
+      return necessidade.ajuste_logistica ?? necessidade.ajuste_coordenacao ?? necessidade.ajuste_nutricionista ?? necessidade.ajuste ?? 0;
     }
     // Para outros status, não há anterior
     return 0;
