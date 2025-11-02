@@ -1,14 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { FaExchangeAlt, FaCheckCircle } from 'react-icons/fa';
+import { FaExchangeAlt } from 'react-icons/fa';
 import { useSubstituicoesNecessidades } from '../../hooks/useSubstituicoesNecessidades';
 import { SubstituicoesFilters, SubstituicoesTableCoordenacao } from './components';
 import { ExportButtons } from '../../components/shared';
-import { Button } from '../../components/ui';
-import toast from 'react-hot-toast';
 
 const AnaliseCoordenacao = () => {
   const [ajustesAtivados, setAjustesAtivados] = useState(false);
-  const [salvandoAjustes, setSalvandoAjustes] = useState(false);
   
   const {
     necessidades,
@@ -22,7 +19,6 @@ const AnaliseCoordenacao = () => {
     loadingGenericos,
     buscarProdutosGenericos,
     salvarSubstituicao,
-    aprovarSubstituicao,
     atualizarFiltros,
     limparFiltros
   } = useSubstituicoesNecessidades('coordenacao');
@@ -48,40 +44,6 @@ const AnaliseCoordenacao = () => {
     }
   }, [necessidades]);
 
-  const handleAprovarAnalise = async () => {
-    if (!necessidades.length) {
-      toast.error('Nenhuma necessidade encontrada');
-      return;
-    }
-
-    setSalvandoAjustes(true);
-    
-    try {
-      // Aprovar todas as substituições
-      const resultados = await Promise.allSettled(
-        necessidades.flatMap(necessidade => 
-          necessidade.escolas
-            .filter(escola => escola.substituicao)
-            .map(escola => aprovarSubstituicao(escola.substituicao.id))
-        )
-      );
-
-      const sucessos = resultados.filter(r => r.status === 'fulfilled').length;
-      const erros = resultados.filter(r => r.status === 'rejected').length;
-
-      if (erros > 0) {
-        toast.error(`${sucessos} substituições aprovadas com sucesso, ${erros} falharam`);
-      } else {
-        toast.success('Análise aprovada com sucesso!');
-        setAjustesAtivados(false); // Reset para mostrar que foi aprovado
-      }
-    } catch (error) {
-      toast.error(`Erro ao aprovar análise: ${error.message}`);
-    } finally {
-      setSalvandoAjustes(false);
-    }
-  };
-
   const handleSaveConsolidated = async (dados, codigoOrigem) => {
     const response = await salvarSubstituicao(dados);
     return response;
@@ -105,12 +67,12 @@ const AnaliseCoordenacao = () => {
         onLimparFiltros={limparFiltros}
       />
 
-      {/* Ações (Botões de Exportar e Aprovar) */}
+      {/* Ações (Botões de Exportar) */}
       {necessidades.length > 0 && (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
           <div className="flex justify-between items-center">
             <h2 className="text-lg font-semibold text-gray-800">
-              Produtos para Aprovação ({necessidades.length})
+              Produtos para Substituição ({necessidades.length})
             </h2>
             <div className="flex items-center gap-2">
               <ExportButtons
@@ -120,15 +82,6 @@ const AnaliseCoordenacao = () => {
                 variant="outline"
                 showLabels={true}
               />
-              <Button
-                variant="success"
-                size="sm"
-                onClick={handleAprovarAnalise}
-                disabled={salvandoAjustes}
-                icon={<FaCheckCircle />}
-              >
-                {salvandoAjustes ? 'Aprovando...' : 'Aprovar'}
-              </Button>
             </div>
           </div>
         </div>
