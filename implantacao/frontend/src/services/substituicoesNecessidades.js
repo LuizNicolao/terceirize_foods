@@ -95,18 +95,24 @@ class SubstituicoesNecessidadesService {
   }
 
   /**
-   * Buscar grupos disponíveis para substituição (apenas com status CONF)
+   * Buscar grupos disponíveis para substituição
+   * @param {String} aba - 'nutricionista' ou 'coordenacao'
    */
-  static async buscarGruposDisponiveis() {
-    const response = await api.get('/necessidades-substituicoes/grupos-disponiveis');
+  static async buscarGruposDisponiveis(aba = 'nutricionista') {
+    const params = new URLSearchParams();
+    if (aba) params.append('aba', aba);
+    const response = await api.get(`/necessidades-substituicoes/grupos-disponiveis?${params.toString()}`);
     return response.data;
   }
 
   /**
-   * Buscar semanas de abastecimento disponíveis para substituição (apenas com status CONF)
+   * Buscar semanas de abastecimento disponíveis para substituição
+   * @param {String} aba - 'nutricionista' ou 'coordenacao'
    */
-  static async buscarSemanasAbastecimentoDisponiveis() {
-    const response = await api.get('/necessidades-substituicoes/semanas-abastecimento-disponiveis');
+  static async buscarSemanasAbastecimentoDisponiveis(aba = 'nutricionista') {
+    const params = new URLSearchParams();
+    if (aba) params.append('aba', aba);
+    const response = await api.get(`/necessidades-substituicoes/semanas-abastecimento-disponiveis?${params.toString()}`);
     return response.data;
   }
 }

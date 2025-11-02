@@ -24,32 +24,36 @@ export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
   });
 
   /**
-   * Carregar grupos (apenas com status CONF)
+   * Carregar grupos (baseado no tipo: nutricionista ou coordenação)
    */
   const carregarGrupos = useCallback(async () => {
     try {
-      const response = await SubstituicoesNecessidadesService.buscarGruposDisponiveis();
+      // tipo pode ser 'nutricionista' (padrão) ou 'coordenacao'
+      const aba = tipo === 'coordenacao' ? 'coordenacao' : 'nutricionista';
+      const response = await SubstituicoesNecessidadesService.buscarGruposDisponiveis(aba);
       if (response.success) {
         setGrupos(response.data || []);
       }
     } catch (error) {
       console.error('Erro ao carregar grupos:', error);
     }
-  }, []);
+  }, [tipo]);
 
   /**
-   * Carregar semanas de abastecimento (apenas com status CONF)
+   * Carregar semanas de abastecimento (baseado no tipo: nutricionista ou coordenação)
    */
   const carregarSemanasAbastecimento = useCallback(async () => {
     try {
-      const response = await SubstituicoesNecessidadesService.buscarSemanasAbastecimentoDisponiveis();
+      // tipo pode ser 'nutricionista' (padrão) ou 'coordenacao'
+      const aba = tipo === 'coordenacao' ? 'coordenacao' : 'nutricionista';
+      const response = await SubstituicoesNecessidadesService.buscarSemanasAbastecimentoDisponiveis(aba);
       if (response.success) {
         setSemanasAbastecimento(response.data || []);
       }
     } catch (error) {
       console.error('Erro ao carregar semanas de abastecimento:', error);
     }
-  }, []);
+  }, [tipo]);
 
   /**
    * Carregar semana de consumo baseado na semana de abastecimento
@@ -240,11 +244,11 @@ export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
     });
   }, []);
 
-  // Efeito para carregar dados iniciais
+  // Efeito para carregar dados iniciais - recarrega quando tipo mudar
   useEffect(() => {
     carregarGrupos();
     carregarSemanasAbastecimento();
-  }, [carregarGrupos, carregarSemanasAbastecimento]);
+  }, [carregarGrupos, carregarSemanasAbastecimento, tipo]);
 
   // Efeito para carregar semana de consumo quando abastecimento mudar
   useEffect(() => {

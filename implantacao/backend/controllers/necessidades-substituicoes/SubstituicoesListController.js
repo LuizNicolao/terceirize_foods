@@ -406,23 +406,46 @@ class SubstituicoesListController {
   }
 
   /**
-   * Buscar grupos disponíveis para substituição (apenas com status CONF)
+   * Buscar grupos disponíveis para substituição
+   * Suporta duas abas:
+   * - nutricionista: busca de necessidades com status CONF
+   * - coordenacao: busca de necessidades_substituicoes com status conf log
    */
   static async buscarGruposDisponiveisParaSubstituicao(req, res) {
     try {
-      const grupos = await executeQuery(`
-        SELECT DISTINCT 
-          ppc.grupo as id,
-          ppc.grupo as nome
-        FROM produtos_per_capita ppc
-        INNER JOIN necessidades n ON n.produto_id = ppc.produto_id
-        WHERE ppc.ativo = 1 
-          AND ppc.grupo IS NOT NULL 
-          AND ppc.grupo != ''
-          AND n.status = 'CONF'
-          AND (n.substituicao_processada = 0 OR n.substituicao_processada IS NULL)
-        ORDER BY ppc.grupo
-      `);
+      const { aba } = req.query;
+      
+      let grupos;
+      
+      if (aba === 'coordenacao') {
+        // Buscar grupos da tabela necessidades_substituicoes com status conf log
+        grupos = await executeQuery(`
+          SELECT DISTINCT 
+            ns.grupo as id,
+            ns.grupo as nome
+          FROM necessidades_substituicoes ns
+          WHERE ns.ativo = 1 
+            AND ns.status = 'conf log'
+            AND ns.grupo IS NOT NULL 
+            AND ns.grupo != ''
+          ORDER BY ns.grupo
+        `);
+      } else {
+        // Buscar grupos da tabela necessidades com status CONF (padrão: nutricionista)
+        grupos = await executeQuery(`
+          SELECT DISTINCT 
+            ppc.grupo as id,
+            ppc.grupo as nome
+          FROM produtos_per_capita ppc
+          INNER JOIN necessidades n ON n.produto_id = ppc.produto_id
+          WHERE ppc.ativo = 1 
+            AND ppc.grupo IS NOT NULL 
+            AND ppc.grupo != ''
+            AND n.status = 'CONF'
+            AND (n.substituicao_processada = 0 OR n.substituicao_processada IS NULL)
+          ORDER BY ppc.grupo
+        `);
+      }
 
       res.json({
         success: true,
@@ -438,20 +461,41 @@ class SubstituicoesListController {
   }
 
   /**
-   * Buscar semanas de abastecimento disponíveis para substituição (apenas com status CONF)
+   * Buscar semanas de abastecimento disponíveis para substituição
+   * Para nutricionista: busca de necessidades com status CONF
+   * Para coordenação: busca de necessidades_substituicoes com status conf log
    */
   static async buscarSemanasAbastecimentoDisponiveisParaSubstituicao(req, res) {
     try {
-      const semanas = await executeQuery(`
-        SELECT DISTINCT 
-          n.semana_abastecimento
-        FROM necessidades n
-        WHERE n.status = 'CONF'
-          AND (n.substituicao_processada = 0 OR n.substituicao_processada IS NULL)
-          AND n.semana_abastecimento IS NOT NULL 
-          AND n.semana_abastecimento != ''
-        ORDER BY n.semana_abastecimento DESC
-      `);
+      const { aba } = req.query; // 'nutricionista' ou 'coordenacao'
+      
+      let semanas;
+      
+      if (aba === 'coordenacao') {
+        // Buscar semanas da tabela necessidades_substituicoes com status 'conf log'
+        semanas = await executeQuery(`
+          SELECT DISTINCT 
+            ns.semana_abastecimento
+          FROM necessidades_substituicoes ns
+          WHERE ns.ativo = 1 
+            AND ns.status = 'conf log'
+            AND ns.semana_abastecimento IS NOT NULL 
+            AND ns.semana_abastecimento != ''
+          ORDER BY ns.semana_abastecimento DESC
+        `);
+      } else {
+        // Buscar semanas da tabela necessidades com status 'CONF' (padrão: nutricionista)
+        semanas = await executeQuery(`
+          SELECT DISTINCT 
+            n.semana_abastecimento
+          FROM necessidades n
+          WHERE n.status = 'CONF'
+            AND (n.substituicao_processada = 0 OR n.substituicao_processada IS NULL)
+            AND n.semana_abastecimento IS NOT NULL 
+            AND n.semana_abastecimento != ''
+          ORDER BY n.semana_abastecimento DESC
+        `);
+      }
 
       res.json({
         success: true,
