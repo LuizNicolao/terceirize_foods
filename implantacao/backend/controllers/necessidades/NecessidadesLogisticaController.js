@@ -166,8 +166,16 @@ class NecessidadesLogisticaController {
         });
       }
 
-      // Atualizar status para CONF NUTRI
-      // Replicar ajuste_logistica para todos os produtos da necessidade
+      // Primeiro: se ajuste_logistica estiver NULL, copiar ajuste_coordenacao
+      // Isso garante que o valor anterior seja preservado antes de enviar para nutri
+      await executeQuery(`
+        UPDATE necessidades
+        SET ajuste_logistica = COALESCE(ajuste_logistica, ajuste_coordenacao, ajuste_nutricionista, ajuste)
+        WHERE necessidade_id = ? AND status = 'NEC LOG'
+          AND (ajuste_logistica IS NULL OR ajuste_logistica = 0)
+      `, [necessidade_id]);
+
+      // Segundo: atualizar status para CONF NUTRI
       const updateQuery = `
         UPDATE necessidades 
         SET status = 'CONF NUTRI',
@@ -177,7 +185,7 @@ class NecessidadesLogisticaController {
       
       await executeQuery(updateQuery, [necessidade_id]);
 
-      // Replicar ajuste_logistica para ajuste_conf_nutri em todos os produtos
+      // Terceiro: replicar ajuste_logistica para ajuste_conf_nutri em todos os produtos
       const replicateQuery = `
         UPDATE necessidades
         SET ajuste_conf_nutri = ajuste_logistica
