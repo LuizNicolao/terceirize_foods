@@ -58,7 +58,6 @@ export const useNecessidadesAjuste = () => {
       });
       if (response.success) {
         const escolasData = response.data || [];
-        console.log('🔍 Escolas carregadas:', escolasData);
         setEscolas(escolasData);
       } else {
         toast.error(response.message || 'Erro ao carregar escolas');
@@ -83,7 +82,6 @@ export const useNecessidadesAjuste = () => {
       });
       if (response.success) {
         const gruposData = response.data || [];
-        console.log('🔍 Grupos carregados:', gruposData);
         setGrupos(gruposData);
       } else {
         toast.error(response.message || 'Erro ao carregar grupos');

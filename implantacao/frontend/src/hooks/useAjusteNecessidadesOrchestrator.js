@@ -246,8 +246,9 @@ export const useAjusteNecessidadesOrchestrator = () => {
       // Se tem valor, buscar automaticamente a semana de abastecimento relacionada
       setLoadingSemanaAbastecimento(true);
       try {
+        // Usar a mesma lógica da página de análise de necessidades
         const response = await calendarioService.buscarSemanaAbastecimentoPorConsumo(valor);
-        if (response.success && response.data && response.data.semana_abastecimento) {
+        if (response && response.success && response.data && response.data.semana_abastecimento) {
           const semanaAbastecimento = response.data.semana_abastecimento;
           
           // Atualizar tanto semana_consumo quanto semana_abastecimento
@@ -268,7 +269,7 @@ export const useAjusteNecessidadesOrchestrator = () => {
             });
           }
         } else {
-          // Se não encontrou semana de abastecimento, limpar o campo
+          // Se não encontrou semana de abastecimento, limpar o campo mas manter semana_consumo
           if (activeTab === 'nutricionista') {
             atualizarFiltrosNutricionista({ 
               semana_consumo: valor,
@@ -288,7 +289,7 @@ export const useAjusteNecessidadesOrchestrator = () => {
         }
       } catch (error) {
         console.error('Erro ao buscar semana de abastecimento:', error);
-        // Continuar com a atualização normal mesmo se houver erro
+        // Continuar com a atualização da semana_consumo mesmo se houver erro na busca de abastecimento
         if (activeTab === 'nutricionista') {
           atualizarFiltrosNutricionista({ semana_consumo: valor });
         } else if (activeTab === 'coordenacao') {

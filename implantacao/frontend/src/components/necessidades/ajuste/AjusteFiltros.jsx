@@ -15,10 +15,6 @@ const AjusteFiltros = ({
   onFiltroChange,
   onFiltrar
 }) => {
-  // Debug: verificar dados recebidos
-  console.log('📋 AjusteFiltros - escolas:', escolas);
-  console.log('📋 AjusteFiltros - grupos:', grupos);
-  
   // Garantir que escolas e grupos são arrays
   const escolasArray = Array.isArray(escolas) ? escolas : [];
   const gruposArray = Array.isArray(grupos) ? grupos : [];
@@ -53,18 +49,20 @@ const AjusteFiltros = ({
                 const escola = escolasArray.find(e => e.id == value);
                 onFiltroChange('escola_id', escola?.id || null);
               }}
-              options={escolasArray.map(escola => {
-                // Criar label: preferir nome_escola (formato antigo), depois nome (formato novo), fallback para string vazia
-                const nome = escola.nome_escola || escola.nome || '';
-                const codigo = escola.codigo || '';
-                const label = nome ? (codigo ? `${nome} - ${codigo}` : nome) : 'Escola sem nome';
-                
-                return {
-                  value: escola.id,
-                  label: label,
-                  description: escola.cidade || escola.rota || ''
-                };
-              })}
+              options={escolasArray
+                .filter(escola => escola && escola.id && (escola.nome_escola || escola.nome)) // Filtrar apenas escolas válidas
+                .map(escola => {
+                  const nome = escola.nome_escola || escola.nome || '';
+                  const codigo = escola.codigo || '';
+                  const label = nome ? (codigo ? `${nome} - ${codigo}` : nome) : `Escola ${escola.id}`;
+                  
+                  return {
+                    value: escola.id,
+                    label: label,
+                    description: escola.cidade || escola.rota || ''
+                  };
+                })
+                .filter(opt => opt.value && opt.label)} // Garantir que temos value e label
               placeholder="Digite para buscar uma escola..."
               disabled={loading}
               required
