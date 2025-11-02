@@ -549,39 +549,10 @@ const liberarCoordenacao = async (req, res) => {
       });
     }
 
-    // Primeiro, copiar valor anterior (ajuste_nutricionista ou ajuste) para ajuste_conf_nutri
-    // Isso garante que o valor anterior seja preservado ao avançar para coordenação
-    // Se ajuste_nutricionista existe, usa ele; senão, usa ajuste como fallback
-    let updateValorAnterior = `
-      UPDATE necessidades 
-      SET ajuste_conf_nutri = COALESCE(
-            ajuste_conf_nutri, 
-            ajuste_nutricionista, 
-            ajuste
-          ),
-          data_atualizacao = CURRENT_TIMESTAMP
-      WHERE escola_id = ? 
-        AND status IN ('NEC', 'NEC NUTRI', 'CONF NUTRI')
-        AND (ajuste_nutricionista IS NOT NULL OR ajuste IS NOT NULL)
-        AND (ajuste_conf_nutri IS NULL OR ajuste_conf_nutri = 0)
-        AND produto_id IN (
-          SELECT DISTINCT ppc.produto_id 
-          FROM produtos_per_capita ppc
-          WHERE ppc.grupo = ?
-        )
-    `;
-
-    const paramsValorAnterior = [escola_id, grupo];
-
-    // Aplicar filtros de período se fornecidos
-    if (periodo && periodo.consumo_de && periodo.consumo_ate) {
-      updateValorAnterior += ` AND semana_consumo BETWEEN ? AND ?`;
-      paramsValorAnterior.push(periodo.consumo_de, periodo.consumo_ate);
-    }
-
-    await executeQuery(updateValorAnterior, paramsValorAnterior);
-
     // Atualizar status conforme fluxo:
+    // Fluxo: ajuste > ajuste_nutricionista > ajuste_coordenacao > ajuste_conf_nutri > ajuste_conf_coord
+    // ajuste_conf_nutri só é preenchido quando status muda para CONF NUTRI (confirmação da nutricionista)
+    // Não copiar valores aqui, apenas mudar status
     // - De NEC/NEC NUTRI -> NEC COORD
     // - De CONF NUTRI -> CONF COORD
     let query = `
