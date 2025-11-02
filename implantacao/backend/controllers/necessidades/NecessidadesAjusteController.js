@@ -547,6 +547,21 @@ const liberarCoordenacao = async (req, res) => {
   // - De NEC -> NEC COORD: copiar ajuste para ajuste_nutricionista
   // - De NEC NUTRI -> NEC COORD: manter ajuste_nutricionista (já existe)
   // - De CONF NUTRI -> CONF COORD: manter ajuste_conf_nutri (já existe)
+  // IMPORTANTE: Fazer em duas etapas para garantir que ajuste_nutricionista seja copiado ANTES de mudar o status
+  // Primeiro: copiar ajuste para ajuste_nutricionista quando status = 'NEC'
+  await executeQuery(`
+      UPDATE necessidades 
+      SET ajuste_nutricionista = ajuste
+      WHERE escola_id = ? 
+        AND status = 'NEC'
+        AND produto_id IN (
+          SELECT DISTINCT ppc.produto_id 
+          FROM produtos_per_capita ppc
+          WHERE ppc.grupo = ?
+        )
+    `, [escola_id, grupo]);
+
+  // Segundo: atualizar status
   let query = `
       UPDATE necessidades 
       SET status = CASE 
@@ -554,10 +569,6 @@ const liberarCoordenacao = async (req, res) => {
           WHEN status = 'NEC NUTRI' THEN 'NEC COORD'
           WHEN status = 'CONF NUTRI' THEN 'CONF COORD'
           ELSE status
-        END,
-        ajuste_nutricionista = CASE
-          WHEN status = 'NEC' THEN ajuste
-          ELSE ajuste_nutricionista
         END,
         data_atualizacao = CURRENT_TIMESTAMP
       WHERE escola_id = ? 
