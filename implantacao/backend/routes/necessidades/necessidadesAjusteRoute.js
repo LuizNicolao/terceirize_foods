@@ -5,6 +5,7 @@ const {
   buscarSemanasConsumoDisponiveis,
   buscarGruposDisponiveis,
   buscarEscolasDisponiveis,
+  buscarSemanaAbastecimentoPorConsumo,
   listarParaAjuste,
   salvarAjustes,
   incluirProdutoExtra,
@@ -35,6 +36,9 @@ router.get('/grupos-disponiveis', authenticateToken, hasAccessToAdjustment, busc
 
 // GET /api/necessidades/escolas-disponiveis - Buscar escolas da tabela necessidades
 router.get('/escolas-disponiveis', authenticateToken, hasAccessToAdjustment, buscarEscolasDisponiveis);
+
+// GET /api/necessidades/semana-abastecimento-por-consumo - Buscar semana de abastecimento por semana de consumo (da tabela necessidades)
+router.get('/semana-abastecimento-por-consumo', authenticateToken, hasAccessToAdjustment, buscarSemanaAbastecimentoPorConsumo);
 
 // GET /api/necessidades/ajuste - Listar necessidades para ajuste
 router.get('/ajuste', authenticateToken, hasAccessToAdjustment, listarParaAjuste);

@@ -6,7 +6,6 @@ import { useNecessidadesLogistica } from './useNecessidadesLogistica';
 import { useSemanasAbastecimento } from './useSemanasAbastecimento';
 import { useSemanasConsumo } from './useSemanasConsumo';
 import necessidadesService from '../services/necessidadesService';
-import calendarioService from '../services/calendarioService';
 import toast from 'react-hot-toast';
 
 export const useAjusteNecessidadesOrchestrator = () => {
@@ -243,11 +242,11 @@ export const useAjusteNecessidadesOrchestrator = () => {
         return;
       }
       
-      // Se tem valor, buscar automaticamente a semana de abastecimento relacionada
+      // Se tem valor, buscar automaticamente a semana de abastecimento relacionada (da tabela necessidades)
       setLoadingSemanaAbastecimento(true);
       try {
-        // Usar a mesma lógica da página de análise de necessidades
-        const response = await calendarioService.buscarSemanaAbastecimentoPorConsumo(valor);
+        // Buscar diretamente da tabela necessidades (sem consultar calendário)
+        const response = await necessidadesService.buscarSemanaAbastecimentoPorConsumo(valor, activeTab);
         if (response && response.success && response.data && response.data.semana_abastecimento) {
           const semanaAbastecimento = response.data.semana_abastecimento;
           

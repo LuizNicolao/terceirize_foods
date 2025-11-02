@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FaSchool, FaBox, FaCalendarAlt, FaSearch, FaTimes, FaCalendarWeek } from 'react-icons/fa';
 import { Input, SearchableSelect, Button } from '../ui';
 import { useSemanasConsumo } from '../../hooks/useSemanasConsumo';
-import calendarioService from '../../services/calendarioService';
+import necessidadesService from '../../services/necessidadesService';
 
 const NecessidadesFilters = ({ 
   escolas = [], 
@@ -41,7 +41,9 @@ const NecessidadesFilters = ({
       
       setLoadingSemanaAbastecimento(true);
       try {
-        const response = await calendarioService.buscarSemanaAbastecimentoPorConsumo(semanaConsumo);
+        // Buscar diretamente da tabela necessidades (sem consultar calendário)
+        // Usar 'nutricionista' como padrão pois esta tela lista status 'CONF'
+        const response = await necessidadesService.buscarSemanaAbastecimentoPorConsumo(semanaConsumo, 'nutricionista');
         if (response.success && response.data && response.data.semana_abastecimento) {
           const semanaAbastecimento = response.data.semana_abastecimento;
           setOpcoesSemanasAbastecimento([{ 

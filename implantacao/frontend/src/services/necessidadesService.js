@@ -126,6 +126,16 @@ const necessidadesService = {
     return response.data;
   },
 
+  // Buscar semana de abastecimento por semana de consumo (da tabela necessidades)
+  buscarSemanaAbastecimentoPorConsumo: async (semanaConsumo, aba) => {
+    const params = new URLSearchParams();
+    params.append('semana_consumo', semanaConsumo);
+    if (aba) params.append('aba', aba);
+    
+    const response = await api.get(`/necessidades/semana-abastecimento-por-consumo?${params.toString()}`);
+    return response.data;
+  },
+
   // Listar necessidades para ajuste (status = 'NEC')
   listarParaAjuste: async (filtros) => {
     const params = new URLSearchParams();

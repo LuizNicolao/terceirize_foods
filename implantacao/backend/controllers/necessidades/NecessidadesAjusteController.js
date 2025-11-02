@@ -260,6 +260,115 @@ const buscarGruposDisponiveis = async (req, res) => {
   }
 };
 
+// Buscar semana de abastecimento por semana de consumo (da tabela necessidades)
+const buscarSemanaAbastecimentoPorConsumo = async (req, res) => {
+  try {
+    const { semana_consumo, aba } = req.query;
+    const usuario_id = req.user.id;
+    const tipo_usuario = req.user.tipo_de_acesso;
+
+    if (!semana_consumo) {
+      return res.status(400).json({
+        success: false,
+        message: 'Semana de consumo é obrigatória'
+      });
+    }
+
+    // Definir status permitidos baseado na aba
+    let statusPermitidos = [];
+    if (aba === 'nutricionista') {
+      statusPermitidos = ['NEC', 'NEC NUTRI', 'CONF NUTRI'];
+    } else if (aba === 'coordenacao') {
+      statusPermitidos = ['NEC COORD', 'CONF COORD'];
+    } else if (aba === 'logistica') {
+      statusPermitidos = ['NEC LOG'];
+    } else {
+      // Se não especificar aba, usar todos os status
+      statusPermitidos = ['NEC', 'NEC NUTRI', 'CONF NUTRI', 'NEC COORD', 'CONF COORD', 'NEC LOG'];
+    }
+
+    let query = `
+      SELECT DISTINCT 
+        n.semana_abastecimento
+      FROM necessidades n
+      WHERE n.semana_consumo = ?
+        AND n.semana_abastecimento IS NOT NULL 
+        AND n.semana_abastecimento != ''
+        AND n.status IN (${statusPermitidos.map(() => '?').join(',')})
+      LIMIT 1
+    `;
+
+    const params = [semana_consumo, ...statusPermitidos];
+
+    // Se for nutricionista, filtrar apenas pelas escolas da rota dela
+    if (tipo_usuario === 'nutricionista') {
+      try {
+        const axios = require('axios');
+        const foodsApiUrl = process.env.FOODS_API_URL || 'http://localhost:3001';
+        const userEmail = req.user.email;
+        
+        const response = await axios.get(`${foodsApiUrl}/rotas-nutricionistas?email=${encodeURIComponent(userEmail)}&status=ativo`, {
+          headers: {
+            'Authorization': `Bearer ${req.headers.authorization?.replace('Bearer ', '')}`
+          },
+          timeout: 5000
+        });
+
+        if (response.data && response.data.success) {
+          let rotas = response.data.data?.rotas || response.data.data || response.data || [];
+          if (!Array.isArray(rotas)) {
+            rotas = rotas.rotas || [];
+          }
+          
+          const escolasIds = [];
+          rotas.forEach(rota => {
+            if (rota.escolas_responsaveis) {
+              const ids = rota.escolas_responsaveis.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
+              escolasIds.push(...ids);
+            }
+          });
+
+          if (escolasIds.length > 0) {
+            query += ` AND n.escola_id IN (${escolasIds.map(() => '?').join(',')})`;
+            params.push(...escolasIds);
+          } else {
+            query += ' AND 1=0';
+          }
+        } else {
+          query += ' AND 1=0';
+        }
+      } catch (apiError) {
+        console.error('Erro ao buscar rotas do foods:', apiError);
+        query += ' AND 1=0';
+      }
+    }
+
+    const result = await executeQuery(query, params);
+
+    if (result.length > 0 && result[0].semana_abastecimento) {
+      res.json({
+        success: true,
+        data: {
+          semana_consumo: semana_consumo,
+          semana_abastecimento: result[0].semana_abastecimento
+        }
+      });
+    } else {
+      res.json({
+        success: false,
+        message: 'Semana de abastecimento não encontrada para esta semana de consumo'
+      });
+    }
+  } catch (error) {
+    console.error('Erro ao buscar semana de abastecimento por consumo:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Erro interno do servidor',
+      message: 'Erro ao buscar semana de abastecimento por consumo'
+    });
+  }
+};
+
 // Buscar escolas disponíveis na tabela necessidades
 const buscarEscolasDisponiveis = async (req, res) => {
   try {
@@ -1067,6 +1176,7 @@ module.exports = {
   buscarSemanasConsumoDisponiveis,
   buscarGruposDisponiveis,
   buscarEscolasDisponiveis,
+  buscarSemanaAbastecimentoPorConsumo,
   listarParaAjuste,
   salvarAjustes,
   incluirProdutoExtra,
