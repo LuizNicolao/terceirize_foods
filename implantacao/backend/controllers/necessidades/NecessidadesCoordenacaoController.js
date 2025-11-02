@@ -509,9 +509,13 @@ NecessidadesCoordenacaoController.confirmarNutri = async (req, res) => {
     }
 
     // Atualiza NEC COORD -> CONF NUTRI para o conjunto da escola/grupo/período
+    // Fluxo: ajuste > ajuste_nutricionista > ajuste_coordenacao > ajuste_conf_nutri > ajuste_conf_coord
+    // Ao mudar para CONF NUTRI, copiar ajuste_coordenacao (ou ajuste_nutricionista como fallback) para ajuste_conf_nutri
     let query = `
       UPDATE necessidades
-      SET status = 'CONF NUTRI', data_atualizacao = NOW()
+      SET status = 'CONF NUTRI',
+          ajuste_conf_nutri = COALESCE(ajuste_conf_nutri, ajuste_coordenacao, ajuste_nutricionista, ajuste),
+          data_atualizacao = NOW()
       WHERE escola_id = ? 
         AND status = 'NEC COORD'
         AND produto_id IN (
