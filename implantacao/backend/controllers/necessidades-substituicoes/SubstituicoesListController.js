@@ -439,18 +439,16 @@ class SubstituicoesListController {
 
   /**
    * Buscar tipos de rota disponíveis
-   * Busca tipos de rota do foods_db que têm rotas vinculadas
+   * Busca todos os tipos de rota ativos do foods_db
    */
   static async buscarTiposRotaDisponiveis(req, res) {
     try {
       const tiposRota = await executeQuery(`
-        SELECT DISTINCT
+        SELECT 
           tr.id,
           tr.nome
         FROM foods_db.tipo_rota tr
-        INNER JOIN foods_db.rotas r ON r.tipo_rota_id = tr.id
         WHERE tr.status = 'ativo'
-          AND r.status = 'ativo'
         ORDER BY tr.nome ASC
       `);
 
