@@ -463,7 +463,7 @@ class SubstituicoesListController {
           INNER JOIN foods_db.rotas r ON r.tipo_rota_id = tr.id
           INNER JOIN foods_db.unidades_escolares ue ON FIND_IN_SET(r.id, ue.rota_id) > 0
           INNER JOIN necessidades_substituicoes ns ON ns.escola_id = ue.id
-          INNER JOIN foods_db.grupos g ON g.nome = ns.grupo
+          INNER JOIN foods_db.grupos g ON g.nome COLLATE utf8mb4_unicode_ci = ns.grupo COLLATE utf8mb4_unicode_ci
           WHERE tr.status = 'ativo'
             AND r.status = 'ativo'
             AND ue.status = 'ativo'
@@ -492,7 +492,7 @@ class SubstituicoesListController {
           INNER JOIN foods_db.unidades_escolares ue ON FIND_IN_SET(r.id, ue.rota_id) > 0
           INNER JOIN necessidades n ON n.escola_id = ue.id
           INNER JOIN produtos_per_capita ppc ON n.produto_id = ppc.produto_id
-          INNER JOIN foods_db.grupos g ON g.nome = ppc.grupo
+          INNER JOIN foods_db.grupos g ON g.nome COLLATE utf8mb4_unicode_ci = ppc.grupo COLLATE utf8mb4_unicode_ci
           WHERE tr.status = 'ativo'
             AND r.status = 'ativo'
             AND ue.status = 'ativo'
@@ -546,7 +546,7 @@ class SubstituicoesListController {
               ns.grupo as id,
               ns.grupo as nome
             FROM necessidades_substituicoes ns
-            INNER JOIN foods_db.grupos g ON g.nome = ns.grupo
+            INNER JOIN foods_db.grupos g ON g.nome COLLATE utf8mb4_unicode_ci = ns.grupo COLLATE utf8mb4_unicode_ci
             INNER JOIN foods_db.tipo_rota tr ON tr.id = ?
             WHERE ns.ativo = 1 
               AND ns.status = 'conf log'
@@ -583,7 +583,7 @@ class SubstituicoesListController {
               ppc.grupo as nome
             FROM produtos_per_capita ppc
             INNER JOIN necessidades n ON n.produto_id = ppc.produto_id
-            INNER JOIN foods_db.grupos g ON g.nome = ppc.grupo
+            INNER JOIN foods_db.grupos g ON g.nome COLLATE utf8mb4_unicode_ci = ppc.grupo COLLATE utf8mb4_unicode_ci
             INNER JOIN foods_db.tipo_rota tr ON tr.id = ?
             WHERE ppc.ativo = 1 
               AND ppc.grupo IS NOT NULL 
