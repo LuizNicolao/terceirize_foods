@@ -72,8 +72,6 @@ class SubstituicoesListController {
       }
 
       // Buscar necessidades agrupadas por produto origem + produto genérico
-      // IMPORTANTE: Não buscar necessidades que já têm substituições com status 'conf log'
-      // Pois essas já foram liberadas para coordenação
       const necessidades = await executeQuery(`
         SELECT 
           n.produto_id as codigo_origem,
@@ -103,16 +101,6 @@ class SubstituicoesListController {
           AND (ns.status IS NULL OR ns.status = 'conf')
         )
         WHERE ${whereConditions.join(' AND ')}
-          -- Excluir necessidades que já têm substituições com status 'conf log'
-          AND NOT EXISTS (
-            SELECT 1 
-            FROM necessidades_substituicoes ns2 
-            WHERE ns2.produto_origem_id = n.produto_id
-              AND ns2.semana_abastecimento = n.semana_abastecimento
-              AND ns2.semana_consumo = n.semana_consumo
-              AND ns2.status = 'conf log'
-              AND ns2.ativo = 1
-          )
         GROUP BY n.produto_id, n.produto, n.produto_unidade, n.semana_abastecimento, n.semana_consumo, n.grupo,
                  COALESCE(ns.produto_generico_id, ''), COALESCE(ns.produto_generico_codigo, ''), 
                  COALESCE(ns.produto_generico_nome, ''), COALESCE(ns.produto_generico_unidade, '')
@@ -523,7 +511,6 @@ class SubstituicoesListController {
         // Buscar tipos de rota que:
         // 1. Têm escolas na tabela necessidades com status CONF (padrão: nutricionista)
         // 2. Têm grupos vinculados (grupo_id) que existem nas necessidades
-        // 3. Não têm substituições já liberadas para coordenação (status conf log)
         tiposRota = await executeQuery(`
           SELECT DISTINCT
             tr.id,
@@ -547,16 +534,6 @@ class SubstituicoesListController {
             AND ppc.grupo != ''
             -- Validar se o grupo existe no grupo_id do tipo_rota
             AND FIND_IN_SET(g.id, tr.grupo_id) > 0
-            -- Excluir necessidades que já têm substituições com status 'conf log'
-            AND NOT EXISTS (
-              SELECT 1 
-              FROM necessidades_substituicoes ns2 
-              WHERE ns2.produto_origem_id = n.produto_id
-                AND ns2.semana_abastecimento = n.semana_abastecimento
-                AND ns2.semana_consumo = n.semana_consumo
-                AND ns2.status = 'conf log'
-                AND ns2.ativo = 1
-            )
           ORDER BY tr.nome ASC
         `);
       }
@@ -619,7 +596,6 @@ class SubstituicoesListController {
         // Buscar rotas que:
         // 1. Têm escolas na tabela necessidades com status CONF (padrão: nutricionista)
         // 2. Têm grupos vinculados que existem nas necessidades
-        // 3. Não têm substituições já liberadas para coordenação (status conf log)
         rotas = await executeQuery(`
           SELECT DISTINCT
             r.id,
@@ -642,16 +618,6 @@ class SubstituicoesListController {
             AND ppc.grupo != ''
             -- Validar se o grupo existe no grupo_id do tipo_rota
             AND FIND_IN_SET(g.id, tr.grupo_id) > 0
-            -- Excluir necessidades que já têm substituições com status 'conf log'
-            AND NOT EXISTS (
-              SELECT 1 
-              FROM necessidades_substituicoes ns2 
-              WHERE ns2.produto_origem_id = n.produto_id
-                AND ns2.semana_abastecimento = n.semana_abastecimento
-                AND ns2.semana_consumo = n.semana_consumo
-                AND ns2.status = 'conf log'
-                AND ns2.ativo = 1
-            )
           ORDER BY r.nome ASC
         `);
       }
@@ -723,7 +689,6 @@ class SubstituicoesListController {
           // Buscar grupos que:
           // 1. Estão vinculados ao tipo_rota_id (no grupo_id do tipo_rota)
           // 2. Existem na tabela necessidades com status CONF
-          // 3. Não têm substituições já liberadas para coordenação (status conf log)
           grupos = await executeQuery(`
             SELECT DISTINCT 
               ppc.grupo as id,
@@ -741,21 +706,10 @@ class SubstituicoesListController {
               AND tr.grupo_id != ''
               -- Validar se o grupo existe no grupo_id do tipo_rota
               AND FIND_IN_SET(g.id, tr.grupo_id) > 0
-              -- Excluir necessidades que já têm substituições com status 'conf log'
-              AND NOT EXISTS (
-                SELECT 1 
-                FROM necessidades_substituicoes ns2 
-                WHERE ns2.produto_origem_id = n.produto_id
-                  AND ns2.semana_abastecimento = n.semana_abastecimento
-                  AND ns2.semana_consumo = n.semana_consumo
-                  AND ns2.status = 'conf log'
-                  AND ns2.ativo = 1
-              )
             ORDER BY ppc.grupo
           `, [tipo_rota_id]);
         } else {
           // Buscar grupos da tabela necessidades com status CONF (padrão: nutricionista)
-          // Excluir grupos que já têm substituições com status 'conf log'
           grupos = await executeQuery(`
             SELECT DISTINCT 
               ppc.grupo as id,
@@ -767,16 +721,6 @@ class SubstituicoesListController {
               AND ppc.grupo != ''
               AND n.status = 'CONF'
               AND (n.substituicao_processada = 0 OR n.substituicao_processada IS NULL)
-              -- Excluir necessidades que já têm substituições com status 'conf log'
-              AND NOT EXISTS (
-                SELECT 1 
-                FROM necessidades_substituicoes ns2 
-                WHERE ns2.produto_origem_id = n.produto_id
-                  AND ns2.semana_abastecimento = n.semana_abastecimento
-                  AND ns2.semana_consumo = n.semana_consumo
-                  AND ns2.status = 'conf log'
-                  AND ns2.ativo = 1
-              )
             ORDER BY ppc.grupo
           `);
         }
@@ -820,7 +764,6 @@ class SubstituicoesListController {
         `);
       } else {
         // Buscar semanas da tabela necessidades com status 'CONF' (padrão: nutricionista)
-        // Excluir semanas que já têm substituições com status 'conf log'
         semanas = await executeQuery(`
           SELECT DISTINCT 
             n.semana_abastecimento
@@ -829,16 +772,6 @@ class SubstituicoesListController {
             AND (n.substituicao_processada = 0 OR n.substituicao_processada IS NULL)
             AND n.semana_abastecimento IS NOT NULL 
             AND n.semana_abastecimento != ''
-            -- Excluir necessidades que já têm substituições com status 'conf log'
-            AND NOT EXISTS (
-              SELECT 1 
-              FROM necessidades_substituicoes ns2 
-              WHERE ns2.produto_origem_id = n.produto_id
-                AND ns2.semana_abastecimento = n.semana_abastecimento
-                AND ns2.semana_consumo = n.semana_consumo
-                AND ns2.status = 'conf log'
-                AND ns2.ativo = 1
-            )
           ORDER BY n.semana_abastecimento DESC
         `);
       }
