@@ -439,18 +439,56 @@ class SubstituicoesListController {
 
   /**
    * Buscar tipos de rota disponíveis
-   * Busca todos os tipos de rota ativos do foods_db
+   * Busca tipos de rota que têm escolas vinculadas nas necessidades
+   * Suporta duas abas:
+   * - nutricionista: busca tipos de rota com escolas em necessidades (status CONF)
+   * - coordenacao: busca tipos de rota com escolas em necessidades_substituicoes (status conf log)
    */
   static async buscarTiposRotaDisponiveis(req, res) {
     try {
-      const tiposRota = await executeQuery(`
-        SELECT 
-          tr.id,
-          tr.nome
-        FROM foods_db.tipo_rota tr
-        WHERE tr.status = 'ativo'
-        ORDER BY tr.nome ASC
-      `);
+      const { aba } = req.query;
+      
+      let tiposRota;
+      
+      if (aba === 'coordenacao') {
+        // Buscar tipos de rota que têm escolas na tabela necessidades_substituicoes com status conf log
+        tiposRota = await executeQuery(`
+          SELECT DISTINCT
+            tr.id,
+            tr.nome
+          FROM foods_db.tipo_rota tr
+          INNER JOIN foods_db.rotas r ON r.tipo_rota_id = tr.id
+          INNER JOIN foods_db.unidades_escolares ue ON FIND_IN_SET(r.id, ue.rota_id) > 0
+          INNER JOIN necessidades_substituicoes ns ON ns.escola_id = ue.id
+          WHERE tr.status = 'ativo'
+            AND r.status = 'ativo'
+            AND ue.status = 'ativo'
+            AND ns.ativo = 1
+            AND ns.status = 'conf log'
+            AND ue.rota_id IS NOT NULL
+            AND ue.rota_id != ''
+          ORDER BY tr.nome ASC
+        `);
+      } else {
+        // Buscar tipos de rota que têm escolas na tabela necessidades com status CONF (padrão: nutricionista)
+        tiposRota = await executeQuery(`
+          SELECT DISTINCT
+            tr.id,
+            tr.nome
+          FROM foods_db.tipo_rota tr
+          INNER JOIN foods_db.rotas r ON r.tipo_rota_id = tr.id
+          INNER JOIN foods_db.unidades_escolares ue ON FIND_IN_SET(r.id, ue.rota_id) > 0
+          INNER JOIN necessidades n ON n.escola_id = ue.id
+          WHERE tr.status = 'ativo'
+            AND r.status = 'ativo'
+            AND ue.status = 'ativo'
+            AND n.status = 'CONF'
+            AND (n.substituicao_processada = 0 OR n.substituicao_processada IS NULL)
+            AND ue.rota_id IS NOT NULL
+            AND ue.rota_id != ''
+          ORDER BY tr.nome ASC
+        `);
+      }
 
       res.json({
         success: true,

@@ -111,9 +111,12 @@ class SubstituicoesNecessidadesService {
 
   /**
    * Buscar tipos de rota disponíveis
+   * @param {String} aba - 'nutricionista' ou 'coordenacao'
    */
-  static async buscarTiposRotaDisponiveis() {
-    const response = await api.get('/necessidades-substituicoes/tipos-rota-disponiveis');
+  static async buscarTiposRotaDisponiveis(aba = 'nutricionista') {
+    const params = new URLSearchParams();
+    if (aba) params.append('aba', aba);
+    const response = await api.get(`/necessidades-substituicoes/tipos-rota-disponiveis?${params.toString()}`);
     return response.data;
   }
 }
