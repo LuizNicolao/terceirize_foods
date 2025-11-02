@@ -562,7 +562,22 @@ const liberarCoordenacao = async (req, res) => {
         )
     `, [escola_id, grupo]);
 
-  // Segundo: atualizar status
+  // Segundo: copiar ajuste_logistica para ajuste_conf_nutri quando status = 'CONF NUTRI'
+  // Isso preserva o valor da logística antes de liberar para coordenação
+  await executeQuery(`
+      UPDATE necessidades 
+      SET ajuste_conf_nutri = COALESCE(ajuste_logistica, ajuste_coordenacao, ajuste_nutricionista, ajuste)
+      WHERE escola_id = ? 
+        AND status = 'CONF NUTRI'
+        AND (ajuste_conf_nutri IS NULL OR ajuste_conf_nutri = 0)
+        AND produto_id IN (
+          SELECT DISTINCT ppc.produto_id 
+          FROM produtos_per_capita ppc
+          WHERE ppc.grupo = ?
+        )
+    `, [escola_id, grupo]);
+
+  // Terceiro: atualizar status
   let query = `
       UPDATE necessidades 
       SET status = CASE 
