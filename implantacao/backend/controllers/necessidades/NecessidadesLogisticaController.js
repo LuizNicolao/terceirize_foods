@@ -168,6 +168,7 @@ class NecessidadesLogisticaController {
 
       // Primeiro: se ajuste_logistica estiver NULL, copiar ajuste_coordenacao
       // Isso garante que o valor anterior seja preservado antes de enviar para nutri
+      // IMPORTANTE: Copiar apenas para ajuste_logistica, NÃO para ajuste_conf_nutri
       await executeQuery(`
         UPDATE necessidades
         SET ajuste_logistica = COALESCE(ajuste_logistica, ajuste_coordenacao, ajuste_nutricionista, ajuste)
@@ -176,6 +177,7 @@ class NecessidadesLogisticaController {
       `, [necessidade_id]);
 
       // Segundo: atualizar status para CONF NUTRI
+      // NÃO copiar para ajuste_conf_nutri aqui - isso será feito quando nutri confirmar
       const updateQuery = `
         UPDATE necessidades 
         SET status = 'CONF NUTRI',
@@ -184,14 +186,6 @@ class NecessidadesLogisticaController {
       `;
       
       await executeQuery(updateQuery, [necessidade_id]);
-
-      // Terceiro: replicar ajuste_logistica para ajuste_conf_nutri em todos os produtos
-      const replicateQuery = `
-        UPDATE necessidades
-        SET ajuste_conf_nutri = ajuste_logistica
-        WHERE necessidade_id = ? AND status = 'CONF NUTRI'
-      `;
-      await executeQuery(replicateQuery, [necessidade_id]);
 
       res.json({
         success: true,
