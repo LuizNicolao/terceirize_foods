@@ -41,6 +41,22 @@ router.get(
   SubstituicoesController.buscarProdutosGenericos
 );
 
+// GET /api/necessidades-substituicoes/grupos-disponiveis
+// Busca grupos disponíveis para substituição (apenas com status CONF)
+router.get(
+  '/grupos-disponiveis',
+  checkScreenPermission('necessidades', 'visualizar'),
+  SubstituicoesController.buscarGruposDisponiveisParaSubstituicao
+);
+
+// GET /api/necessidades-substituicoes/semanas-abastecimento-disponiveis
+// Busca semanas de abastecimento disponíveis para substituição (apenas com status CONF)
+router.get(
+  '/semanas-abastecimento-disponiveis',
+  checkScreenPermission('necessidades', 'visualizar'),
+  SubstituicoesController.buscarSemanasAbastecimentoDisponiveisParaSubstituicao
+);
+
 // ===== ROTAS CRUD =====
 
 // POST /api/necessidades-substituicoes

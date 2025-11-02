@@ -93,6 +93,22 @@ class SubstituicoesNecessidadesService {
     const response = await api.put(`/necessidades-substituicoes/${id}/aprovar`);
     return response.data;
   }
+
+  /**
+   * Buscar grupos disponíveis para substituição (apenas com status CONF)
+   */
+  static async buscarGruposDisponiveis() {
+    const response = await api.get('/necessidades-substituicoes/grupos-disponiveis');
+    return response.data;
+  }
+
+  /**
+   * Buscar semanas de abastecimento disponíveis para substituição (apenas com status CONF)
+   */
+  static async buscarSemanasAbastecimentoDisponiveis() {
+    const response = await api.get('/necessidades-substituicoes/semanas-abastecimento-disponiveis');
+    return response.data;
+  }
 }
 
 export default SubstituicoesNecessidadesService;

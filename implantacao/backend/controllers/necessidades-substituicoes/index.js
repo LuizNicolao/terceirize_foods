@@ -12,6 +12,8 @@ module.exports = {
   listarParaCoordenacao: SubstituicoesListController.listarParaCoordenacao,
   buscarSemanaConsumo: SubstituicoesListController.buscarSemanaConsumo,
   buscarProdutosGenericos: SubstituicoesListController.buscarProdutosGenericos,
+  buscarGruposDisponiveisParaSubstituicao: SubstituicoesListController.buscarGruposDisponiveisParaSubstituicao,
+  buscarSemanasAbastecimentoDisponiveisParaSubstituicao: SubstituicoesListController.buscarSemanasAbastecimentoDisponiveisParaSubstituicao,
 
   // CRUD Operations
   salvarSubstituicao: SubstituicoesCRUDController.salvarSubstituicao,

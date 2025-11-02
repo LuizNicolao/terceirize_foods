@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 import SubstituicoesNecessidadesService from '../services/substituicoesNecessidades';
-import calendarioService from '../services/calendarioService';
 import toast from 'react-hot-toast';
 
 /**
@@ -25,11 +24,11 @@ export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
   });
 
   /**
-   * Carregar grupos
+   * Carregar grupos (apenas com status CONF)
    */
   const carregarGrupos = useCallback(async () => {
     try {
-      const response = await calendarioService.buscarGruposComPercapita();
+      const response = await SubstituicoesNecessidadesService.buscarGruposDisponiveis();
       if (response.success) {
         setGrupos(response.data || []);
       }
@@ -39,12 +38,11 @@ export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
   }, []);
 
   /**
-   * Carregar semanas de abastecimento
+   * Carregar semanas de abastecimento (apenas com status CONF)
    */
   const carregarSemanasAbastecimento = useCallback(async () => {
     try {
-      const ano = new Date().getFullYear();
-      const response = await calendarioService.buscarSemanasAbastecimento(ano);
+      const response = await SubstituicoesNecessidadesService.buscarSemanasAbastecimentoDisponiveis();
       if (response.success) {
         setSemanasAbastecimento(response.data || []);
       }

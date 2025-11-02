@@ -404,6 +404,69 @@ class SubstituicoesListController {
       });
     }
   }
+
+  /**
+   * Buscar grupos disponíveis para substituição (apenas com status CONF)
+   */
+  static async buscarGruposDisponiveisParaSubstituicao(req, res) {
+    try {
+      const grupos = await executeQuery(`
+        SELECT DISTINCT 
+          ppc.grupo as id,
+          ppc.grupo as nome
+        FROM produtos_per_capita ppc
+        INNER JOIN necessidades n ON n.produto_id = ppc.produto_id
+        WHERE ppc.ativo = 1 
+          AND ppc.grupo IS NOT NULL 
+          AND ppc.grupo != ''
+          AND n.status = 'CONF'
+          AND (n.substituicao_processada = 0 OR n.substituicao_processada IS NULL)
+        ORDER BY ppc.grupo
+      `);
+
+      res.json({
+        success: true,
+        data: grupos
+      });
+    } catch (error) {
+      console.error('Erro ao buscar grupos disponíveis para substituição:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro ao buscar grupos disponíveis'
+      });
+    }
+  }
+
+  /**
+   * Buscar semanas de abastecimento disponíveis para substituição (apenas com status CONF)
+   */
+  static async buscarSemanasAbastecimentoDisponiveisParaSubstituicao(req, res) {
+    try {
+      const semanas = await executeQuery(`
+        SELECT DISTINCT 
+          n.semana_abastecimento
+        FROM necessidades n
+        WHERE n.status = 'CONF'
+          AND (n.substituicao_processada = 0 OR n.substituicao_processada IS NULL)
+          AND n.semana_abastecimento IS NOT NULL 
+          AND n.semana_abastecimento != ''
+        ORDER BY n.semana_abastecimento DESC
+      `);
+
+      res.json({
+        success: true,
+        data: semanas.map(s => ({
+          semana_abastecimento: s.semana_abastecimento
+        }))
+      });
+    } catch (error) {
+      console.error('Erro ao buscar semanas de abastecimento disponíveis para substituição:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro ao buscar semanas de abastecimento disponíveis'
+      });
+    }
+  }
 }
 
 module.exports = SubstituicoesListController;
