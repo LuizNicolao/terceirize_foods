@@ -93,11 +93,13 @@ class SubstituicoesNecessidadesService {
    * Buscar grupos disponíveis para substituição
    * @param {String} aba - 'nutricionista' ou 'coordenacao'
    * @param {String|Number} tipoRotaId - ID do tipo de rota (opcional)
+   * @param {String} semanaAbastecimento - Semana de abastecimento para filtrar (opcional)
    */
-  static async buscarGruposDisponiveis(aba = 'nutricionista', tipoRotaId = null) {
+  static async buscarGruposDisponiveis(aba = 'nutricionista', tipoRotaId = null, semanaAbastecimento = null) {
     const params = new URLSearchParams();
     if (aba) params.append('aba', aba);
     if (tipoRotaId) params.append('tipo_rota_id', tipoRotaId);
+    if (semanaAbastecimento) params.append('semana_abastecimento', semanaAbastecimento);
     const response = await api.get(`/necessidades-substituicoes/grupos-disponiveis?${params.toString()}`);
     return response.data;
   }
@@ -117,11 +119,13 @@ class SubstituicoesNecessidadesService {
    * Buscar tipos de rota disponíveis
    * @param {String} aba - 'nutricionista' ou 'coordenacao'
    * @param {String|Number} rota_id - ID da rota para filtrar tipos vinculados (opcional)
+   * @param {String} semanaAbastecimento - Semana de abastecimento para filtrar (opcional)
    */
-  static async buscarTiposRotaDisponiveis(aba = 'nutricionista', rota_id = null) {
+  static async buscarTiposRotaDisponiveis(aba = 'nutricionista', rota_id = null, semanaAbastecimento = null) {
     const params = new URLSearchParams();
     if (aba) params.append('aba', aba);
     if (rota_id) params.append('rota_id', rota_id);
+    if (semanaAbastecimento) params.append('semana_abastecimento', semanaAbastecimento);
     const response = await api.get(`/necessidades-substituicoes/tipos-rota-disponiveis?${params.toString()}`);
     return response.data;
   }
@@ -130,11 +134,13 @@ class SubstituicoesNecessidadesService {
    * Buscar rotas disponíveis
    * @param {String} aba - 'nutricionista' ou 'coordenacao'
    * @param {String|Number} tipo_rota_id - ID do tipo de rota para filtrar rotas vinculadas (opcional)
+   * @param {String} semanaAbastecimento - Semana de abastecimento para filtrar (opcional)
    */
-  static async buscarRotasDisponiveis(aba = 'nutricionista', tipo_rota_id = null) {
+  static async buscarRotasDisponiveis(aba = 'nutricionista', tipo_rota_id = null, semanaAbastecimento = null) {
     const params = new URLSearchParams();
     if (aba) params.append('aba', aba);
     if (tipo_rota_id) params.append('tipo_rota_id', tipo_rota_id);
+    if (semanaAbastecimento) params.append('semana_abastecimento', semanaAbastecimento);
     const response = await api.get(`/necessidades-substituicoes/rotas-disponiveis?${params.toString()}`);
     return response.data;
   }

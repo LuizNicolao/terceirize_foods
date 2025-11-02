@@ -30,20 +30,22 @@ export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
   /**
    * Carregar grupos (baseado no tipo: nutricionista ou coordenação)
    * Se tipo_rota_id estiver selecionado, filtra grupos vinculados a esse tipo
+   * Se semana_abastecimento estiver selecionado, filtra grupos daquela semana
    */
   const carregarGrupos = useCallback(async () => {
     try {
       // tipo pode ser 'nutricionista' (padrão), 'coordenacao' ou 'impressao'
       const aba = (tipo === 'coordenacao' || tipo === 'impressao') ? 'coordenacao' : 'nutricionista';
       const tipoRotaId = filtros.tipo_rota_id || null;
-      const response = await SubstituicoesNecessidadesService.buscarGruposDisponiveis(aba, tipoRotaId);
+      const semanaAbastecimento = filtros.semana_abastecimento || null;
+      const response = await SubstituicoesNecessidadesService.buscarGruposDisponiveis(aba, tipoRotaId, semanaAbastecimento);
       if (response.success) {
         setGrupos(response.data || []);
       }
     } catch (error) {
       console.error('Erro ao carregar grupos:', error);
     }
-  }, [tipo, filtros.tipo_rota_id]);
+  }, [tipo, filtros.tipo_rota_id, filtros.semana_abastecimento]);
 
   /**
    * Carregar semanas de abastecimento (baseado no tipo: nutricionista ou coordenação)
@@ -64,38 +66,42 @@ export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
   /**
    * Carregar tipos de rota disponíveis (baseado no tipo: nutricionista ou coordenação)
    * Se rota_id estiver selecionado, filtra tipos vinculados a essa rota
+   * Se semana_abastecimento estiver selecionado, filtra tipos daquela semana
    */
   const carregarTiposRota = useCallback(async () => {
     try {
       // tipo pode ser 'nutricionista' (padrão), 'coordenacao' ou 'impressao'
       const aba = (tipo === 'coordenacao' || tipo === 'impressao') ? 'coordenacao' : 'nutricionista';
       const rotaId = filtros.rota_id || null;
-      const response = await SubstituicoesNecessidadesService.buscarTiposRotaDisponiveis(aba, rotaId);
+      const semanaAbastecimento = filtros.semana_abastecimento || null;
+      const response = await SubstituicoesNecessidadesService.buscarTiposRotaDisponiveis(aba, rotaId, semanaAbastecimento);
       if (response.success) {
         setTiposRota(response.data || []);
       }
     } catch (error) {
       console.error('Erro ao carregar tipos de rota:', error);
     }
-  }, [tipo, filtros.rota_id]);
+  }, [tipo, filtros.rota_id, filtros.semana_abastecimento]);
 
   /**
    * Carregar rotas disponíveis (baseado no tipo: nutricionista ou coordenação)
    * Se tipo_rota_id estiver selecionado, filtra rotas vinculadas a esse tipo
+   * Se semana_abastecimento estiver selecionado, filtra rotas daquela semana
    */
   const carregarRotas = useCallback(async () => {
     try {
       // tipo pode ser 'nutricionista' (padrão), 'coordenacao' ou 'impressao'
       const aba = (tipo === 'coordenacao' || tipo === 'impressao') ? 'coordenacao' : 'nutricionista';
       const tipoRotaId = filtros.tipo_rota_id || null;
-      const response = await SubstituicoesNecessidadesService.buscarRotasDisponiveis(aba, tipoRotaId);
+      const semanaAbastecimento = filtros.semana_abastecimento || null;
+      const response = await SubstituicoesNecessidadesService.buscarRotasDisponiveis(aba, tipoRotaId, semanaAbastecimento);
       if (response.success) {
         setRotas(response.data || []);
       }
     } catch (error) {
       console.error('Erro ao carregar rotas:', error);
     }
-  }, [tipo, filtros.tipo_rota_id]);
+  }, [tipo, filtros.tipo_rota_id, filtros.semana_abastecimento]);
 
   /**
    * Carregar semana de consumo baseado na semana de abastecimento
@@ -266,11 +272,12 @@ export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
     });
   }, []);
 
-  // Efeito para carregar grupos - recarrega quando tipo ou tipo_rota_id mudar
+  // Efeito para carregar grupos - recarrega quando tipo, tipo_rota_id ou semana_abastecimento mudar
   // Se tipo_rota_id estiver selecionado, mostra apenas grupos vinculados a esse tipo
+  // Se semana_abastecimento estiver selecionado, mostra apenas grupos daquela semana
   useEffect(() => {
     carregarGrupos();
-  }, [tipo, filtros.tipo_rota_id, carregarGrupos]);
+  }, [tipo, filtros.tipo_rota_id, filtros.semana_abastecimento, carregarGrupos]);
 
   // Efeito para carregar semanas de abastecimento - independente de outros filtros
   // Recarrega quando tipo mudar para garantir dados corretos
@@ -278,17 +285,19 @@ export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
     carregarSemanasAbastecimento();
   }, [tipo, carregarSemanasAbastecimento]);
 
-  // Efeito para carregar tipos de rota - recarrega quando tipo ou rota_id mudar
+  // Efeito para carregar tipos de rota - recarrega quando tipo, rota_id ou semana_abastecimento mudar
   // Se rota_id estiver selecionado, mostra apenas tipos vinculados a essa rota
+  // Se semana_abastecimento estiver selecionado, mostra apenas tipos daquela semana
   useEffect(() => {
     carregarTiposRota();
-  }, [tipo, filtros.rota_id, carregarTiposRota]);
+  }, [tipo, filtros.rota_id, filtros.semana_abastecimento, carregarTiposRota]);
 
-  // Efeito para carregar rotas - recarrega quando tipo ou tipo_rota_id mudar
+  // Efeito para carregar rotas - recarrega quando tipo, tipo_rota_id ou semana_abastecimento mudar
   // Se tipo_rota_id estiver selecionado, mostra apenas rotas vinculadas a esse tipo
+  // Se semana_abastecimento estiver selecionado, mostra apenas rotas daquela semana
   useEffect(() => {
     carregarRotas();
-  }, [tipo, filtros.tipo_rota_id, carregarRotas]);
+  }, [tipo, filtros.tipo_rota_id, filtros.semana_abastecimento, carregarRotas]);
 
   // Efeito para carregar semana de consumo quando abastecimento mudar
   useEffect(() => {

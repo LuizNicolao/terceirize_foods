@@ -475,7 +475,7 @@ class SubstituicoesListController {
    */
   static async buscarTiposRotaDisponiveis(req, res) {
     try {
-      const { aba, rota_id } = req.query;
+      const { aba, rota_id, semana_abastecimento } = req.query;
       
       let tiposRota;
       let params = [];
@@ -486,6 +486,7 @@ class SubstituicoesListController {
         // 1. Têm escolas na tabela necessidades_substituicoes com status conf log
         // 2. Têm grupos vinculados (grupo_id) que existem nas necessidades_substituicoes
         // 3. Se rota_id for fornecido, mostrar apenas tipos vinculados a essa rota
+        // 4. Se semana_abastecimento for fornecido, filtrar por essa semana
         whereConditions = [
           "tr.status = 'ativo'",
           "r.status = 'ativo'",
@@ -503,6 +504,11 @@ class SubstituicoesListController {
         if (rota_id) {
           whereConditions.push("r.id = ?");
           params.push(rota_id);
+        }
+
+        if (semana_abastecimento) {
+          whereConditions.push("ns.semana_abastecimento = ?");
+          params.push(semana_abastecimento);
         }
         
         tiposRota = await executeQuery(`
@@ -524,6 +530,7 @@ class SubstituicoesListController {
         // 1. Têm escolas na tabela necessidades com status CONF (padrão: nutricionista)
         // 2. Têm grupos vinculados (grupo_id) que existem nas necessidades
         // 3. Se rota_id for fornecido, mostrar apenas tipos vinculados a essa rota
+        // 4. Se semana_abastecimento for fornecido, filtrar por essa semana
         whereConditions = [
           "tr.status = 'ativo'",
           "r.status = 'ativo'",
@@ -541,6 +548,11 @@ class SubstituicoesListController {
         if (rota_id) {
           whereConditions.push("r.id = ?");
           params.push(rota_id);
+        }
+
+        if (semana_abastecimento) {
+          whereConditions.push("n.semana_abastecimento = ?");
+          params.push(semana_abastecimento);
         }
         
         tiposRota = await executeQuery(`
@@ -583,7 +595,7 @@ class SubstituicoesListController {
    */
   static async buscarRotasDisponiveis(req, res) {
     try {
-      const { aba, tipo_rota_id } = req.query;
+      const { aba, tipo_rota_id, semana_abastecimento } = req.query;
       
       let rotas;
       let params = [];
@@ -594,6 +606,7 @@ class SubstituicoesListController {
         // 1. Têm escolas na tabela necessidades_substituicoes com status conf log
         // 2. Têm grupos vinculados que existem nas necessidades_substituicoes
         // 3. Se tipo_rota_id for fornecido, mostrar apenas rotas vinculadas a esse tipo
+        // 4. Se semana_abastecimento for fornecido, filtrar por essa semana
         whereConditions = [
           "r.status = 'ativo'",
           "ue.status = 'ativo'",
@@ -610,6 +623,11 @@ class SubstituicoesListController {
         if (tipo_rota_id) {
           whereConditions.push("tr.id = ?");
           params.push(tipo_rota_id);
+        }
+
+        if (semana_abastecimento) {
+          whereConditions.push("ns.semana_abastecimento = ?");
+          params.push(semana_abastecimento);
         }
         
         rotas = await executeQuery(`
@@ -631,6 +649,7 @@ class SubstituicoesListController {
         // 1. Têm escolas na tabela necessidades com status CONF (padrão: nutricionista)
         // 2. Têm grupos vinculados que existem nas necessidades
         // 3. Se tipo_rota_id for fornecido, mostrar apenas rotas vinculadas a esse tipo
+        // 4. Se semana_abastecimento for fornecido, filtrar por essa semana
         whereConditions = [
           "r.status = 'ativo'",
           "ue.status = 'ativo'",
@@ -647,6 +666,11 @@ class SubstituicoesListController {
         if (tipo_rota_id) {
           whereConditions.push("tr.id = ?");
           params.push(tipo_rota_id);
+        }
+
+        if (semana_abastecimento) {
+          whereConditions.push("n.semana_abastecimento = ?");
+          params.push(semana_abastecimento);
         }
         
         rotas = await executeQuery(`
@@ -688,15 +712,33 @@ class SubstituicoesListController {
    */
   static async buscarGruposDisponiveisParaSubstituicao(req, res) {
     try {
-      const { aba, tipo_rota_id } = req.query;
+      const { aba, tipo_rota_id, semana_abastecimento } = req.query;
       
       let grupos;
+      let params = [];
+      let whereConditions = [];
       
       if (aba === 'coordenacao') {
         if (tipo_rota_id) {
           // Buscar grupos que:
           // 1. Estão vinculados ao tipo_rota_id (no grupo_id do tipo_rota)
           // 2. Existem na tabela necessidades_substituicoes com status conf log
+          // 3. Se semana_abastecimento for fornecido, filtrar por essa semana
+          whereConditions = [
+            "ns.ativo = 1",
+            "ns.status = 'conf log'",
+            "ns.grupo IS NOT NULL",
+            "ns.grupo != ''",
+            "tr.grupo_id IS NOT NULL",
+            "tr.grupo_id != ''"
+          ];
+          params = [tipo_rota_id];
+
+          if (semana_abastecimento) {
+            whereConditions.push("ns.semana_abastecimento = ?");
+            params.push(semana_abastecimento);
+          }
+
           grupos = await executeQuery(`
             SELECT DISTINCT 
               ns.grupo as id,
@@ -704,35 +746,58 @@ class SubstituicoesListController {
             FROM necessidades_substituicoes ns
             INNER JOIN foods_db.grupos g ON g.nome COLLATE utf8mb4_unicode_ci = ns.grupo COLLATE utf8mb4_unicode_ci
             INNER JOIN foods_db.tipo_rota tr ON tr.id = ?
-            WHERE ns.ativo = 1 
-              AND ns.status = 'conf log'
-              AND ns.grupo IS NOT NULL 
-              AND ns.grupo != ''
-              AND tr.grupo_id IS NOT NULL
-              AND tr.grupo_id != ''
+            WHERE ${whereConditions.join(' AND ')}
               -- Validar se o grupo existe no grupo_id do tipo_rota
               AND FIND_IN_SET(g.id, tr.grupo_id) > 0
             ORDER BY ns.grupo
-          `, [tipo_rota_id]);
+          `, params);
         } else {
           // Buscar grupos da tabela necessidades_substituicoes com status conf log
+          // Se semana_abastecimento for fornecido, filtrar por essa semana
+          whereConditions = [
+            "ns.ativo = 1",
+            "ns.status = 'conf log'",
+            "ns.grupo IS NOT NULL",
+            "ns.grupo != ''"
+          ];
+          params = [];
+
+          if (semana_abastecimento) {
+            whereConditions.push("ns.semana_abastecimento = ?");
+            params.push(semana_abastecimento);
+          }
+
           grupos = await executeQuery(`
             SELECT DISTINCT 
               ns.grupo as id,
               ns.grupo as nome
             FROM necessidades_substituicoes ns
-            WHERE ns.ativo = 1 
-              AND ns.status = 'conf log'
-              AND ns.grupo IS NOT NULL 
-              AND ns.grupo != ''
+            WHERE ${whereConditions.join(' AND ')}
             ORDER BY ns.grupo
-          `);
+          `, params);
         }
       } else {
         if (tipo_rota_id) {
           // Buscar grupos que:
           // 1. Estão vinculados ao tipo_rota_id (no grupo_id do tipo_rota)
           // 2. Existem na tabela necessidades com status CONF
+          // 3. Se semana_abastecimento for fornecido, filtrar por essa semana
+          whereConditions = [
+            "ppc.ativo = 1",
+            "ppc.grupo IS NOT NULL",
+            "ppc.grupo != ''",
+            "n.status = 'CONF'",
+            "(n.substituicao_processada = 0 OR n.substituicao_processada IS NULL)",
+            "tr.grupo_id IS NOT NULL",
+            "tr.grupo_id != ''"
+          ];
+          params = [tipo_rota_id];
+
+          if (semana_abastecimento) {
+            whereConditions.push("n.semana_abastecimento = ?");
+            params.push(semana_abastecimento);
+          }
+
           grupos = await executeQuery(`
             SELECT DISTINCT 
               ppc.grupo as id,
@@ -741,32 +806,37 @@ class SubstituicoesListController {
             INNER JOIN necessidades n ON n.produto_id = ppc.produto_id
             INNER JOIN foods_db.grupos g ON g.nome COLLATE utf8mb4_unicode_ci = ppc.grupo COLLATE utf8mb4_unicode_ci
             INNER JOIN foods_db.tipo_rota tr ON tr.id = ?
-            WHERE ppc.ativo = 1 
-              AND ppc.grupo IS NOT NULL 
-              AND ppc.grupo != ''
-              AND n.status = 'CONF'
-              AND (n.substituicao_processada = 0 OR n.substituicao_processada IS NULL)
-              AND tr.grupo_id IS NOT NULL
-              AND tr.grupo_id != ''
+            WHERE ${whereConditions.join(' AND ')}
               -- Validar se o grupo existe no grupo_id do tipo_rota
               AND FIND_IN_SET(g.id, tr.grupo_id) > 0
             ORDER BY ppc.grupo
-          `, [tipo_rota_id]);
+          `, params);
         } else {
           // Buscar grupos da tabela necessidades com status CONF (padrão: nutricionista)
+          // Se semana_abastecimento for fornecido, filtrar por essa semana
+          whereConditions = [
+            "ppc.ativo = 1",
+            "ppc.grupo IS NOT NULL",
+            "ppc.grupo != ''",
+            "n.status = 'CONF'",
+            "(n.substituicao_processada = 0 OR n.substituicao_processada IS NULL)"
+          ];
+          params = [];
+
+          if (semana_abastecimento) {
+            whereConditions.push("n.semana_abastecimento = ?");
+            params.push(semana_abastecimento);
+          }
+
           grupos = await executeQuery(`
             SELECT DISTINCT 
               ppc.grupo as id,
               ppc.grupo as nome
             FROM produtos_per_capita ppc
             INNER JOIN necessidades n ON n.produto_id = ppc.produto_id
-            WHERE ppc.ativo = 1 
-              AND ppc.grupo IS NOT NULL 
-              AND ppc.grupo != ''
-              AND n.status = 'CONF'
-              AND (n.substituicao_processada = 0 OR n.substituicao_processada IS NULL)
+            WHERE ${whereConditions.join(' AND ')}
             ORDER BY ppc.grupo
-          `);
+          `, params);
         }
       }
 
