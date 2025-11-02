@@ -26,26 +26,6 @@ export const useSubstituicoesCoordenacao = () => {
     }
   }, []);
 
-  const aprovarSubstituicao = useCallback(async (substituicao) => {
-    setLoading(true);
-    try {
-      const response = await substituicoesNecessidadesService.aprovarSubstituicao(substituicao.id);
-      if (response.success) {
-        toast.success('Substituição aprovada com sucesso!');
-        return response;
-      } else {
-        toast.error(response.message || 'Erro ao aprovar substituição');
-        return { success: false, message: response.message };
-      }
-    } catch (error) {
-      console.error('Erro ao aprovar substituição:', error);
-      toast.error('Erro ao aprovar substituição');
-      return { success: false, error: error.message };
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
   const rejeitarSubstituicao = useCallback(async (substituicao) => {
     setLoading(true);
     try {
@@ -70,7 +50,6 @@ export const useSubstituicoesCoordenacao = () => {
     loading,
     salvando,
     salvarSubstituicao,
-    aprovarSubstituicao,
     rejeitarSubstituicao
   };
 };
