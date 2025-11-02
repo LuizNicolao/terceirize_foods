@@ -47,8 +47,8 @@ const AjusteFiltros = ({
               }}
               options={escolas.map(escola => ({
                 value: escola.id,
-                label: `${escola.nome_escola} - ${escola.rota}`,
-                description: escola.cidade
+                label: escola.nome_escola || escola.nome || `${escola.nome}${escola.codigo ? ` - ${escola.codigo}` : ''}`,
+                description: escola.cidade || escola.rota || ''
               }))}
               placeholder="Digite para buscar uma escola..."
               disabled={loading}

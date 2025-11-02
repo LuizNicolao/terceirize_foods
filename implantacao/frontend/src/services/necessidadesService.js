@@ -106,6 +106,26 @@ const necessidadesService = {
     return response.data;
   },
 
+  // Buscar grupos disponíveis na tabela necessidades
+  buscarGruposDisponiveis: async (filtros = {}) => {
+    const params = new URLSearchParams();
+    if (filtros.escola_id) params.append('escola_id', filtros.escola_id);
+    if (filtros.aba) params.append('aba', filtros.aba);
+    
+    const response = await api.get(`/necessidades/grupos-disponiveis?${params.toString()}`);
+    return response.data;
+  },
+
+  // Buscar escolas disponíveis na tabela necessidades
+  buscarEscolasDisponiveis: async (filtros = {}) => {
+    const params = new URLSearchParams();
+    if (filtros.grupo) params.append('grupo', filtros.grupo);
+    if (filtros.aba) params.append('aba', filtros.aba);
+    
+    const response = await api.get(`/necessidades/escolas-disponiveis?${params.toString()}`);
+    return response.data;
+  },
+
   // Listar necessidades para ajuste (status = 'NEC')
   listarParaAjuste: async (filtros) => {
     const params = new URLSearchParams();

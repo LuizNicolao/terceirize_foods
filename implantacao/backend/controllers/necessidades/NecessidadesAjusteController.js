@@ -104,6 +104,300 @@ const buscarSemanasConsumoDisponiveis = async (req, res) => {
   }
 };
 
+// Buscar grupos disponíveis na tabela necessidades
+const buscarGruposDisponiveis = async (req, res) => {
+  try {
+    const { escola_id, aba } = req.query;
+    const usuario_id = req.user.id;
+    const tipo_usuario = req.user.tipo_de_acesso;
+
+    // Definir status permitidos baseado na aba
+    let statusPermitidos = [];
+    if (aba === 'nutricionista') {
+      statusPermitidos = ['NEC', 'NEC NUTRI', 'CONF NUTRI'];
+    } else if (aba === 'coordenacao') {
+      statusPermitidos = ['NEC COORD', 'CONF COORD'];
+    } else if (aba === 'logistica') {
+      statusPermitidos = ['NEC LOG'];
+    } else {
+      // Se não especificar aba, usar todos os status (comportamento padrão)
+      statusPermitidos = ['NEC', 'NEC NUTRI', 'CONF NUTRI', 'NEC COORD', 'CONF COORD', 'NEC LOG'];
+    }
+
+    let query = `
+      SELECT DISTINCT 
+        n.grupo,
+        n.grupo_id
+      FROM necessidades n
+      WHERE n.grupo IS NOT NULL 
+        AND n.grupo != ''
+        AND n.status IN (${statusPermitidos.map(() => '?').join(',')})
+    `;
+
+    const params = [...statusPermitidos];
+
+    // Se for nutricionista, filtrar apenas pelas escolas da rota dela
+    if (tipo_usuario === 'nutricionista') {
+      try {
+        const axios = require('axios');
+        const foodsApiUrl = process.env.FOODS_API_URL || 'http://localhost:3001';
+        const userEmail = req.user.email;
+        
+        const response = await axios.get(`${foodsApiUrl}/rotas-nutricionistas?email=${encodeURIComponent(userEmail)}&status=ativo`, {
+          headers: {
+            'Authorization': `Bearer ${req.headers.authorization?.replace('Bearer ', '')}`
+          },
+          timeout: 5000
+        });
+
+        if (response.data && response.data.success) {
+          let rotas = response.data.data?.rotas || response.data.data || response.data || [];
+          if (!Array.isArray(rotas)) {
+            rotas = rotas.rotas || [];
+          }
+          
+          const escolasIds = [];
+          rotas.forEach(rota => {
+            if (rota.escolas_responsaveis) {
+              const ids = rota.escolas_responsaveis.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
+              escolasIds.push(...ids);
+            }
+          });
+
+          if (escolasIds.length > 0) {
+            query += ` AND n.escola_id IN (${escolasIds.map(() => '?').join(',')})`;
+            params.push(...escolasIds);
+          } else {
+            query += ' AND 1=0';
+          }
+        } else {
+          query += ' AND 1=0';
+        }
+      } catch (apiError) {
+        console.error('Erro ao buscar rotas do foods:', apiError);
+        query += ' AND 1=0';
+      }
+    }
+
+    // Filtro opcional por escola
+    if (escola_id) {
+      query += ` AND n.escola_id = ?`;
+      params.push(escola_id);
+    }
+
+    query += ` ORDER BY n.grupo ASC`;
+
+    const grupos = await executeQuery(query, params);
+
+    // Buscar informações completas dos grupos no Foods DB
+    const gruposUnicos = [...new Set(grupos.map(g => g.grupo).filter(g => g))];
+    const gruposComInfo = [];
+
+    if (gruposUnicos.length > 0) {
+      try {
+        const axios = require('axios');
+        const foodsApiUrl = process.env.FOODS_API_URL || 'http://localhost:3001';
+        
+        const response = await axios.get(`${foodsApiUrl}/grupos?status=ativo`, {
+          headers: {
+            'Authorization': `Bearer ${req.headers.authorization?.replace('Bearer ', '')}`
+          },
+          timeout: 5000
+        });
+
+        if (response.data && response.data.success) {
+          const todosGrupos = response.data.data || [];
+          gruposUnicos.forEach(nomeGrupo => {
+            const grupoInfo = todosGrupos.find(g => g.nome === nomeGrupo);
+            if (grupoInfo) {
+              gruposComInfo.push({
+                id: grupoInfo.id,
+                nome: grupoInfo.nome,
+                status: grupoInfo.status
+              });
+            }
+          });
+        }
+      } catch (apiError) {
+        console.error('Erro ao buscar grupos do foods:', apiError);
+        // Fallback: retornar apenas com nome
+        gruposUnicos.forEach(nomeGrupo => {
+          gruposComInfo.push({
+            id: null,
+            nome: nomeGrupo,
+            status: 'ativo'
+          });
+        });
+      }
+    }
+
+    res.json({
+      success: true,
+      data: gruposComInfo
+    });
+  } catch (error) {
+    console.error('Erro ao buscar grupos disponíveis:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Erro interno do servidor',
+      message: 'Erro ao buscar grupos disponíveis'
+    });
+  }
+};
+
+// Buscar escolas disponíveis na tabela necessidades
+const buscarEscolasDisponiveis = async (req, res) => {
+  try {
+    const { grupo, aba } = req.query;
+    const usuario_id = req.user.id;
+    const tipo_usuario = req.user.tipo_de_acesso;
+
+    // Definir status permitidos baseado na aba
+    let statusPermitidos = [];
+    if (aba === 'nutricionista') {
+      statusPermitidos = ['NEC', 'NEC NUTRI', 'CONF NUTRI'];
+    } else if (aba === 'coordenacao') {
+      statusPermitidos = ['NEC COORD', 'CONF COORD'];
+    } else if (aba === 'logistica') {
+      statusPermitidos = ['NEC LOG'];
+    } else {
+      // Se não especificar aba, usar todos os status (comportamento padrão)
+      statusPermitidos = ['NEC', 'NEC NUTRI', 'CONF NUTRI', 'NEC COORD', 'CONF COORD', 'NEC LOG'];
+    }
+
+    let query = `
+      SELECT DISTINCT 
+        n.escola_id,
+        n.escola
+      FROM necessidades n
+      WHERE n.escola_id IS NOT NULL 
+        AND n.escola IS NOT NULL
+        AND n.escola != ''
+        AND n.status IN (${statusPermitidos.map(() => '?').join(',')})
+    `;
+
+    const params = [...statusPermitidos];
+
+    // Se for nutricionista, filtrar apenas pelas escolas da rota dela
+    if (tipo_usuario === 'nutricionista') {
+      try {
+        const axios = require('axios');
+        const foodsApiUrl = process.env.FOODS_API_URL || 'http://localhost:3001';
+        const userEmail = req.user.email;
+        
+        const response = await axios.get(`${foodsApiUrl}/rotas-nutricionistas?email=${encodeURIComponent(userEmail)}&status=ativo`, {
+          headers: {
+            'Authorization': `Bearer ${req.headers.authorization?.replace('Bearer ', '')}`
+          },
+          timeout: 5000
+        });
+
+        if (response.data && response.data.success) {
+          let rotas = response.data.data?.rotas || response.data.data || response.data || [];
+          if (!Array.isArray(rotas)) {
+            rotas = rotas.rotas || [];
+          }
+          
+          const escolasIds = [];
+          rotas.forEach(rota => {
+            if (rota.escolas_responsaveis) {
+              const ids = rota.escolas_responsaveis.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
+              escolasIds.push(...ids);
+            }
+          });
+
+          if (escolasIds.length > 0) {
+            query += ` AND n.escola_id IN (${escolasIds.map(() => '?').join(',')})`;
+            params.push(...escolasIds);
+          } else {
+            query += ' AND 1=0';
+          }
+        } else {
+          query += ' AND 1=0';
+        }
+      } catch (apiError) {
+        console.error('Erro ao buscar rotas do foods:', apiError);
+        query += ' AND 1=0';
+      }
+    }
+
+    // Filtro opcional por grupo
+    if (grupo) {
+      query += ` AND n.grupo = ?`;
+      params.push(grupo);
+    }
+
+    query += ` ORDER BY n.escola ASC`;
+
+    const escolas = await executeQuery(query, params);
+
+    // Buscar informações completas das escolas no Foods DB
+    const escolasIds = [...new Set(escolas.map(e => e.escola_id).filter(id => id))];
+    const escolasComInfo = [];
+
+    if (escolasIds.length > 0) {
+      try {
+        const axios = require('axios');
+        const foodsApiUrl = process.env.FOODS_API_URL || 'http://localhost:3001';
+        
+        for (const escolaId of escolasIds) {
+          try {
+            const response = await axios.get(`${foodsApiUrl}/unidades-escolares/${escolaId}`, {
+              headers: {
+                'Authorization': `Bearer ${req.headers.authorization?.replace('Bearer ', '')}`
+              },
+              timeout: 5000
+            });
+
+            if (response.data && response.data.success && response.data.data) {
+              escolasComInfo.push({
+                id: response.data.data.id,
+                nome: response.data.data.nome,
+                codigo: response.data.data.codigo,
+                status: response.data.data.status
+              });
+            }
+          } catch (err) {
+            // Se não encontrar no Foods, usar dados da tabela necessidades
+            const escolaNaTabela = escolas.find(e => e.escola_id === escolaId);
+            if (escolaNaTabela) {
+              escolasComInfo.push({
+                id: escolaNaTabela.escola_id,
+                nome: escolaNaTabela.escola,
+                codigo: null,
+                status: 'ativo'
+              });
+            }
+          }
+        }
+      } catch (apiError) {
+        console.error('Erro ao buscar escolas do foods:', apiError);
+        // Fallback: retornar apenas com dados da tabela necessidades
+        escolas.forEach(escola => {
+          escolasComInfo.push({
+            id: escola.escola_id,
+            nome: escola.escola,
+            codigo: null,
+            status: 'ativo'
+          });
+        });
+      }
+    }
+
+    res.json({
+      success: true,
+      data: escolasComInfo.sort((a, b) => a.nome.localeCompare(b.nome))
+    });
+  } catch (error) {
+    console.error('Erro ao buscar escolas disponíveis:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Erro interno do servidor',
+      message: 'Erro ao buscar escolas disponíveis'
+    });
+  }
+};
+
 // Listar necessidades para ajuste (status = 'NEC')
 const listarParaAjuste = async (req, res) => {
   try {
@@ -793,6 +1087,8 @@ const excluirProdutoAjuste = async (req, res) => {
 
 module.exports = {
   buscarSemanasConsumoDisponiveis,
+  buscarGruposDisponiveis,
+  buscarEscolasDisponiveis,
   listarParaAjuste,
   salvarAjustes,
   incluirProdutoExtra,

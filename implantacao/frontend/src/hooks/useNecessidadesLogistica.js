@@ -46,37 +46,47 @@ export const useNecessidadesLogistica = () => {
     }
   }, [filtros]);
 
-  // Carregar escolas disponíveis
-  const carregarEscolas = useCallback(async () => {
+  // Carregar escolas disponíveis (apenas com necessidades geradas)
+  const carregarEscolas = useCallback(async (filtrosAdicionais = {}) => {
     setLoading(true);
     try {
-      const response = await escolasService.listar({}, user);
+      const response = await necessidadesService.buscarEscolasDisponiveis({
+        aba: 'logistica',
+        ...filtrosAdicionais
+      });
       if (response.success) {
-        setEscolas(response.data);
+        setEscolas(response.data || []);
       } else {
         toast.error(response.message || 'Erro ao carregar escolas');
+        setEscolas([]);
       }
     } catch (err) {
       console.error('Erro ao carregar escolas:', err);
       toast.error('Erro ao carregar escolas');
+      setEscolas([]);
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, []);
 
-  // Carregar grupos de produtos
-  const carregarGrupos = useCallback(async () => {
+  // Carregar grupos de produtos (apenas com necessidades geradas)
+  const carregarGrupos = useCallback(async (filtrosAdicionais = {}) => {
     setLoading(true);
     try {
-      const response = await necessidadesService.buscarGruposComPercapita();
+      const response = await necessidadesService.buscarGruposDisponiveis({
+        aba: 'logistica',
+        ...filtrosAdicionais
+      });
       if (response.success) {
-        setGrupos(response.data);
+        setGrupos(response.data || []);
       } else {
         toast.error(response.message || 'Erro ao carregar grupos');
+        setGrupos([]);
       }
     } catch (err) {
       console.error('Erro ao carregar grupos:', err);
       toast.error('Erro ao carregar grupos');
+      setGrupos([]);
     } finally {
       setLoading(false);
     }

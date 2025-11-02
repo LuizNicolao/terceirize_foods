@@ -1,11 +1,14 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import necessidadesCoordenacaoService from '../services/necessidadesCoordenacaoService';
+import necessidadesService from '../services/necessidadesService';
 import toast from 'react-hot-toast';
 import { useExport } from './common/useExport';
 
 const useNecessidadesCoordenacao = () => {
   const [necessidades, setNecessidades] = useState([]);
   const [nutricionistas, setNutricionistas] = useState([]);
+  const [escolas, setEscolas] = useState([]);
+  const [grupos, setGrupos] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -50,6 +53,52 @@ const useNecessidadesCoordenacao = () => {
       }
     } catch (error) {
       console.error('Erro ao carregar nutricionistas:', error);
+    }
+  }, []);
+
+  // Carregar escolas disponíveis (apenas com necessidades geradas)
+  const carregarEscolas = useCallback(async (filtrosAdicionais = {}) => {
+    setLoading(true);
+    try {
+      const response = await necessidadesService.buscarEscolasDisponiveis({
+        aba: 'coordenacao',
+        ...filtrosAdicionais
+      });
+      if (response.success) {
+        setEscolas(response.data || []);
+      } else {
+        toast.error(response.message || 'Erro ao carregar escolas');
+        setEscolas([]);
+      }
+    } catch (err) {
+      console.error('Erro ao carregar escolas:', err);
+      toast.error('Erro ao carregar escolas');
+      setEscolas([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Carregar grupos de produtos (apenas com necessidades geradas)
+  const carregarGrupos = useCallback(async (filtrosAdicionais = {}) => {
+    setLoading(true);
+    try {
+      const response = await necessidadesService.buscarGruposDisponiveis({
+        aba: 'coordenacao',
+        ...filtrosAdicionais
+      });
+      if (response.success) {
+        setGrupos(response.data || []);
+      } else {
+        toast.error(response.message || 'Erro ao carregar grupos');
+        setGrupos([]);
+      }
+    } catch (err) {
+      console.error('Erro ao carregar grupos:', err);
+      toast.error('Erro ao carregar grupos');
+      setGrupos([]);
+    } finally {
+      setLoading(false);
     }
   }, []);
 
@@ -198,10 +247,18 @@ const useNecessidadesCoordenacao = () => {
   // Hook de exportação padronizado
   const { handleExportXLSX, handleExportPDF } = useExport(necessidadesCoordenacaoService);
 
+  // Carregar dados iniciais
+  useEffect(() => {
+    carregarEscolas();
+    carregarGrupos();
+  }, [carregarEscolas, carregarGrupos]);
+
   return {
     // Estados
     necessidades,
     nutricionistas,
+    escolas,
+    grupos,
     filtros,
     loading,
     error,

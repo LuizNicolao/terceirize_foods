@@ -55,6 +55,8 @@ export const useAjusteNecessidadesOrchestrator = () => {
   const {
     necessidades: necessidadesCoordenacao,
     nutricionistas,
+    escolas: escolasCoordenacao,
+    grupos: gruposCoordenacao,
     filtros: filtrosCoordenacao,
     loading: loadingCoordenacao,
     error: errorCoordenacao,
@@ -728,8 +730,8 @@ export const useAjusteNecessidadesOrchestrator = () => {
       produtoToDelete,
       
       // Dados
-      escolas,
-      grupos,
+      escolas: activeTab === 'nutricionista' ? escolas : activeTab === 'coordenacao' ? escolasCoordenacao : activeTab === 'logistica' ? escolasLogistica : [],
+      grupos: activeTab === 'nutricionista' ? grupos : activeTab === 'coordenacao' ? gruposCoordenacao : activeTab === 'logistica' ? gruposLogistica : [],
       nutricionistas,
       opcoesSemanasAbastecimento,
       opcoesSemanasConsumo,
