@@ -298,10 +298,14 @@ const salvarAjustes = async (req, res) => {
     }
 
     // Atualizar status do conjunto para 'NEC NUTRI' se houve atualizações
+    // Fluxo: ajuste > ajuste_nutricionista > ajuste_coordenacao > ajuste_logistica > ajuste_conf_nutri > ajuste_conf_coord
+    // Ao mudar NEC -> NEC NUTRI, copiar ajuste para ajuste_nutricionista se não existir
     if (updatedCount > 0) {
       await executeQuery(`
         UPDATE necessidades 
-        SET status = 'NEC NUTRI', data_atualizacao = CURRENT_TIMESTAMP
+        SET status = 'NEC NUTRI',
+            ajuste_nutricionista = COALESCE(ajuste_nutricionista, ajuste),
+            data_atualizacao = CURRENT_TIMESTAMP
         WHERE escola_id = ? 
           AND status = 'NEC'
           AND produto_id IN (
@@ -315,7 +319,9 @@ const salvarAjustes = async (req, res) => {
       if (periodo && periodo.consumo_de && periodo.consumo_ate) {
         await executeQuery(`
           UPDATE necessidades 
-          SET status = 'NEC NUTRI', data_atualizacao = CURRENT_TIMESTAMP
+          SET status = 'NEC NUTRI',
+              ajuste_nutricionista = COALESCE(ajuste_nutricionista, ajuste),
+              data_atualizacao = CURRENT_TIMESTAMP
           WHERE escola_id = ? 
             AND status = 'NEC'
             AND semana_consumo BETWEEN ? AND ?
@@ -551,14 +557,18 @@ const liberarCoordenacao = async (req, res) => {
 
     // Atualizar status conforme fluxo:
     // Fluxo: ajuste > ajuste_nutricionista > ajuste_coordenacao > ajuste_logistica > ajuste_conf_nutri > ajuste_conf_coord
-    // - De NEC/NEC NUTRI -> NEC COORD (apenas muda status, não copia valores)
-    // - De CONF NUTRI -> CONF COORD (copia ajuste_conf_nutri para ajuste_conf_coord)
+    // - De NEC/NEC NUTRI -> NEC COORD: copiar ajuste_nutricionista (ou ajuste) para ajuste_coordenacao
+    // - De CONF NUTRI -> CONF COORD: copiar ajuste_conf_nutri para ajuste_conf_coord
     let query = `
       UPDATE necessidades 
       SET status = CASE 
           WHEN status IN ('NEC', 'NEC NUTRI') THEN 'NEC COORD'
           WHEN status = 'CONF NUTRI' THEN 'CONF COORD'
           ELSE status
+        END,
+        ajuste_coordenacao = CASE
+          WHEN status IN ('NEC', 'NEC NUTRI') THEN COALESCE(ajuste_coordenacao, ajuste_nutricionista, ajuste)
+          ELSE ajuste_coordenacao
         END,
         ajuste_conf_coord = CASE
           WHEN status = 'CONF NUTRI' THEN COALESCE(ajuste_conf_coord, ajuste_conf_nutri, ajuste_logistica, ajuste_coordenacao, ajuste_nutricionista, ajuste)
