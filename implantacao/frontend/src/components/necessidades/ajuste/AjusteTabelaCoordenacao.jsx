@@ -25,14 +25,15 @@ const AjusteTabelaCoordenacao = ({
   };
 
   // Função para calcular quantidade atual baseado no status
+  // Fluxo: ajuste > ajuste_nutricionista > ajuste_coordenacao > ajuste_logistica > ajuste_conf_nutri > ajuste_conf_coord
   const getQuantidadeAtual = (necessidade) => {
     if (necessidade.status === 'CONF COORD') {
-      return necessidade.ajuste_conf_coord ?? necessidade.ajuste_conf_nutri ?? necessidade.ajuste_nutricionista ?? necessidade.ajuste_coordenacao ?? necessidade.ajuste ?? 0;
+      return necessidade.ajuste_conf_coord ?? necessidade.ajuste_conf_nutri ?? necessidade.ajuste_logistica ?? necessidade.ajuste_coordenacao ?? necessidade.ajuste_nutricionista ?? necessidade.ajuste ?? 0;
     }
     if (necessidade.status === 'NEC COORD') {
-      return necessidade.ajuste_coordenacao ?? necessidade.ajuste_nutricionista ?? necessidade.ajuste ?? 0;
+      return necessidade.ajuste_coordenacao ?? necessidade.ajuste_logistica ?? necessidade.ajuste_nutricionista ?? necessidade.ajuste ?? 0;
     }
-    return necessidade.ajuste_nutricionista ?? necessidade.ajuste_coordenacao ?? necessidade.ajuste ?? 0;
+    return necessidade.ajuste_nutricionista ?? necessidade.ajuste_coordenacao ?? necessidade.ajuste_logistica ?? necessidade.ajuste ?? 0;
   };
 
   // Função para calcular a diferença
