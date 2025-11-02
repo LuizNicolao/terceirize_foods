@@ -555,6 +555,17 @@ NecessidadesCoordenacaoController.confirmarFinal = async (req, res) => {
     let erros = 0;
     for (const necessidade_id of necessidade_ids) {
       try {
+        // Primeiro: copiar ajuste_conf_nutri para ajuste_conf_coord quando status = 'CONF COORD'
+        // (só se ajuste_conf_coord estiver NULL)
+        await executeQuery(`
+          UPDATE necessidades
+          SET ajuste_conf_coord = COALESCE(ajuste_conf_nutri, ajuste_logistica, ajuste_coordenacao, ajuste_nutricionista, ajuste)
+          WHERE necessidade_id = ? 
+            AND status = 'CONF COORD'
+            AND (ajuste_conf_coord IS NULL OR ajuste_conf_coord = 0)
+        `, [necessidade_id]);
+
+        // Segundo: atualizar status para CONF
         const result = await executeQuery(`
           UPDATE necessidades
           SET status = 'CONF', data_atualizacao = NOW()
