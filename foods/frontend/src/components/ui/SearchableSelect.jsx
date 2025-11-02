@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { FaChevronDown, FaSearch, FaTimes } from 'react-icons/fa';
 
 const SearchableSelect = ({
@@ -79,17 +80,49 @@ const SearchableSelect = ({
     }
   }, [value, options]);
 
+  // Calcular posição do dropdown quando abrir
+  useEffect(() => {
+    if (isOpen && containerRef.current) {
+      const updatePosition = () => {
+        const rect = containerRef.current.getBoundingClientRect();
+        setDropdownPosition({
+          top: rect.bottom + window.scrollY + 4,
+          left: rect.left + window.scrollX,
+          width: rect.width
+        });
+      };
+      
+      updatePosition();
+      
+      // Atualizar posição em scroll ou resize
+      window.addEventListener('scroll', updatePosition, true);
+      window.addEventListener('resize', updatePosition);
+      
+      return () => {
+        window.removeEventListener('scroll', updatePosition, true);
+        window.removeEventListener('resize', updatePosition);
+      };
+    }
+  }, [isOpen]);
+
   // Fechar dropdown quando clicar fora
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+      if (containerRef.current && !containerRef.current.contains(event.target)) {
+        // Verificar se o clique foi no portal do dropdown
+        const dropdownElement = document.querySelector('[data-dropdown-portal]');
+        if (dropdownElement && dropdownElement.contains(event.target)) {
+          return;
+        }
         setIsOpen(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [isOpen]);
 
   const handleToggle = () => {
     if (disabled) return;
@@ -142,7 +175,7 @@ const SearchableSelect = ({
         </label>
       )}
       
-      <div className="relative">
+      <div className="relative" ref={containerRef}>
         {/* Campo de entrada */}
         <div
           className={`
@@ -195,9 +228,17 @@ const SearchableSelect = ({
           </div>
         </div>
 
-        {/* Dropdown */}
-        {isOpen && !disabled && (
-          <div className="absolute z-[9999] w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-hidden">
+        {/* Dropdown via Portal - renderiza fora da hierarquia para evitar overflow clipping */}
+        {isOpen && !disabled && typeof document !== 'undefined' && createPortal(
+          <div 
+            data-dropdown-portal
+            className="fixed z-[9999] bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-hidden"
+            style={{
+              top: `${dropdownPosition.top}px`,
+              left: `${dropdownPosition.left}px`,
+              width: `${dropdownPosition.width}px`
+            }}
+          >
             {/* Lista de opções */}
             <div className="max-h-60 overflow-y-auto" style={{ maxHeight }}>
               {loading ? (
@@ -231,7 +272,8 @@ const SearchableSelect = ({
                 </div>
               )}
             </div>
-          </div>
+          </div>,
+          document.body
         )}
       </div>
 
