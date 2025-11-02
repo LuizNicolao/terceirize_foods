@@ -346,78 +346,25 @@ const buscarEscolasDisponiveis = async (req, res) => {
 
     const escolas = await executeQuery(query, params);
 
-    // Buscar informações completas das escolas no Foods DB
-    const escolasIds = [...new Set(escolas.map(e => e.escola_id).filter(id => id))];
-    const escolasComInfo = [];
+    // Retornar diretamente da tabela necessidades (sem buscar no Foods DB)
+    const escolasUnicas = new Map();
 
-    if (escolasIds.length > 0) {
-      try {
-        const axios = require('axios');
-        const foodsApiUrl = process.env.FOODS_API_URL || 'http://localhost:3001';
-        
-        for (const escolaId of escolasIds) {
-          try {
-            const response = await axios.get(`${foodsApiUrl}/unidades-escolares/${escolaId}`, {
-              headers: {
-                'Authorization': `Bearer ${req.headers.authorization?.replace('Bearer ', '')}`
-              },
-              timeout: 5000
-            });
-
-            if (response.data && response.data.success && response.data.data) {
-              escolasComInfo.push({
-                id: response.data.data.id,
-                nome: response.data.data.nome,
-                codigo: response.data.data.codigo,
-                status: response.data.data.status
-              });
-            }
-          } catch (err) {
-            // Se não encontrar no Foods, usar dados da tabela necessidades
-            const escolaNaTabela = escolas.find(e => e.escola_id === escolaId);
-            if (escolaNaTabela) {
-              escolasComInfo.push({
-                id: escolaNaTabela.escola_id,
-                nome: escolaNaTabela.escola,
-                codigo: null,
-                status: 'ativo'
-              });
-            }
-          }
-        }
-      } catch (apiError) {
-        console.error('Erro ao buscar escolas do foods:', apiError);
-        // Fallback: retornar apenas com dados da tabela necessidades
-        escolas.forEach(escola => {
-          if (escola.escola_id && escola.escola) {
-            escolasComInfo.push({
-              id: escola.escola_id,
-              nome: escola.escola,
-              codigo: null,
-              status: 'ativo'
-            });
-          }
+    escolas.forEach(escola => {
+      if (escola.escola_id && escola.escola && !escolasUnicas.has(escola.escola_id)) {
+        escolasUnicas.set(escola.escola_id, {
+          id: escola.escola_id,
+          nome: escola.escola,
+          codigo: null,
+          status: 'ativo'
         });
       }
-    }
-    
-    // Se ainda não tiver dados, retornar escolas da query inicial
-    if (escolasComInfo.length === 0 && escolas.length > 0) {
-      escolas.forEach(escola => {
-        if (escola.escola_id && escola.escola && !escolasComInfo.find(e => e.id === escola.escola_id)) {
-          escolasComInfo.push({
-            id: escola.escola_id,
-            nome: escola.escola,
-            codigo: null,
-            status: 'ativo'
-          });
-        }
-      });
-    }
+    });
+
+    const escolasComInfo = Array.from(escolasUnicas.values());
 
     res.json({
       success: true,
-      data: escolasComInfo.sort((a, b) => a.nome.localeCompare(b.nome))
+      data: escolasComInfo.sort((a, b) => (a.nome || '').localeCompare(b.nome || ''))
     });
   } catch (error) {
     console.error('Erro ao buscar escolas disponíveis:', error);

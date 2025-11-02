@@ -50,10 +50,12 @@ const AjusteFiltros = ({
                 onFiltroChange('escola_id', escola?.id || null);
               }}
               options={escolasArray
-                .filter(escola => escola && escola.id && (escola.nome_escola || escola.nome)) // Filtrar apenas escolas válidas
+                .filter(escola => escola && escola.id) // Filtrar apenas escolas com ID válido
                 .map(escola => {
+                  // Aceitar tanto nome_escola (formato antigo) quanto nome (formato novo)
                   const nome = escola.nome_escola || escola.nome || '';
                   const codigo = escola.codigo || '';
+                  // Se não tiver nome mas tiver id, usar fallback
                   const label = nome ? (codigo ? `${nome} - ${codigo}` : nome) : `Escola ${escola.id}`;
                   
                   return {
@@ -62,7 +64,7 @@ const AjusteFiltros = ({
                     description: escola.cidade || escola.rota || ''
                   };
                 })
-                .filter(opt => opt.value && opt.label)} // Garantir que temos value e label
+                .filter(opt => opt.value && opt.label && opt.label !== `Escola ${opt.value}`)} // Garantir que temos value e label válido
               placeholder="Digite para buscar uma escola..."
               disabled={loading}
               required
