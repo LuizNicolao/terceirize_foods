@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { FaPrint } from 'react-icons/fa';
 import { useSubstituicoesNecessidades } from '../../hooks/useSubstituicoesNecessidades';
 import { SubstituicoesFilters } from './components';
@@ -23,6 +23,7 @@ const AnaliseImpressao = () => {
   const [loading, setLoading] = useState(false);
   const [marcandoImpresso, setMarcandoImpresso] = useState(false);
   const [error, setError] = useState(null);
+  const printRef = useRef(null);
 
   // Validar se os filtros obrigatórios estão preenchidos
   const filtrosValidos = filtros.tipo_rota_id && filtros.rota_id && filtros.semana_abastecimento;
@@ -77,7 +78,7 @@ const AnaliseImpressao = () => {
         
         // Aguardar um momento antes de imprimir para garantir que a atualização foi processada
         setTimeout(() => {
-          window.print();
+          handlePrint();
           setMarcandoImpresso(false);
         }, 500);
       } else {
@@ -91,28 +92,60 @@ const AnaliseImpressao = () => {
       
       // Tenta imprimir mesmo se houver erro
       setTimeout(() => {
-        window.print();
+        handlePrint();
       }, 500);
     }
   };
 
+  const handlePrint = () => {
+    // Simplesmente chamar window.print() - os estilos CSS no componente já cuidam da ocultação
+    window.print();
+  };
+
   return (
     <>
-      {/* Filtros */}
-      <SubstituicoesFilters
-        grupos={grupos}
-        semanasAbastecimento={semanasAbastecimento}
-        semanasConsumo={semanasConsumo}
-        tiposRota={tiposRota}
-        rotas={rotas}
-        filtros={filtros}
-        loading={loading}
-        onFiltroChange={atualizarFiltros}
-        onLimparFiltros={limparFiltros}
-      />
+      {/* Estilos para impressão */}
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          @media print {
+            body * {
+              visibility: hidden;
+            }
+            .print-content,
+            .print-content * {
+              visibility: visible;
+            }
+            .print-content {
+              position: absolute;
+              left: 0;
+              top: 0;
+              width: 100%;
+            }
+            @page {
+              size: A4 landscape;
+              margin: 0.5cm;
+            }
+          }
+        `
+      }} />
 
-      {/* Botões de Ação */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+      {/* Filtros - não devem aparecer na impressão */}
+      <div className="no-print">
+        <SubstituicoesFilters
+          grupos={grupos}
+          semanasAbastecimento={semanasAbastecimento}
+          semanasConsumo={semanasConsumo}
+          tiposRota={tiposRota}
+          rotas={rotas}
+          filtros={filtros}
+          loading={loading}
+          onFiltroChange={atualizarFiltros}
+          onLimparFiltros={limparFiltros}
+        />
+      </div>
+
+      {/* Botões de Ação - não devem aparecer na impressão */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6 no-print">
         <div className="flex justify-between items-center">
           <div className="flex gap-3">
             <Button
@@ -154,21 +187,23 @@ const AnaliseImpressao = () => {
         </div>
       </div>
 
-      {/* Error Message */}
+      {/* Error Message - não deve aparecer na impressão */}
       {error && (
-        <div className="mb-6 bg-red-50 border border-red-200 rounded-md p-4">
+        <div className="mb-6 bg-red-50 border border-red-200 rounded-md p-4 no-print">
           <p className="text-red-800">{error}</p>
         </div>
       )}
 
-      {/* Dados para Impressão */}
+      {/* Dados para Impressão - deve aparecer apenas na impressão */}
       {dadosImpressao && (
-        <RomaneioPrint dados={dadosImpressao} grupo={filtros.grupo || dadosImpressao.produtos[0]?.grupo} />
+        <div ref={printRef} className="print-content">
+          <RomaneioPrint dados={dadosImpressao} grupo={filtros.grupo || dadosImpressao.produtos[0]?.grupo} />
+        </div>
       )}
 
-      {/* Mensagem quando não há dados */}
+      {/* Mensagem quando não há dados - não deve aparecer na impressão */}
       {!dadosImpressao && !loading && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center no-print">
           <FaPrint className="mx-auto h-12 w-12 text-gray-400 mb-4" />
           <h3 className="text-lg font-semibold text-gray-900 mb-2">
             Impressão de Romaneio
