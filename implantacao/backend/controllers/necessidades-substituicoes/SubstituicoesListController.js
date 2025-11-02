@@ -475,14 +475,36 @@ class SubstituicoesListController {
    */
   static async buscarTiposRotaDisponiveis(req, res) {
     try {
-      const { aba } = req.query;
+      const { aba, rota_id } = req.query;
       
       let tiposRota;
+      let params = [];
+      let whereConditions = [];
       
       if (aba === 'coordenacao') {
         // Buscar tipos de rota que:
         // 1. Têm escolas na tabela necessidades_substituicoes com status conf log
         // 2. Têm grupos vinculados (grupo_id) que existem nas necessidades_substituicoes
+        // 3. Se rota_id for fornecido, mostrar apenas tipos vinculados a essa rota
+        whereConditions = [
+          "tr.status = 'ativo'",
+          "r.status = 'ativo'",
+          "ue.status = 'ativo'",
+          "ns.ativo = 1",
+          "ns.status = 'conf log'",
+          "ue.rota_id IS NOT NULL",
+          "ue.rota_id != ''",
+          "tr.grupo_id IS NOT NULL",
+          "tr.grupo_id != ''",
+          "ns.grupo IS NOT NULL",
+          "ns.grupo != ''"
+        ];
+        
+        if (rota_id) {
+          whereConditions.push("r.id = ?");
+          params.push(rota_id);
+        }
+        
         tiposRota = await executeQuery(`
           SELECT DISTINCT
             tr.id,
@@ -492,25 +514,35 @@ class SubstituicoesListController {
           INNER JOIN foods_db.unidades_escolares ue ON FIND_IN_SET(r.id, ue.rota_id) > 0
           INNER JOIN necessidades_substituicoes ns ON ns.escola_id = ue.id
           INNER JOIN foods_db.grupos g ON g.nome COLLATE utf8mb4_unicode_ci = ns.grupo COLLATE utf8mb4_unicode_ci
-          WHERE tr.status = 'ativo'
-            AND r.status = 'ativo'
-            AND ue.status = 'ativo'
-            AND ns.ativo = 1
-            AND ns.status = 'conf log'
-            AND ue.rota_id IS NOT NULL
-            AND ue.rota_id != ''
-            AND tr.grupo_id IS NOT NULL
-            AND tr.grupo_id != ''
-            AND ns.grupo IS NOT NULL
-            AND ns.grupo != ''
+          WHERE ${whereConditions.join(' AND ')}
             -- Validar se o grupo existe no grupo_id do tipo_rota
             AND FIND_IN_SET(g.id, tr.grupo_id) > 0
           ORDER BY tr.nome ASC
-        `);
+        `, params);
       } else {
         // Buscar tipos de rota que:
         // 1. Têm escolas na tabela necessidades com status CONF (padrão: nutricionista)
         // 2. Têm grupos vinculados (grupo_id) que existem nas necessidades
+        // 3. Se rota_id for fornecido, mostrar apenas tipos vinculados a essa rota
+        whereConditions = [
+          "tr.status = 'ativo'",
+          "r.status = 'ativo'",
+          "ue.status = 'ativo'",
+          "n.status = 'CONF'",
+          "(n.substituicao_processada = 0 OR n.substituicao_processada IS NULL)",
+          "ue.rota_id IS NOT NULL",
+          "ue.rota_id != ''",
+          "tr.grupo_id IS NOT NULL",
+          "tr.grupo_id != ''",
+          "ppc.grupo IS NOT NULL",
+          "ppc.grupo != ''"
+        ];
+        
+        if (rota_id) {
+          whereConditions.push("r.id = ?");
+          params.push(rota_id);
+        }
+        
         tiposRota = await executeQuery(`
           SELECT DISTINCT
             tr.id,
@@ -521,21 +553,11 @@ class SubstituicoesListController {
           INNER JOIN necessidades n ON n.escola_id = ue.id
           INNER JOIN produtos_per_capita ppc ON n.produto_id = ppc.produto_id
           INNER JOIN foods_db.grupos g ON g.nome COLLATE utf8mb4_unicode_ci = ppc.grupo COLLATE utf8mb4_unicode_ci
-          WHERE tr.status = 'ativo'
-            AND r.status = 'ativo'
-            AND ue.status = 'ativo'
-            AND n.status = 'CONF'
-            AND (n.substituicao_processada = 0 OR n.substituicao_processada IS NULL)
-            AND ue.rota_id IS NOT NULL
-            AND ue.rota_id != ''
-            AND tr.grupo_id IS NOT NULL
-            AND tr.grupo_id != ''
-            AND ppc.grupo IS NOT NULL
-            AND ppc.grupo != ''
+          WHERE ${whereConditions.join(' AND ')}
             -- Validar se o grupo existe no grupo_id do tipo_rota
             AND FIND_IN_SET(g.id, tr.grupo_id) > 0
           ORDER BY tr.nome ASC
-        `);
+        `, params);
       }
 
       res.json({
@@ -561,14 +583,35 @@ class SubstituicoesListController {
    */
   static async buscarRotasDisponiveis(req, res) {
     try {
-      const { aba } = req.query;
+      const { aba, tipo_rota_id } = req.query;
       
       let rotas;
+      let params = [];
+      let whereConditions = [];
       
       if (aba === 'coordenacao') {
         // Buscar rotas que:
         // 1. Têm escolas na tabela necessidades_substituicoes com status conf log
         // 2. Têm grupos vinculados que existem nas necessidades_substituicoes
+        // 3. Se tipo_rota_id for fornecido, mostrar apenas rotas vinculadas a esse tipo
+        whereConditions = [
+          "r.status = 'ativo'",
+          "ue.status = 'ativo'",
+          "ns.ativo = 1",
+          "ns.status = 'conf log'",
+          "ue.rota_id IS NOT NULL",
+          "ue.rota_id != ''",
+          "tr.grupo_id IS NOT NULL",
+          "tr.grupo_id != ''",
+          "ns.grupo IS NOT NULL",
+          "ns.grupo != ''"
+        ];
+        
+        if (tipo_rota_id) {
+          whereConditions.push("tr.id = ?");
+          params.push(tipo_rota_id);
+        }
+        
         rotas = await executeQuery(`
           SELECT DISTINCT
             r.id,
@@ -578,24 +621,34 @@ class SubstituicoesListController {
           INNER JOIN necessidades_substituicoes ns ON ns.escola_id = ue.id
           INNER JOIN foods_db.grupos g ON g.nome COLLATE utf8mb4_unicode_ci = ns.grupo COLLATE utf8mb4_unicode_ci
           INNER JOIN foods_db.tipo_rota tr ON r.tipo_rota_id = tr.id
-          WHERE r.status = 'ativo'
-            AND ue.status = 'ativo'
-            AND ns.ativo = 1
-            AND ns.status = 'conf log'
-            AND ue.rota_id IS NOT NULL
-            AND ue.rota_id != ''
-            AND tr.grupo_id IS NOT NULL
-            AND tr.grupo_id != ''
-            AND ns.grupo IS NOT NULL
-            AND ns.grupo != ''
+          WHERE ${whereConditions.join(' AND ')}
             -- Validar se o grupo existe no grupo_id do tipo_rota
             AND FIND_IN_SET(g.id, tr.grupo_id) > 0
           ORDER BY r.nome ASC
-        `);
+        `, params);
       } else {
         // Buscar rotas que:
         // 1. Têm escolas na tabela necessidades com status CONF (padrão: nutricionista)
         // 2. Têm grupos vinculados que existem nas necessidades
+        // 3. Se tipo_rota_id for fornecido, mostrar apenas rotas vinculadas a esse tipo
+        whereConditions = [
+          "r.status = 'ativo'",
+          "ue.status = 'ativo'",
+          "n.status = 'CONF'",
+          "(n.substituicao_processada = 0 OR n.substituicao_processada IS NULL)",
+          "ue.rota_id IS NOT NULL",
+          "ue.rota_id != ''",
+          "tr.grupo_id IS NOT NULL",
+          "tr.grupo_id != ''",
+          "ppc.grupo IS NOT NULL",
+          "ppc.grupo != ''"
+        ];
+        
+        if (tipo_rota_id) {
+          whereConditions.push("tr.id = ?");
+          params.push(tipo_rota_id);
+        }
+        
         rotas = await executeQuery(`
           SELECT DISTINCT
             r.id,
@@ -606,20 +659,11 @@ class SubstituicoesListController {
           INNER JOIN produtos_per_capita ppc ON n.produto_id = ppc.produto_id
           INNER JOIN foods_db.grupos g ON g.nome COLLATE utf8mb4_unicode_ci = ppc.grupo COLLATE utf8mb4_unicode_ci
           INNER JOIN foods_db.tipo_rota tr ON r.tipo_rota_id = tr.id
-          WHERE r.status = 'ativo'
-            AND ue.status = 'ativo'
-            AND n.status = 'CONF'
-            AND (n.substituicao_processada = 0 OR n.substituicao_processada IS NULL)
-            AND ue.rota_id IS NOT NULL
-            AND ue.rota_id != ''
-            AND tr.grupo_id IS NOT NULL
-            AND tr.grupo_id != ''
-            AND ppc.grupo IS NOT NULL
-            AND ppc.grupo != ''
+          WHERE ${whereConditions.join(' AND ')}
             -- Validar se o grupo existe no grupo_id do tipo_rota
             AND FIND_IN_SET(g.id, tr.grupo_id) > 0
           ORDER BY r.nome ASC
-        `);
+        `, params);
       }
 
       res.json({

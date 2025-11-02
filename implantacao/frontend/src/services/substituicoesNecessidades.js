@@ -116,10 +116,12 @@ class SubstituicoesNecessidadesService {
   /**
    * Buscar tipos de rota disponíveis
    * @param {String} aba - 'nutricionista' ou 'coordenacao'
+   * @param {String|Number} rota_id - ID da rota para filtrar tipos vinculados (opcional)
    */
-  static async buscarTiposRotaDisponiveis(aba = 'nutricionista') {
+  static async buscarTiposRotaDisponiveis(aba = 'nutricionista', rota_id = null) {
     const params = new URLSearchParams();
     if (aba) params.append('aba', aba);
+    if (rota_id) params.append('rota_id', rota_id);
     const response = await api.get(`/necessidades-substituicoes/tipos-rota-disponiveis?${params.toString()}`);
     return response.data;
   }
@@ -127,10 +129,12 @@ class SubstituicoesNecessidadesService {
   /**
    * Buscar rotas disponíveis
    * @param {String} aba - 'nutricionista' ou 'coordenacao'
+   * @param {String|Number} tipo_rota_id - ID do tipo de rota para filtrar rotas vinculadas (opcional)
    */
-  static async buscarRotasDisponiveis(aba = 'nutricionista') {
+  static async buscarRotasDisponiveis(aba = 'nutricionista', tipo_rota_id = null) {
     const params = new URLSearchParams();
     if (aba) params.append('aba', aba);
+    if (tipo_rota_id) params.append('tipo_rota_id', tipo_rota_id);
     const response = await api.get(`/necessidades-substituicoes/rotas-disponiveis?${params.toString()}`);
     return response.data;
   }

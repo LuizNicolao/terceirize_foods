@@ -63,35 +63,39 @@ export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
 
   /**
    * Carregar tipos de rota disponíveis (baseado no tipo: nutricionista ou coordenação)
+   * Se rota_id estiver selecionado, filtra tipos vinculados a essa rota
    */
   const carregarTiposRota = useCallback(async () => {
     try {
       // tipo pode ser 'nutricionista' (padrão) ou 'coordenacao'
       const aba = tipo === 'coordenacao' ? 'coordenacao' : 'nutricionista';
-      const response = await SubstituicoesNecessidadesService.buscarTiposRotaDisponiveis(aba);
+      const rotaId = filtros.rota_id || null;
+      const response = await SubstituicoesNecessidadesService.buscarTiposRotaDisponiveis(aba, rotaId);
       if (response.success) {
         setTiposRota(response.data || []);
       }
     } catch (error) {
       console.error('Erro ao carregar tipos de rota:', error);
     }
-  }, [tipo]);
+  }, [tipo, filtros.rota_id]);
 
   /**
    * Carregar rotas disponíveis (baseado no tipo: nutricionista ou coordenação)
+   * Se tipo_rota_id estiver selecionado, filtra rotas vinculadas a esse tipo
    */
   const carregarRotas = useCallback(async () => {
     try {
       // tipo pode ser 'nutricionista' (padrão) ou 'coordenacao'
       const aba = tipo === 'coordenacao' ? 'coordenacao' : 'nutricionista';
-      const response = await SubstituicoesNecessidadesService.buscarRotasDisponiveis(aba);
+      const tipoRotaId = filtros.tipo_rota_id || null;
+      const response = await SubstituicoesNecessidadesService.buscarRotasDisponiveis(aba, tipoRotaId);
       if (response.success) {
         setRotas(response.data || []);
       }
     } catch (error) {
       console.error('Erro ao carregar rotas:', error);
     }
-  }, [tipo]);
+  }, [tipo, filtros.tipo_rota_id]);
 
   /**
    * Carregar semana de consumo baseado na semana de abastecimento
@@ -274,17 +278,17 @@ export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
     carregarSemanasAbastecimento();
   }, [tipo, carregarSemanasAbastecimento]);
 
-  // Efeito para carregar tipos de rota - independente de outros filtros
-  // Recarrega quando tipo mudar para garantir dados corretos
+  // Efeito para carregar tipos de rota - recarrega quando tipo ou rota_id mudar
+  // Se rota_id estiver selecionado, mostra apenas tipos vinculados a essa rota
   useEffect(() => {
     carregarTiposRota();
-  }, [tipo, carregarTiposRota]);
+  }, [tipo, filtros.rota_id, carregarTiposRota]);
 
-  // Efeito para carregar rotas - independente de outros filtros
-  // Recarrega quando tipo mudar para garantir dados corretos
+  // Efeito para carregar rotas - recarrega quando tipo ou tipo_rota_id mudar
+  // Se tipo_rota_id estiver selecionado, mostra apenas rotas vinculadas a esse tipo
   useEffect(() => {
     carregarRotas();
-  }, [tipo, carregarRotas]);
+  }, [tipo, filtros.tipo_rota_id, carregarRotas]);
 
   // Efeito para carregar semana de consumo quando abastecimento mudar
   useEffect(() => {
