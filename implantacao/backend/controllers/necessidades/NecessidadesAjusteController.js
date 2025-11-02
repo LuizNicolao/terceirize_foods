@@ -399,7 +399,7 @@ const incluirProdutoExtra = async (req, res) => {
     const { semana_consumo, semana_abastecimento } = req.body;
     
     const escolaExistente = await executeQuery(`
-      SELECT escola, escola_rota, codigo_teknisa, necessidade_id, usuario_email, usuario_id
+      SELECT escola, escola_rota, codigo_teknisa, necessidade_id, semana_consumo as semana_consumo_existente, semana_abastecimento as semana_abastecimento_existente, usuario_email, usuario_id
       FROM necessidades 
       WHERE escola_id = ? 
       LIMIT 1
@@ -413,13 +413,17 @@ const incluirProdutoExtra = async (req, res) => {
       });
     }
 
+    // Garantir que valores undefined sejam null (requisito do mysql2)
+    const semanaConsumoFinal = semana_consumo || escolaExistente[0].semana_consumo_existente || null;
+    const semanaAbastecimentoFinal = semana_abastecimento || escolaExistente[0].semana_abastecimento_existente || null;
+
     const escolaData = {
       nome_escola: escolaExistente[0].escola,
       rota: escolaExistente[0].escola_rota,
       codigo_teknisa: escolaExistente[0].codigo_teknisa,
       necessidade_id: escolaExistente[0].necessidade_id,
-      semana_consumo: semana_consumo || escolaExistente[0].semana_consumo,
-      semana_abastecimento: semana_abastecimento || escolaExistente[0].semana_abastecimento,
+      semana_consumo: semanaConsumoFinal,
+      semana_abastecimento: semanaAbastecimentoFinal,
       usuario_email: escolaExistente[0].usuario_email,
       usuario_id: escolaExistente[0].usuario_id
     };
