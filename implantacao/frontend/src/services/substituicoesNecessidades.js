@@ -7,7 +7,7 @@ import api from './api';
 class SubstituicoesNecessidadesService {
   /**
    * Listar necessidades para substituição (Nutricionista)
-   * @param {Object} filtros - Filtros: grupo, semana_abastecimento, semana_consumo
+   * @param {Object} filtros - Filtros: grupo, semana_abastecimento, semana_consumo, tipo_rota_id
    */
   static async listarParaSubstituicao(filtros) {
     const params = new URLSearchParams();
@@ -15,6 +15,7 @@ class SubstituicoesNecessidadesService {
     if (filtros.grupo) params.append('grupo', filtros.grupo);
     if (filtros.semana_abastecimento) params.append('semana_abastecimento', filtros.semana_abastecimento);
     if (filtros.semana_consumo) params.append('semana_consumo', filtros.semana_consumo);
+    if (filtros.tipo_rota_id) params.append('tipo_rota_id', filtros.tipo_rota_id);
 
     const response = await api.get(`/necessidades-substituicoes/listar?${params.toString()}`);
     return response.data;
@@ -22,7 +23,7 @@ class SubstituicoesNecessidadesService {
 
   /**
    * Listar necessidades para coordenação (status conf log)
-   * @param {Object} filtros - Filtros: grupo, semana_abastecimento, semana_consumo
+   * @param {Object} filtros - Filtros: grupo, semana_abastecimento, semana_consumo, tipo_rota_id
    */
   static async listarParaCoordenacao(filtros) {
     const params = new URLSearchParams();
@@ -30,6 +31,7 @@ class SubstituicoesNecessidadesService {
     if (filtros.grupo) params.append('grupo', filtros.grupo);
     if (filtros.semana_abastecimento) params.append('semana_abastecimento', filtros.semana_abastecimento);
     if (filtros.semana_consumo) params.append('semana_consumo', filtros.semana_consumo);
+    if (filtros.tipo_rota_id) params.append('tipo_rota_id', filtros.tipo_rota_id);
 
     const response = await api.get(`/necessidades-substituicoes/listar-coordenacao?${params.toString()}`);
     return response.data;
@@ -104,6 +106,14 @@ class SubstituicoesNecessidadesService {
     const params = new URLSearchParams();
     if (aba) params.append('aba', aba);
     const response = await api.get(`/necessidades-substituicoes/semanas-abastecimento-disponiveis?${params.toString()}`);
+    return response.data;
+  }
+
+  /**
+   * Buscar tipos de rota disponíveis
+   */
+  static async buscarTiposRotaDisponiveis() {
+    const response = await api.get('/necessidades-substituicoes/tipos-rota-disponiveis');
     return response.data;
   }
 }

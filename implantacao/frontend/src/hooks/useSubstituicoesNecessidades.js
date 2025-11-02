@@ -13,6 +13,7 @@ export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
   const [grupos, setGrupos] = useState([]);
   const [semanasAbastecimento, setSemanasAbastecimento] = useState([]);
   const [semanasConsumo, setSemanasConsumo] = useState([]);
+  const [tiposRota, setTiposRota] = useState([]);
   
   const [produtosGenericos, setProdutosGenericos] = useState({});
   const [loadingGenericos, setLoadingGenericos] = useState({});
@@ -20,7 +21,8 @@ export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
   const [filtros, setFiltros] = useState({
     grupo: '',
     semana_abastecimento: '',
-    semana_consumo: ''
+    semana_consumo: '',
+    tipo_rota_id: ''
   });
 
   /**
@@ -54,6 +56,20 @@ export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
       console.error('Erro ao carregar semanas de abastecimento:', error);
     }
   }, [tipo]);
+
+  /**
+   * Carregar tipos de rota disponíveis
+   */
+  const carregarTiposRota = useCallback(async () => {
+    try {
+      const response = await SubstituicoesNecessidadesService.buscarTiposRotaDisponiveis();
+      if (response.success) {
+        setTiposRota(response.data || []);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar tipos de rota:', error);
+    }
+  }, []);
 
   /**
    * Carregar semana de consumo baseado na semana de abastecimento
@@ -218,7 +234,8 @@ export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
     setFiltros({
       grupo: '',
       semana_abastecimento: '',
-      semana_consumo: ''
+      semana_consumo: '',
+      tipo_rota_id: ''
     });
   }, []);
 
@@ -233,6 +250,11 @@ export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
   useEffect(() => {
     carregarSemanasAbastecimento();
   }, [tipo, carregarSemanasAbastecimento]);
+
+  // Efeito para carregar tipos de rota - independente de outros filtros
+  useEffect(() => {
+    carregarTiposRota();
+  }, [carregarTiposRota]);
 
   // Efeito para carregar semana de consumo quando abastecimento mudar
   useEffect(() => {
@@ -252,7 +274,7 @@ export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
       // Limpar necessidades se não tiver ambos os filtros
       setNecessidades([]);
     }
-  }, [filtros.grupo, filtros.semana_abastecimento, filtros.semana_consumo, carregarNecessidades]);
+  }, [filtros.grupo, filtros.semana_abastecimento, filtros.semana_consumo, filtros.tipo_rota_id, carregarNecessidades]);
 
   return {
     // Estados
@@ -262,6 +284,7 @@ export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
     grupos,
     semanasAbastecimento,
     semanasConsumo,
+    tiposRota,
     filtros,
     produtosGenericos,
     loadingGenericos,

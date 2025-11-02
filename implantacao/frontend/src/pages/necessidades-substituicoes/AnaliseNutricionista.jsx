@@ -17,6 +17,7 @@ const AnaliseNutricionista = () => {
     grupos,
     semanasAbastecimento,
     semanasConsumo,
+    tiposRota,
     filtros,
     produtosGenericos,
     loadingGenericos,
@@ -183,6 +184,7 @@ const AnaliseNutricionista = () => {
         grupos={grupos}
         semanasAbastecimento={semanasAbastecimento}
         semanasConsumo={semanasConsumo}
+        tiposRota={tiposRota}
         filtros={filtros}
         loading={loading}
         onFiltroChange={atualizarFiltros}

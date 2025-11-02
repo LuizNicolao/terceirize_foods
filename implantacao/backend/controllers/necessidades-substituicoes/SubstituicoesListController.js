@@ -12,10 +12,26 @@ class SubstituicoesListController {
    */
   static async listarParaSubstituicao(req, res) {
     try {
-      const { grupo, semana_abastecimento, semana_consumo } = req.query;
+      const { grupo, semana_abastecimento, semana_consumo, tipo_rota_id } = req.query;
 
       let whereConditions = ["n.status = 'CONF'", "(n.substituicao_processada = 0 OR n.substituicao_processada IS NULL)"];
       let params = [];
+
+      // Filtro por tipo de rota
+      if (tipo_rota_id) {
+        // Buscar IDs das rotas vinculadas a este tipo de rota
+        // Depois buscar escolas que têm alguma dessas rotas no rota_id
+        whereConditions.push(`n.escola_id IN (
+          SELECT DISTINCT ue.id
+          FROM foods_db.unidades_escolares ue
+          INNER JOIN foods_db.rotas r ON FIND_IN_SET(r.id, ue.rota_id) > 0
+          WHERE r.tipo_rota_id = ?
+            AND ue.status = 'ativo'
+            AND ue.rota_id IS NOT NULL
+            AND ue.rota_id != ''
+        )`);
+        params.push(tipo_rota_id);
+      }
 
       // Filtro por grupo
       if (grupo) {
@@ -277,11 +293,27 @@ class SubstituicoesListController {
    */
   static async listarParaCoordenacao(req, res) {
     try {
-      const { grupo, semana_abastecimento, semana_consumo } = req.query;
+      const { grupo, semana_abastecimento, semana_consumo, tipo_rota_id } = req.query;
 
       // Construir query base
       let whereConditions = ['status = "conf log"', 'ativo = 1'];
       const params = [];
+
+      // Filtro por tipo de rota
+      if (tipo_rota_id) {
+        // Buscar IDs das rotas vinculadas a este tipo de rota
+        // Depois buscar escolas que têm alguma dessas rotas no rota_id
+        whereConditions.push(`escola_id IN (
+          SELECT DISTINCT ue.id
+          FROM foods_db.unidades_escolares ue
+          INNER JOIN foods_db.rotas r ON FIND_IN_SET(r.id, ue.rota_id) > 0
+          WHERE r.tipo_rota_id = ?
+            AND ue.status = 'ativo'
+            AND ue.rota_id IS NOT NULL
+            AND ue.rota_id != ''
+        )`);
+        params.push(tipo_rota_id);
+      }
 
       if (grupo) {
         whereConditions.push('grupo = ?');
@@ -401,6 +433,36 @@ class SubstituicoesListController {
         success: false,
         error: 'Erro interno do servidor',
         message: 'Erro ao listar necessidades para coordenação'
+      });
+    }
+  }
+
+  /**
+   * Buscar tipos de rota disponíveis
+   * Busca tipos de rota do foods_db que têm rotas vinculadas
+   */
+  static async buscarTiposRotaDisponiveis(req, res) {
+    try {
+      const tiposRota = await executeQuery(`
+        SELECT DISTINCT
+          tr.id,
+          tr.nome
+        FROM foods_db.tipo_rota tr
+        INNER JOIN foods_db.rotas r ON r.tipo_rota_id = tr.id
+        WHERE tr.status = 'ativo'
+          AND r.status = 'ativo'
+        ORDER BY tr.nome ASC
+      `);
+
+      res.json({
+        success: true,
+        data: tiposRota
+      });
+    } catch (error) {
+      console.error('Erro ao buscar tipos de rota disponíveis:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro ao buscar tipos de rota disponíveis'
       });
     }
   }

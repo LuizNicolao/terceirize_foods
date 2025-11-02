@@ -41,6 +41,14 @@ router.get(
   SubstituicoesController.buscarProdutosGenericos
 );
 
+// GET /api/necessidades-substituicoes/tipos-rota-disponiveis
+// Busca tipos de rota disponíveis do foods_db
+router.get(
+  '/tipos-rota-disponiveis',
+  checkScreenPermission('necessidades', 'visualizar'),
+  SubstituicoesController.buscarTiposRotaDisponiveis
+);
+
 // GET /api/necessidades-substituicoes/grupos-disponiveis
 // Busca grupos disponíveis para substituição (apenas com status CONF)
 router.get(

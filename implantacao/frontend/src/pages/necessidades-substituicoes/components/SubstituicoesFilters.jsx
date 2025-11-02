@@ -6,6 +6,7 @@ const SubstituicoesFilters = ({
   grupos,
   semanasAbastecimento,
   semanasConsumo,
+  tiposRota,
   filtros,
   loading,
   onFiltroChange,
@@ -28,7 +29,24 @@ const SubstituicoesFilters = ({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {/* Tipo de Rota */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Tipo de Rota
+          </label>
+          <SearchableSelect
+            value={filtros.tipo_rota_id || ''}
+            onChange={(value) => onFiltroChange({ tipo_rota_id: value })}
+            options={tiposRota.map(tipo => ({
+              value: tipo.id.toString(),
+              label: tipo.nome
+            }))}
+            placeholder="Todos os tipos"
+            disabled={loading}
+          />
+        </div>
+
         {/* Grupo de Produtos */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
