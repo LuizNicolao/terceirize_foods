@@ -257,9 +257,12 @@ export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
 
   // Efeito para carregar necessidades quando filtros mudarem
   useEffect(() => {
-    // Só carrega se tiver filtro de grupo ou semana
-    if (filtros.grupo || filtros.semana_abastecimento) {
+    // Só carrega se tiver AMBOS os filtros: grupo E semana de abastecimento
+    if (filtros.grupo && filtros.semana_abastecimento) {
       carregarNecessidades();
+    } else {
+      // Limpar necessidades se não tiver ambos os filtros
+      setNecessidades([]);
     }
   }, [filtros.grupo, filtros.semana_abastecimento, filtros.semana_consumo, carregarNecessidades]);
 
