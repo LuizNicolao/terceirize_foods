@@ -326,38 +326,6 @@ class SubstituicoesCRUDController {
     }
   }
 
-  /**
-   * Aprovar substituição (conf log → aprovado)
-   */
-  static async aprovarSubstituicao(req, res) {
-    try {
-      const { id } = req.params;
-      const usuario_id = req.user.id;
-
-      await executeQuery(`
-        UPDATE necessidades_substituicoes 
-        SET 
-          status = 'aprovado',
-          usuario_aprovador_id = ?,
-          data_aprovacao = NOW(),
-          data_atualizacao = NOW()
-        WHERE id = ?
-      `, [usuario_id, id]);
-
-      res.json({
-        success: true,
-        message: 'Substituição aprovada com sucesso'
-      });
-
-    } catch (error) {
-      console.error('Erro ao aprovar substituição:', error);
-      res.status(500).json({
-        success: false,
-        error: 'Erro interno do servidor',
-        message: 'Erro ao aprovar substituição'
-      });
-    }
-  }
 }
 
 module.exports = SubstituicoesCRUDController;

@@ -83,12 +83,4 @@ router.post(
   SubstituicoesController.liberarAnalise
 );
 
-// PUT /api/necessidades-substituicoes/:id/aprovar
-// Aprovar substituição (conf log → aprovado)
-router.put(
-  '/:id/aprovar',
-  checkScreenPermission('necessidades', 'editar'),
-  SubstituicoesController.aprovarSubstituicao
-);
-
 module.exports = router;

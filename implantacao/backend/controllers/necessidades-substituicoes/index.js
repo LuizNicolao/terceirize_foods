@@ -18,6 +18,5 @@ module.exports = {
   // CRUD Operations
   salvarSubstituicao: SubstituicoesCRUDController.salvarSubstituicao,
   deletarSubstituicao: SubstituicoesCRUDController.deletarSubstituicao,
-  liberarAnalise: SubstituicoesCRUDController.liberarAnalise,
-  aprovarSubstituicao: SubstituicoesCRUDController.aprovarSubstituicao
+  liberarAnalise: SubstituicoesCRUDController.liberarAnalise
 };

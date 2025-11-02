@@ -205,28 +205,6 @@ export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
   }, [carregarNecessidades]);
 
   /**
-   * Aprovar substituição (conf log → aprovado)
-   */
-  const aprovarSubstituicao = useCallback(async (id) => {
-    try {
-      const response = await SubstituicoesNecessidadesService.aprovarSubstituicao(id);
-      
-      if (response.success) {
-        toast.success(response.message || 'Substituição aprovada com sucesso!');
-        carregarNecessidades();
-        return response;
-      } else {
-        toast.error(response.message || 'Erro ao aprovar substituição');
-        return response;
-      }
-    } catch (error) {
-      console.error('Erro ao aprovar substituição:', error);
-      toast.error('Erro ao aprovar substituição');
-      return { success: false, error: error.message };
-    }
-  }, [carregarNecessidades]);
-
-  /**
    * Atualizar filtros
    */
   const atualizarFiltros = useCallback((novosFiltros) => {
@@ -288,7 +266,6 @@ export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
     salvarSubstituicao,
     deletarSubstituicao,
     liberarAnalise,
-    aprovarSubstituicao,
     atualizarFiltros,
     limparFiltros
   };

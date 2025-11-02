@@ -86,15 +86,6 @@ class SubstituicoesNecessidadesService {
   }
 
   /**
-   * Aprovar substituição (conf log → aprovado)
-   * @param {Number} id - ID da substituição
-   */
-  static async aprovarSubstituicao(id) {
-    const response = await api.put(`/necessidades-substituicoes/${id}/aprovar`);
-    return response.data;
-  }
-
-  /**
    * Buscar grupos disponíveis para substituição
    * @param {String} aba - 'nutricionista' ou 'coordenacao'
    */
