@@ -5,6 +5,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { NecessidadesLayout, NecessidadesLoading } from '../../components/necessidades';
 import AnaliseNutricionista from './AnaliseNutricionista';
 import AnaliseCoordenacao from './AnaliseCoordenacao';
+import AnaliseImpressao from './AnaliseImpressao';
 
 const AnaliseSubstituicoes = () => {
   const { user } = useAuth();
@@ -15,6 +16,7 @@ const AnaliseSubstituicoes = () => {
   const tiposComAcesso = ['nutricionista', 'coordenador', 'supervisor', 'administrador', 'administrativo', 'gerente'];
   const canViewSubstituicoes = canView('analise_necessidades') || tiposComAcesso.includes(user.tipo_de_acesso);
   const canViewCoordenacao = ['coordenador', 'administrador'].includes(user.tipo_de_acesso);
+  const canViewImpressao = ['coordenador', 'administrador', 'supervisor', 'gerente'].includes(user.tipo_de_acesso);
 
   if (permissionsLoading) {
     return <NecessidadesLoading />;
@@ -75,6 +77,18 @@ const AnaliseSubstituicoes = () => {
                 Análise de Necessidades Coordenação
               </button>
             )}
+            {canViewImpressao && (
+              <button
+                onClick={() => setActiveTab('impressao')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'impressao'
+                    ? 'border-green-500 text-green-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Impressão de Romaneio
+              </button>
+            )}
           </nav>
         </div>
       </div>
@@ -82,6 +96,7 @@ const AnaliseSubstituicoes = () => {
       {/* Conteúdo das Abas */}
       {activeTab === 'nutricionista' && <AnaliseNutricionista />}
       {activeTab === 'coordenacao' && canViewCoordenacao && <AnaliseCoordenacao />}
+      {activeTab === 'impressao' && canViewImpressao && <AnaliseImpressao />}
     </NecessidadesLayout>
   );
 };

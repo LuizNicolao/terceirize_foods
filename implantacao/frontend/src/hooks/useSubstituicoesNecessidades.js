@@ -33,8 +33,8 @@ export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
    */
   const carregarGrupos = useCallback(async () => {
     try {
-      // tipo pode ser 'nutricionista' (padrão) ou 'coordenacao'
-      const aba = tipo === 'coordenacao' ? 'coordenacao' : 'nutricionista';
+      // tipo pode ser 'nutricionista' (padrão), 'coordenacao' ou 'impressao'
+      const aba = (tipo === 'coordenacao' || tipo === 'impressao') ? 'coordenacao' : 'nutricionista';
       const tipoRotaId = filtros.tipo_rota_id || null;
       const response = await SubstituicoesNecessidadesService.buscarGruposDisponiveis(aba, tipoRotaId);
       if (response.success) {
@@ -50,8 +50,8 @@ export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
    */
   const carregarSemanasAbastecimento = useCallback(async () => {
     try {
-      // tipo pode ser 'nutricionista' (padrão) ou 'coordenacao'
-      const aba = tipo === 'coordenacao' ? 'coordenacao' : 'nutricionista';
+      // tipo pode ser 'nutricionista' (padrão), 'coordenacao' ou 'impressao'
+      const aba = (tipo === 'coordenacao' || tipo === 'impressao') ? 'coordenacao' : 'nutricionista';
       const response = await SubstituicoesNecessidadesService.buscarSemanasAbastecimentoDisponiveis(aba);
       if (response.success) {
         setSemanasAbastecimento(response.data || []);
@@ -67,8 +67,8 @@ export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
    */
   const carregarTiposRota = useCallback(async () => {
     try {
-      // tipo pode ser 'nutricionista' (padrão) ou 'coordenacao'
-      const aba = tipo === 'coordenacao' ? 'coordenacao' : 'nutricionista';
+      // tipo pode ser 'nutricionista' (padrão), 'coordenacao' ou 'impressao'
+      const aba = (tipo === 'coordenacao' || tipo === 'impressao') ? 'coordenacao' : 'nutricionista';
       const rotaId = filtros.rota_id || null;
       const response = await SubstituicoesNecessidadesService.buscarTiposRotaDisponiveis(aba, rotaId);
       if (response.success) {
@@ -85,8 +85,8 @@ export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
    */
   const carregarRotas = useCallback(async () => {
     try {
-      // tipo pode ser 'nutricionista' (padrão) ou 'coordenacao'
-      const aba = tipo === 'coordenacao' ? 'coordenacao' : 'nutricionista';
+      // tipo pode ser 'nutricionista' (padrão), 'coordenacao' ou 'impressao'
+      const aba = (tipo === 'coordenacao' || tipo === 'impressao') ? 'coordenacao' : 'nutricionista';
       const tipoRotaId = filtros.tipo_rota_id || null;
       const response = await SubstituicoesNecessidadesService.buscarRotasDisponiveis(aba, tipoRotaId);
       if (response.success) {

@@ -138,6 +138,23 @@ class SubstituicoesNecessidadesService {
     const response = await api.get(`/necessidades-substituicoes/rotas-disponiveis?${params.toString()}`);
     return response.data;
   }
+
+  /**
+   * Buscar dados para impressão de romaneio
+   * @param {Object} filtros - Filtros: tipo_rota_id (obrigatório), rota_id (obrigatório), semana_abastecimento (obrigatório), grupo (opcional), semana_consumo (opcional)
+   */
+  static async buscarDadosImpressao(filtros) {
+    const params = new URLSearchParams();
+    
+    if (filtros.tipo_rota_id) params.append('tipo_rota_id', filtros.tipo_rota_id);
+    if (filtros.rota_id) params.append('rota_id', filtros.rota_id);
+    if (filtros.semana_abastecimento) params.append('semana_abastecimento', filtros.semana_abastecimento);
+    if (filtros.semana_consumo) params.append('semana_consumo', filtros.semana_consumo);
+    if (filtros.grupo) params.append('grupo', filtros.grupo);
+
+    const response = await api.get(`/necessidades-substituicoes/buscar-dados-impressao?${params.toString()}`);
+    return response.data;
+  }
 }
 
 export default SubstituicoesNecessidadesService;

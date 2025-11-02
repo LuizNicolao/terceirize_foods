@@ -73,6 +73,14 @@ router.get(
   SubstituicoesController.buscarSemanasAbastecimentoDisponiveisParaSubstituicao
 );
 
+// GET /api/necessidades-substituicoes/buscar-dados-impressao
+// Busca dados para impressão de romaneio
+router.get(
+  '/buscar-dados-impressao',
+  checkScreenPermission('necessidades', 'visualizar'),
+  SubstituicoesController.buscarDadosImpressao
+);
+
 // ===== ROTAS CRUD =====
 
 // POST /api/necessidades-substituicoes

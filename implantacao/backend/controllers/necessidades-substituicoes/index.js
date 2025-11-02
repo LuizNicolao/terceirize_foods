@@ -5,6 +5,7 @@
 
 const SubstituicoesListController = require('./SubstituicoesListController');
 const SubstituicoesCRUDController = require('./SubstituicoesCRUDController');
+const SubstituicoesImpressaoController = require('./SubstituicoesImpressaoController');
 
 module.exports = {
   // List Operations
@@ -20,5 +21,8 @@ module.exports = {
   // CRUD Operations
   salvarSubstituicao: SubstituicoesCRUDController.salvarSubstituicao,
   deletarSubstituicao: SubstituicoesCRUDController.deletarSubstituicao,
-  liberarAnalise: SubstituicoesCRUDController.liberarAnalise
+  liberarAnalise: SubstituicoesCRUDController.liberarAnalise,
+
+  // Impressão
+  buscarDadosImpressao: SubstituicoesImpressaoController.buscarDadosImpressao
 };
