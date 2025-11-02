@@ -549,15 +549,20 @@ const liberarCoordenacao = async (req, res) => {
       });
     }
 
-    // Primeiro, copiar ajuste_nutricionista para ajuste_conf_nutri nas necessidades que ainda não têm
+    // Primeiro, copiar valor anterior (ajuste_nutricionista ou ajuste) para ajuste_conf_nutri
     // Isso garante que o valor anterior seja preservado ao avançar para coordenação
+    // Se ajuste_nutricionista existe, usa ele; senão, usa ajuste como fallback
     let updateValorAnterior = `
       UPDATE necessidades 
-      SET ajuste_conf_nutri = COALESCE(ajuste_conf_nutri, ajuste_nutricionista),
+      SET ajuste_conf_nutri = COALESCE(
+            ajuste_conf_nutri, 
+            ajuste_nutricionista, 
+            ajuste
+          ),
           data_atualizacao = CURRENT_TIMESTAMP
       WHERE escola_id = ? 
         AND status IN ('NEC', 'NEC NUTRI', 'CONF NUTRI')
-        AND ajuste_nutricionista IS NOT NULL
+        AND (ajuste_nutricionista IS NOT NULL OR ajuste IS NOT NULL)
         AND (ajuste_conf_nutri IS NULL OR ajuste_conf_nutri = 0)
         AND produto_id IN (
           SELECT DISTINCT ppc.produto_id 
