@@ -76,6 +76,8 @@ export const useAjusteNecessidadesOrchestrator = () => {
   // Hooks para logística
   const {
     necessidades: necessidadesLogistica,
+    escolas: escolasLogistica,
+    grupos: gruposLogistica,
     filtros: filtrosLogistica,
     loading: loadingLogistica,
     error: errorLogistica,

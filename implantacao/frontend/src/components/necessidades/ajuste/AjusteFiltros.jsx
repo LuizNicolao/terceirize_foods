@@ -15,6 +15,14 @@ const AjusteFiltros = ({
   onFiltroChange,
   onFiltrar
 }) => {
+  // Debug: verificar dados recebidos
+  console.log('📋 AjusteFiltros - escolas:', escolas);
+  console.log('📋 AjusteFiltros - grupos:', grupos);
+  
+  // Garantir que escolas e grupos são arrays
+  const escolasArray = Array.isArray(escolas) ? escolas : [];
+  const gruposArray = Array.isArray(grupos) ? grupos : [];
+  
   const isFiltrarDisabled = activeTab === 'nutricionista' 
     ? (!filtros.escola_id || !filtros.grupo || !filtros.semana_consumo || loading)
     : (!filtros.escola_id && !filtros.nutricionista_id && !filtros.grupo && !filtros.semana_consumo && !filtros.semana_abastecimento || loading);
@@ -42,14 +50,21 @@ const AjusteFiltros = ({
             <SearchableSelect
               value={filtros.escola_id || ''}
               onChange={(value) => {
-                const escola = escolas.find(e => e.id == value);
+                const escola = escolasArray.find(e => e.id == value);
                 onFiltroChange('escola_id', escola?.id || null);
               }}
-              options={escolas.map(escola => ({
-                value: escola.id,
-                label: escola.nome_escola || escola.nome || `${escola.nome}${escola.codigo ? ` - ${escola.codigo}` : ''}`,
-                description: escola.cidade || escola.rota || ''
-              }))}
+              options={escolasArray.map(escola => {
+                // Criar label: preferir nome_escola (formato antigo), depois nome (formato novo), fallback para string vazia
+                const nome = escola.nome_escola || escola.nome || '';
+                const codigo = escola.codigo || '';
+                const label = nome ? (codigo ? `${nome} - ${codigo}` : nome) : 'Escola sem nome';
+                
+                return {
+                  value: escola.id,
+                  label: label,
+                  description: escola.cidade || escola.rota || ''
+                };
+              })}
               placeholder="Digite para buscar uma escola..."
               disabled={loading}
               required
@@ -76,13 +91,16 @@ const AjusteFiltros = ({
             <SearchableSelect
               value={filtros.grupo || ''}
               onChange={(value) => {
-                const grupo = grupos.find(g => g.nome == value);
-                onFiltroChange('grupo', grupo?.nome || null);
+                const grupo = gruposArray.find(g => (g.nome == value || g.id == value));
+                onFiltroChange('grupo', grupo?.nome || value || null);
               }}
-              options={grupos.map(grupo => ({
-                value: grupo.nome,
-                label: grupo.nome
-              }))}
+              options={gruposArray
+                .filter(grupo => grupo && (grupo.nome || grupo.id)) // Filtrar apenas grupos válidos
+                .map(grupo => ({
+                  value: grupo.nome || grupo.id || '',
+                  label: grupo.nome || `Grupo ${grupo.id}` || 'Grupo desconhecido'
+                }))
+                .filter(opt => opt.value && opt.label)} // Garantir que temos value e label
               placeholder="Digite para buscar um grupo..."
               disabled={loading}
               required={activeTab === 'nutricionista'}
@@ -131,22 +149,21 @@ const AjusteFiltros = ({
             </label>
             <SearchableSelect
               value={filtros.semana_abastecimento || ''}
-              onChange={(value) => {
-                // Não permitir mudança manual - apenas informativo
-                // Campo será preenchido automaticamente quando semana_consumo for selecionada
+              onChange={() => {
+                // Campo apenas informativo - não permite mudança manual
               }}
               options={filtros.semana_abastecimento 
                 ? [{ value: filtros.semana_abastecimento, label: filtros.semana_abastecimento }]
                 : []
               }
               placeholder={
-                loadingSemanaAbastecimento
+                !filtros.semana_consumo
+                  ? "Selecione primeiro a semana de consumo"
+                  : loadingSemanaAbastecimento
                   ? "Carregando semana de abastecimento..."
-                  : filtros.semana_consumo && filtros.semana_abastecimento
+                  : filtros.semana_abastecimento
                   ? filtros.semana_abastecimento
-                  : filtros.semana_consumo
-                  ? "Carregando..."
-                  : "Selecione primeiro a semana de consumo"
+                  : "Carregando..."
               }
               disabled={true}
               className={filtros.semana_consumo ? "bg-gray-50 cursor-not-allowed" : ""}

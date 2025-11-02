@@ -57,7 +57,9 @@ export const useNecessidadesAjuste = () => {
         ...filtrosAdicionais
       });
       if (response.success) {
-        setEscolas(response.data || []);
+        const escolasData = response.data || [];
+        console.log('🔍 Escolas carregadas:', escolasData);
+        setEscolas(escolasData);
       } else {
         toast.error(response.message || 'Erro ao carregar escolas');
         setEscolas([]);
@@ -80,7 +82,9 @@ export const useNecessidadesAjuste = () => {
         ...filtrosAdicionais
       });
       if (response.success) {
-        setGrupos(response.data || []);
+        const gruposData = response.data || [];
+        console.log('🔍 Grupos carregados:', gruposData);
+        setGrupos(gruposData);
       } else {
         toast.error(response.message || 'Erro ao carregar grupos');
         setGrupos([]);

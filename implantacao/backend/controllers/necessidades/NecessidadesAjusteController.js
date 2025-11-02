@@ -222,13 +222,28 @@ const buscarGruposDisponiveis = async (req, res) => {
         console.error('Erro ao buscar grupos do foods:', apiError);
         // Fallback: retornar apenas com nome
         gruposUnicos.forEach(nomeGrupo => {
-          gruposComInfo.push({
-            id: null,
-            nome: nomeGrupo,
-            status: 'ativo'
-          });
+          if (nomeGrupo && !gruposComInfo.find(g => g.nome === nomeGrupo)) {
+            gruposComInfo.push({
+              id: null,
+              nome: nomeGrupo,
+              status: 'ativo'
+            });
+          }
         });
       }
+    }
+    
+    // Se ainda não tiver dados, usar dados da query inicial
+    if (gruposComInfo.length === 0 && grupos.length > 0) {
+      grupos.forEach(grupo => {
+        if (grupo.grupo && !gruposComInfo.find(g => g.nome === grupo.grupo)) {
+          gruposComInfo.push({
+            id: grupo.grupo_id || null,
+            nome: grupo.grupo,
+            status: 'ativo'
+          });
+        }
+      });
     }
 
     res.json({
@@ -374,14 +389,30 @@ const buscarEscolasDisponiveis = async (req, res) => {
         console.error('Erro ao buscar escolas do foods:', apiError);
         // Fallback: retornar apenas com dados da tabela necessidades
         escolas.forEach(escola => {
+          if (escola.escola_id && escola.escola) {
+            escolasComInfo.push({
+              id: escola.escola_id,
+              nome: escola.escola,
+              codigo: null,
+              status: 'ativo'
+            });
+          }
+        });
+      }
+    }
+    
+    // Se ainda não tiver dados, retornar escolas da query inicial
+    if (escolasComInfo.length === 0 && escolas.length > 0) {
+      escolas.forEach(escola => {
+        if (escola.escola_id && escola.escola && !escolasComInfo.find(e => e.id === escola.escola_id)) {
           escolasComInfo.push({
             id: escola.escola_id,
             nome: escola.escola,
             codigo: null,
             status: 'ativo'
           });
-        });
-      }
+        }
+      });
     }
 
     res.json({
