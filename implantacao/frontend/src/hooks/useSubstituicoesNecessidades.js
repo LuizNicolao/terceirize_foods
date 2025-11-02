@@ -222,11 +222,17 @@ export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
     });
   }, []);
 
-  // Efeito para carregar dados iniciais - recarrega quando tipo mudar
+  // Efeito para carregar grupos - independente de outros filtros
+  // Recarrega quando tipo mudar para garantir dados corretos
   useEffect(() => {
     carregarGrupos();
+  }, [tipo, carregarGrupos]);
+
+  // Efeito para carregar semanas de abastecimento - independente de outros filtros
+  // Recarrega quando tipo mudar para garantir dados corretos
+  useEffect(() => {
     carregarSemanasAbastecimento();
-  }, [carregarGrupos, carregarSemanasAbastecimento, tipo]);
+  }, [tipo, carregarSemanasAbastecimento]);
 
   // Efeito para carregar semana de consumo quando abastecimento mudar
   useEffect(() => {
