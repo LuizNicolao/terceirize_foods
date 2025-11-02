@@ -344,7 +344,7 @@ const salvarAjustes = async (req, res) => {
 // Incluir produto extra
 const incluirProdutoExtra = async (req, res) => {
   try {
-    const { escola_id, grupo, periodo, produto_id, quantidade } = req.body;
+    const { escola_id, grupo, periodo, produto_id, quantidade, semana_consumo, semana_abastecimento } = req.body;
 
     // Validar dados obrigatórios
     if (!escola_id || !grupo || !produto_id) {
@@ -376,7 +376,11 @@ const incluirProdutoExtra = async (req, res) => {
     let whereClause = `escola_id = ? AND produto_id = ?`;
     const params = [escola_id, produto_id];
 
-    if (periodo && periodo.consumo_de && periodo.consumo_ate) {
+    // Se semana_consumo foi enviada, usar para verificar duplicidade
+    if (semana_consumo) {
+      whereClause += ` AND semana_consumo = ?`;
+      params.push(semana_consumo);
+    } else if (periodo && periodo.consumo_de && periodo.consumo_ate) {
       whereClause += ` AND semana_consumo BETWEEN ? AND ?`;
       params.push(periodo.consumo_de, periodo.consumo_ate);
     }
@@ -394,13 +398,22 @@ const incluirProdutoExtra = async (req, res) => {
     }
 
     // Buscar dados da escola e necessidade_id das necessidades existentes
-    // IMPORTANTE: Buscar também usuario_email e usuario_id para manter consistência
-    const escolaExistente = await executeQuery(`
+    // Usar semana_consumo enviada pelo frontend se disponível, senão buscar qualquer necessidade
+    let escolaQuery = `
       SELECT escola, escola_rota, codigo_teknisa, necessidade_id, semana_consumo, semana_abastecimento, usuario_email, usuario_id
       FROM necessidades 
-      WHERE escola_id = ? 
-      LIMIT 1
-    `, [escola_id]);
+      WHERE escola_id = ?
+    `;
+    let escolaParams = [escola_id];
+
+    if (semana_consumo) {
+      escolaQuery += ` AND semana_consumo = ?`;
+      escolaParams.push(semana_consumo);
+    }
+
+    escolaQuery += ` LIMIT 1`;
+
+    const escolaExistente = await executeQuery(escolaQuery, escolaParams);
 
     if (escolaExistente.length === 0) {
       return res.status(404).json({
@@ -410,13 +423,14 @@ const incluirProdutoExtra = async (req, res) => {
       });
     }
 
+    // Usar semanas enviadas pelo frontend, ou das necessidades existentes como fallback
     const escolaData = {
       nome_escola: escolaExistente[0].escola,
       rota: escolaExistente[0].escola_rota,
       codigo_teknisa: escolaExistente[0].codigo_teknisa,
       necessidade_id: escolaExistente[0].necessidade_id,
-      semana_consumo: escolaExistente[0].semana_consumo,
-      semana_abastecimento: escolaExistente[0].semana_abastecimento,
+      semana_consumo: semana_consumo || escolaExistente[0].semana_consumo,
+      semana_abastecimento: semana_abastecimento || escolaExistente[0].semana_abastecimento,
       usuario_email: escolaExistente[0].usuario_email,
       usuario_id: escolaExistente[0].usuario_id
     };
@@ -535,10 +549,37 @@ const liberarCoordenacao = async (req, res) => {
       });
     }
 
-  // Atualizar status conforme fluxo:
-  // - De NEC/NEC NUTRI -> NEC COORD
-  // - De CONF NUTRI -> CONF COORD
-  let query = `
+    // Primeiro, copiar ajuste_nutricionista para ajuste_conf_nutri nas necessidades que ainda não têm
+    // Isso garante que o valor anterior seja preservado ao avançar para coordenação
+    let updateValorAnterior = `
+      UPDATE necessidades 
+      SET ajuste_conf_nutri = COALESCE(ajuste_conf_nutri, ajuste_nutricionista),
+          data_atualizacao = CURRENT_TIMESTAMP
+      WHERE escola_id = ? 
+        AND status IN ('NEC', 'NEC NUTRI', 'CONF NUTRI')
+        AND ajuste_nutricionista IS NOT NULL
+        AND (ajuste_conf_nutri IS NULL OR ajuste_conf_nutri = 0)
+        AND produto_id IN (
+          SELECT DISTINCT ppc.produto_id 
+          FROM produtos_per_capita ppc
+          WHERE ppc.grupo = ?
+        )
+    `;
+
+    const paramsValorAnterior = [escola_id, grupo];
+
+    // Aplicar filtros de período se fornecidos
+    if (periodo && periodo.consumo_de && periodo.consumo_ate) {
+      updateValorAnterior += ` AND semana_consumo BETWEEN ? AND ?`;
+      paramsValorAnterior.push(periodo.consumo_de, periodo.consumo_ate);
+    }
+
+    await executeQuery(updateValorAnterior, paramsValorAnterior);
+
+    // Atualizar status conforme fluxo:
+    // - De NEC/NEC NUTRI -> NEC COORD
+    // - De CONF NUTRI -> CONF COORD
+    let query = `
       UPDATE necessidades 
       SET status = CASE 
           WHEN status IN ('NEC', 'NEC NUTRI') THEN 'NEC COORD'
