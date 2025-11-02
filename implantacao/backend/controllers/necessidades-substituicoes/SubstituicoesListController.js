@@ -440,6 +440,7 @@ class SubstituicoesListController {
   /**
    * Buscar tipos de rota disponíveis
    * Busca tipos de rota que têm escolas vinculadas nas necessidades
+   * E que têm grupos vinculados que existem nas necessidades
    * Suporta duas abas:
    * - nutricionista: busca tipos de rota com escolas em necessidades (status CONF)
    * - coordenacao: busca tipos de rota com escolas em necessidades_substituicoes (status conf log)
@@ -451,7 +452,9 @@ class SubstituicoesListController {
       let tiposRota;
       
       if (aba === 'coordenacao') {
-        // Buscar tipos de rota que têm escolas na tabela necessidades_substituicoes com status conf log
+        // Buscar tipos de rota que:
+        // 1. Têm escolas na tabela necessidades_substituicoes com status conf log
+        // 2. Têm grupos vinculados (grupo_id) que existem nas necessidades_substituicoes
         tiposRota = await executeQuery(`
           SELECT DISTINCT
             tr.id,
@@ -460,6 +463,7 @@ class SubstituicoesListController {
           INNER JOIN foods_db.rotas r ON r.tipo_rota_id = tr.id
           INNER JOIN foods_db.unidades_escolares ue ON FIND_IN_SET(r.id, ue.rota_id) > 0
           INNER JOIN necessidades_substituicoes ns ON ns.escola_id = ue.id
+          INNER JOIN foods_db.grupos g ON g.nome = ns.grupo
           WHERE tr.status = 'ativo'
             AND r.status = 'ativo'
             AND ue.status = 'ativo'
@@ -467,10 +471,18 @@ class SubstituicoesListController {
             AND ns.status = 'conf log'
             AND ue.rota_id IS NOT NULL
             AND ue.rota_id != ''
+            AND tr.grupo_id IS NOT NULL
+            AND tr.grupo_id != ''
+            AND ns.grupo IS NOT NULL
+            AND ns.grupo != ''
+            -- Validar se o grupo existe no grupo_id do tipo_rota
+            AND FIND_IN_SET(g.id, tr.grupo_id) > 0
           ORDER BY tr.nome ASC
         `);
       } else {
-        // Buscar tipos de rota que têm escolas na tabela necessidades com status CONF (padrão: nutricionista)
+        // Buscar tipos de rota que:
+        // 1. Têm escolas na tabela necessidades com status CONF (padrão: nutricionista)
+        // 2. Têm grupos vinculados (grupo_id) que existem nas necessidades
         tiposRota = await executeQuery(`
           SELECT DISTINCT
             tr.id,
@@ -479,6 +491,8 @@ class SubstituicoesListController {
           INNER JOIN foods_db.rotas r ON r.tipo_rota_id = tr.id
           INNER JOIN foods_db.unidades_escolares ue ON FIND_IN_SET(r.id, ue.rota_id) > 0
           INNER JOIN necessidades n ON n.escola_id = ue.id
+          INNER JOIN produtos_per_capita ppc ON n.produto_id = ppc.produto_id
+          INNER JOIN foods_db.grupos g ON g.nome = ppc.grupo
           WHERE tr.status = 'ativo'
             AND r.status = 'ativo'
             AND ue.status = 'ativo'
@@ -486,6 +500,12 @@ class SubstituicoesListController {
             AND (n.substituicao_processada = 0 OR n.substituicao_processada IS NULL)
             AND ue.rota_id IS NOT NULL
             AND ue.rota_id != ''
+            AND tr.grupo_id IS NOT NULL
+            AND tr.grupo_id != ''
+            AND ppc.grupo IS NOT NULL
+            AND ppc.grupo != ''
+            -- Validar se o grupo existe no grupo_id do tipo_rota
+            AND FIND_IN_SET(g.id, tr.grupo_id) > 0
           ORDER BY tr.nome ASC
         `);
       }
@@ -508,41 +528,90 @@ class SubstituicoesListController {
    * Suporta duas abas:
    * - nutricionista: busca de necessidades com status CONF
    * - coordenacao: busca de necessidades_substituicoes com status conf log
+   * Se tipo_rota_id for fornecido, mostra apenas grupos vinculados a esse tipo de rota
    */
   static async buscarGruposDisponiveisParaSubstituicao(req, res) {
     try {
-      const { aba } = req.query;
+      const { aba, tipo_rota_id } = req.query;
       
       let grupos;
       
       if (aba === 'coordenacao') {
-        // Buscar grupos da tabela necessidades_substituicoes com status conf log
-        grupos = await executeQuery(`
-          SELECT DISTINCT 
-            ns.grupo as id,
-            ns.grupo as nome
-          FROM necessidades_substituicoes ns
-          WHERE ns.ativo = 1 
-            AND ns.status = 'conf log'
-            AND ns.grupo IS NOT NULL 
-            AND ns.grupo != ''
-          ORDER BY ns.grupo
-        `);
+        if (tipo_rota_id) {
+          // Buscar grupos que:
+          // 1. Estão vinculados ao tipo_rota_id (no grupo_id do tipo_rota)
+          // 2. Existem na tabela necessidades_substituicoes com status conf log
+          grupos = await executeQuery(`
+            SELECT DISTINCT 
+              ns.grupo as id,
+              ns.grupo as nome
+            FROM necessidades_substituicoes ns
+            INNER JOIN foods_db.grupos g ON g.nome = ns.grupo
+            INNER JOIN foods_db.tipo_rota tr ON tr.id = ?
+            WHERE ns.ativo = 1 
+              AND ns.status = 'conf log'
+              AND ns.grupo IS NOT NULL 
+              AND ns.grupo != ''
+              AND tr.grupo_id IS NOT NULL
+              AND tr.grupo_id != ''
+              -- Validar se o grupo existe no grupo_id do tipo_rota
+              AND FIND_IN_SET(g.id, tr.grupo_id) > 0
+            ORDER BY ns.grupo
+          `, [tipo_rota_id]);
+        } else {
+          // Buscar grupos da tabela necessidades_substituicoes com status conf log
+          grupos = await executeQuery(`
+            SELECT DISTINCT 
+              ns.grupo as id,
+              ns.grupo as nome
+            FROM necessidades_substituicoes ns
+            WHERE ns.ativo = 1 
+              AND ns.status = 'conf log'
+              AND ns.grupo IS NOT NULL 
+              AND ns.grupo != ''
+            ORDER BY ns.grupo
+          `);
+        }
       } else {
-        // Buscar grupos da tabela necessidades com status CONF (padrão: nutricionista)
-        grupos = await executeQuery(`
-          SELECT DISTINCT 
-            ppc.grupo as id,
-            ppc.grupo as nome
-          FROM produtos_per_capita ppc
-          INNER JOIN necessidades n ON n.produto_id = ppc.produto_id
-          WHERE ppc.ativo = 1 
-            AND ppc.grupo IS NOT NULL 
-            AND ppc.grupo != ''
-            AND n.status = 'CONF'
-            AND (n.substituicao_processada = 0 OR n.substituicao_processada IS NULL)
-          ORDER BY ppc.grupo
-        `);
+        if (tipo_rota_id) {
+          // Buscar grupos que:
+          // 1. Estão vinculados ao tipo_rota_id (no grupo_id do tipo_rota)
+          // 2. Existem na tabela necessidades com status CONF
+          grupos = await executeQuery(`
+            SELECT DISTINCT 
+              ppc.grupo as id,
+              ppc.grupo as nome
+            FROM produtos_per_capita ppc
+            INNER JOIN necessidades n ON n.produto_id = ppc.produto_id
+            INNER JOIN foods_db.grupos g ON g.nome = ppc.grupo
+            INNER JOIN foods_db.tipo_rota tr ON tr.id = ?
+            WHERE ppc.ativo = 1 
+              AND ppc.grupo IS NOT NULL 
+              AND ppc.grupo != ''
+              AND n.status = 'CONF'
+              AND (n.substituicao_processada = 0 OR n.substituicao_processada IS NULL)
+              AND tr.grupo_id IS NOT NULL
+              AND tr.grupo_id != ''
+              -- Validar se o grupo existe no grupo_id do tipo_rota
+              AND FIND_IN_SET(g.id, tr.grupo_id) > 0
+            ORDER BY ppc.grupo
+          `, [tipo_rota_id]);
+        } else {
+          // Buscar grupos da tabela necessidades com status CONF (padrão: nutricionista)
+          grupos = await executeQuery(`
+            SELECT DISTINCT 
+              ppc.grupo as id,
+              ppc.grupo as nome
+            FROM produtos_per_capita ppc
+            INNER JOIN necessidades n ON n.produto_id = ppc.produto_id
+            WHERE ppc.ativo = 1 
+              AND ppc.grupo IS NOT NULL 
+              AND ppc.grupo != ''
+              AND n.status = 'CONF'
+              AND (n.substituicao_processada = 0 OR n.substituicao_processada IS NULL)
+            ORDER BY ppc.grupo
+          `);
+        }
       }
 
       res.json({

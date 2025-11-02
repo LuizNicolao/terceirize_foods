@@ -90,10 +90,12 @@ class SubstituicoesNecessidadesService {
   /**
    * Buscar grupos disponíveis para substituição
    * @param {String} aba - 'nutricionista' ou 'coordenacao'
+   * @param {String|Number} tipoRotaId - ID do tipo de rota (opcional)
    */
-  static async buscarGruposDisponiveis(aba = 'nutricionista') {
+  static async buscarGruposDisponiveis(aba = 'nutricionista', tipoRotaId = null) {
     const params = new URLSearchParams();
     if (aba) params.append('aba', aba);
+    if (tipoRotaId) params.append('tipo_rota_id', tipoRotaId);
     const response = await api.get(`/necessidades-substituicoes/grupos-disponiveis?${params.toString()}`);
     return response.data;
   }

@@ -27,19 +27,21 @@ export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
 
   /**
    * Carregar grupos (baseado no tipo: nutricionista ou coordenação)
+   * Se tipo_rota_id estiver selecionado, filtra grupos vinculados a esse tipo
    */
   const carregarGrupos = useCallback(async () => {
     try {
       // tipo pode ser 'nutricionista' (padrão) ou 'coordenacao'
       const aba = tipo === 'coordenacao' ? 'coordenacao' : 'nutricionista';
-      const response = await SubstituicoesNecessidadesService.buscarGruposDisponiveis(aba);
+      const tipoRotaId = filtros.tipo_rota_id || null;
+      const response = await SubstituicoesNecessidadesService.buscarGruposDisponiveis(aba, tipoRotaId);
       if (response.success) {
         setGrupos(response.data || []);
       }
     } catch (error) {
       console.error('Erro ao carregar grupos:', error);
     }
-  }, [tipo]);
+  }, [tipo, filtros.tipo_rota_id]);
 
   /**
    * Carregar semanas de abastecimento (baseado no tipo: nutricionista ou coordenação)
@@ -241,11 +243,11 @@ export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
     });
   }, []);
 
-  // Efeito para carregar grupos - independente de outros filtros
-  // Recarrega quando tipo mudar para garantir dados corretos
+  // Efeito para carregar grupos - recarrega quando tipo ou tipo_rota_id mudar
+  // Se tipo_rota_id estiver selecionado, mostra apenas grupos vinculados a esse tipo
   useEffect(() => {
     carregarGrupos();
-  }, [tipo, carregarGrupos]);
+  }, [tipo, filtros.tipo_rota_id, carregarGrupos]);
 
   // Efeito para carregar semanas de abastecimento - independente de outros filtros
   // Recarrega quando tipo mudar para garantir dados corretos
