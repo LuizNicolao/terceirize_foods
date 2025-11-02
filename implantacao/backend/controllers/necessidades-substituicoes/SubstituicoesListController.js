@@ -51,7 +51,7 @@ class SubstituicoesListController {
           COALESCE(ns.produto_generico_codigo, '') as produto_generico_codigo,
           COALESCE(ns.produto_generico_nome, '') as produto_generico_nome,
           COALESCE(ns.produto_generico_unidade, '') as produto_generico_unidade,
-          SUM(n.ajuste_coordenacao) as quantidade_total_origem,
+          SUM(n.ajuste_conf_coord) as quantidade_total_origem,
           GROUP_CONCAT(DISTINCT n.necessidade_id) as necessidade_ids,
           n.semana_abastecimento,
           n.semana_consumo,
@@ -61,7 +61,7 @@ class SubstituicoesListController {
               n.id, '|',
               n.escola_id, '|',
               n.escola, '|',
-              n.ajuste_coordenacao
+              n.ajuste_conf_coord
             ) SEPARATOR '::'
           ) as escolas_solicitantes
         FROM necessidades n
