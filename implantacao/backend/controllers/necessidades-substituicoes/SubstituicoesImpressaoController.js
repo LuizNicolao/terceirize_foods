@@ -53,7 +53,7 @@ class SubstituicoesImpressaoController {
       let filial = null;
       if (rotaInfo[0].filial_id) {
         const filialInfo = await executeQuery(`
-          SELECT f.nome as filial_nome
+          SELECT f.filial as filial_nome
           FROM foods_db.filiais f
           WHERE f.id = ?
         `, [rotaInfo[0].filial_id]);
