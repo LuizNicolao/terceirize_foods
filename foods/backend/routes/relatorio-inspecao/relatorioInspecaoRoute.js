@@ -33,38 +33,7 @@ router.get('/',
   RIRController.listarRIRs
 );
 
-// GET /api/relatorio-inspecao/:id - Buscar RIR por ID
-router.get('/:id',
-  checkPermission('visualizar'),
-  commonValidations.id,
-  RIRController.buscarRIRPorId
-);
-
-// POST /api/relatorio-inspecao - Criar novo RIR
-router.post('/',
-  checkPermission('criar'),
-  auditMiddleware(AUDIT_ACTIONS.CREATE, 'relatorio_inspecao'),
-  rirValidations.create,
-  RIRController.criarRIR
-);
-
-// PUT /api/relatorio-inspecao/:id - Atualizar RIR
-router.put('/:id',
-  checkPermission('editar'),
-  auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'relatorio_inspecao'),
-  rirValidations.update,
-  RIRController.atualizarRIR
-);
-
-// DELETE /api/relatorio-inspecao/:id - Excluir RIR
-router.delete('/:id',
-  checkPermission('excluir'),
-  auditMiddleware(AUDIT_ACTIONS.DELETE, 'relatorio_inspecao'),
-  commonValidations.id,
-  RIRController.excluirRIR
-);
-
-// ========== ROTAS DE INTEGRAÇÃO ==========
+// ========== ROTAS DE INTEGRAÇÃO (ANTES DE /:id) ==========
 
 // GET /api/relatorio-inspecao/buscar-produtos-pedido?id={pedido_id}
 router.get('/buscar-produtos-pedido',
@@ -109,6 +78,37 @@ router.get('/pedidos-aprovados',
 router.get('/grupos',
   checkPermission('visualizar'),
   RIRController.buscarGrupos
+);
+
+// GET /api/relatorio-inspecao/:id - Buscar RIR por ID (DEPOIS DAS ROTAS ESTÁTICAS)
+router.get('/:id',
+  checkPermission('visualizar'),
+  commonValidations.id,
+  RIRController.buscarRIRPorId
+);
+
+// POST /api/relatorio-inspecao - Criar novo RIR
+router.post('/',
+  checkPermission('criar'),
+  auditMiddleware(AUDIT_ACTIONS.CREATE, 'relatorio_inspecao'),
+  rirValidations.create,
+  RIRController.criarRIR
+);
+
+// PUT /api/relatorio-inspecao/:id - Atualizar RIR
+router.put('/:id',
+  checkPermission('editar'),
+  auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'relatorio_inspecao'),
+  rirValidations.update,
+  RIRController.atualizarRIR
+);
+
+// DELETE /api/relatorio-inspecao/:id - Excluir RIR
+router.delete('/:id',
+  checkPermission('excluir'),
+  auditMiddleware(AUDIT_ACTIONS.DELETE, 'relatorio_inspecao'),
+  commonValidations.id,
+  RIRController.excluirRIR
 );
 
 module.exports = router;
