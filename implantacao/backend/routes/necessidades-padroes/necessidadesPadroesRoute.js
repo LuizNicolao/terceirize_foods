@@ -16,8 +16,8 @@ const { canView, canCreate, canEdit, canDelete } = require('../../middleware/per
 router.use(authenticateToken);
 
 // Rotas específicas (devem vir ANTES das rotas com parâmetros dinâmicos como /:id)
-router.get('/escola/:escola_id/grupo/:grupo_id', canView('necessidades_padroes'), NecessidadesPadroesListController.buscarPorEscolaGrupo);
 router.get('/buscar-semana-abastecimento', canView('necessidades_padroes'), NecessidadesPadroesGeracaoController.buscarSemanaAbastecimentoPorConsumo);
+router.get('/escola/:escola_id/grupo/:grupo_id', canView('necessidades_padroes'), NecessidadesPadroesListController.buscarPorEscolaGrupo);
 
 // Rotas CRUD
 router.get('/', canView('necessidades_padroes'), NecessidadesPadroesListController.listar);

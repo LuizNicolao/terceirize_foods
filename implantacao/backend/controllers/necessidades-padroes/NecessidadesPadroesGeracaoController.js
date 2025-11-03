@@ -300,6 +300,8 @@ class NecessidadesPadroesGeracaoController {
   static async buscarSemanaAbastecimentoPorConsumo(req, res) {
     try {
       const { semana_consumo } = req.query;
+      
+      console.log('[buscarSemanaAbastecimentoPorConsumo] Recebida requisição:', { semana_consumo });
 
       if (!semana_consumo) {
         return errorResponse(res, 'Semana de consumo é obrigatória', 400);
