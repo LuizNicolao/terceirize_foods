@@ -1,5 +1,5 @@
 import React from 'react';
-import { ActionButtons, EmptyState } from '../ui';
+import { ActionButtons, EmptyState, SortableTableHeader } from '../ui';
 
 const SubgruposTable = ({ 
   subgrupos, 
@@ -11,7 +11,10 @@ const SubgruposTable = ({
   onDelete, 
   getStatusLabel,
   getGrupoNome,
-  formatDate
+  formatDate,
+  sortField,
+  sortDirection,
+  onSort
 }) => {
   if (subgrupos.length === 0) {
     return (
@@ -31,18 +34,34 @@ const SubgruposTable = ({
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Código
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Nome
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Grupo
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
+                <SortableTableHeader
+                  label="Código"
+                  field="codigo"
+                  currentSort={sortField}
+                  currentDirection={sortDirection}
+                  onSort={onSort}
+                />
+                <SortableTableHeader
+                  label="Nome"
+                  field="nome"
+                  currentSort={sortField}
+                  currentDirection={sortDirection}
+                  onSort={onSort}
+                />
+                <SortableTableHeader
+                  label="Grupo"
+                  field="grupo_id"
+                  currentSort={sortField}
+                  currentDirection={sortDirection}
+                  onSort={onSort}
+                />
+                <SortableTableHeader
+                  label="Status"
+                  field="status"
+                  currentSort={sortField}
+                  currentDirection={sortDirection}
+                  onSort={onSort}
+                />
                 <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Prod. Origem
                 </th>

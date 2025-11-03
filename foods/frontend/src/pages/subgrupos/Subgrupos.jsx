@@ -64,7 +64,12 @@ const Subgrupos = () => {
     // Funções utilitárias
     formatDate,
     getStatusLabel,
-    getGrupoNome
+    getGrupoNome,
+    
+    // Ordenação
+    sortField,
+    sortDirection,
+    handleSort
   } = useSubgrupos();
 
   const {
@@ -172,6 +177,9 @@ const Subgrupos = () => {
         getStatusLabel={getStatusLabel}
         getGrupoNome={getGrupoNome}
         formatDate={formatDate}
+        sortField={sortField}
+        sortDirection={sortDirection}
+        onSort={handleSort}
       />
 
       {/* Modal de Subgrupo */}

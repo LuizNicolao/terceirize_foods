@@ -275,6 +275,8 @@ export const useProdutoOrigem = () => {
     getUnidadeMedidaSigla,
     
     // Ações de ordenação
+    sortField,
+    sortDirection,
     handleSort
   };
 };
