@@ -5,7 +5,7 @@
 
 const express = require('express');
 const { query } = require('express-validator');
-const { authenticateToken, checkScreenPermission } = require('../../middleware/auth');
+const { authenticateToken, checkPermission } = require('../../middleware/auth');
 const { 
   rirValidations, 
   commonValidations,
@@ -23,41 +23,26 @@ router.use(authenticateToken);
 router.use(paginationMiddleware);
 router.use(hateoasMiddleware);
 
-// Helper para checkPermission específico do RIR
-const checkRIRPermission = (action) => checkScreenPermission('relatorio_inspecao', action);
-
 // ========== ROTAS PRINCIPAIS ==========
 
 // GET /api/relatorio-inspecao - Listar todos os RIRs
 router.get('/',
-  (req, res, next) => {
-    console.log('=== [RIR ROUTE] Requisição recebida em /relatorio-inspecao ===');
-    next();
-  },
-  checkRIRPermission('visualizar'),
-  (req, res, next) => {
-    console.log('[RIR ROUTE] Passou autenticação e permissões');
-    next();
-  },
+  checkPermission('visualizar'),
   commonValidations.search,
-  ...commonValidations.pagination,
-  (req, res, next) => {
-    console.log('[RIR ROUTE] Passou validações, chamando controller');
-    next();
-  },
+  commonValidations.pagination,
   RIRController.listarRIRs
 );
 
 // GET /api/relatorio-inspecao/:id - Buscar RIR por ID
 router.get('/:id',
-  checkRIRPermission('visualizar'),
+  checkPermission('visualizar'),
   commonValidations.id,
   RIRController.buscarRIRPorId
 );
 
 // POST /api/relatorio-inspecao - Criar novo RIR
 router.post('/',
-  checkRIRPermission('criar'),
+  checkPermission('criar'),
   auditMiddleware(AUDIT_ACTIONS.CREATE, 'relatorio_inspecao'),
   rirValidations.create,
   RIRController.criarRIR
@@ -65,7 +50,7 @@ router.post('/',
 
 // PUT /api/relatorio-inspecao/:id - Atualizar RIR
 router.put('/:id',
-  checkRIRPermission('editar'),
+  checkPermission('editar'),
   auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'relatorio_inspecao'),
   rirValidations.update,
   RIRController.atualizarRIR
@@ -73,7 +58,7 @@ router.put('/:id',
 
 // DELETE /api/relatorio-inspecao/:id - Excluir RIR
 router.delete('/:id',
-  checkRIRPermission('excluir'),
+  checkPermission('excluir'),
   auditMiddleware(AUDIT_ACTIONS.DELETE, 'relatorio_inspecao'),
   commonValidations.id,
   RIRController.excluirRIR
@@ -83,7 +68,7 @@ router.delete('/:id',
 
 // GET /api/relatorio-inspecao/buscar-produtos-pedido?id={pedido_id}
 router.get('/buscar-produtos-pedido',
-  checkRIRPermission('visualizar'),
+  checkPermission('visualizar'),
   query('id')
     .isInt({ min: 1 })
     .withMessage('ID do pedido deve ser um número inteiro positivo'),
@@ -93,7 +78,7 @@ router.get('/buscar-produtos-pedido',
 
 // GET /api/relatorio-inspecao/buscar-nqa-grupo?grupo_id={grupo_id}
 router.get('/buscar-nqa-grupo',
-  checkRIRPermission('visualizar'),
+  checkPermission('visualizar'),
   query('grupo_id')
     .isInt({ min: 1 })
     .withMessage('grupo_id deve ser um número inteiro positivo'),
@@ -103,7 +88,7 @@ router.get('/buscar-nqa-grupo',
 
 // GET /api/relatorio-inspecao/buscar-plano-lote?nqa_id={nqa_id}&tamanho_lote={tamanho}
 router.get('/buscar-plano-lote',
-  checkRIRPermission('visualizar'),
+  checkPermission('visualizar'),
   query('nqa_id')
     .isInt({ min: 1 })
     .withMessage('nqa_id deve ser um número inteiro positivo'),
@@ -116,13 +101,13 @@ router.get('/buscar-plano-lote',
 
 // GET /api/relatorio-inspecao/pedidos-aprovados
 router.get('/pedidos-aprovados',
-  checkRIRPermission('visualizar'),
+  checkPermission('visualizar'),
   RIRController.buscarPedidosAprovados
 );
 
 // GET /api/relatorio-inspecao/grupos
 router.get('/grupos',
-  checkRIRPermission('visualizar'),
+  checkPermission('visualizar'),
   RIRController.buscarGrupos
 );
 
