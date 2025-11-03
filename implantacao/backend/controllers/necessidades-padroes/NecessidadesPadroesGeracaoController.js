@@ -174,13 +174,14 @@ class NecessidadesPadroesGeracaoController {
         if (produtosEscola.length === 0) {
           // Buscar dados padrão mais recentes para o grupo (de qualquer escola)
           const dadosPadrao = await executeQuery(`
-            SELECT DISTINCT
+            SELECT 
               np.produto_id,
               np.produto_nome,
               np.unidade_medida_sigla,
               np.quantidade,
               np.grupo_id,
-              np.grupo_nome
+              np.grupo_nome,
+              np.data_atualizacao
             FROM necessidades_padroes np
             WHERE np.ativo = 1
               AND np.grupo_id = ?
