@@ -50,9 +50,6 @@ const FaixaAmostragemModal = ({
       tamanho_amostra: parseInt(formData.get('tamanho_amostra')),
       ac: parseInt(formData.get('ac')),
       re: parseInt(formData.get('re')),
-      meses_validade: formData.get('meses_validade') ? parseFloat(formData.get('meses_validade')) : null,
-      dias_validade: formData.get('dias_validade') ? parseInt(formData.get('dias_validade')) : null,
-      dias_70: formData.get('dias_70') ? parseInt(formData.get('dias_70')) : null,
       observacoes: formData.get('observacoes'),
       ativo: formData.get('ativo') || '1'
     };
@@ -155,34 +152,6 @@ const FaixaAmostragemModal = ({
             defaultValue={faixa?.re}
             disabled={isViewMode}
             required
-          />
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <Input
-            label="Meses de Validade"
-            name="meses_validade"
-            type="number"
-            min="0"
-            step="0.01"
-            defaultValue={faixa?.meses_validade}
-            disabled={isViewMode}
-          />
-          <Input
-            label="Dias de Validade"
-            name="dias_validade"
-            type="number"
-            min="0"
-            defaultValue={faixa?.dias_validade}
-            disabled={isViewMode}
-          />
-          <Input
-            label="Dias 70% (Regra dos 30%)"
-            name="dias_70"
-            type="number"
-            min="0"
-            defaultValue={faixa?.dias_70}
-            disabled={isViewMode}
           />
         </div>
 
