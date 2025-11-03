@@ -299,61 +299,91 @@ class NecessidadesPadroesGeracaoController {
    */
   static async buscarSemanaAbastecimentoPorConsumo(req, res) {
     try {
-      const { semana_consumo } = req.query;
-      
-      console.log('[buscarSemanaAbastecimentoPorConsumo] Recebida requisição:', { semana_consumo });
+      let semanaConsumo = req.query.semana_consumo;
 
-      if (!semana_consumo) {
+      if (!semanaConsumo) {
         return errorResponse(res, 'Semana de consumo é obrigatória', 400);
       }
 
-      // Buscar semana de abastecimento na tabela calendario
-      // Tentar buscar com o formato exato primeiro
-      let result = await executeQuery(`
+      // Decodificar o parâmetro (pode vir encoded da URL)
+      try {
+        semanaConsumo = decodeURIComponent(semanaConsumo);
+      } catch (e) {
+        // Se já estiver decodificado, continuar
+      }
+
+      console.log('[buscarSemanaAbastecimentoPorConsumo] Recebida requisição:', { semana_consumo: semanaConsumo });
+
+      // Buscar diretamente pela string semana_consumo (formato exato do banco)
+      // Exemplo: busca por "(05/01 a 11/01/25)" deve encontrar o registro correspondente
+      let result = null;
+      
+      // Primeiro, tentar busca exata pela string formatada (com TRIM para evitar espaços)
+      const resultados = await executeQuery(`
         SELECT DISTINCT semana_abastecimento
-        FROM calendario
-        WHERE semana_consumo = ?
+        FROM calendario 
+        WHERE (semana_consumo = ? OR TRIM(semana_consumo) = TRIM(?))
           AND semana_abastecimento IS NOT NULL
           AND semana_abastecimento != ''
         LIMIT 1
-      `, [semana_consumo]);
+      `, [semanaConsumo, semanaConsumo]);
 
-      console.log('[buscarSemanaAbastecimentoPorConsumo] Query resultado (exato):', result.length, result);
+      result = resultados.length > 0 ? resultados[0] : null;
+      console.log('[buscarSemanaAbastecimentoPorConsumo] Query resultado (exato):', result ? 'encontrado' : 'não encontrado');
 
-      // Se não encontrar, tentar buscar sem parênteses (caso o banco não tenha os parênteses)
-      if (result.length === 0 && semana_consumo.includes('(')) {
-        const semanaSemParenteses = semana_consumo.replace(/[()]/g, '').trim();
-        result = await executeQuery(`
-          SELECT DISTINCT semana_abastecimento
-          FROM calendario
-          WHERE semana_consumo = ?
-            AND semana_abastecimento IS NOT NULL
-            AND semana_abastecimento != ''
-          LIMIT 1
-        `, [semanaSemParenteses]);
-        
-        console.log('[buscarSemanaAbastecimentoPorConsumo] Query resultado (sem parênteses):', result.length, result);
+      // Se não encontrou pela string, tentar buscar pelas datas (fallback)
+      if (!result) {
+        try {
+          // Extrair datas da string formatada (ex: "(05/01 a 11/01/25)" -> 05/01 e 11/01)
+          const semanaLimpa = semanaConsumo.replace(/[()]/g, '').replace(/\/\d{2}$/, '');
+          const [inicioStr, fimStr] = semanaLimpa.split(' a ');
+          
+          if (inicioStr && fimStr) {
+            const [diaInicio, mesInicio] = inicioStr.split('/');
+            const [diaFim, mesFim] = fimStr.split('/');
+            
+            // Extrair ano da string original
+            const anoMatch = semanaConsumo.match(/\/(\d{2})[)]?$/);
+            const ano2digitos = anoMatch ? anoMatch[1] : new Date().getFullYear().toString().slice(-2);
+            const ano = parseInt(`20${ano2digitos}`);
+            
+            // Criar datas diretamente
+            const dataInicio = new Date(Date.UTC(ano, parseInt(mesInicio) - 1, parseInt(diaInicio)));
+            const dataFim = new Date(Date.UTC(ano, parseInt(mesFim) - 1, parseInt(diaFim)));
+            
+            // Formatar como YYYY-MM-DD para buscar no banco
+            const formatarParaMySQL = (data) => {
+              const ano = data.getUTCFullYear();
+              const mes = String(data.getUTCMonth() + 1).padStart(2, '0');
+              const dia = String(data.getUTCDate()).padStart(2, '0');
+              return `${ano}-${mes}-${dia}`;
+            };
+            
+            const dataInicioFormatada = formatarParaMySQL(dataInicio);
+            const dataFimFormatada = formatarParaMySQL(dataFim);
+            
+            const resultadosPorData = await executeQuery(`
+              SELECT DISTINCT semana_abastecimento
+              FROM calendario
+              WHERE semana_consumo_inicio = ? 
+                AND semana_consumo_fim = ?
+                AND semana_abastecimento IS NOT NULL
+                AND semana_abastecimento != ''
+              LIMIT 1
+            `, [dataInicioFormatada, dataFimFormatada]);
+
+            result = resultadosPorData.length > 0 ? resultadosPorData[0] : null;
+            console.log('[buscarSemanaAbastecimentoPorConsumo] Query resultado (por datas):', result ? 'encontrado' : 'não encontrado');
+          }
+        } catch (parseError) {
+          console.error('[buscarSemanaAbastecimentoPorConsumo] Erro ao parsear datas:', parseError);
+        }
       }
 
-      // Se ainda não encontrar, tentar busca com LIKE (mais flexível)
-      if (result.length === 0) {
-        const semanaLike = semana_consumo.replace(/[()]/g, '').trim();
-        result = await executeQuery(`
-          SELECT DISTINCT semana_abastecimento
-          FROM calendario
-          WHERE semana_consumo LIKE ?
-            AND semana_abastecimento IS NOT NULL
-            AND semana_abastecimento != ''
-          LIMIT 1
-        `, [`%${semanaLike}%`]);
-        
-        console.log('[buscarSemanaAbastecimentoPorConsumo] Query resultado (LIKE):', result.length, result);
-      }
-
-      if (result.length > 0) {
+      if (result && result.semana_abastecimento) {
         return successResponse(res, {
-          semana_consumo,
-          semana_abastecimento: result[0].semana_abastecimento
+          semana_consumo: semanaConsumo,
+          semana_abastecimento: result.semana_abastecimento
         }, 'Semana de abastecimento encontrada');
       } else {
         console.log('[buscarSemanaAbastecimentoPorConsumo] Semana não encontrada, retornando 404');
