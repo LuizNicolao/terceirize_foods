@@ -30,9 +30,21 @@ const checkRIRPermission = (action) => checkScreenPermission('relatorio_inspecao
 
 // GET /api/relatorio-inspecao - Listar todos os RIRs
 router.get('/',
+  (req, res, next) => {
+    console.log('=== [RIR ROUTE] Requisição recebida em /relatorio-inspecao ===');
+    next();
+  },
   checkRIRPermission('visualizar'),
+  (req, res, next) => {
+    console.log('[RIR ROUTE] Passou autenticação e permissões');
+    next();
+  },
   commonValidations.search,
   ...commonValidations.pagination,
+  (req, res, next) => {
+    console.log('[RIR ROUTE] Passou validações, chamando controller');
+    next();
+  },
   RIRController.listarRIRs
 );
 

@@ -54,7 +54,7 @@ class RIRListController {
       params.push(data_fim);
     }
 
-    // Query base
+    // Query base (SEM produtos_json para melhor performance)
     let baseQuery = `
       SELECT 
         ri.id,
@@ -70,7 +70,6 @@ class RIRListController {
         ri.visto_responsavel,
         ri.criado_em,
         ri.atualizado_em,
-        ri.produtos_json,
         u.nome as usuario_nome
       FROM relatorio_inspecao ri
       LEFT JOIN usuarios u ON ri.usuario_cadastro_id = u.id
@@ -113,26 +112,32 @@ class RIRListController {
       throw mainError;
     }
 
-    // Adicionar total_produtos após buscar os dados para evitar uso de JSON_LENGTH na query
-    console.log('[RIR] Processando produtos JSON');
-    const processStart = Date.now();
-    const rirsWithTotals = rirs.map(rir => {
-      const { produtos_json, ...rirWithoutJson } = rir;
-      let total_produtos = 0;
-      if (produtos_json) {
-        try {
-          const produtos = typeof produtos_json === 'string' 
-            ? JSON.parse(produtos_json) 
-            : produtos_json;
-          total_produtos = Array.isArray(produtos) ? produtos.length : 0;
-        } catch (e) {
-          total_produtos = 0;
-        }
+    // Buscar total_produtos apenas para os IDs retornados (query eficiente)
+    console.log('[RIR] Buscando total_produtos para registros retornados');
+    const totalsStart = Date.now();
+    let rirsWithTotals = rirs;
+    if (rirs.length > 0) {
+      const ids = rirs.map(r => r.id);
+      const placeholders = ids.map(() => '?').join(',');
+      const totalsQuery = `SELECT id, JSON_LENGTH(produtos_json) as total_produtos FROM relatorio_inspecao WHERE id IN (${placeholders})`;
+      try {
+        const totalsResult = await executeQuery(totalsQuery, ids);
+        const totalsMap = {};
+        totalsResult.forEach(row => {
+          totalsMap[row.id] = row.total_produtos || 0;
+        });
+        rirsWithTotals = rirs.map(rir => ({
+          ...rir,
+          total_produtos: totalsMap[rir.id] || 0
+        }));
+      } catch (totalsError) {
+        console.error('[RIR] Erro ao buscar total_produtos:', totalsError.message);
+        // Se falhar, usar 0 como padrão
+        rirsWithTotals = rirs.map(rir => ({ ...rir, total_produtos: 0 }));
       }
-      return { ...rirWithoutJson, total_produtos };
-    });
-    const processTime = Date.now() - processStart;
-    console.log(`[RIR] Produtos JSON processados em ${processTime}ms`);
+    }
+    const totalsTime = Date.now() - totalsStart;
+    console.log(`[RIR] Total_produtos processados em ${totalsTime}ms`);
 
     // Calcular estatísticas (usando mesma lógica de filtros da query principal)
     let statsQuery = `
