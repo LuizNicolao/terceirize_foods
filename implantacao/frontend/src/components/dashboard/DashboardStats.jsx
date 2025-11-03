@@ -39,9 +39,9 @@ export const DashboardStats = ({ statsData, onCardClick }) => {
           subtitle: "Total de escolas cadastradas",
           icon: FaSchool,
           color: "blue",
-          route: "/escolas",
-          trend: "+2%",
-          trendUp: true
+          route: "/unidades-escolares",
+          trend: null,
+          trendUp: null
         },
         {
           title: "Produtos",
@@ -49,29 +49,29 @@ export const DashboardStats = ({ statsData, onCardClick }) => {
           subtitle: "Produtos disponíveis",
           icon: FaBox,
           color: "green",
-          route: "/produtos",
-          trend: "+5%",
-          trendUp: true
+          route: "/produtos-per-capita",
+          trend: null,
+          trendUp: null
         },
         {
           title: "Necessidades",
           value: statsData.totalNecessidades || 0,
-          subtitle: "Necessidades registradas",
+          subtitle: "Necessidades deste mês",
           icon: FaClipboardList,
           color: "purple",
           route: "/necessidades",
-          trend: "+8%",
-          trendUp: true
+          trend: null,
+          trendUp: null
         },
         {
           title: "Recebimentos",
           value: statsData.totalRecebimentos || 0,
-          subtitle: "Recebimentos realizados",
+          subtitle: "Recebimentos deste mês",
           icon: FaTruck,
           color: "orange",
           route: "/recebimentos-escolas",
-          trend: "+3%",
-          trendUp: true
+          trend: null,
+          trendUp: null
         }
       ]
     },
@@ -87,18 +87,18 @@ export const DashboardStats = ({ statsData, onCardClick }) => {
           icon: FaUsers,
           color: "yellow",
           route: "/usuarios",
-          trend: "+1%",
-          trendUp: true
+          trend: null,
+          trendUp: null
         },
         {
           title: "Registros Diários",
           value: statsData.totalRegistrosDiarios || 0,
-          subtitle: "Registros do dia",
+          subtitle: "Registros deste mês",
           icon: FaCalendarDay,
-          color: "red",
+          color: "indigo",
           route: "/registros-diarios",
-          trend: "+12%",
-          trendUp: true
+          trend: null,
+          trendUp: null
         }
       ]
     },
@@ -114,19 +114,19 @@ export const DashboardStats = ({ statsData, onCardClick }) => {
           icon: FaClipboardList,
           color: "red",
           route: "/necessidades?status=pendente",
-          trend: "-5%",
-          trendUp: false,
+          trend: null,
+          trendUp: null,
           isAlert: true
         },
         {
-          title: "Alertas",
+          title: "Atrasados",
           value: statsData.alertasUrgentes || 0,
-          subtitle: "Alertas urgentes",
-          icon: FaChartLine,
+          subtitle: "Recebimentos atrasados",
+          icon: FaExclamationTriangle,
           color: "orange",
-          route: "/dashboard/alertas",
-          trend: "+2%",
-          trendUp: false,
+          route: "/recebimentos-escolas?status=Atrasado",
+          trend: null,
+          trendUp: null,
           isAlert: true
         }
       ]

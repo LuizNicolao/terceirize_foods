@@ -9,6 +9,7 @@ const { applyRoutePrefixes } = require('./middleware/routePrefix');
 
 // Importar rotas
 const authRoute = require('./routes/auth/authRoute');
+const dashboardRoute = require('./routes/dashboardRoute');
 const usuariosRoute = require('./routes/usuarios');
 const permissoesRoute = require('./routes/permissoes');
 const produtosPerCapitaRoute = require('./routes/produtos-per-capita/produtosPerCapitaRoute');
@@ -31,6 +32,7 @@ const routes = [
     });
   }},
   { path: '/auth', router: authRoute },
+  { path: '/dashboard', router: dashboardRoute },
   { path: '/usuarios', router: usuariosRoute },
   { path: '/permissoes', router: permissoesRoute },
   { path: '/produtos-per-capita', router: produtosPerCapitaRoute },

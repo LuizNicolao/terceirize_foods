@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { DashboardLayout } from '../components/dashboard/DashboardLayout';
 import { DashboardStats } from '../components/dashboard/DashboardStats';
+import dashboardService from '../services/dashboardService';
+import toast from 'react-hot-toast';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -13,24 +15,43 @@ const Dashboard = () => {
     totalProdutos: 0,
     totalNecessidades: 0,
     totalRecebimentos: 0,
-    totalUsuarios: 1,
+    totalUsuarios: 0,
     totalRegistrosDiarios: 0,
     necessidadesPendentes: 0,
     alertasUrgentes: 0
   });
+  const [atividadesRecentes, setAtividadesRecentes] = useState([]);
 
   useEffect(() => {
-    // Simular carregamento de dados
     const loadStats = async () => {
       setLoading(true);
-      // Aqui você faria a chamada para a API
-      setTimeout(() => {
-        setStatsData(prev => ({
-          ...prev,
-          totalUsuarios: 1 // Pelo menos 1 usuário (o admin)
-        }));
+      try {
+        const response = await dashboardService.obterEstatisticas();
+        
+        if (response.success && response.data) {
+          const { estatisticas } = response.data;
+          
+          setStatsData({
+            totalEscolas: estatisticas.totalEscolas || 0,
+            totalProdutos: estatisticas.totalProdutos || 0,
+            totalNecessidades: estatisticas.necessidadesMes?.total || 0,
+            totalRecebimentos: estatisticas.recebimentosMes?.total || 0,
+            totalUsuarios: estatisticas.totalUsuarios || 0,
+            totalRegistrosDiarios: estatisticas.registrosMes?.total || 0,
+            necessidadesPendentes: estatisticas.alertas?.necessidadesPendentes || 0,
+            alertasUrgentes: estatisticas.alertas?.recebimentosAtrasados || 0
+          });
+          
+          setAtividadesRecentes(response.data.atividadesRecentes || []);
+        } else {
+          toast.error('Erro ao carregar estatísticas');
+        }
+      } catch (error) {
+        console.error('Erro ao carregar dashboard:', error);
+        toast.error('Erro ao carregar dados do dashboard');
+      } finally {
         setLoading(false);
-      }, 1000);
+      }
     };
 
     loadStats();
@@ -80,14 +101,24 @@ const Dashboard = () => {
               Atividades Recentes
             </h3>
             <div className="space-y-3">
-              <div className="flex items-center text-sm text-gray-600">
-                <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
-                Sistema iniciado com sucesso
-              </div>
-              <div className="flex items-center text-sm text-gray-600">
-                <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
-                Usuário logado: {user?.nome || 'Administrador'}
-              </div>
+              {atividadesRecentes.length > 0 ? (
+                atividadesRecentes.slice(0, 10).map((atividade, index) => (
+                  <div key={index} className="flex items-center text-sm text-gray-600">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
+                    <div className="flex-1">
+                      <span className="font-medium">{atividade.entidade}</span> - {atividade.tipo}
+                      {atividade.detalhe && <span className="text-gray-500"> • {atividade.detalhe}</span>}
+                    </div>
+                    <span className="text-xs text-gray-400">
+                      {new Date(atividade.data).toLocaleDateString('pt-BR')}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center text-gray-500 py-8">
+                  Nenhuma atividade recente
+                </div>
+              )}
             </div>
           </div>
         </div>
