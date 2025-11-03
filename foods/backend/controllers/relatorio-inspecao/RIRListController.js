@@ -22,6 +22,35 @@ class RIRListController {
     
     const { search = '', status_geral, fornecedor, data_inicio, data_fim } = req.query;
     const pagination = req.pagination;
+    
+    let params = [];
+    let whereClause = 'WHERE 1=1';
+
+    // Aplicar filtros (para WHERE clause)
+    if (search) {
+      whereClause += ' AND (ri.numero_nota_fiscal LIKE ? OR ri.fornecedor LIKE ? OR ri.numero_af LIKE ?)';
+      params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+    }
+
+    if (status_geral) {
+      whereClause += ' AND ri.status_geral = ?';
+      params.push(status_geral);
+    }
+
+    if (fornecedor) {
+      whereClause += ' AND ri.fornecedor LIKE ?';
+      params.push(`%${fornecedor}%`);
+    }
+
+    if (data_inicio) {
+      whereClause += ' AND ri.data_inspecao >= ?';
+      params.push(data_inicio);
+    }
+
+    if (data_fim) {
+      whereClause += ' AND ri.data_inspecao <= ?';
+      params.push(data_fim);
+    }
 
     // Query base
     let baseQuery = `
@@ -43,42 +72,12 @@ class RIRListController {
         u.nome as usuario_nome
       FROM relatorio_inspecao ri
       LEFT JOIN usuarios u ON ri.usuario_cadastro_id = u.id
-      WHERE 1=1
+      ${whereClause}
     `;
-    
-    let params = [];
 
-    // Aplicar filtros
-    if (search) {
-      baseQuery += ' AND (ri.numero_nota_fiscal LIKE ? OR ri.fornecedor LIKE ? OR ri.numero_af LIKE ?)';
-      params.push(`%${search}%`, `%${search}%`, `%${search}%`);
-    }
-
-    if (status_geral) {
-      baseQuery += ' AND ri.status_geral = ?';
-      params.push(status_geral);
-    }
-
-    if (fornecedor) {
-      baseQuery += ' AND ri.fornecedor LIKE ?';
-      params.push(`%${fornecedor}%`);
-    }
-
-    if (data_inicio) {
-      baseQuery += ' AND ri.data_inspecao >= ?';
-      params.push(data_inicio);
-    }
-
-    if (data_fim) {
-      baseQuery += ' AND ri.data_inspecao <= ?';
-      params.push(data_fim);
-    }
-
-    baseQuery += ' ORDER BY ri.data_inspecao DESC, ri.hora_inspecao DESC';
-
-    // Contar total de registros
+    // Contar total de registros (sem ORDER BY para melhor performance)
     console.log('[RIR] Executando count query');
-    const countQuery = `SELECT COUNT(*) as total FROM (${baseQuery}) as count_query`;
+    const countQuery = baseQuery.replace(/SELECT[\s\S]*?FROM/, 'SELECT COUNT(*) as total FROM');
     const countStart = Date.now();
     const countResult = await executeQuery(countQuery, params);
     const countTime = Date.now() - countStart;
@@ -86,6 +85,7 @@ class RIRListController {
     const totalItems = countResult[0].total;
 
     // Aplicar paginação
+    baseQuery += ' ORDER BY ri.data_inspecao DESC, ri.hora_inspecao DESC';
     const limit = pagination.limit;
     const offset = pagination.offset;
     const query = `${baseQuery} LIMIT ${limit} OFFSET ${offset}`;
