@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import PlanoAmostragemService from '../services/planoAmostragem';
 
@@ -15,6 +15,8 @@ export const usePlanoAmostragem = () => {
   const [editingNQA, setEditingNQA] = useState(null);
   const [viewMode, setViewMode] = useState(false);
   const [nqaSelecionado, setNqaSelecionado] = useState(null);
+  const [validationErrors, setValidationErrors] = useState(null);
+  const [showValidationModal, setShowValidationModal] = useState(false);
 
   /**
    * Carregar todos os NQAs
@@ -187,6 +189,8 @@ export const usePlanoAmostragem = () => {
         toast.success(response.message || 'Faixa salva com sucesso!');
         setShowModalFaixa(false);
         setEditingFaixa(null);
+        setValidationErrors(null);
+        setShowValidationModal(false);
         
         // Recarregar dados
         const nqaId = data.nqa_id || editingFaixa?.nqa_id;
@@ -196,11 +200,13 @@ export const usePlanoAmostragem = () => {
         }
         return response;
       } else {
-        // Se houver erros de validação, retornar para o modal tratar
+        // Se houver erros de validação, mostrar modal
         if (response.validationErrors) {
-          return response;
+          setValidationErrors(response);
+          setShowValidationModal(true);
+        } else {
+          toast.error(response.message || 'Erro ao salvar faixa');
         }
-        toast.error(response.message || 'Erro ao salvar faixa');
         return response;
       }
     } catch (error) {
@@ -274,14 +280,18 @@ export const usePlanoAmostragem = () => {
         toast.success(response.message || 'NQA salvo com sucesso!');
         setShowModalNQA(false);
         setEditingNQA(null);
+        setValidationErrors(null);
+        setShowValidationModal(false);
         await carregarDadosCompletos();
         return response;
       } else {
-        // Se houver erros de validação, retornar para o modal tratar
+        // Se houver erros de validação, mostrar modal
         if (response.validationErrors) {
-          return response;
+          setValidationErrors(response);
+          setShowValidationModal(true);
+        } else {
+          toast.error(response.message || 'Erro ao salvar NQA');
         }
-        toast.error(response.message || 'Erro ao salvar NQA');
         return response;
       }
     } catch (error) {
@@ -290,6 +300,32 @@ export const usePlanoAmostragem = () => {
       return { success: false };
     }
   }, [editingNQA, carregarDadosCompletos]);
+
+  /**
+   * Calcular estatísticas
+   */
+  const estatisticas = React.useMemo(() => {
+    const totalNQAs = nqas.length;
+    const nqasAtivos = nqas.filter(nqa => nqa.ativo === 1).length;
+    let totalFaixas = 0;
+    let totalGrupos = 0;
+
+    Object.values(faixasPorNQA).forEach(faixas => {
+      totalFaixas += faixas.length;
+    });
+
+    Object.values(gruposPorNQA).forEach(grupos => {
+      totalGrupos += grupos.length;
+    });
+
+    return {
+      total_nqas: totalNQAs,
+      nqas_ativos: nqasAtivos,
+      nqas_inativos: totalNQAs - nqasAtivos,
+      total_faixas: totalFaixas,
+      total_grupos: totalGrupos
+    };
+  }, [nqas, faixasPorNQA, gruposPorNQA]);
 
   /**
    * Carregar dados ao montar
@@ -326,9 +362,16 @@ export const usePlanoAmostragem = () => {
     handleAddNQA,
     handleEditNQA,
     handleSaveNQA,
+    handleCloseValidationModal: () => {
+      setShowValidationModal(false);
+      setValidationErrors(null);
+    },
     setShowModalFaixa,
     setShowModalGrupo,
-    setShowModalNQA
+    setShowModalNQA,
+    validationErrors,
+    showValidationModal,
+    estatisticas
   };
 };
 

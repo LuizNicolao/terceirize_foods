@@ -1,13 +1,16 @@
 import React from 'react';
-import { FaPlus, FaEdit, FaTrash, FaEye } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaQuestionCircle } from 'react-icons/fa';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { usePlanoAmostragem } from '../../hooks/usePlanoAmostragem';
-import { Button } from '../../components/ui';
+import { useAuditoria } from '../../hooks/common/useAuditoria';
+import { Button, ValidationErrorModal, ConfirmModal } from '../../components/ui';
+import { EmptyState } from '../../components/ui';
 import NQAModal from '../../components/plano-amostragem/NQAModal';
 import FaixaAmostragemModal from '../../components/plano-amostragem/FaixaAmostragemModal';
 import VincularGrupoModal from '../../components/plano-amostragem/VincularGrupoModal';
 import FaixasTable from '../../components/plano-amostragem/FaixasTable';
-import ConfirmModal from '../../components/ui/ConfirmModal';
+import { PlanoAmostragemStats } from '../../components/plano-amostragem';
+import { AuditModal } from '../../components/shared';
 
 const PlanoAmostragem = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
@@ -24,6 +27,8 @@ const PlanoAmostragem = () => {
     editingNQA,
     viewMode,
     nqaSelecionado,
+    validationErrors,
+    showValidationModal,
     handleAddFaixa,
     handleEditFaixa,
     handleViewFaixa,
@@ -34,11 +39,28 @@ const PlanoAmostragem = () => {
     handleAddNQA,
     handleEditNQA,
     handleSaveNQA,
+    handleCloseValidationModal,
     setShowModalFaixa,
     setShowModalGrupo,
     setShowModalNQA,
-    carregarDadosCompletos
+    estatisticas
   } = usePlanoAmostragem();
+
+  const {
+    showAuditModal,
+    auditLogs,
+    auditLoading,
+    auditFilters,
+    auditPagination,
+    handleOpenAuditModal,
+    handleCloseAuditModal,
+    handleApplyAuditFilters,
+    handleAuditPageChange,
+    handleAuditItemsPerPageChange,
+    handleExportAuditXLSX,
+    handleExportAuditPDF,
+    setAuditFilters
+  } = useAuditoria('plano_amostragem');
 
   const [showDeleteConfirm, setShowDeleteConfirm] = React.useState(false);
   const [faixaToDelete, setFaixaToDelete] = React.useState(null);
@@ -91,6 +113,15 @@ const PlanoAmostragem = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3 sm:gap-4">
         <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Plano de Amostragem</h1>
         <div className="flex gap-2 sm:gap-3">
+          <Button
+            onClick={handleOpenAuditModal}
+            variant="ghost"
+            size="sm"
+            className="text-xs"
+          >
+            <FaQuestionCircle className="mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Auditoria</span>
+          </Button>
           {canCreate('plano_amostragem') && (
             <>
               <Button onClick={handleVincularGrupo} size="sm" variant="outline">
@@ -108,15 +139,25 @@ const PlanoAmostragem = () => {
         </div>
       </div>
 
+      {/* Estatísticas */}
+      <PlanoAmostragemStats estatisticas={estatisticas} />
+
       {/* Cards de NQAs */}
       {nqas.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-lg shadow-sm">
-          <p className="text-gray-500">Nenhum NQA cadastrado</p>
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+          <EmptyState
+            title="Nenhum NQA cadastrado"
+            description="Comece adicionando seu primeiro NQA"
+            icon="default"
+            showContainer={false}
+          />
           {canCreate('plano_amostragem') && (
-            <Button onClick={handleAddNQA} className="mt-4" size="sm">
-              <FaPlus className="mr-2" />
-              Adicionar Primeiro NQA
-            </Button>
+            <div className="flex justify-center mt-4">
+              <Button onClick={handleAddNQA} size="sm">
+                <FaPlus className="mr-2" />
+                Adicionar Primeiro NQA
+              </Button>
+            </div>
           )}
         </div>
       ) : (
@@ -126,13 +167,13 @@ const PlanoAmostragem = () => {
             const grupos = gruposPorNQA[nqa.id] || [];
 
             return (
-              <div key={nqa.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+              <div key={nqa.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
                 {/* Header do Card */}
-                <div className={`px-4 py-3 bg-gradient-to-r from-pink-500 to-pink-600 text-white`}>
+                <div className={`px-4 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white`}>
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="text-lg font-bold">NQA {nqa.codigo}</h3>
-                      <p className="text-sm text-pink-100">{nqa.nome}</p>
+                      <p className="text-sm text-green-100">{nqa.nome}</p>
                     </div>
                     <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getNivelInspecaoColor(nqa.nivel_inspecao)}`}>
                       {getNivelInspecaoLabel(nqa.nivel_inspecao)}
@@ -258,6 +299,31 @@ const PlanoAmostragem = () => {
         confirmText="Excluir"
         cancelText="Cancelar"
         type="danger"
+      />
+
+      {/* Modal de Auditoria */}
+      <AuditModal
+        isOpen={showAuditModal}
+        onClose={handleCloseAuditModal}
+        title="Relatório de Auditoria - Plano de Amostragem"
+        auditLogs={auditLogs}
+        auditLoading={auditLoading}
+        auditFilters={auditFilters}
+        auditPagination={auditPagination}
+        onApplyFilters={handleApplyAuditFilters}
+        onPageChange={handleAuditPageChange}
+        onItemsPerPageChange={handleAuditItemsPerPageChange}
+        onExportXLSX={handleExportAuditXLSX}
+        onExportPDF={handleExportAuditPDF}
+        onFilterChange={(field, value) => setAuditFilters(prev => ({ ...prev, [field]: value }))}
+      />
+
+      {/* Modal de Erros de Validação */}
+      <ValidationErrorModal
+        isOpen={showValidationModal}
+        onClose={handleCloseValidationModal}
+        errors={validationErrors?.errors}
+        errorCategories={validationErrors?.errorCategories}
       />
     </div>
   );
