@@ -77,12 +77,20 @@ class RIRListController {
 
     // Contar total de registros (sem ORDER BY para melhor performance)
     console.log('[RIR] Executando count query');
-    const countQuery = baseQuery.replace(/SELECT[\s\S]*?FROM/, 'SELECT COUNT(*) as total FROM');
+    let countQuery = baseQuery.replace(/SELECT[\s\S]*?FROM/i, 'SELECT COUNT(*) as total FROM');
+    console.log('[RIR] Count query gerada:', countQuery.substring(0, 200));
     const countStart = Date.now();
-    const countResult = await executeQuery(countQuery, params);
-    const countTime = Date.now() - countStart;
-    console.log(`[RIR] Count query executado em ${countTime}ms`);
-    const totalItems = countResult[0].total;
+    let totalItems;
+    try {
+      const countResult = await executeQuery(countQuery, params);
+      const countTime = Date.now() - countStart;
+      console.log(`[RIR] Count query executado em ${countTime}ms, total: ${countResult[0].total}`);
+      totalItems = countResult[0].total;
+    } catch (countError) {
+      const countTime = Date.now() - countStart;
+      console.error(`[RIR] ERRO na count query após ${countTime}ms:`, countError.message);
+      throw countError;
+    }
 
     // Aplicar paginação
     baseQuery += ' ORDER BY ri.data_inspecao DESC, ri.hora_inspecao DESC';
@@ -92,9 +100,16 @@ class RIRListController {
 
     console.log('[RIR] Executando query principal');
     const mainQueryStart = Date.now();
-    const rirs = await executeQuery(query, params);
-    const mainQueryTime = Date.now() - mainQueryStart;
-    console.log(`[RIR] Query principal executada em ${mainQueryTime}ms, registros: ${rirs.length}`);
+    let rirs;
+    try {
+      rirs = await executeQuery(query, params);
+      const mainQueryTime = Date.now() - mainQueryStart;
+      console.log(`[RIR] Query principal executada em ${mainQueryTime}ms, registros: ${rirs.length}`);
+    } catch (mainError) {
+      const mainQueryTime = Date.now() - mainQueryStart;
+      console.error(`[RIR] ERRO na query principal após ${mainQueryTime}ms:`, mainError.message);
+      throw mainError;
+    }
 
     // Adicionar total_produtos após buscar os dados para evitar uso de JSON_LENGTH na query
     console.log('[RIR] Processando produtos JSON');
