@@ -54,7 +54,7 @@ class RIRListController {
       params.push(data_fim);
     }
 
-    // Query base (SEM produtos_json para melhor performance)
+    // Query base (SEM JOIN desnecessário para melhor performance)
     let baseQuery = `
       SELECT 
         ri.id,
@@ -70,9 +70,8 @@ class RIRListController {
         ri.visto_responsavel,
         ri.criado_em,
         ri.atualizado_em,
-        u.nome as usuario_nome
+        ri.usuario_cadastro_id
       FROM relatorio_inspecao ri
-      LEFT JOIN usuarios u ON ri.usuario_cadastro_id = u.id
       ${whereClause}
     `;
 
@@ -112,32 +111,50 @@ class RIRListController {
       throw mainError;
     }
 
-    // Buscar total_produtos apenas para os IDs retornados (query eficiente)
-    console.log('[RIR] Buscando total_produtos para registros retornados');
+    // Buscar total_produtos e usuario_nome apenas para os IDs retornados (query eficiente)
+    console.log('[RIR] Buscando dados adicionais para registros retornados');
     const totalsStart = Date.now();
     let rirsWithTotals = rirs;
     if (rirs.length > 0) {
       const ids = rirs.map(r => r.id);
+      const userIds = [...new Set(rirs.map(r => r.usuario_cadastro_id).filter(id => id))];
       const placeholders = ids.map(() => '?').join(',');
-      const totalsQuery = `SELECT id, JSON_LENGTH(produtos_json) as total_produtos FROM relatorio_inspecao WHERE id IN (${placeholders})`;
+      
+      // Buscar total_produtos e usuario_nome em uma única query
+      let totalsQuery = `SELECT ri.id, JSON_LENGTH(ri.produtos_json) as total_produtos, u.nome as usuario_nome 
+        FROM relatorio_inspecao ri 
+        LEFT JOIN usuarios u ON ri.usuario_cadastro_id = u.id 
+        WHERE ri.id IN (${placeholders})`;
+      
       try {
         const totalsResult = await executeQuery(totalsQuery, ids);
         const totalsMap = {};
         totalsResult.forEach(row => {
-          totalsMap[row.id] = row.total_produtos || 0;
+          totalsMap[row.id] = {
+            total_produtos: row.total_produtos || 0,
+            usuario_nome: row.usuario_nome || '-'
+          };
         });
-        rirsWithTotals = rirs.map(rir => ({
-          ...rir,
-          total_produtos: totalsMap[rir.id] || 0
-        }));
+        rirsWithTotals = rirs.map(rir => {
+          const extra = totalsMap[rir.id] || { total_produtos: 0, usuario_nome: '-' };
+          const { usuario_cadastro_id, ...rirWithoutId } = rir;
+          return {
+            ...rirWithoutId,
+            total_produtos: extra.total_produtos,
+            usuario_nome: extra.usuario_nome
+          };
+        });
       } catch (totalsError) {
-        console.error('[RIR] Erro ao buscar total_produtos:', totalsError.message);
-        // Se falhar, usar 0 como padrão
-        rirsWithTotals = rirs.map(rir => ({ ...rir, total_produtos: 0 }));
+        console.error('[RIR] Erro ao buscar dados adicionais:', totalsError.message);
+        // Se falhar, usar valores padrão
+        rirsWithTotals = rirs.map(rir => {
+          const { usuario_cadastro_id, ...rirWithoutId } = rir;
+          return { ...rirWithoutId, total_produtos: 0, usuario_nome: '-' };
+        });
       }
     }
     const totalsTime = Date.now() - totalsStart;
-    console.log(`[RIR] Total_produtos processados em ${totalsTime}ms`);
+    console.log(`[RIR] Dados adicionais processados em ${totalsTime}ms`);
 
     // Calcular estatísticas (usando mesma lógica de filtros da query principal)
     let statsQuery = `
