@@ -43,51 +43,24 @@ class NecessidadesPadroesGeracaoController {
         return errorResponse(res, 'Semana de abastecimento é obrigatória', 400);
       }
 
-      // Buscar escolas baseado nos filtros
-      let escolasParaProcessar = [];
-      
-      if (escola_id) {
-        // Processar apenas a escola especificada
-        const escola = await executeQuery(`
-          SELECT id, nome_escola, rota_id, codigo_teknisa
-          FROM foods_db.unidades_escolares
-          WHERE id = ? AND filial_id = ? AND status = 'ativo'
-        `, [escola_id, filial_id]);
-
-        if (escola.length > 0) {
-          escolasParaProcessar = [escola[0]];
-        } else {
-          return errorResponse(res, 'Escola não encontrada ou não pertence à filial selecionada', 404);
-        }
-      } else {
-        // Processar todas as escolas da filial
-        const escolas = await executeQuery(`
-          SELECT id, nome_escola, rota_id, codigo_teknisa
-          FROM foods_db.unidades_escolares
-          WHERE filial_id = ? AND status = 'ativo'
-          ORDER BY nome_escola
-        `, [filial_id]);
-
-        escolasParaProcessar = escolas;
-      }
-
-      if (escolasParaProcessar.length === 0) {
-        return errorResponse(res, 'Nenhuma escola encontrada para processar', 404);
-      }
-
-      // Buscar dados de necessidades_padroes com os filtros
+      // Buscar dados de necessidades_padroes primeiro, filtrando por filial, grupo e opcionalmente escola
+      // Isso garante que só processaremos escolas que realmente têm padrões cadastrados
       let whereConditions = [
         'np.ativo = 1',
-        'np.grupo_id = ?'
+        'np.grupo_id = ?',
+        'e.filial_id = ?',
+        'e.status = \'ativo\''
       ];
-      let params = [grupo_id];
+      let params = [grupo_id, filial_id];
 
-      // Filtrar por escolas que serão processadas
-      const escolaIds = escolasParaProcessar.map(e => e.id);
-      whereConditions.push(`np.escola_id IN (${escolaIds.map(() => '?').join(',')})`);
-      params.push(...escolaIds);
+      // Se escola_id foi especificada, filtrar por ela também
+      if (escola_id) {
+        whereConditions.push('np.escola_id = ?');
+        params.push(escola_id);
+      }
 
       // Buscar dados de padrões que serão usados para gerar necessidades
+      // JOIN com unidades_escolares para garantir que a escola pertence à filial e está ativa
       const padroes = await executeQuery(`
         SELECT DISTINCT
           np.escola_id,
@@ -97,8 +70,11 @@ class NecessidadesPadroesGeracaoController {
           np.produto_id,
           np.produto_nome,
           np.unidade_medida_sigla,
-          np.quantidade
+          np.quantidade,
+          e.rota_id,
+          e.codigo_teknisa
         FROM necessidades_padroes np
+        INNER JOIN foods_db.unidades_escolares e ON np.escola_id = e.id
         WHERE ${whereConditions.join(' AND ')}
         ORDER BY np.escola_id, np.produto_nome
       `, params);
@@ -107,19 +83,35 @@ class NecessidadesPadroesGeracaoController {
         return errorResponse(res, 'Nenhum dado padrão encontrado para os filtros selecionados', 404);
       }
 
-      // Agrupar por escola
+      // Agrupar por escola e extrair lista única de escolas que têm padrões
       const necessidadesPorEscola = {};
+      const escolasComPadroes = new Map(); // Map para armazenar dados completos das escolas
+      
       padroes.forEach(padrao => {
         if (!necessidadesPorEscola[padrao.escola_id]) {
           necessidadesPorEscola[padrao.escola_id] = [];
+          // Armazenar dados da escola
+          escolasComPadroes.set(padrao.escola_id, {
+            id: padrao.escola_id,
+            nome_escola: padrao.escola_nome,
+            rota_id: padrao.rota_id || '',
+            codigo_teknisa: padrao.codigo_teknisa || ''
+          });
         }
         necessidadesPorEscola[padrao.escola_id].push(padrao);
       });
 
+      // Converter Map para Array - apenas escolas que têm padrões
+      const escolasParaProcessar = Array.from(escolasComPadroes.values());
+
+      if (escolasParaProcessar.length === 0) {
+        return errorResponse(res, 'Nenhuma escola com padrões cadastrados encontrada para os filtros selecionados', 404);
+      }
+
       const necessidadesCriadas = [];
       const escolasProcessadas = [];
 
-      // Processar cada escola
+      // Processar cada escola que tem padrões
       for (const escola of escolasParaProcessar) {
         const escolaId = escola.id;
         
@@ -167,39 +159,13 @@ class NecessidadesPadroesGeracaoController {
         const proximoId = (ultimoId[0]?.ultimo_id || 0) + 1;
         const necessidadeId = proximoId.toString();
 
-        // Buscar produtos padrão para esta escola
+        // Buscar produtos padrão para esta escola (já garantimos que ela tem padrões)
         const produtosEscola = necessidadesPorEscola[escolaId] || [];
-
-        // Se não houver dados de padrão para esta escola, buscar do padrão geral (outras escolas do mesmo grupo)
+        
+        // Se por algum motivo não houver produtos (não deveria acontecer), pular esta escola
         if (produtosEscola.length === 0) {
-          // Buscar dados padrão mais recentes para o grupo (de qualquer escola)
-          const dadosPadrao = await executeQuery(`
-            SELECT 
-              np.produto_id,
-              np.produto_nome,
-              np.unidade_medida_sigla,
-              np.quantidade,
-              np.grupo_id,
-              np.grupo_nome,
-              np.data_atualizacao
-            FROM necessidades_padroes np
-            WHERE np.ativo = 1
-              AND np.grupo_id = ?
-              AND np.quantidade > 0
-            ORDER BY np.data_atualizacao DESC
-            LIMIT 50
-          `, [grupo_id]);
-
-          // Agrupar por produto para evitar duplicatas
-          const produtosUnicos = {};
-          dadosPadrao.forEach(prod => {
-            const chave = prod.produto_id;
-            if (chave && !produtosUnicos[chave]) {
-              produtosUnicos[chave] = prod;
-            }
-          });
-
-          produtosEscola.push(...Object.values(produtosUnicos));
+          console.warn(`Nenhum produto padrão encontrado para escola ${escola.nome_escola} (ID: ${escolaId})`);
+          continue;
         }
 
         // Inserir necessidades para cada produto
