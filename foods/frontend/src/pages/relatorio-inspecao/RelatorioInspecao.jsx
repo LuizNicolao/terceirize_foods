@@ -79,8 +79,7 @@ const RelatorioInspecao = () => {
       
       carregarRIRs(params);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [statusFilter, dataInicioFilter, dataFimFilter]);
+  }, [statusFilter, dataInicioFilter, dataFimFilter, isViewMode]);
 
   // Carregar dados iniciais
   useEffect(() => {
