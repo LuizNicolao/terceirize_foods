@@ -82,7 +82,7 @@ const CalendarioRelatorios = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3 sm:gap-4">
         <div className="flex items-center">
           <Link
-            to="/calendario"
+            to="/foods/calendario"
             className="mr-3 p-1 text-gray-400 hover:text-gray-600 transition-colors"
           >
             <FaArrowLeft className="h-5 w-5" />

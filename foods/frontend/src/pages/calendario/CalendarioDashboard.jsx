@@ -176,7 +176,7 @@ const CalendarioDashboard = () => {
         {/* Navegação */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <Link
-            to="/calendario/visualizacao"
+            to="/foods/calendario/visualizacao"
             className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
           >
             <div className="flex items-center">
@@ -189,7 +189,7 @@ const CalendarioDashboard = () => {
           </Link>
 
           <Link
-            to="/calendario/configuracao"
+            to="/foods/calendario/configuracao"
             className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
           >
             <div className="flex items-center">
@@ -202,7 +202,7 @@ const CalendarioDashboard = () => {
           </Link>
 
           <Link
-            to="/calendario/relatorios"
+            to="/foods/calendario/relatorios"
             className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
           >
             <div className="flex items-center">
