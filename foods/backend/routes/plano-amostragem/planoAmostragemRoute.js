@@ -4,7 +4,7 @@
  */
 
 const express = require('express');
-const { query } = require('express-validator');
+const { query, body } = require('express-validator');
 const { authenticateToken, checkPermission, checkScreenPermission } = require('../../middleware/auth');
 const { 
   nqaValidations, 
@@ -118,10 +118,13 @@ router.post('/tabela-amostragem',
 router.post('/tabela-amostragem/criar-nqa-automatico',
   checkPermission('criar'),
   auditMiddleware(AUDIT_ACTIONS.CREATE, 'nqa'),
-  body('codigo')
-    .isLength({ min: 1, max: 20 })
-    .withMessage('Código deve ter entre 1 e 20 caracteres')
-    .trim(),
+  [
+    body('codigo')
+      .isLength({ min: 1, max: 20 })
+      .withMessage('Código deve ter entre 1 e 20 caracteres')
+      .trim(),
+    require('./planoAmostragemValidator').handleValidationErrors
+  ],
   PlanoAmostragemController.criarNQAAutomatico
 );
 
