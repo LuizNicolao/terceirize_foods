@@ -85,20 +85,42 @@ class RIRListController {
 
     const rirs = await executeQuery(query, params);
 
-    // Calcular estatísticas
-    const statsQuery = `SELECT 
-      COUNT(*) as total,
-      SUM(CASE WHEN ri.status_geral = 'APROVADO' THEN 1 ELSE 0 END) as aprovados,
-      SUM(CASE WHEN ri.status_geral = 'REPROVADO' THEN 1 ELSE 0 END) as reprovados,
-      SUM(CASE WHEN ri.status_geral = 'PARCIAL' THEN 1 ELSE 0 END) as parciais
-      FROM relatorio_inspecao ri WHERE 1=1${search ? ' AND (ri.numero_nota_fiscal LIKE ? OR ri.fornecedor LIKE ? OR ri.numero_af LIKE ?)' : ''}${status_geral ? ' AND ri.status_geral = ?' : ''}${fornecedor ? ' AND ri.fornecedor LIKE ?' : ''}${data_inicio ? ' AND ri.data_inspecao >= ?' : ''}${data_fim ? ' AND ri.data_inspecao <= ?' : ''}`;
-    const statsParams = search ? [`%${search}%`, `%${search}%`, `%${search}%`] : [];
-    if (status_geral) statsParams.push(status_geral);
-    if (fornecedor) statsParams.push(`%${fornecedor}%`);
-    if (data_inicio) statsParams.push(data_inicio);
-    if (data_fim) statsParams.push(data_fim);
+    // Calcular estatísticas (usando mesma lógica de filtros da query principal)
+    let statsQuery = `
+      SELECT 
+        COUNT(*) as total,
+        SUM(CASE WHEN ri.status_geral = 'APROVADO' THEN 1 ELSE 0 END) as aprovados,
+        SUM(CASE WHEN ri.status_geral = 'REPROVADO' THEN 1 ELSE 0 END) as reprovados,
+        SUM(CASE WHEN ri.status_geral = 'PARCIAL' THEN 1 ELSE 0 END) as parciais
+      FROM relatorio_inspecao ri
+      WHERE 1=1
+    `;
+    const statsParams = [];
+    
+    // Aplicar mesmos filtros da query principal
+    if (search) {
+      statsQuery += ' AND (ri.numero_nota_fiscal LIKE ? OR ri.fornecedor LIKE ? OR ri.numero_af LIKE ?)';
+      statsParams.push(`%${search}%`, `%${search}%`, `%${search}%`);
+    }
+    if (status_geral) {
+      statsQuery += ' AND ri.status_geral = ?';
+      statsParams.push(status_geral);
+    }
+    if (fornecedor) {
+      statsQuery += ' AND ri.fornecedor LIKE ?';
+      statsParams.push(`%${fornecedor}%`);
+    }
+    if (data_inicio) {
+      statsQuery += ' AND ri.data_inspecao >= ?';
+      statsParams.push(data_inicio);
+    }
+    if (data_fim) {
+      statsQuery += ' AND ri.data_inspecao <= ?';
+      statsParams.push(data_fim);
+    }
+    
     const statsResult = await executeQuery(statsQuery, statsParams);
-    const statistics = statsResult[0];
+    const statistics = statsResult[0] || { total: 0, aprovados: 0, reprovados: 0, parciais: 0 };
 
     // Gerar metadados de paginação
     const queryParams = { ...req.query };

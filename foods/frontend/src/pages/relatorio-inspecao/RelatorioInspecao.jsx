@@ -5,10 +5,11 @@ import toast from 'react-hot-toast';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { useRelatorioInspecao } from '../../hooks/useRelatorioInspecao';
 import { useAuditoria } from '../../hooks/common/useAuditoria';
-import { Button, ConfirmModal, CadastroFilterBar, Pagination, StatCard, LoadingSpinner } from '../../components/ui';
+import { Button, ConfirmModal, CadastroFilterBar, Pagination, LoadingSpinner } from '../../components/ui';
 import { AuditModal, ExportButtons } from '../../components/shared';
 import RelatorioInspecaoModal from '../../components/relatorio-inspecao/RelatorioInspecaoModal';
 import RelatorioInspecaoView from './RelatorioInspecaoView';
+import RIRStats from '../../components/relatorio-inspecao/RIRStats';
 
 const RelatorioInspecao = () => {
   const navigate = useNavigate();
@@ -212,34 +213,7 @@ const RelatorioInspecao = () => {
       </div>
 
       {/* Estatísticas */}
-      {statistics && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <StatCard
-            title="Total de RIRs"
-            value={statistics.total || 0}
-            icon="chart"
-            color="blue"
-          />
-          <StatCard
-            title="Aprovados"
-            value={statistics.aprovados || 0}
-            icon="check"
-            color="green"
-          />
-          <StatCard
-            title="Reprovados"
-            value={statistics.reprovados || 0}
-            icon="times"
-            color="red"
-          />
-          <StatCard
-            title="Parciais"
-            value={statistics.parciais || 0}
-            icon="exclamation"
-            color="yellow"
-          />
-        </div>
-      )}
+      <RIRStats estatisticas={statistics} />
 
       {/* Filtros */}
       <CadastroFilterBar
