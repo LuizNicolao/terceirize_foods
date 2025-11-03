@@ -264,7 +264,7 @@ class NecessidadesPadroesGeracaoController {
               grupo,
               grupo_id_final,
               'NEC',
-              'Gerado automaticamente a partir de padrão',
+              'Gerado automaticamente pedido mensal',
               necessidadeId
             ]);
 
