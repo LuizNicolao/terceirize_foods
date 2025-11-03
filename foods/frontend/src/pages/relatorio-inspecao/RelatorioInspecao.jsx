@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { FaPlus, FaEye, FaEdit, FaTrash } from 'react-icons/fa';
 import toast from 'react-hot-toast';
@@ -44,6 +44,7 @@ const RelatorioInspecao = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [rirToDelete, setRirToDelete] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const hasLoadedRef = useRef(false);
 
   // Paginação
   const currentPage = pagination?.current_page || 1;
@@ -52,12 +53,12 @@ const RelatorioInspecao = () => {
   const itemsPerPage = pagination?.items_per_page || 20;
 
   useEffect(() => {
-    // Só carregar se não estiver em modo de visualização
-    if (!isViewMode) {
+    // Só carregar uma vez ao montar, se não estiver em modo de visualização
+    if (!isViewMode && !hasLoadedRef.current) {
+      hasLoadedRef.current = true;
       carregarRIRs();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isViewMode]);
 
   const handleKeyPress = (e) => {
     if (e.key === 'Enter') {

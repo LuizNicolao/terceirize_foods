@@ -224,8 +224,7 @@ export const useRelatorioInspecao = () => {
   // Carregar grupos ao montar (apenas uma vez)
   useEffect(() => {
     buscarGrupos();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [buscarGrupos]);
 
   return {
     // Estados
