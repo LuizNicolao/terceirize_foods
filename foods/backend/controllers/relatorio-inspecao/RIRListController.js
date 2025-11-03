@@ -17,7 +17,7 @@ class RIRListController {
    * Listar relatórios de inspeção com paginação, busca e HATEOAS
    */
   static listarRIRs = asyncHandler(async (req, res) => {
-    console.log('[RIR] Iniciando listagem de RIRs');
+    console.log('=== [RIR] Iniciando listagem de RIRs ===');
     const startTime = Date.now();
     
     const { search = '', status_geral, fornecedor, data_inicio, data_fim } = req.query;
