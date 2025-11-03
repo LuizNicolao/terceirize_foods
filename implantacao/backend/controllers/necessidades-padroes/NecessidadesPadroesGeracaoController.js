@@ -16,8 +16,8 @@ class NecessidadesPadroesGeracaoController {
       const usuario_id = req.user.id;
 
       // Validar dados obrigatórios
-      if (!filial_id || !escola_id || !semana_abastecimento || !grupo_id) {
-        return errorResponse(res, 'Filial, Escola, Semana de Abastecimento e Grupo de Produtos são obrigatórios', 400);
+      if (!filial_id || !semana_abastecimento || !grupo_id) {
+        return errorResponse(res, 'Filial, Semana de Abastecimento e Grupo de Produtos são obrigatórios', 400);
       }
 
       // Se semana_consumo não foi enviada, buscar automaticamente a partir de semana_abastecimento
