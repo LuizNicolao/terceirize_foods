@@ -18,7 +18,7 @@ class ProdutoGenericoListController {
    * Listar produtos genéricos com paginação e busca
    */
   static listarProdutosGenericos = asyncHandler(async (req, res) => {
-    const { search, status, grupo_id, subgrupo_id, classe_id, produto_origem_id, produto_padrao, page = 1, limit = 10 } = req.query;
+    const { search, status, grupo_id, subgrupo_id, classe_id, produto_origem_id, produto_padrao, sortField, sortDirection, page = 1, limit = 10 } = req.query;
     
     let baseQuery = `
       SELECT 
@@ -83,7 +83,32 @@ class ProdutoGenericoListController {
       params.push(produto_padrao);
     }
 
-    baseQuery += ' GROUP BY pg.id, pg.codigo, pg.nome, pg.referencia_mercado, pg.referencia_interna, pg.referencia_externa, pg.produto_origem_id, pg.grupo_id, pg.subgrupo_id, pg.classe_id, pg.unidade_medida_id, pg.produto_padrao, pg.fator_conversao, pg.status, pg.criado_em, pg.atualizado_em, pg.usuario_criador_id, pg.usuario_atualizador_id, po.nome, po.codigo, g.nome, sg.nome, c.nome, um.nome, um.sigla, uc.nome, ua.nome ORDER BY pg.nome ASC';
+    baseQuery += ' GROUP BY pg.id, pg.codigo, pg.nome, pg.referencia_mercado, pg.referencia_interna, pg.referencia_externa, pg.produto_origem_id, pg.grupo_id, pg.subgrupo_id, pg.classe_id, pg.unidade_medida_id, pg.produto_padrao, pg.fator_conversao, pg.status, pg.criado_em, pg.atualizado_em, pg.usuario_criador_id, pg.usuario_atualizador_id, po.nome, po.codigo, g.nome, sg.nome, c.nome, um.nome, um.sigla, uc.nome, ua.nome';
+
+    // Aplicar ordenação
+    let orderBy = 'pg.nome ASC';
+    if (sortField && sortDirection) {
+      const validFields = ['codigo', 'nome', 'status', 'grupo_id', 'subgrupo_id', 'classe_id', 'unidade_medida_id', 'produto_origem_id', 'produto_padrao'];
+      if (validFields.includes(sortField)) {
+        const direction = sortDirection.toLowerCase() === 'desc' ? 'DESC' : 'ASC';
+        
+        // Mapear campos para colunas do banco
+        const fieldMap = {
+          'codigo': 'pg.codigo',
+          'nome': 'pg.nome',
+          'status': 'pg.status',
+          'grupo_id': 'pg.grupo_id',
+          'subgrupo_id': 'pg.subgrupo_id',
+          'classe_id': 'pg.classe_id',
+          'unidade_medida_id': 'pg.unidade_medida_id',
+          'produto_origem_id': 'pg.produto_origem_id',
+          'produto_padrao': 'pg.produto_padrao'
+        };
+        
+        orderBy = `${fieldMap[sortField]} ${direction}`;
+      }
+    }
+    baseQuery += ` ORDER BY ${orderBy}`;
 
     // Aplicar paginação
     const limitNum = parseInt(limit);
