@@ -8,13 +8,15 @@ class RelatorioInspecaoService {
       // Extrair dados da estrutura HATEOAS
       let rirs = [];
       let pagination = null;
+      let statistics = null;
       
-      if (response.data.data) {
+      if (response.data && response.data.data) {
         // Se tem data.items (estrutura HATEOAS)
         if (response.data.data.items) {
           rirs = response.data.data.items;
           pagination = response.data.data._meta?.pagination;
-        } else {
+          statistics = response.data.data._meta?.statistics;
+        } else if (Array.isArray(response.data.data)) {
           // Se data é diretamente um array
           rirs = response.data.data;
         }
@@ -23,16 +25,25 @@ class RelatorioInspecaoService {
         rirs = response.data;
       }
       
+      // Se não conseguiu extrair paginação da estrutura HATEOAS, usar diretamente da resposta
+      if (!pagination) {
+        pagination = response.data?.pagination || response.data?.meta?.pagination;
+      }
+      if (!statistics) {
+        statistics = response.data?.statistics || response.data?.meta?.statistics;
+      }
+      
       return {
         success: true,
-        data: rirs,
-        pagination: pagination || response.data.pagination,
-        statistics: response.data.statistics
+        data: rirs || [],
+        pagination: pagination || null,
+        statistics: statistics || null
       };
     } catch (error) {
+      console.error('Erro no service listar:', error);
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao carregar relatórios de inspeção'
+        error: error.response?.data?.message || error.message || 'Erro ao carregar relatórios de inspeção'
       };
     }
   }

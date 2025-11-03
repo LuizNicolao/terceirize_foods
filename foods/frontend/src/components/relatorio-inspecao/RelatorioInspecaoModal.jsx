@@ -19,11 +19,13 @@ const RelatorioInspecaoModal = ({ isOpen, onClose, rirId, onSuccess }) => {
       title={rirId ? 'Editar Relatório de Inspeção' : 'Novo Relatório de Inspeção'}
       size="full"
     >
-      <RelatorioInspecaoForm
-        rirId={rirId}
-        onSuccess={handleSuccess}
-        onCancel={onClose}
-      />
+      <div className="max-h-[75vh] overflow-y-auto">
+        <RelatorioInspecaoForm
+          rirId={rirId}
+          onSuccess={handleSuccess}
+          onCancel={onClose}
+        />
+      </div>
     </Modal>
   );
 };

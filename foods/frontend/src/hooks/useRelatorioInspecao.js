@@ -30,7 +30,7 @@ export const useRelatorioInspecao = () => {
 
       // Remover filtros vazios
       Object.keys(queryParams).forEach(key => {
-        if (queryParams[key] === '' || queryParams[key] === null) {
+        if (queryParams[key] === '' || queryParams[key] === null || queryParams[key] === undefined) {
           delete queryParams[key];
         }
       });
@@ -39,14 +39,21 @@ export const useRelatorioInspecao = () => {
       
       if (response.success) {
         setRirs(response.data || []);
-        setPagination(response.pagination);
-        setStatistics(response.statistics);
+        setPagination(response.pagination || null);
+        setStatistics(response.statistics || null);
       } else {
-        toast.error(response.error || 'Erro ao carregar relatórios de inspeção');
+        console.error('Erro ao carregar RIRs:', response.error);
+        // Não mostrar toast automaticamente, deixar a página mostrar estado vazio
+        setRirs([]);
+        setPagination(null);
+        setStatistics(null);
       }
     } catch (error) {
       console.error('Erro ao carregar RIRs:', error);
-      toast.error('Erro ao carregar relatórios de inspeção');
+      // Não mostrar toast automaticamente no catch também
+      setRirs([]);
+      setPagination(null);
+      setStatistics(null);
     } finally {
       setLoading(false);
     }
@@ -214,10 +221,11 @@ export const useRelatorioInspecao = () => {
     }
   }, []);
 
-  // Carregar grupos ao montar
+  // Carregar grupos ao montar (apenas uma vez)
   useEffect(() => {
     buscarGrupos();
-  }, [buscarGrupos]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return {
     // Estados

@@ -419,28 +419,28 @@ const RelatorioInspecaoForm = ({ rirId, onSuccess, onCancel }) => {
           </div>
         </div>
 
-        {/* Botões de Ação */}
-        <div className="flex justify-end gap-4 pt-4 border-t">
-          {onCancel && (
-            <Button
-              type="button"
-              onClick={onCancel}
-              variant="outline"
-              size="sm"
-            >
-              Cancelar
-            </Button>
-          )}
+      {/* Botões de Ação */}
+      <div className="flex justify-end gap-4 pt-6 border-t border-gray-200 mt-6">
+        {onCancel && (
           <Button
-            type="submit"
-            disabled={saving || (!canCreate('relatorio_inspecao') && !isEditMode) || (!canEdit('relatorio_inspecao') && isEditMode)}
-            loading={saving}
+            type="button"
+            onClick={onCancel}
+            variant="outline"
             size="sm"
           >
-            <FaSave className="mr-2" />
-            {saving ? 'Salvando...' : (isEditMode ? 'Atualizar' : 'Criar')}
+            Cancelar
           </Button>
-        </div>
+        )}
+        <Button
+          type="submit"
+          disabled={saving || (!canCreate('relatorio_inspecao') && !isEditMode) || (!canEdit('relatorio_inspecao') && isEditMode)}
+          loading={saving}
+          size="sm"
+        >
+          <FaSave className="mr-2" />
+          {saving ? 'Salvando...' : (isEditMode ? 'Atualizar' : 'Criar')}
+        </Button>
+      </div>
       </form>
     </div>
   );

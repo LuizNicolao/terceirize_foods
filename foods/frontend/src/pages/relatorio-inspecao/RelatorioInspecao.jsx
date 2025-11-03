@@ -52,8 +52,12 @@ const RelatorioInspecao = () => {
   const itemsPerPage = pagination?.items_per_page || 20;
 
   useEffect(() => {
-    carregarRIRs();
-  }, [carregarRIRs]);
+    // Só carregar se não estiver em modo de visualização
+    if (!isViewMode) {
+      carregarRIRs();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleKeyPress = (e) => {
     if (e.key === 'Enter') {
@@ -178,29 +182,30 @@ const RelatorioInspecao = () => {
   }
 
   // Caso contrário, renderizar lista
-  if (loading && rirs.length === 0) {
+  if (loading) {
     return (
-      <div className="p-6">
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
-          <span className="ml-3 text-gray-600">Carregando relatórios...</span>
+      <div className="flex justify-center items-center h-screen bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Carregando...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="p-6">
+    <div className="p-4 sm:p-6">
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Relatórios de Inspeção de Recebimento</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Relatórios de Inspeção de Recebimento</h1>
           <p className="text-sm text-gray-600 mt-1">Gerencie os relatórios de inspeção de recebimento de produtos</p>
         </div>
         {canCreate('relatorio_inspecao') && (
-          <Button onClick={handleAddRIR} size="md">
-            <FaPlus className="mr-2" />
-            Novo Relatório
+          <Button onClick={handleAddRIR} size="sm">
+            <FaPlus className="mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Novo Relatório</span>
+            <span className="sm:hidden">Novo</span>
           </Button>
         )}
       </div>
