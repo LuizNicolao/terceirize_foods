@@ -66,54 +66,7 @@ export const PermissionsProvider = ({ children }) => {
     }
   };
 
-  const hasPermission = (screen, action, aba = null) => {
-    // Se especificou uma aba, precisa verificar:
-    // 1. Permissão específica da aba E
-    // 2. Permissão geral da tela (pai) - obrigatória para funcionar
-    if (aba) {
-      const screenAba = `${screen}.${aba}`;
-      
-      // Verificar se tem permissão geral da tela (pai)
-      const hasParentPermission = userPermissions[screen] && 
-        (action === 'visualizar' ? userPermissions[screen].pode_visualizar :
-         action === 'criar' ? userPermissions[screen].pode_criar :
-         action === 'editar' ? userPermissions[screen].pode_editar :
-         action === 'excluir' ? userPermissions[screen].pode_excluir :
-         action === 'movimentar' ? userPermissions[screen].pode_movimentar : false);
-      
-      // Se tem permissão específica da aba
-      if (userPermissions[screenAba]) {
-        // Verificar ação específica da aba
-        let hasAbaPermission = false;
-        switch (action) {
-          case 'visualizar':
-            hasAbaPermission = userPermissions[screenAba].pode_visualizar;
-            break;
-          case 'criar':
-            hasAbaPermission = userPermissions[screenAba].pode_criar;
-            break;
-          case 'editar':
-            hasAbaPermission = userPermissions[screenAba].pode_editar;
-            break;
-          case 'excluir':
-            hasAbaPermission = userPermissions[screenAba].pode_excluir;
-            break;
-          case 'movimentar':
-            hasAbaPermission = userPermissions[screenAba].pode_movimentar;
-            break;
-          default:
-            hasAbaPermission = false;
-        }
-        
-        // Para a aba funcionar, precisa ter AMBAS: permissão pai E permissão filha
-        return hasParentPermission && hasAbaPermission;
-      }
-      
-      // Se não tem permissão específica da aba, mas tem permissão pai, usa a pai
-      return hasParentPermission;
-    }
-    
-    // Sem aba especificada: verificar apenas permissão geral da tela
+  const hasPermission = (screen, action) => {
     if (!userPermissions[screen]) {
       return false;
     }
@@ -134,11 +87,11 @@ export const PermissionsProvider = ({ children }) => {
     }
   };
 
-  const canView = (screen, aba = null) => hasPermission(screen, 'visualizar', aba);
-  const canCreate = (screen, aba = null) => hasPermission(screen, 'criar', aba);
-  const canEdit = (screen, aba = null) => hasPermission(screen, 'editar', aba);
-  const canDelete = (screen, aba = null) => hasPermission(screen, 'excluir', aba);
-  const canMovimentar = (screen, aba = null) => hasPermission(screen, 'movimentar', aba);
+  const canView = (screen) => hasPermission(screen, 'visualizar');
+  const canCreate = (screen) => hasPermission(screen, 'criar');
+  const canEdit = (screen) => hasPermission(screen, 'editar');
+  const canDelete = (screen) => hasPermission(screen, 'excluir');
+  const canMovimentar = (screen) => hasPermission(screen, 'movimentar');
 
   const value = {
     userPermissions,

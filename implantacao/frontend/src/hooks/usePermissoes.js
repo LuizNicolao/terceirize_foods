@@ -19,7 +19,6 @@ export const usePermissoes = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isSelectOpen, setIsSelectOpen] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState({});
-  const [expandedAbas, setExpandedAbas] = useState({});
   const [showPermissionsModal, setShowPermissionsModal] = useState(false);
 
   // Estados de estatísticas
@@ -151,9 +150,6 @@ export const usePermissoes = () => {
         'necessidades',
         'calendario',
         'analise_necessidades',
-        'analise_necessidades.nutricionista',
-        'analise_necessidades.coordenacao',
-        'analise_necessidades.logistica',
         'analise_necessidades_substituicoes',
         'consulta_status_necessidade',
         'necessidades_padroes',
@@ -235,13 +231,6 @@ export const usePermissoes = () => {
     }));
   };
 
-  const handleExpandAbas = (tela) => {
-    setExpandedAbas(prev => ({
-      ...prev,
-      [tela]: !prev[tela]
-    }));
-  };
-
   // Funções de busca
   const handleSearchChange = (value) => {
     setSearchTerm(value);
@@ -269,7 +258,6 @@ export const usePermissoes = () => {
     searchTerm,
     isSelectOpen,
     expandedGroups,
-    expandedAbas,
     showPermissionsModal,
     estatisticas,
 
@@ -282,7 +270,6 @@ export const usePermissoes = () => {
     // Funções de permissões
     handlePermissionChange,
     handleExpandGroup,
-    handleExpandAbas,
 
     // Funções de busca
     handleSearchChange,

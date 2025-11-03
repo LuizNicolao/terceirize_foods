@@ -27,14 +27,12 @@ const Permissoes = () => {
     searchTerm,
     isSelectOpen,
     expandedGroups,
-    expandedAbas,
     showPermissionsModal,
     estatisticas,
     handleSavePermissions,
     handleUserSelect,
     handlePermissionChange,
     handleExpandGroup,
-    handleExpandAbas,
     handleSearchChange,
     setIsSelectOpen,
     setShowPermissionsModal,
@@ -122,11 +120,9 @@ const Permissoes = () => {
         onClose={() => setShowPermissionsModal(false)}
         editingPermissions={editingPermissions}
         expandedGroups={expandedGroups}
-        expandedAbas={expandedAbas}
         saving={saving}
         onPermissionChange={handlePermissionChange}
         onExpandGroup={handleExpandGroup}
-        onExpandAbas={handleExpandAbas}
         onSavePermissions={handleSavePermissions}
       />
 

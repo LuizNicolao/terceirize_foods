@@ -6,12 +6,10 @@ const PermissoesForm = ({
   isOpen,
   onClose,
   editingPermissions, 
-  expandedGroups,
-  expandedAbas,
+  expandedGroups, 
   saving,
   onPermissionChange, 
-  onExpandGroup,
-  onExpandAbas,
+  onExpandGroup, 
   onSavePermissions 
 }) => {
   // Grupos de telas organizados por categoria - apenas funcionalidades implementadas
@@ -218,124 +216,54 @@ const PermissoesForm = ({
                     // Determinar se deve mostrar a coluna movimentar (apenas para patrimônios)
                     const mostrarMovimentar = key === 'patrimonios';
                     
-                    // Verificar se esta tela tem abas (sub-permissões)
-                    const temAbas = key === 'analise_necessidades';
-                    const abas = temAbas ? [
-                      { key: `${key}.nutricionista`, label: '👩‍⚕️ Ajuste Nutricionista' },
-                      { key: `${key}.coordenacao`, label: '👨‍💼 Ajuste Coordenação' },
-                      { key: `${key}.logistica`, label: '🚚 Ajuste Logística' }
-                    ] : [];
-                    
                     return (
-                      <React.Fragment key={key}>
-                        {/* Linha principal da tela */}
-                        <tr className="hover:bg-gray-50">
-                          <td className="px-6 py-3 text-sm text-gray-900">
-                            <div className="flex items-center gap-2">
-                              {temAbas && (
-                                <button
-                                  onClick={() => onExpandAbas(key)}
-                                  className="flex items-center text-gray-500 hover:text-gray-700"
-                                  title="Expandir abas"
-                                >
-                                  {expandedAbas[key] ? (
-                                    <FaChevronDown className="text-xs" />
-                                  ) : (
-                                    <FaChevronRight className="text-xs" />
-                                  )}
-                                </button>
-                              )}
-                              <span>{label}</span>
-                            </div>
-                          </td>
+                      <tr key={key} className="hover:bg-gray-50">
+                        <td className="px-6 py-3 text-sm text-gray-900">
+                          {label}
+                        </td>
+                        <td className="px-3 py-3 text-center">
+                          <input
+                            type="checkbox"
+                            checked={editingPermissions[key]?.pode_visualizar || false}
+                            onChange={(e) => onPermissionChange(key, 'pode_visualizar', e.target.checked)}
+                            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                          />
+                        </td>
+                        <td className="px-3 py-3 text-center">
+                          <input
+                            type="checkbox"
+                            checked={editingPermissions[key]?.pode_criar || false}
+                            onChange={(e) => onPermissionChange(key, 'pode_criar', e.target.checked)}
+                            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                          />
+                        </td>
+                        <td className="px-3 py-3 text-center">
+                          <input
+                            type="checkbox"
+                            checked={editingPermissions[key]?.pode_editar || false}
+                            onChange={(e) => onPermissionChange(key, 'pode_editar', e.target.checked)}
+                            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                          />
+                        </td>
+                        <td className="px-3 py-3 text-center">
+                          <input
+                            type="checkbox"
+                            checked={editingPermissions[key]?.pode_excluir || false}
+                            onChange={(e) => onPermissionChange(key, 'pode_excluir', e.target.checked)}
+                            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                          />
+                        </td>
+                        {mostrarMovimentar && (
                           <td className="px-3 py-3 text-center">
                             <input
                               type="checkbox"
-                              checked={editingPermissions[key]?.pode_visualizar || false}
-                              onChange={(e) => onPermissionChange(key, 'pode_visualizar', e.target.checked)}
+                              checked={editingPermissions[key]?.pode_movimentar || false}
+                              onChange={(e) => onPermissionChange(key, 'pode_movimentar', e.target.checked)}
                               className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
                             />
                           </td>
-                          <td className="px-3 py-3 text-center">
-                            <input
-                              type="checkbox"
-                              checked={editingPermissions[key]?.pode_criar || false}
-                              onChange={(e) => onPermissionChange(key, 'pode_criar', e.target.checked)}
-                              className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                            />
-                          </td>
-                          <td className="px-3 py-3 text-center">
-                            <input
-                              type="checkbox"
-                              checked={editingPermissions[key]?.pode_editar || false}
-                              onChange={(e) => onPermissionChange(key, 'pode_editar', e.target.checked)}
-                              className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                            />
-                          </td>
-                          <td className="px-3 py-3 text-center">
-                            <input
-                              type="checkbox"
-                              checked={editingPermissions[key]?.pode_excluir || false}
-                              onChange={(e) => onPermissionChange(key, 'pode_excluir', e.target.checked)}
-                              className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                            />
-                          </td>
-                          {mostrarMovimentar && (
-                            <td className="px-3 py-3 text-center">
-                              <input
-                                type="checkbox"
-                                checked={editingPermissions[key]?.pode_movimentar || false}
-                                onChange={(e) => onPermissionChange(key, 'pode_movimentar', e.target.checked)}
-                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                              />
-                            </td>
-                          )}
-                        </tr>
-                        
-                        {/* Abas (sub-permissões) */}
-                        {temAbas && expandedAbas[key] && abas.map((aba) => (
-                          <tr key={aba.key} className="hover:bg-gray-50 bg-gray-50">
-                            <td className="px-12 py-2 text-sm text-gray-700 italic">
-                              {aba.label}
-                            </td>
-                            <td className="px-3 py-2 text-center">
-                              <input
-                                type="checkbox"
-                                checked={editingPermissions[aba.key]?.pode_visualizar || false}
-                                onChange={(e) => onPermissionChange(aba.key, 'pode_visualizar', e.target.checked)}
-                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                              />
-                            </td>
-                            <td className="px-3 py-2 text-center">
-                              <input
-                                type="checkbox"
-                                checked={editingPermissions[aba.key]?.pode_criar || false}
-                                onChange={(e) => onPermissionChange(aba.key, 'pode_criar', e.target.checked)}
-                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                              />
-                            </td>
-                            <td className="px-3 py-2 text-center">
-                              <input
-                                type="checkbox"
-                                checked={editingPermissions[aba.key]?.pode_editar || false}
-                                onChange={(e) => onPermissionChange(aba.key, 'pode_editar', e.target.checked)}
-                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                              />
-                            </td>
-                            <td className="px-3 py-2 text-center">
-                              <input
-                                type="checkbox"
-                                checked={editingPermissions[aba.key]?.pode_excluir || false}
-                                onChange={(e) => onPermissionChange(aba.key, 'pode_excluir', e.target.checked)}
-                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                              />
-                            </td>
-                            {mostrarMovimentar && (
-                              <td className="px-3 py-2 text-center"></td>
-                            )}
-                          </tr>
-                        ))}
-                      </React.Fragment>
+                        )}
+                      </tr>
                     );
                   })}
                 </React.Fragment>

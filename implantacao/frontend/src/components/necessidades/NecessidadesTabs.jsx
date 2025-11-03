@@ -1,34 +1,25 @@
 import React from 'react';
-import { usePermissions } from '../../contexts/PermissionsContext';
-import { useAuth } from '../../contexts/AuthContext';
 
 const NecessidadesTabs = ({ 
   activeTab, 
   setActiveTab, 
   userType 
 }) => {
-  const { canView } = usePermissions();
-  const { user } = useAuth();
-  
-  // Tipos de acesso que têm permissão geral (compatibilidade)
-  const tiposComAcesso = ['nutricionista', 'coordenador', 'supervisor', 'administrador'];
-  const hasGeneralPermission = canView('analise_necessidades') || tiposComAcesso.includes(user?.tipo_de_acesso);
-  
   const tabs = [
     {
       id: 'nutricionista',
       label: '👩‍⚕️ Ajuste Nutricionista',
-      visible: hasGeneralPermission || canView('analise_necessidades', 'nutricionista') || ['nutricionista', 'supervisor', 'administrador'].includes(userType)
+      visible: ['nutricionista', 'supervisor', 'administrador'].includes(userType)
     },
     {
       id: 'coordenacao',
       label: '👨‍💼 Ajuste Coordenação',
-      visible: hasGeneralPermission || canView('analise_necessidades', 'coordenacao') || ['coordenador', 'supervisor', 'administrador'].includes(userType)
+      visible: ['coordenador', 'supervisor', 'administrador'].includes(userType)
     },
     {
       id: 'logistica',
       label: '🚚 Ajuste Logística',
-      visible: hasGeneralPermission || canView('analise_necessidades', 'logistica') || ['logistica', 'coordenador', 'supervisor', 'administrador'].includes(userType)
+      visible: ['logistica', 'coordenador', 'supervisor', 'administrador'].includes(userType)
     }
   ];
 
