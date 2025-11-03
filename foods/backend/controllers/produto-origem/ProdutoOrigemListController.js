@@ -78,11 +78,22 @@ class ProdutoOrigemListController {
       if (validFields.includes(sortField)) {
         const direction = sortDirection.toLowerCase() === 'desc' ? 'DESC' : 'ASC';
         
+        // Mapear campos para colunas do banco
+        const fieldMap = {
+          'codigo': 'po.codigo',
+          'nome': 'po.nome',
+          'status': 'po.status',
+          'grupo_id': 'po.grupo_id',
+          'subgrupo_id': 'po.subgrupo_id',
+          'classe_id': 'po.classe_id',
+          'unidade_medida_id': 'po.unidade_medida_id'
+        };
+        
         // Ordenação especial para código (numérica)
         if (sortField === 'codigo') {
           orderBy = `CAST(po.codigo AS UNSIGNED) ${direction}`;
         } else {
-          orderBy = `po.${sortField} ${direction}`;
+          orderBy = `${fieldMap[sortField]} ${direction}`;
         }
       }
     }
