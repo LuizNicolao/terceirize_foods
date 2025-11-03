@@ -48,7 +48,10 @@ const Unidades = () => {
     handleKeyPress,
     setStatusFilter,
     setItemsPerPage,
-    getStatusLabel
+    getStatusLabel,
+    sortField,
+    sortDirection,
+    handleSort
   } = useUnidades();
 
   const {
@@ -141,6 +144,9 @@ const Unidades = () => {
         onEdit={handleEditUnidade}
         onDelete={handleDeleteUnidade}
         getStatusLabel={getStatusLabel}
+        sortField={sortField}
+        sortDirection={sortDirection}
+        onSort={handleSort}
       />
 
       {/* Modal de Unidade */}

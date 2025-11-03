@@ -1,5 +1,6 @@
 import React from 'react';
 import { ActionButtons, Table, EmptyState } from '../ui';
+import SortableTableHeader from '../ui/SortableTableHeader';
 
 const UnidadesTable = ({ 
   unidades, 
@@ -9,7 +10,10 @@ const UnidadesTable = ({
   onView, 
   onEdit, 
   onDelete, 
-  getStatusLabel
+  getStatusLabel,
+  sortField,
+  sortDirection,
+  onSort
 }) => {
   if (unidades.length === 0) {
     return (
@@ -28,9 +32,9 @@ const UnidadesTable = ({
         <Table>
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sigla</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+              <SortableTableHeader label="Nome" field="nome" currentSort={sortField} currentDirection={sortDirection} onSort={onSort} />
+              <SortableTableHeader label="Sigla" field="sigla" currentSort={sortField} currentDirection={sortDirection} onSort={onSort} />
+              <SortableTableHeader label="Status" field="status" currentSort={sortField} currentDirection={sortDirection} onSort={onSort} />
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
             </tr>
           </thead>

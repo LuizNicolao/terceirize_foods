@@ -17,7 +17,7 @@ class UnidadesListController {
    * Listar unidades com paginação, busca e HATEOAS
    */
   static listarUnidades = asyncHandler(async (req, res) => {
-    const { search = '', status } = req.query;
+    const { search = '', status, sortField, sortDirection } = req.query;
     const pagination = req.pagination;
 
     // Query base
@@ -43,7 +43,16 @@ class UnidadesListController {
       params.push(status);
     }
 
-    baseQuery += ' ORDER BY nome ASC';
+    // Aplicar ordenação
+    let orderBy = 'nome ASC';
+    if (sortField && sortDirection) {
+      const validFields = ['nome', 'sigla', 'status'];
+      if (validFields.includes(sortField)) {
+        const direction = sortDirection.toLowerCase() === 'desc' ? 'DESC' : 'ASC';
+        orderBy = `${sortField} ${direction}`;
+      }
+    }
+    baseQuery += ` ORDER BY ${orderBy}`;
 
     // Aplicar paginação manualmente
     const limit = pagination.limit;
