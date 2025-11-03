@@ -14,11 +14,10 @@ const { asyncHandler } = require('../../middleware/responseHandler');
 class RIRListController {
   
   /**
-   * Listar relatórios de inspeção com paginação, busca e HATEOAS
+   * Listar relatórios de inspeção com paginação e busca
    */
   static listarRIRs = asyncHandler(async (req, res) => {
-    const { search = '', status_geral, fornecedor, data_inicio, data_fim } = req.query;
-    const pagination = req.pagination;
+    const { search = '', status_geral, fornecedor, data_inicio, data_fim, page = 1, limit = 20 } = req.query;
 
     let params = [];
     let whereClause = 'WHERE 1=1';
@@ -71,9 +70,9 @@ class RIRListController {
 
     // Aplicar paginação
     baseQuery += ' ORDER BY ri.data_inspecao DESC, ri.hora_inspecao DESC';
-    const limit = pagination.limit;
-    const offset = pagination.offset;
-    const query = `${baseQuery} LIMIT ${limit} OFFSET ${offset}`;
+    const limitNum = parseInt(limit);
+    const offset = (parseInt(page) - 1) * limitNum;
+    const query = `${baseQuery} LIMIT ${limitNum} OFFSET ${offset}`;
 
     // Executar queries principais em paralelo para melhor performance
     const countQuery = `SELECT COUNT(*) as total FROM relatorio_inspecao ri ${whereClause}`;
@@ -180,23 +179,17 @@ class RIRListController {
       });
     }
 
-    // Gerar metadados de paginação
-    const queryParams = { ...req.query };
-    delete queryParams.page;
-    delete queryParams.limit;
-    
-    const meta = pagination.generateMeta(totalItems, '/api/relatorio-inspecao', queryParams);
-
-    // Gerar links de ações baseado nas permissões do usuário
-    const userPermissions = req.user ? this.getUserPermissions(req.user) : [];
-    const actions = res.generateActionLinks(userPermissions);
-
-    // Retornar resposta no formato esperado pelo frontend
-    return successResponse(res, rirsWithTotals, 'Relatórios de inspeção listados com sucesso', STATUS_CODES.OK, {
-      ...meta,
-      statistics,
-      actions,
-      _links: res.addListLinks(rirsWithTotals, meta.pagination, queryParams)._links
+    // Retornar resposta no formato simples como produto-origem
+    res.json({
+      success: true,
+      data: rirsWithTotals,
+      pagination: {
+        total: totalItems,
+        page: parseInt(page),
+        limit: limitNum,
+        pages: Math.ceil(totalItems / limitNum)
+      },
+      statistics: statistics
     });
   });
 
@@ -239,26 +232,8 @@ class RIRListController {
       }
     }
 
-    // Adicionar links HATEOAS
-    const data = res.addResourceLinks(rir);
-
-    // Gerar links de ações
-    const userPermissions = req.user ? this.getUserPermissions(req.user) : [];
-    const actions = res.generateActionLinks(userPermissions, rir.id);
-
-    return successResponse(res, data, 'Relatório de inspeção encontrado com sucesso', STATUS_CODES.OK, {
-      actions
-    });
+    successResponse(res, rir, 'Relatório de inspeção encontrado com sucesso');
   });
-
-  /**
-   * Obter permissões do usuário (método auxiliar)
-   */
-  static getUserPermissions(user) {
-    // Implementar lógica de permissões baseada no usuário
-    // Por enquanto, retorna permissões básicas
-    return ['visualizar', 'criar', 'editar', 'excluir'];
-  }
 }
 
 module.exports = RIRListController;

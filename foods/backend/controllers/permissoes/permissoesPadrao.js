@@ -37,6 +37,7 @@ const PERMISSOES_PADRAO = {
       necessidades_merenda: { visualizar: true, criar: true, editar: true, excluir: false },
       plano_amostragem: { visualizar: true, criar: true, editar: true, excluir: false },
       relatorio_inspecao: { visualizar: true, criar: true, editar: true, excluir: false },
+      solicitacoes_compras: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
       
     },
@@ -71,6 +72,7 @@ const PERMISSOES_PADRAO = {
       necessidades_merenda: { visualizar: true, criar: true, editar: true, excluir: false },
       plano_amostragem: { visualizar: true, criar: true, editar: true, excluir: false },
       relatorio_inspecao: { visualizar: true, criar: true, editar: true, excluir: false },
+      solicitacoes_compras: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -104,6 +106,7 @@ const PERMISSOES_PADRAO = {
       necessidades_merenda: { visualizar: true, criar: true, editar: true, excluir: true },
       plano_amostragem: { visualizar: true, criar: true, editar: true, excluir: true },
       relatorio_inspecao: { visualizar: true, criar: true, editar: true, excluir: true },
+      solicitacoes_compras: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: true, criar: true, editar: true, excluir: true }
     }
   },
@@ -172,6 +175,7 @@ const PERMISSOES_PADRAO = {
       necessidades_merenda: { visualizar: true, criar: true, editar: true, excluir: false },
       plano_amostragem: { visualizar: true, criar: true, editar: true, excluir: false },
       relatorio_inspecao: { visualizar: true, criar: true, editar: true, excluir: false },
+      solicitacoes_compras: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -205,6 +209,7 @@ const PERMISSOES_PADRAO = {
       necessidades_merenda: { visualizar: true, criar: true, editar: true, excluir: false },
       plano_amostragem: { visualizar: true, criar: true, editar: true, excluir: false },
       relatorio_inspecao: { visualizar: true, criar: true, editar: true, excluir: false },
+      solicitacoes_compras: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -240,6 +245,7 @@ const PERMISSOES_PADRAO = {
       necessidades_merenda: { visualizar: true, criar: true, editar: true, excluir: false },
       plano_amostragem: { visualizar: true, criar: true, editar: true, excluir: false },
       relatorio_inspecao: { visualizar: true, criar: true, editar: true, excluir: false },
+      solicitacoes_compras: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -273,6 +279,7 @@ const PERMISSOES_PADRAO = {
       necessidades_merenda: { visualizar: true, criar: true, editar: true, excluir: false },
       plano_amostragem: { visualizar: true, criar: true, editar: true, excluir: false },
       relatorio_inspecao: { visualizar: true, criar: true, editar: true, excluir: false },
+      solicitacoes_compras: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -306,6 +313,7 @@ const PERMISSOES_PADRAO = {
       necessidades_merenda: { visualizar: true, criar: true, editar: true, excluir: false },
       plano_amostragem: { visualizar: true, criar: true, editar: true, excluir: false },
       relatorio_inspecao: { visualizar: true, criar: true, editar: true, excluir: false },
+      solicitacoes_compras: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -341,6 +349,7 @@ const PERMISSOES_PADRAO = {
       necessidades_merenda: { visualizar: true, criar: true, editar: true, excluir: false },
       plano_amostragem: { visualizar: true, criar: true, editar: true, excluir: false },
       relatorio_inspecao: { visualizar: true, criar: true, editar: true, excluir: false },
+      solicitacoes_compras: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -374,6 +383,7 @@ const PERMISSOES_PADRAO = {
       necessidades_merenda: { visualizar: true, criar: true, editar: true, excluir: false },
       plano_amostragem: { visualizar: true, criar: true, editar: true, excluir: false },
       relatorio_inspecao: { visualizar: true, criar: true, editar: true, excluir: false },
+      solicitacoes_compras: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -407,6 +417,7 @@ const PERMISSOES_PADRAO = {
       necessidades_merenda: { visualizar: true, criar: true, editar: true, excluir: false },
       plano_amostragem: { visualizar: true, criar: true, editar: true, excluir: false },
       relatorio_inspecao: { visualizar: true, criar: true, editar: true, excluir: false },
+      solicitacoes_compras: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -442,6 +453,7 @@ const PERMISSOES_PADRAO = {
       necessidades_merenda: { visualizar: true, criar: true, editar: true, excluir: false },
       plano_amostragem: { visualizar: true, criar: true, editar: true, excluir: false },
       relatorio_inspecao: { visualizar: true, criar: true, editar: true, excluir: false },
+      solicitacoes_compras: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -475,6 +487,7 @@ const PERMISSOES_PADRAO = {
       necessidades_merenda: { visualizar: true, criar: true, editar: true, excluir: false },
       plano_amostragem: { visualizar: true, criar: true, editar: true, excluir: false },
       relatorio_inspecao: { visualizar: true, criar: true, editar: true, excluir: false },
+      solicitacoes_compras: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -508,6 +521,7 @@ const PERMISSOES_PADRAO = {
       necessidades_merenda: { visualizar: true, criar: true, editar: true, excluir: false },
       plano_amostragem: { visualizar: true, criar: true, editar: true, excluir: false },
       relatorio_inspecao: { visualizar: true, criar: true, editar: true, excluir: false },
+      solicitacoes_compras: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -543,6 +557,7 @@ const PERMISSOES_PADRAO = {
       necessidades_merenda: { visualizar: true, criar: true, editar: true, excluir: false },
       plano_amostragem: { visualizar: true, criar: true, editar: true, excluir: false },
       relatorio_inspecao: { visualizar: true, criar: true, editar: true, excluir: false },
+      solicitacoes_compras: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -576,6 +591,7 @@ const PERMISSOES_PADRAO = {
       necessidades_merenda: { visualizar: true, criar: true, editar: true, excluir: false },
       plano_amostragem: { visualizar: true, criar: true, editar: true, excluir: false },
       relatorio_inspecao: { visualizar: true, criar: true, editar: true, excluir: false },
+      solicitacoes_compras: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -609,6 +625,7 @@ const PERMISSOES_PADRAO = {
       necessidades_merenda: { visualizar: true, criar: true, editar: true, excluir: false },
       plano_amostragem: { visualizar: true, criar: true, editar: true, excluir: false },
       relatorio_inspecao: { visualizar: true, criar: true, editar: true, excluir: false },
+      solicitacoes_compras: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   }
@@ -647,7 +664,8 @@ const TODAS_TELAS = [
   'receitas',
   'necessidades_merenda',
   'plano_amostragem',
-  'relatorio_inspecao'
+  'relatorio_inspecao',
+  'solicitacoes_compras'
 ];
 
 // Tipos de acesso disponíveis
@@ -700,7 +718,8 @@ const TELAS_COM_DESCRICOES = [
   { nome: 'receitas', descricao: 'Gerenciamento de Receitas' },
   { nome: 'necessidades_merenda', descricao: 'Gerenciamento de Necessidades da Merenda' },
   { nome: 'plano_amostragem', descricao: 'Gerenciamento de Plano de Amostragem' },
-  { nome: 'relatorio_inspecao', descricao: 'Gerenciamento de Relatórios de Inspeção de Recebimento' }
+  { nome: 'relatorio_inspecao', descricao: 'Gerenciamento de Relatórios de Inspeção de Recebimento' },
+  { nome: 'solicitacoes_compras', descricao: 'Gerenciamento de Solicitações de Compras' }
 ];
 
 module.exports = {

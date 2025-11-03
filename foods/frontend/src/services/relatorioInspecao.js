@@ -5,18 +5,18 @@ class RelatorioInspecaoService {
     try {
       const response = await api.get('/relatorio-inspecao', { params });
       
-      // Extrair dados da estrutura HATEOAS
+      // Extrair dados da estrutura de resposta
       let rirs = [];
       let pagination = null;
       let statistics = null;
       
-      if (response.data && response.data.data) {
+      if (response.data.data) {
         // Se tem data.items (estrutura HATEOAS)
         if (response.data.data.items) {
           rirs = response.data.data.items;
           pagination = response.data.data._meta?.pagination;
           statistics = response.data.data._meta?.statistics;
-        } else if (Array.isArray(response.data.data)) {
+        } else {
           // Se data é diretamente um array
           rirs = response.data.data;
         }
@@ -26,35 +26,34 @@ class RelatorioInspecaoService {
       }
       
       // Se não conseguiu extrair paginação da estrutura HATEOAS, usar diretamente da resposta
-      if (!pagination) {
-        pagination = response.data?.pagination || response.data?.meta?.pagination;
+      if (!pagination && response.data.pagination) {
+        pagination = response.data.pagination;
       }
-      if (!statistics) {
-        statistics = response.data?.statistics || response.data?.meta?.statistics;
+      if (!statistics && response.data.statistics) {
+        statistics = response.data.statistics;
       }
       
       // Formatar paginação para o formato esperado pelo useBaseEntity
       let paginationData = null;
       if (pagination) {
         paginationData = {
-          page: pagination.current_page || pagination.page || 1,
-          pages: pagination.total_pages || pagination.pages || 1,
-          total: pagination.total_items || pagination.total || 0,
-          limit: pagination.items_per_page || pagination.limit || 20
+          page: pagination.page || pagination.current_page || 1,
+          pages: pagination.pages || pagination.total_pages || 1,
+          total: pagination.total || pagination.total_items || 0,
+          limit: pagination.limit || pagination.items_per_page || 20
         };
       }
-
+      
       return {
         success: true,
-        data: rirs || [],
-        pagination: paginationData,
-        statistics: statistics || null
+        data: rirs,
+        pagination: paginationData || response.data.pagination,
+        statistics: statistics || response.data.statistics
       };
     } catch (error) {
-      console.error('Erro no service listar:', error);
       return {
         success: false,
-        error: error.response?.data?.message || error.message || 'Erro ao carregar relatórios de inspeção'
+        message: error.response?.data?.message || 'Erro ao carregar relatórios de inspeção'
       };
     }
   }
@@ -62,14 +61,24 @@ class RelatorioInspecaoService {
   async buscarPorId(id) {
     try {
       const response = await api.get(`/relatorio-inspecao/${id}`);
+      
+      // Extrair dados da estrutura de resposta
+      let rir = null;
+      
+      if (response.data.data) {
+        rir = response.data.data;
+      } else {
+        rir = response.data;
+      }
+      
       return {
         success: true,
-        data: response.data.data || response.data
+        data: rir
       };
     } catch (error) {
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao buscar relatório de inspeção'
+        message: error.response?.data?.message || 'Erro ao buscar relatório de inspeção'
       };
     }
   }
@@ -83,10 +92,17 @@ class RelatorioInspecaoService {
         message: response.data.message || 'Relatório de inspeção criado com sucesso'
       };
     } catch (error) {
+      if (error.response?.status === 422) {
+        return {
+          success: false,
+          message: error.response.data.message || 'Dados inválidos',
+          validationErrors: error.response.data.errors,
+          errorCategories: error.response.data.errorCategories
+        };
+      }
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao criar relatório de inspeção',
-        validationErrors: error.response?.data?.errors
+        message: error.response?.data?.message || 'Erro ao criar relatório de inspeção'
       };
     }
   }
@@ -100,10 +116,17 @@ class RelatorioInspecaoService {
         message: response.data.message || 'Relatório de inspeção atualizado com sucesso'
       };
     } catch (error) {
+      if (error.response?.status === 422) {
+        return {
+          success: false,
+          message: error.response.data.message || 'Dados inválidos',
+          validationErrors: error.response.data.errors,
+          errorCategories: error.response.data.errorCategories
+        };
+      }
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao atualizar relatório de inspeção',
-        validationErrors: error.response?.data?.errors
+        message: error.response?.data?.message || 'Erro ao atualizar relatório de inspeção'
       };
     }
   }
@@ -118,7 +141,7 @@ class RelatorioInspecaoService {
     } catch (error) {
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao excluir relatório de inspeção'
+        message: error.response?.data?.message || 'Erro ao excluir relatório de inspeção'
       };
     }
   }
@@ -137,7 +160,7 @@ class RelatorioInspecaoService {
     } catch (error) {
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao buscar produtos do pedido'
+        message: error.response?.data?.message || 'Erro ao buscar produtos do pedido'
       };
     }
   }
@@ -154,7 +177,7 @@ class RelatorioInspecaoService {
     } catch (error) {
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao buscar NQA do grupo'
+        message: error.response?.data?.message || 'Erro ao buscar NQA do grupo'
       };
     }
   }
@@ -171,7 +194,7 @@ class RelatorioInspecaoService {
     } catch (error) {
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao buscar plano de amostragem'
+        message: error.response?.data?.message || 'Erro ao buscar plano de amostragem'
       };
     }
   }
@@ -186,7 +209,7 @@ class RelatorioInspecaoService {
     } catch (error) {
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao buscar pedidos aprovados'
+        message: error.response?.data?.message || 'Erro ao buscar pedidos aprovados'
       };
     }
   }
@@ -201,7 +224,7 @@ class RelatorioInspecaoService {
     } catch (error) {
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao buscar grupos'
+        message: error.response?.data?.message || 'Erro ao buscar grupos'
       };
     }
   }

@@ -35,6 +35,7 @@ import Receitas from './pages/receitas/Receitas';
 import NecessidadesMerenda from './pages/necessidades-merenda/NecessidadesMerenda';
 import PlanoAmostragem from './pages/plano-amostragem/PlanoAmostragem';
 import RelatorioInspecao from './pages/relatorio-inspecao/RelatorioInspecao';
+import SolicitacoesCompras from './pages/solicitacoes-compras/SolicitacoesCompras';
 
 // Componente para rotas protegidas com autenticação
 const AuthenticatedRoute = ({ children }) => {
@@ -422,11 +423,11 @@ const App = () => {
       />
 
       <Route 
-        path="/foods/relatorio-inspecao/:id/visualizar" 
+        path="/foods/solicitacoes-compras" 
         element={
           <AuthenticatedRoute>
-            <ProtectedRoute screen="relatorio_inspecao">
-              <RelatorioInspecao />
+            <ProtectedRoute screen="solicitacoes_compras">
+              <SolicitacoesCompras />
             </ProtectedRoute>
           </AuthenticatedRoute>
         } 

@@ -4,7 +4,7 @@ import { Input } from '../ui';
 import RelatorioInspecaoService from '../../services/relatorioInspecao';
 import toast from 'react-hot-toast';
 
-const ProdutosTable = ({ produtos, onChange, onRemove }) => {
+const ProdutosTable = ({ produtos, onChange, onRemove, viewMode = false }) => {
   const [produtosAtualizados, setProdutosAtualizados] = useState(produtos || []);
 
   useEffect(() => {

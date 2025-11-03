@@ -2,7 +2,7 @@ import React from 'react';
 import { FaPlus, FaTrash } from 'react-icons/fa';
 import { Button, Input, SearchableSelect } from '../ui';
 
-const ChecklistTable = ({ checklist, grupos, onChange, onAdd, onRemove }) => {
+const ChecklistTable = ({ checklist, grupos, onChange, onAdd, onRemove, viewMode = false }) => {
   const tiposTransporte = [
     { value: 'Baú', label: 'Baú' },
     { value: 'Baú Isotérmico', label: 'Baú Isotérmico' },
@@ -41,10 +41,12 @@ const ChecklistTable = ({ checklist, grupos, onChange, onAdd, onRemove }) => {
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
       <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
         <h3 className="text-lg font-semibold text-gray-900">Check List de Avaliação Higiênico-Sanitária</h3>
-        <Button onClick={onAdd} size="sm" variant="ghost">
-          <FaPlus className="mr-1" />
-          Adicionar Item
-        </Button>
+        {!viewMode && (
+          <Button onClick={onAdd} size="sm" variant="ghost">
+            <FaPlus className="mr-1" />
+            Adicionar Item
+          </Button>
+        )}
       </div>
 
       {checklist.length === 0 ? (
@@ -74,9 +76,11 @@ const ChecklistTable = ({ checklist, grupos, onChange, onAdd, onRemove }) => {
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Condições da Embalagem
                 </th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Ações
-                </th>
+                {!viewMode && (
+                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Ações
+                  </th>
+                )}
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -89,6 +93,7 @@ const ChecklistTable = ({ checklist, grupos, onChange, onAdd, onRemove }) => {
                       options={tiposTransporte}
                       placeholder="Selecione..."
                       className="w-full"
+                      disabled={viewMode}
                     />
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap">
@@ -98,6 +103,7 @@ const ChecklistTable = ({ checklist, grupos, onChange, onAdd, onRemove }) => {
                       options={getGrupoOptions()}
                       placeholder="Selecione o grupo..."
                       className="w-full"
+                      disabled={viewMode}
                     />
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap">
@@ -107,6 +113,7 @@ const ChecklistTable = ({ checklist, grupos, onChange, onAdd, onRemove }) => {
                       options={opcoesConformidade}
                       placeholder="Selecione..."
                       className="w-full"
+                      disabled={viewMode}
                     />
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap">
@@ -116,6 +123,7 @@ const ChecklistTable = ({ checklist, grupos, onChange, onAdd, onRemove }) => {
                       options={opcoesConformidade}
                       placeholder="Selecione..."
                       className="w-full"
+                      disabled={viewMode}
                     />
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap">
@@ -125,6 +133,7 @@ const ChecklistTable = ({ checklist, grupos, onChange, onAdd, onRemove }) => {
                       options={opcoesConformidade}
                       placeholder="Selecione..."
                       className="w-full"
+                      disabled={viewMode}
                     />
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap">
@@ -134,17 +143,25 @@ const ChecklistTable = ({ checklist, grupos, onChange, onAdd, onRemove }) => {
                       options={opcoesConformidade}
                       placeholder="Selecione..."
                       className="w-full"
+                      disabled={viewMode}
                     />
                   </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-center">
-                    <button
-                      onClick={() => onRemove(index)}
-                      className="text-red-600 hover:text-red-900 p-1 rounded transition-colors"
-                      title="Remover item"
-                    >
-                      <FaTrash className="w-4 h-4" />
-                    </button>
-                  </td>
+                  {!viewMode && (
+                    <td className="px-4 py-3 whitespace-nowrap text-center">
+                      <button
+                        onClick={() => onRemove(index)}
+                        className="text-red-600 hover:text-red-900 p-1 rounded transition-colors"
+                        title="Remover item"
+                      >
+                        <FaTrash className="w-4 h-4" />
+                      </button>
+                    </td>
+                  )}
+                  {viewMode && (
+                    <td className="px-4 py-3 whitespace-nowrap text-center">
+                      {/* Coluna vazia em modo visualização */}
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>

@@ -42,14 +42,14 @@ export const useRelatorioInspecao = () => {
       status_geral: customFilters.filters.status_geral || undefined,
       data_inicio: customFilters.filters.data_inicio || undefined,
       data_fim: customFilters.filters.data_fim || undefined
-    };
+      };
 
     // Remover parâmetros vazios
     Object.keys(params).forEach(key => {
       if (params[key] === '' || params[key] === null || params[key] === undefined) {
         delete params[key];
-      }
-    });
+        }
+      });
 
     await baseEntity.loadData(params);
   }, [baseEntity, customFilters]);
@@ -71,7 +71,7 @@ export const useRelatorioInspecao = () => {
         setRir(response.data);
         return response.data;
       } else {
-        toast.error(response.error || 'Erro ao buscar relatório de inspeção');
+        toast.error(response.message || 'Erro ao buscar relatório de inspeção');
         return null;
       }
     } catch (error) {
@@ -98,7 +98,7 @@ export const useRelatorioInspecao = () => {
         if (response.validationErrors) {
           return response; // Retornar para o componente tratar
         }
-        toast.error(response.error || 'Erro ao criar relatório de inspeção');
+        toast.error(response.message || 'Erro ao criar relatório de inspeção');
         return response;
       }
     } catch (error) {
@@ -123,7 +123,7 @@ export const useRelatorioInspecao = () => {
         if (response.validationErrors) {
           return response; // Retornar para o componente tratar
         }
-        toast.error(response.error || 'Erro ao atualizar relatório de inspeção');
+        toast.error(response.message || 'Erro ao atualizar relatório de inspeção');
         return response;
       }
     } catch (error) {
@@ -145,7 +145,7 @@ export const useRelatorioInspecao = () => {
         await loadDataWithFilters(); // Recarregar lista
         return true;
       } else {
-        toast.error(response.error || 'Erro ao excluir relatório de inspeção');
+        toast.error(response.message || 'Erro ao excluir relatório de inspeção');
         return false;
       }
     } catch (error) {
@@ -240,24 +240,41 @@ export const useRelatorioInspecao = () => {
   /**
    * Limpar filtros
    */
-  const clearFiltros = useCallback(() => {
+  const handleClearFilters = useCallback(() => {
     baseEntity.setSearchTerm('');
     customFilters.setFilters({
       status_geral: '',
       data_inicio: '',
       data_fim: ''
     });
+    baseEntity.handlePageChange(1);
   }, [baseEntity, customFilters]);
 
   /**
-   * Atualizar filtros customizados
+   * Função auxiliar para status badge
    */
-  const setFiltros = useCallback((filtros) => {
-    customFilters.setFilters(prev => ({
-      ...prev,
-      ...filtros
-    }));
-  }, [customFilters]);
+  const getStatusBadge = useCallback((status) => {
+    const statusMap = {
+      'APROVADO': { label: 'Aprovado', className: 'bg-green-100 text-green-800' },
+      'REPROVADO': { label: 'Reprovado', className: 'bg-red-100 text-red-800' },
+      'PARCIAL': { label: 'Parcial', className: 'bg-yellow-100 text-yellow-800' }
+    };
+
+    const statusInfo = statusMap[status] || { label: status, className: 'bg-gray-100 text-gray-800' };
+    
+    return (
+      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${statusInfo.className}`}>
+        {statusInfo.label}
+      </span>
+    );
+  }, []);
+
+  /**
+   * Submissão customizada
+   */
+  const onSubmitCustom = useCallback(async (data) => {
+    await baseEntity.onSubmit(data);
+  }, [baseEntity]);
 
   return {
     // Estados principais (do hook base)
@@ -266,22 +283,16 @@ export const useRelatorioInspecao = () => {
     loading: baseEntity.loading,
     
     // Estados de paginação (do hook base)
-    pagination: {
-      current_page: baseEntity.currentPage,
-      total_pages: baseEntity.totalPages,
-      total_items: baseEntity.totalItems,
-      items_per_page: baseEntity.itemsPerPage
-    },
+    currentPage: baseEntity.currentPage,
+    totalPages: baseEntity.totalPages,
+    totalItems: baseEntity.totalItems,
+    itemsPerPage: baseEntity.itemsPerPage,
     
     // Estados de estatísticas (do hook base)
-    statistics: baseEntity.estatisticas,
+    estatisticas: baseEntity.estatisticas,
     
     // Estados específicos
     grupos,
-    filtros: {
-      search: baseEntity.searchTerm,
-      ...customFilters.filters
-    },
     
     // Estados de modal (do hook base)
     showModal: baseEntity.showModal,
@@ -295,7 +306,13 @@ export const useRelatorioInspecao = () => {
     // Estados de validação (do hook base)
     validationErrors: baseEntity.validationErrors,
     showValidationModal: baseEntity.showValidationModal,
-    
+
+    // Estados de filtros
+    searchTerm: baseEntity.searchTerm,
+    statusFilter: customFilters.filters.status_geral,
+    dataInicioFilter: customFilters.filters.data_inicio,
+    dataFimFilter: customFilters.filters.data_fim,
+
     // Ações de modal (do hook base)
     handleAddRIR: baseEntity.handleAdd,
     handleViewRIR: baseEntity.handleView,
@@ -309,10 +326,13 @@ export const useRelatorioInspecao = () => {
     // Ações de filtros (do hook base + customizadas)
     setSearchTerm: baseEntity.setSearchTerm,
     handleKeyPress,
-    clearFiltros,
-    setFiltros,
+    handleClearFilters,
+    setStatusFilter: (value) => customFilters.updateFilter('status_geral', value),
+    setDataInicioFilter: (value) => customFilters.updateFilter('data_inicio', value),
+    setDataFimFilter: (value) => customFilters.updateFilter('data_fim', value),
     
     // Ações CRUD (customizadas)
+    handleSubmitRIR: onSubmitCustom,
     carregarRIRs: loadDataWithFilters,
     buscarRIRPorId,
     criarRIR,
@@ -323,6 +343,12 @@ export const useRelatorioInspecao = () => {
     handleDeleteRIR: baseEntity.handleDelete,
     handleConfirmDelete: baseEntity.handleConfirmDelete,
     handleCloseDeleteModal: baseEntity.handleCloseDeleteModal,
+    
+    // Ações de validação
+    handleCloseValidationModal: baseEntity.handleCloseValidationModal,
+    
+    // Funções auxiliares
+    getStatusBadge,
     
     // Integrações
     buscarProdutosPedido,

@@ -1,31 +1,36 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { FaPlus, FaQuestionCircle } from 'react-icons/fa';
 import { usePermissions } from '../../contexts/PermissionsContext';
-import { useRelatorioInspecao } from '../../hooks/useRelatorioInspecao';
+import { useSolicitacoesCompras } from '../../hooks/useSolicitacoesCompras';
 import { useAuditoria } from '../../hooks/common/useAuditoria';
-import { Button, ValidationErrorModal, ConfirmModal, CadastroFilterBar, Pagination } from '../../components/ui';
-import { AuditModal, ExportButtons } from '../../components/shared';
-import RelatorioInspecaoModal from '../../components/relatorio-inspecao/RelatorioInspecaoModal';
-import RIRStats from '../../components/relatorio-inspecao/RIRStats';
-import RelatorioInspecaoTable from '../../components/relatorio-inspecao/RelatorioInspecaoTable';
+import { Button, ValidationErrorModal, ConfirmModal } from '../../components/ui';
+import { CadastroFilterBar } from '../../components/ui';
+import { Pagination } from '../../components/ui';
+import { SolicitacoesComprasModal } from '../../components/solicitacoes-compras';
+import SolicitacoesComprasStats from '../../components/solicitacoes-compras/SolicitacoesComprasStats';
+import SolicitacoesComprasTable from '../../components/solicitacoes-compras/SolicitacoesComprasTable';
+import { AuditModal } from '../../components/shared';
 
-const RelatorioInspecao = () => {
+const SolicitacoesCompras = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
   
   // Hooks customizados
   const {
-    rirs,
+    solicitacoes,
     loading,
     showModal,
     viewMode,
-    editingRir,
+    editingSolicitacao,
     showValidationModal,
     validationErrors,
     showDeleteConfirmModal,
-    rirToDelete,
-    grupos,
+    solicitacaoToDelete,
+    filiais,
+    produtosGenericos,
+    unidadesMedida,
     searchTerm,
     statusFilter,
+    filialFilter,
     dataInicioFilter,
     dataFimFilter,
     currentPage,
@@ -33,13 +38,13 @@ const RelatorioInspecao = () => {
     totalItems,
     itemsPerPage,
     estatisticas,
-    handleSubmitRIR,
-    handleDeleteRIR,
+    handleSubmitSolicitacao,
+    handleDeleteSolicitacao,
     handleConfirmDelete,
     handleCloseDeleteModal,
-    handleAddRIR,
-    handleViewRIR,
-    handleEditRIR,
+    handleAddSolicitacao,
+    handleViewSolicitacao,
+    handleEditSolicitacao,
     handleCloseModal,
     handleCloseValidationModal,
     handlePageChange,
@@ -48,10 +53,12 @@ const RelatorioInspecao = () => {
     setSearchTerm,
     handleKeyPress,
     setStatusFilter,
+    setFilialFilter,
     setDataInicioFilter,
     setDataFimFilter,
-    getStatusBadge
-  } = useRelatorioInspecao();
+    getFilialName,
+    getStatusLabel
+  } = useSolicitacoesCompras();
 
   const {
     showAuditModal,
@@ -67,14 +74,14 @@ const RelatorioInspecao = () => {
     handleExportAuditXLSX,
     handleExportAuditPDF,
     setAuditFilters
-  } = useAuditoria('relatorio_inspecao');
+  } = useAuditoria('solicitacoes_compras');
 
   if (loading) {
     return (
       <div className="p-6">
         <div className="flex items-center justify-center py-12">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
-          <span className="ml-3 text-gray-600">Carregando relatórios de inspeção...</span>
+          <span className="ml-3 text-gray-600">Carregando solicitações de compras...</span>
         </div>
       </div>
     );
@@ -84,7 +91,7 @@ const RelatorioInspecao = () => {
     <div className="p-4 sm:p-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Relatórios de Inspeção de Recebimento</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Solicitações de Compras</h1>
         
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
           <Button
@@ -96,18 +103,18 @@ const RelatorioInspecao = () => {
             <span className="hidden sm:inline">Auditoria</span>
             <span className="sm:hidden">Auditoria</span>
           </Button>
-          {canCreate('relatorio_inspecao') && (
-            <Button onClick={handleAddRIR} variant="primary" size="sm">
+          {canCreate('solicitacoes_compras') && (
+            <Button onClick={handleAddSolicitacao} variant="primary" size="sm">
               <FaPlus className="mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">Novo Relatório</span>
-              <span className="sm:hidden">Novo</span>
+              <span className="hidden sm:inline">Nova Solicitação</span>
+              <span className="sm:hidden">Nova</span>
             </Button>
           )}
         </div>
       </div>
 
       {/* Estatísticas */}
-      <RIRStats estatisticas={estatisticas} />
+      <SolicitacoesComprasStats estatisticas={estatisticas} />
 
       {/* Filtros */}
       <CadastroFilterBar
@@ -122,9 +129,19 @@ const RelatorioInspecao = () => {
             onChange: setStatusFilter,
             options: [
               { value: '', label: 'Todos os status' },
-              { value: 'APROVADO', label: 'Aprovado' },
-              { value: 'REPROVADO', label: 'Reprovado' },
-              { value: 'PARCIAL', label: 'Parcial' }
+              { value: 'aberto', label: 'Aberto' },
+              { value: 'parcial', label: 'Parcial' },
+              { value: 'finalizado', label: 'Finalizado' },
+              { value: 'cancelada', label: 'Cancelada' }
+            ]
+          },
+          {
+            label: 'Filial',
+            value: filialFilter,
+            onChange: setFilialFilter,
+            options: [
+              { value: '', label: 'Todas as filiais' },
+              ...filiais.map(f => ({ value: f.id, label: f.nome }))
             ]
           },
           {
@@ -140,28 +157,20 @@ const RelatorioInspecao = () => {
             type: 'date'
           }
         ]}
-        placeholder="Buscar por NF ou Fornecedor..."
+        placeholder="Buscar por número, descrição, solicitante ou unidade..."
       />
 
-      {/* Ações de Exportação */}
-      <div className="mb-4">
-        <ExportButtons
-          onExportXLSX={() => {}}
-          onExportPDF={() => {}}
-          disabled={!canView('relatorio_inspecao')}
-        />
-      </div>
-
       {/* Tabela */}
-      <RelatorioInspecaoTable
-        rirs={rirs}
-        onView={canView('relatorio_inspecao') ? handleViewRIR : null}
-        onEdit={canEdit('relatorio_inspecao') ? handleEditRIR : null}
-        onDelete={canDelete('relatorio_inspecao') ? handleDeleteRIR : null}
-        canView={canView('relatorio_inspecao')}
-        canEdit={canEdit('relatorio_inspecao')}
-        canDelete={canDelete('relatorio_inspecao')}
-        getStatusBadge={getStatusBadge}
+      <SolicitacoesComprasTable
+        solicitacoes={solicitacoes}
+        onView={canView('solicitacoes_compras') ? handleViewSolicitacao : null}
+        onEdit={canEdit('solicitacoes_compras') ? handleEditSolicitacao : null}
+        onDelete={canDelete('solicitacoes_compras') ? handleDeleteSolicitacao : null}
+        canView={canView('solicitacoes_compras')}
+        canEdit={canEdit('solicitacoes_compras')}
+        canDelete={canDelete('solicitacoes_compras')}
+        getFilialName={getFilialName}
+        getStatusLabel={getStatusLabel}
       />
 
       {/* Paginação */}
@@ -175,13 +184,15 @@ const RelatorioInspecao = () => {
       />
 
       {/* Modal */}
-      <RelatorioInspecaoModal
+      <SolicitacoesComprasModal
         isOpen={showModal}
         onClose={handleCloseModal}
-        onSubmit={handleSubmitRIR}
-        rir={editingRir}
+        onSubmit={handleSubmitSolicitacao}
+        solicitacao={editingSolicitacao}
         viewMode={viewMode}
-        grupos={grupos}
+        filiais={filiais}
+        produtosGenericos={produtosGenericos}
+        unidadesMedida={unidadesMedida}
         loading={loading}
       />
 
@@ -214,8 +225,8 @@ const RelatorioInspecao = () => {
         isOpen={showDeleteConfirmModal}
         onClose={handleCloseDeleteModal}
         onConfirm={handleConfirmDelete}
-        title="Excluir Relatório de Inspeção"
-        message={`Tem certeza que deseja excluir o relatório de inspeção #${rirToDelete?.id?.toString().padStart(4, '0') || ''}?`}
+        title="Excluir Solicitação de Compras"
+        message={`Tem certeza que deseja excluir a solicitação "${solicitacaoToDelete?.numero_solicitacao}"?`}
         confirmText="Excluir"
         cancelText="Cancelar"
         type="danger"
@@ -224,4 +235,5 @@ const RelatorioInspecao = () => {
   );
 };
 
-export default RelatorioInspecao;
+export default SolicitacoesCompras;
+

@@ -1,34 +1,474 @@
-import React from 'react';
-import { Modal } from '../ui';
-import RelatorioInspecaoForm from '../../pages/relatorio-inspecao/RelatorioInspecaoForm';
+import React, { useState, useEffect } from 'react';
+import { FaSave, FaTimes, FaEye, FaEdit } from 'react-icons/fa';
+import toast from 'react-hot-toast';
+import { usePermissions } from '../../contexts/PermissionsContext';
+import { useRelatorioInspecao } from '../../hooks/useRelatorioInspecao';
+import { Button, Input, SearchableSelect, LoadingSpinner, Modal } from '../ui';
+import ChecklistTable from './ChecklistTable';
+import ProdutosTable from './ProdutosTable';
 
-const RelatorioInspecaoModal = ({ isOpen, onClose, rirId, onSuccess }) => {
+const RelatorioInspecaoModal = ({ isOpen, onClose, onSubmit, rir, viewMode, grupos, loading }) => {
+  const { canCreate, canEdit } = usePermissions();
+  const isEditMode = !!rir?.id;
+  const isViewMode = viewMode || false;
+  const rirId = rir?.id || null;
+
+  const {
+    rir: rirData,
+    loading: loadingRIR,
+    grupos: gruposData,
+    buscarRIRPorId,
+    criarRIR,
+    atualizarRIR,
+    buscarPedidosAprovados,
+    buscarGrupos,
+    buscarProdutosPedido,
+    buscarNQAGrupo
+  } = useRelatorioInspecao();
+
+  const [saving, setSaving] = useState(false);
+  const [pedidos, setPedidos] = useState([]);
+  const [loadingPedidos, setLoadingPedidos] = useState(false);
+
+  // Estados do formulário
+  const [formData, setFormData] = useState({
+    data_inspecao: new Date().toISOString().split('T')[0],
+    hora_inspecao: new Date().toTimeString().slice(0, 5),
+    numero_nota_fiscal: '',
+    fornecedor: '',
+    numero_pedido: '',
+    cnpj_fornecedor: '',
+    checklist_json: [],
+    produtos_json: [],
+    ocorrencias: '',
+    recebedor: '',
+    visto_responsavel: ''
+  });
+
+  // Carregar dados iniciais
+  useEffect(() => {
+    if (isOpen) {
+      if (isEditMode && rirId) {
+        loadRIRData();
+      }
+      loadInitialData();
+    }
+  }, [rirId, isEditMode, isOpen]);
+
+  const loadRIRData = async () => {
+    const data = await buscarRIRPorId(rirId);
+    if (data) {
+      setFormData({
+        data_inspecao: data.data_inspecao || new Date().toISOString().split('T')[0],
+        hora_inspecao: data.hora_inspecao || new Date().toTimeString().slice(0, 5),
+        numero_nota_fiscal: data.numero_nota_fiscal || '',
+        fornecedor: data.fornecedor || '',
+        numero_pedido: data.numero_pedido || '',
+        cnpj_fornecedor: data.cnpj_fornecedor || '',
+        checklist_json: data.checklist_json || [],
+        produtos_json: data.produtos_json || [],
+        ocorrencias: data.ocorrencias || '',
+        recebedor: data.recebedor || '',
+        visto_responsavel: data.visto_responsavel || ''
+      });
+    }
+  };
+
+  const loadInitialData = async () => {
+    // Carregar pedidos aprovados
+    setLoadingPedidos(true);
+    const pedidosResponse = await buscarPedidosAprovados();
+    if (pedidosResponse.success) {
+      setPedidos(pedidosResponse.data || []);
+    }
+    setLoadingPedidos(false);
+
+    // Carregar grupos
+    const gruposResponse = await buscarGrupos();
+    // grupos já está disponível no hook
+  };
+
+  const handleInputChange = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handlePedidoChange = async (pedidoId) => {
+    if (!pedidoId) {
+      setFormData(prev => ({
+        ...prev,
+        numero_pedido: '',
+        fornecedor: '',
+        cnpj_fornecedor: '',
+        produtos_json: []
+      }));
+      return;
+    }
+
+    const pedido = pedidos.find(p => p.id.toString() === pedidoId.toString());
+    if (pedido) {
+      setFormData(prev => ({
+        ...prev,
+        numero_pedido: pedido.numero_pedido || '',
+        fornecedor: pedido.fornecedor || '',
+        cnpj_fornecedor: pedido.cnpj || ''
+      }));
+    }
+
+    // Buscar produtos do pedido
+    const produtosResponse = await buscarProdutosPedido(pedidoId);
+    if (produtosResponse.success && produtosResponse.data) {
+      const produtosDoPedido = produtosResponse.data.produtos || [];
+      
+      // Mapear produtos para o formato esperado e buscar NQA para cada um
+      const produtosMapeados = await Promise.all(
+        produtosDoPedido.map(async (produto, index) => {
+          let nqaData = {
+            nqa_id: produto.nqa_id || null,
+            nqa_codigo: produto.nqa_codigo || null
+          };
+
+          // Se não trouxe NQA do pedido, buscar pelo grupo
+          if (!nqaData.nqa_id && produto.grupo_id) {
+            const nqaResponse = await buscarNQAGrupo(produto.grupo_id);
+            if (nqaResponse.success && nqaResponse.data) {
+              nqaData.nqa_id = nqaResponse.data.id;
+              nqaData.nqa_codigo = nqaResponse.data.codigo;
+            }
+          }
+
+          return {
+            index: index,
+            codigo: produto.codigo_produto || '',
+            descricao: produto.nome_produto || '',
+            und: produto.unidade_medida || '',
+            qtde: produto.quantidade_pedido || '',
+            grupo_id: produto.grupo_id,
+            grupoId: produto.grupo_id,
+            grupo_nome: produto.grupo_nome,
+            nqa_id: nqaData.nqa_id,
+            nqa_codigo: nqaData.nqa_codigo,
+            fabricacao: '',
+            fabricacaoBR: '',
+            lote: '',
+            validade: '',
+            validadeBR: '',
+            controle_validade: null,
+            temperatura: '',
+            aval_sensorial: '',
+            tam_lote: '',
+            num_amostras_avaliadas: null,
+            num_amostras_aprovadas: '',
+            num_amostras_reprovadas: '',
+            resultado_final: 'Aprovado',
+            ac: null,
+            re: null
+          };
+        })
+      );
+
+      setFormData(prev => ({ ...prev, produtos_json: produtosMapeados }));
+    }
+  };
+
+  const handleChecklistChange = (checklist) => {
+    setFormData(prev => ({ ...prev, checklist_json: checklist }));
+  };
+
+  const handleProdutosChange = (produtos) => {
+    setFormData(prev => ({ ...prev, produtos_json: produtos }));
+  };
+
+  const handleAddChecklistItem = () => {
+    setFormData(prev => ({
+      ...prev,
+      checklist_json: [
+        ...prev.checklist_json,
+        {
+          tipo_transporte: '',
+          tipo_produto: '',
+          isento_material: '',
+          condicoes_caminhao: '',
+          acondicionamento: '',
+          condicoes_embalagem: ''
+        }
+      ]
+    }));
+  };
+
+  const handleRemoveChecklistItem = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      checklist_json: prev.checklist_json.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleRemoveProduto = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      produtos_json: prev.produtos_json.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!formData.numero_nota_fiscal || !formData.fornecedor) {
+      toast.error('Campos obrigatórios: Número da Nota Fiscal e Fornecedor');
+      return;
+    }
+
+    setSaving(true);
+
+    try {
+      let response;
+      if (isEditMode) {
+        response = await atualizarRIR(rirId, formData);
+      } else {
+        response = await criarRIR(formData);
+      }
+
+      if (response.success) {
+        toast.success(response.message || 'Relatório salvo com sucesso!');
+        if (onSubmit) {
+          onSubmit(formData);
+        }
+        onClose();
+      } else {
+        if (response.validationErrors) {
+          // Erros de validação serão tratados pelo componente
+          toast.error('Erros de validação encontrados');
+        } else {
+          toast.error(response.message || 'Erro ao salvar relatório');
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao salvar:', error);
+      toast.error('Erro ao salvar relatório');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const getPedidoOptions = () => {
+    return pedidos.map(pedido => ({
+      value: pedido.id.toString(),
+      label: `${pedido.numero_pedido || pedido.id} - ${pedido.fornecedor || 'Sem fornecedor'}`
+    }));
+  };
+
   if (!isOpen) return null;
 
-  const handleSuccess = () => {
-    if (onSuccess) {
-      onSuccess();
-    }
-    onClose();
-  };
+  if (loadingRIR && isEditMode) {
+    return (
+      <Modal isOpen={isOpen} onClose={onClose} size="full">
+        <div className="flex justify-center items-center h-64">
+          <LoadingSpinner />
+        </div>
+      </Modal>
+    );
+  }
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={rirId ? 'Editar Relatório de Inspeção' : 'Novo Relatório de Inspeção'}
+      title={viewMode ? 'Visualizar Relatório de Inspeção' : rir ? 'Editar Relatório de Inspeção' : 'Novo Relatório de Inspeção'}
       size="full"
     >
       <div className="max-h-[75vh] overflow-y-auto">
-        <RelatorioInspecaoForm
-          rirId={rirId}
-          onSuccess={handleSuccess}
-          onCancel={onClose}
-        />
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* SEÇÃO A: Dados do Pedido */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">A) Dados do Pedido</h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Pedido de Compra
+                </label>
+                <SearchableSelect
+                  value={formData.pedido_id || ''}
+                  onChange={handlePedidoChange}
+                  options={getPedidoOptions()}
+                  placeholder="Selecione o pedido..."
+                  disabled={loadingPedidos || isViewMode}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Fornecedor <span className="text-red-500">*</span>
+                </label>
+                <Input
+                  type="text"
+                  value={formData.fornecedor}
+                  onChange={(e) => handleInputChange('fornecedor', e.target.value)}
+                  placeholder="Razão Social do fornecedor"
+                  required
+                  disabled={isViewMode}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  CNPJ Fornecedor
+                </label>
+                <Input
+                  type="text"
+                  value={formData.cnpj_fornecedor}
+                  onChange={(e) => handleInputChange('cnpj_fornecedor', e.target.value)}
+                  placeholder="00.000.000/0000-00"
+                  disabled={isViewMode}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Nº Nota Fiscal <span className="text-red-500">*</span>
+                </label>
+                <Input
+                  type="text"
+                  value={formData.numero_nota_fiscal}
+                  onChange={(e) => handleInputChange('numero_nota_fiscal', e.target.value)}
+                  placeholder="Número da NF"
+                  required
+                  disabled={isViewMode}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Data Recebimento <span className="text-red-500">*</span>
+                </label>
+                <Input
+                  type="date"
+                  value={formData.data_inspecao}
+                  onChange={(e) => handleInputChange('data_inspecao', e.target.value)}
+                  required
+                  disabled={isViewMode}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Hora Recebimento <span className="text-red-500">*</span>
+                </label>
+                <Input
+                  type="time"
+                  value={formData.hora_inspecao}
+                  onChange={(e) => handleInputChange('hora_inspecao', e.target.value)}
+                  required
+                  disabled={isViewMode}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* SEÇÃO B: Check List Higiênico-Sanitário */}
+          <ChecklistTable
+            checklist={formData.checklist_json}
+            grupos={gruposData || grupos || []}
+            onChange={handleChecklistChange}
+            onAdd={handleAddChecklistItem}
+            onRemove={handleRemoveChecklistItem}
+            viewMode={isViewMode}
+          />
+
+          {/* SEÇÃO C: Avaliação dos Produtos */}
+          <ProdutosTable
+            produtos={formData.produtos_json}
+            onChange={handleProdutosChange}
+            onRemove={handleRemoveProduto}
+            viewMode={isViewMode}
+          />
+
+          {/* SEÇÃO D: Ocorrências e Responsáveis */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">D) Ocorrências e Responsáveis</h2>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Ocorrências e Observações Gerais
+                </label>
+                <textarea
+                  value={formData.ocorrencias}
+                  onChange={(e) => handleInputChange('ocorrencias', e.target.value)}
+                  rows={4}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  placeholder="Digite as ocorrências e observações gerais..."
+                  disabled={isViewMode}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Recebedor
+                  </label>
+                  <Input
+                    type="text"
+                    value={formData.recebedor}
+                    onChange={(e) => handleInputChange('recebedor', e.target.value)}
+                    placeholder="Nome do responsável pelo recebimento"
+                    disabled={isViewMode}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Visto Responsável
+                  </label>
+                  <Input
+                    type="text"
+                    value={formData.visto_responsavel}
+                    onChange={(e) => handleInputChange('visto_responsavel', e.target.value)}
+                    placeholder="Nome do responsável técnico"
+                    disabled={isViewMode}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Botões de Ação */}
+          {!isViewMode && (
+            <div className="flex justify-end gap-4 pt-6 border-t border-gray-200 mt-6">
+              <Button
+                type="button"
+                onClick={onClose}
+                variant="outline"
+                size="sm"
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                disabled={saving || (!canCreate('relatorio_inspecao') && !isEditMode) || (!canEdit('relatorio_inspecao') && isEditMode)}
+                loading={saving}
+                size="sm"
+              >
+                <FaSave className="mr-2" />
+                {saving ? 'Salvando...' : (isEditMode ? 'Atualizar' : 'Criar')}
+              </Button>
+            </div>
+          )}
+          {isViewMode && (
+            <div className="flex justify-end gap-4 pt-6 border-t border-gray-200 mt-6">
+              <Button
+                type="button"
+                onClick={onClose}
+                variant="outline"
+                size="sm"
+              >
+                Fechar
+              </Button>
+            </div>
+          )}
+        </form>
       </div>
     </Modal>
   );
 };
 
 export default RelatorioInspecaoModal;
-
