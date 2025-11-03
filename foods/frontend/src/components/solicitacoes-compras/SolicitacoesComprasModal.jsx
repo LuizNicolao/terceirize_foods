@@ -83,8 +83,7 @@ const SolicitacoesComprasModal = ({
       produto_id: '',
       quantidade: '',
       unidade_medida_id: '',
-      observacao: '',
-      valor_unitario: ''
+      observacao: ''
     }]);
   };
 
@@ -164,8 +163,7 @@ const SolicitacoesComprasModal = ({
         produto_id: parseInt(item.produto_id),
         quantidade: parseFloat(item.quantidade),
         unidade_medida_id: parseInt(item.unidade_medida_id),
-        observacao: item.observacao || null,
-        valor_unitario: item.valor_unitario ? parseFloat(item.valor_unitario) : 0
+        observacao: item.observacao || null
       }))
     };
 
@@ -328,9 +326,6 @@ const SolicitacoesComprasModal = ({
                         Quantidade *
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Valor Unitário
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Observação
                       </th>
                       {!viewMode && (
@@ -390,23 +385,6 @@ const SolicitacoesComprasModal = ({
                                 onChange={(e) => handleItemChange(index, 'quantidade', e.target.value)}
                                 className="w-full"
                                 placeholder="0.000"
-                              />
-                            )}
-                          </td>
-                          <td className="px-4 py-3">
-                            {viewMode ? (
-                              <span className="text-sm text-gray-900">
-                                {item.valor_unitario ? `R$ ${parseFloat(item.valor_unitario).toFixed(2)}` : '-'}
-                              </span>
-                            ) : (
-                              <Input
-                                type="number"
-                                step="0.01"
-                                min="0"
-                                value={item.valor_unitario || ''}
-                                onChange={(e) => handleItemChange(index, 'valor_unitario', e.target.value)}
-                                className="w-full"
-                                placeholder="0.00"
                               />
                             )}
                           </td>

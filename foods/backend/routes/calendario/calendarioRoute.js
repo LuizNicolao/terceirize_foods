@@ -1,6 +1,5 @@
 const express = require('express');
-const { authenticateToken } = require('../../middleware/auth');
-const { canView, canCreate, canEdit, canDelete } = require('../../middleware/permissoes');
+const { authenticateToken, checkScreenPermission } = require('../../middleware/auth');
 
 // Controllers
 const CalendarioDashboardController = require('../../controllers/calendario/CalendarioDashboardController');
@@ -14,40 +13,40 @@ const router = express.Router();
 router.use(authenticateToken);
 
 // ===== DASHBOARD =====
-router.get('/dashboard/estatisticas', canView('calendario'), CalendarioDashboardController.obterEstatisticas);
-router.get('/dashboard/resumo', canView('calendario'), CalendarioDashboardController.obterResumo);
+router.get('/dashboard/estatisticas', checkScreenPermission('calendario', 'visualizar'), CalendarioDashboardController.obterEstatisticas);
+router.get('/dashboard/resumo', checkScreenPermission('calendario', 'visualizar'), CalendarioDashboardController.obterResumo);
 
 // ===== VISUALIZAÇÃO =====
-router.get('/', canView('calendario'), CalendarioVisualizacaoController.listar);
-router.get('/mes', canView('calendario'), CalendarioVisualizacaoController.obterPorMes);
-router.get('/data/:data', canView('calendario'), CalendarioVisualizacaoController.buscarPorData);
+router.get('/', checkScreenPermission('calendario', 'visualizar'), CalendarioVisualizacaoController.listar);
+router.get('/mes', checkScreenPermission('calendario', 'visualizar'), CalendarioVisualizacaoController.obterPorMes);
+router.get('/data/:data', checkScreenPermission('calendario', 'visualizar'), CalendarioVisualizacaoController.buscarPorData);
 
 // ===== CONFIGURAÇÃO =====
-router.post('/configuracao/dias-uteis', canEdit('calendario'), CalendarioConfiguracaoController.configurarDiasUteis);
-router.post('/configuracao/dias-abastecimento', canEdit('calendario'), CalendarioConfiguracaoController.configurarDiasAbastecimento);
-router.post('/configuracao/dias-consumo', canEdit('calendario'), CalendarioConfiguracaoController.configurarDiasConsumo);
-router.post('/configuracao/feriados', canEdit('calendario'), CalendarioConfiguracaoController.adicionarFeriado);
-router.delete('/configuracao/feriados/:data', canDelete('calendario'), CalendarioConfiguracaoController.removerFeriado);
-router.get('/configuracao', canView('calendario'), CalendarioConfiguracaoController.obterConfiguracao);
+router.post('/configuracao/dias-uteis', checkScreenPermission('calendario', 'editar'), CalendarioConfiguracaoController.configurarDiasUteis);
+router.post('/configuracao/dias-abastecimento', checkScreenPermission('calendario', 'editar'), CalendarioConfiguracaoController.configurarDiasAbastecimento);
+router.post('/configuracao/dias-consumo', checkScreenPermission('calendario', 'editar'), CalendarioConfiguracaoController.configurarDiasConsumo);
+router.post('/configuracao/feriados', checkScreenPermission('calendario', 'editar'), CalendarioConfiguracaoController.adicionarFeriado);
+router.delete('/configuracao/feriados/:data', checkScreenPermission('calendario', 'excluir'), CalendarioConfiguracaoController.removerFeriado);
+router.get('/configuracao', checkScreenPermission('calendario', 'visualizar'), CalendarioConfiguracaoController.obterConfiguracao);
 
 // ===== API DE INTEGRAÇÃO =====
 // Semanas
-router.get('/api/semanas-consumo/:ano', canView('calendario'), CalendarioAPIController.buscarSemanasConsumo);
-router.get('/api/semanas-abastecimento/:ano', canView('calendario'), CalendarioAPIController.buscarSemanasAbastecimento);
+router.get('/api/semanas-consumo/:ano', checkScreenPermission('calendario', 'visualizar'), CalendarioAPIController.buscarSemanasConsumo);
+router.get('/api/semanas-abastecimento/:ano', checkScreenPermission('calendario', 'visualizar'), CalendarioAPIController.buscarSemanasAbastecimento);
 
 // Dias
-router.get('/api/dias-uteis/:ano/:mes', canView('calendario'), CalendarioAPIController.buscarDiasUteis);
-router.get('/api/dias-abastecimento/:ano/:mes', canView('calendario'), CalendarioAPIController.buscarDiasAbastecimento);
-router.get('/api/dias-consumo/:ano/:mes', canView('calendario'), CalendarioAPIController.buscarDiasConsumo);
+router.get('/api/dias-uteis/:ano/:mes', checkScreenPermission('calendario', 'visualizar'), CalendarioAPIController.buscarDiasUteis);
+router.get('/api/dias-abastecimento/:ano/:mes', checkScreenPermission('calendario', 'visualizar'), CalendarioAPIController.buscarDiasAbastecimento);
+router.get('/api/dias-consumo/:ano/:mes', checkScreenPermission('calendario', 'visualizar'), CalendarioAPIController.buscarDiasConsumo);
 
 // Feriados
-router.get('/api/feriados/:ano', canView('calendario'), CalendarioAPIController.buscarFeriados);
-router.get('/api/verificar-feriado/:data', canView('calendario'), CalendarioAPIController.verificarFeriado);
+router.get('/api/feriados/:ano', checkScreenPermission('calendario', 'visualizar'), CalendarioAPIController.buscarFeriados);
+router.get('/api/verificar-feriado/:data', checkScreenPermission('calendario', 'visualizar'), CalendarioAPIController.verificarFeriado);
 
 // Semana por data
-router.get('/api/semana-por-data/:data', canView('calendario'), CalendarioAPIController.buscarSemanaPorDataConsumo);
+router.get('/api/semana-por-data/:data', checkScreenPermission('calendario', 'visualizar'), CalendarioAPIController.buscarSemanaPorDataConsumo);
 
 // Semana de abastecimento por semana de consumo (usando query parameter para evitar problemas com caracteres especiais)
-router.get('/api/semana-abastecimento-por-consumo', canView('calendario'), CalendarioAPIController.buscarSemanaAbastecimentoPorConsumo);
+router.get('/api/semana-abastecimento-por-consumo', checkScreenPermission('calendario', 'visualizar'), CalendarioAPIController.buscarSemanaAbastecimentoPorConsumo);
 
 module.exports = router;

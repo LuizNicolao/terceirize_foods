@@ -74,10 +74,6 @@ const solicitacoesComprasValidations = {
       .trim()
       .isLength({ max: 500 })
       .withMessage('Observação do item deve ter no máximo 500 caracteres'),
-    body('itens.*.valor_unitario')
-      .optional()
-      .isFloat({ min: 0 })
-      .withMessage('Valor unitário deve ser um número positivo'),
     handleValidationErrors
   ],
 

@@ -164,7 +164,7 @@ class SolicitacoesComprasCRUDController {
 
     // Inserir itens
     for (const item of itens) {
-      const { produto_id, quantidade, unidade_medida_id, observacao, valor_unitario } = item;
+      const { produto_id, quantidade, unidade_medida_id, observacao } = item;
 
       if (!produto_id || !quantidade || !unidade_medida_id) {
         await executeQuery('DELETE FROM solicitacoes_compras WHERE id = ?', [solicitacao_id]);
@@ -188,8 +188,6 @@ class SolicitacoesComprasCRUDController {
         [unidade_medida_id]
       );
 
-      const valor_total_item = (parseFloat(quantidade) || 0) * (parseFloat(valor_unitario) || 0);
-
       await executeQuery(
         `INSERT INTO solicitacao_compras_itens (
           solicitacao_id,
@@ -200,10 +198,8 @@ class SolicitacoesComprasCRUDController {
           unidade_medida,
           quantidade,
           observacao,
-          valor_unitario,
-          valor_total,
           criado_em
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
         [
           solicitacao_id,
           produto_id,
@@ -212,9 +208,7 @@ class SolicitacoesComprasCRUDController {
           unidade_medida_id,
           unidade ? unidade.simbolo : null,
           quantidade,
-          observacao || null,
-          valor_unitario || 0,
-          valor_total_item
+          observacao || null
         ]
       );
     }
@@ -320,7 +314,7 @@ class SolicitacoesComprasCRUDController {
 
     // Inserir novos itens
     for (const item of itens) {
-      const { produto_id, quantidade, unidade_medida_id, observacao, valor_unitario } = item;
+      const { produto_id, quantidade, unidade_medida_id, observacao } = item;
 
       if (!produto_id || !quantidade || !unidade_medida_id) {
         return errorResponse(res, 'Todos os itens devem ter produto_id, quantidade e unidade_medida_id', STATUS_CODES.BAD_REQUEST);
@@ -342,8 +336,6 @@ class SolicitacoesComprasCRUDController {
         [unidade_medida_id]
       );
 
-      const valor_total_item = (parseFloat(quantidade) || 0) * (parseFloat(valor_unitario) || 0);
-
       await executeQuery(
         `INSERT INTO solicitacao_compras_itens (
           solicitacao_id,
@@ -354,10 +346,8 @@ class SolicitacoesComprasCRUDController {
           unidade_medida,
           quantidade,
           observacao,
-          valor_unitario,
-          valor_total,
           criado_em
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
         [
           id,
           produto_id,
@@ -366,9 +356,7 @@ class SolicitacoesComprasCRUDController {
           unidade_medida_id,
           unidade ? unidade.simbolo : null,
           quantidade,
-          observacao || null,
-          valor_unitario || 0,
-          valor_total_item
+          observacao || null
         ]
       );
     }
