@@ -17,7 +17,7 @@ class SubgruposListController {
    * Listar subgrupos com paginação, busca e HATEOAS
    */
   static listarSubgrupos = asyncHandler(async (req, res) => {
-    const { search = '', grupo_id, status } = req.query;
+    const { search = '', grupo_id, status, sortField, sortDirection } = req.query;
     const pagination = req.pagination;
 
     // Query base com informações do grupo
@@ -61,7 +61,27 @@ class SubgruposListController {
       params.push(status === 1 || status === '1' ? 'ativo' : 'inativo');
     }
 
-    baseQuery += ' GROUP BY sg.id, sg.nome, sg.codigo, sg.descricao, sg.grupo_id, sg.status, sg.data_cadastro, sg.data_atualizacao, g.nome ORDER BY sg.nome ASC';
+    baseQuery += ' GROUP BY sg.id, sg.nome, sg.codigo, sg.descricao, sg.grupo_id, sg.status, sg.data_cadastro, sg.data_atualizacao, g.nome';
+
+    // Aplicar ordenação
+    let orderBy = 'sg.nome ASC';
+    if (sortField && sortDirection) {
+      const validFields = ['codigo', 'nome', 'status', 'grupo_id'];
+      if (validFields.includes(sortField)) {
+        const direction = sortDirection.toLowerCase() === 'desc' ? 'DESC' : 'ASC';
+        
+        // Mapear campos para colunas do banco
+        const fieldMap = {
+          'codigo': 'sg.codigo',
+          'nome': 'sg.nome',
+          'status': 'sg.status',
+          'grupo_id': 'sg.grupo_id'
+        };
+        
+        orderBy = `${fieldMap[sortField]} ${direction}`;
+      }
+    }
+    baseQuery += ` ORDER BY ${orderBy}`;
 
     // Aplicar paginação manualmente
     const limit = pagination.limit;

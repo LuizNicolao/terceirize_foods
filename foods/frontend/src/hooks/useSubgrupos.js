@@ -23,7 +23,7 @@ export const useSubgrupos = () => {
     isSortingLocally
   } = useTableSort({
     data: baseEntity.items,
-    threshold: 100,
+    threshold: 50,
     totalItems: baseEntity.totalItems,
     onBackendSort: (field, direction) => {
       // Atualizar estados de ordenação no baseEntity
