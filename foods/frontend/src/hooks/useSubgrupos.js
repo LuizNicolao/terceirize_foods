@@ -17,15 +17,26 @@ export const useSubgrupos = () => {
   // Hook de ordenação híbrida
   const {
     sortedData: subgruposOrdenados,
-    sortField,
-    sortDirection,
+    sortField: localSortField,
+    sortDirection: localSortDirection,
     handleSort,
     isSortingLocally
   } = useTableSort({
     data: baseEntity.items,
     threshold: 100,
-    totalItems: baseEntity.totalItems
+    totalItems: baseEntity.totalItems,
+    onBackendSort: (field, direction) => {
+      // Atualizar estados de ordenação no baseEntity
+      baseEntity.setSortField(field);
+      baseEntity.setSortDirection(direction);
+      // Recarregar dados com nova ordenação
+      baseEntity.loadData();
+    }
   });
+
+  // Usar ordenação do baseEntity quando disponível, senão usar local
+  const sortField = baseEntity.sortField || localSortField;
+  const sortDirection = baseEntity.sortDirection || localSortDirection;
 
   // Estados de dados auxiliares
   const [grupos, setGrupos] = useState([]);
