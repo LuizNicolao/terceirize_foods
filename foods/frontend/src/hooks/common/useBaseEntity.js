@@ -90,20 +90,19 @@ export const useBaseEntity = (entityName, service, options = {}) => {
         if (enableStats) {
           // Priorizar estatísticas do backend se disponíveis
           if (response.statistics) {
-            // Preservar TODAS as estatísticas do backend, não apenas total/ativos/inativos
+            // Preservar todos os campos do statistics, mas garantir campos básicos
             setEstatisticas({
-              // Campos padrão
               total: response.statistics.total || 0,
               ativos: response.statistics.ativos || 0,
               inativos: response.statistics.inativos || 0,
-              // Preservar todos os outros campos do backend
+              // Preservar campos adicionais do statistics (para páginas específicas)
               ...response.statistics
             });
           } else if (response.data && Array.isArray(response.data)) {
             // Fallback: usar totalItems da paginação para total, calcular ativos/inativos localmente
             const total = response.pagination?.totalItems || response.data.length;
-            const ativos = response.data.filter(item => item.status === 1).length;
-            const inativos = response.data.filter(item => item.status === 0).length;
+            const ativos = response.data.filter(item => item.status === 1 || item.status === 'ativo').length;
+            const inativos = response.data.filter(item => item.status === 0 || item.status === 'inativo').length;
             
             setEstatisticas({
               total,
