@@ -191,10 +191,17 @@ class RIRListController {
     
     console.log('[RIR] Executando query de estatísticas');
     const statsStart = Date.now();
-    const statsResult = await executeQuery(statsQuery, statsParams);
-    const statsTime = Date.now() - statsStart;
-    console.log(`[RIR] Query de estatísticas executada em ${statsTime}ms`);
-    const statistics = statsResult[0] || { total: 0, aprovados: 0, reprovados: 0, parciais: 0 };
+    let statistics = { total: 0, aprovados: 0, reprovados: 0, parciais: 0 };
+    try {
+      const statsResult = await executeQuery(statsQuery, statsParams);
+      const statsTime = Date.now() - statsStart;
+      console.log(`[RIR] Query de estatísticas executada em ${statsTime}ms`);
+      statistics = statsResult[0] || statistics;
+    } catch (statsError) {
+      const statsTime = Date.now() - statsStart;
+      console.error(`[RIR] ERRO na query de estatísticas após ${statsTime}ms:`, statsError.message);
+      // Continuar mesmo se falhar nas estatísticas
+    }
 
     // Gerar metadados de paginação
     const queryParams = { ...req.query };
