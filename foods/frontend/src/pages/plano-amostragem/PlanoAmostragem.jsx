@@ -311,7 +311,7 @@ const PlanoAmostragem = () => {
                     <ActionButtons
                       canView={false}
                       canEdit={canEdit('plano_amostragem')}
-                      canDelete={canDelete('plano_amostragem') && (faixas.length === 0 && grupos.length === 0)}
+                      canDelete={canDelete('plano_amostragem')}
                       onEdit={handleEditNQA}
                       onDelete={handleDeleteNQAClick}
                       item={nqa}
