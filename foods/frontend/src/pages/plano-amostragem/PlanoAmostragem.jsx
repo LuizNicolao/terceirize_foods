@@ -1,5 +1,6 @@
 import React from 'react';
 import { FaPlus, FaQuestionCircle, FaTimes } from 'react-icons/fa';
+import toast from 'react-hot-toast';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { usePlanoAmostragem } from '../../hooks/usePlanoAmostragem';
 import { useAuditoria } from '../../hooks/common/useAuditoria';
@@ -87,6 +88,29 @@ const PlanoAmostragem = () => {
   };
 
   const handleDeleteNQAClick = (nqa) => {
+    // Verificar se NQA tem faixas ou grupos vinculados
+    const faixas = faixasPorNQA[nqa.id] || [];
+    const grupos = gruposPorNQA[nqa.id] || [];
+    
+    if (faixas.length > 0 || grupos.length > 0) {
+      let mensagem = 'Este NQA não pode ser excluído pois possui:';
+      if (faixas.length > 0) {
+        mensagem += `\n• ${faixas.length} faixa(s) de amostragem vinculada(s)`;
+      }
+      if (grupos.length > 0) {
+        mensagem += `\n• ${grupos.length} grupo(s) vinculado(s)`;
+      }
+      mensagem += '\n\nPor favor, remova os vínculos antes de excluir o NQA.';
+      
+      toast.error(mensagem, {
+        duration: 6000,
+        style: {
+          whiteSpace: 'pre-line'
+        }
+      });
+      return;
+    }
+    
     setNqaToDelete(nqa);
     setShowDeleteNQAConfirm(true);
   };
@@ -287,7 +311,7 @@ const PlanoAmostragem = () => {
                     <ActionButtons
                       canView={false}
                       canEdit={canEdit('plano_amostragem')}
-                      canDelete={canDelete('plano_amostragem')}
+                      canDelete={canDelete('plano_amostragem') && (faixas.length === 0 && grupos.length === 0)}
                       onEdit={handleEditNQA}
                       onDelete={handleDeleteNQAClick}
                       item={nqa}
