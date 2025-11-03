@@ -52,18 +52,36 @@ const CadastroFilterBar = ({
       )}
 
       {/* Filtros adicionais */}
-      {additionalFilters.map((filter, index) => (
-        <select
-          key={index}
-          value={filter.value}
-          onChange={e => filter.onChange(e.target.value)}
-          className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors bg-white min-w-[140px]"
-        >
-          {filter.options.map(opt => (
-            <option key={opt.value} value={opt.value}>{opt.label}</option>
-          ))}
-        </select>
-      ))}
+      {additionalFilters.map((filter, index) => {
+        // Se for filtro do tipo date, renderizar input date
+        if (filter.type === 'date') {
+          return (
+            <div key={index} className="flex flex-col min-w-[140px]">
+              <label className="text-xs text-gray-600 mb-1">{filter.label}</label>
+              <input
+                type="date"
+                value={filter.value || ''}
+                onChange={e => filter.onChange(e.target.value)}
+                className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors bg-white"
+              />
+            </div>
+          );
+        }
+        
+        // Filtro select (padrão)
+        return (
+          <select
+            key={index}
+            value={filter.value || ''}
+            onChange={e => filter.onChange(e.target.value)}
+            className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors bg-white min-w-[140px]"
+          >
+            {filter.options && filter.options.map(opt => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+        );
+      })}
 
       {/* Botão limpar */}
       {onClear && (
