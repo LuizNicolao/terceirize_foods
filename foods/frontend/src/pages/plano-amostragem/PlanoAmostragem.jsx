@@ -1,9 +1,9 @@
 import React from 'react';
-import { FaPlus, FaEdit, FaTrash, FaQuestionCircle } from 'react-icons/fa';
+import { FaPlus, FaQuestionCircle } from 'react-icons/fa';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { usePlanoAmostragem } from '../../hooks/usePlanoAmostragem';
 import { useAuditoria } from '../../hooks/common/useAuditoria';
-import { Button, ValidationErrorModal, ConfirmModal } from '../../components/ui';
+import { Button, ValidationErrorModal, ConfirmModal, ActionButtons } from '../../components/ui';
 import { EmptyState } from '../../components/ui';
 import NQAModal from '../../components/plano-amostragem/NQAModal';
 import FaixaAmostragemModal from '../../components/plano-amostragem/FaixaAmostragemModal';
@@ -255,29 +255,16 @@ const PlanoAmostragem = () => {
                   </div>
 
                   {/* Botões de Ação */}
-                  <div className="flex gap-2">
-                    {canEdit('plano_amostragem') && (
-                      <Button
-                        onClick={() => handleEditNQA(nqa)}
-                        size="sm"
-                        variant="outline"
-                        className="flex-1"
-                      >
-                        <FaEdit className="mr-2" />
-                        Editar
-                      </Button>
-                    )}
-                    {canDelete('plano_amostragem') && (
-                      <Button
-                        onClick={() => handleDeleteNQAClick(nqa)}
-                        size="sm"
-                        variant="outline"
-                        className="flex-1 text-red-600 hover:text-red-700 hover:border-red-700"
-                      >
-                        <FaTrash className="mr-2" />
-                        Excluir
-                      </Button>
-                    )}
+                  <div className="flex justify-end">
+                    <ActionButtons
+                      canView={false}
+                      canEdit={canEdit('plano_amostragem')}
+                      canDelete={canDelete('plano_amostragem')}
+                      onEdit={handleEditNQA}
+                      onDelete={handleDeleteNQAClick}
+                      item={nqa}
+                      size="sm"
+                    />
                   </div>
                 </div>
               </div>
