@@ -38,8 +38,8 @@ export const useProdutoOrigem = () => {
       // Atualizar estados de ordenação no baseEntity
       baseEntity.setSortField(field);
       baseEntity.setSortDirection(direction);
-      // Recarregar dados com nova ordenação
-      baseEntity.loadData();
+      // Recarregar dados com nova ordenação, passando os valores diretamente
+      baseEntity.loadData({ sortField: field, sortDirection: direction });
     }
   });
   

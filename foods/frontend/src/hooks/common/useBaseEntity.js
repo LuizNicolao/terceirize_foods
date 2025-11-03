@@ -53,9 +53,9 @@ export const useBaseEntity = (entityName, service, options = {}) => {
         ...filters.getFilterParams(),
         // Usar debouncedSearch se disponível, senão usar o searchTerm do filters
         search: debouncedSearch?.debouncedSearchTerm || filters.searchTerm || undefined,
-        // Adicionar parâmetros de ordenação
-        sortField: sortField,
-        sortDirection: sortDirection,
+        // Adicionar parâmetros de ordenação (customParams tem prioridade)
+        sortField: customParams.sortField !== undefined ? customParams.sortField : sortField,
+        sortDirection: customParams.sortDirection !== undefined ? customParams.sortDirection : sortDirection,
         ...customParams
       };
 
@@ -117,7 +117,7 @@ export const useBaseEntity = (entityName, service, options = {}) => {
     } finally {
       setLoading(false);
     }
-  }, [entityName, service, pagination, filters, enableStats, debouncedSearch?.debouncedSearchTerm]);
+  }, [entityName, service, pagination, filters, enableStats, debouncedSearch?.debouncedSearchTerm, sortField, sortDirection]);
 
   /**
    * Submete formulário (criar/editar)
