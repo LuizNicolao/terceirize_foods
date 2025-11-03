@@ -58,7 +58,7 @@ class RIRIntegrationsController {
         pc.numero_pedido,
         f.razao_social as fornecedor,
         f.cnpj as cnpj_fornecedor
-      FROM pedidos_compras pc
+      FROM pedido_compras pc
       LEFT JOIN fornecedores f ON pc.fornecedor_id = f.id
       WHERE pc.id = ?`,
       [id]
@@ -185,7 +185,7 @@ class RIRIntegrationsController {
         pc.data_pedido,
         f.razao_social as fornecedor,
         f.cnpj
-      FROM pedidos_compras pc
+      FROM pedido_compras pc
       INNER JOIN fornecedores f ON pc.fornecedor_id = f.id
       WHERE pc.status = 'aprovado'
       ORDER BY pc.data_pedido DESC, pc.numero_pedido DESC
