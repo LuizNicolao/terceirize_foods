@@ -16,31 +16,31 @@ class NecessidadesPadroesGeracaoController {
       const usuario_id = req.user.id;
 
       // Validar dados obrigatórios
-      if (!filial_id || !semana_abastecimento || !grupo_id) {
-        return errorResponse(res, 'Filial, Semana de Abastecimento e Grupo de Produtos são obrigatórios', 400);
+      if (!filial_id || !semana_consumo || !grupo_id) {
+        return errorResponse(res, 'Filial, Semana de Consumo e Grupo de Produtos são obrigatórios', 400);
       }
 
-      // Se semana_consumo não foi enviada, buscar automaticamente a partir de semana_abastecimento
-      let semanaConsumoFinal = semana_consumo;
-      if (!semanaConsumoFinal && semana_abastecimento) {
+      // Se semana_abastecimento não foi enviada, buscar automaticamente a partir de semana_consumo
+      let semanaAbastecimentoFinal = semana_abastecimento;
+      if (!semanaAbastecimentoFinal && semana_consumo) {
         const calendario = await executeQuery(`
-          SELECT DISTINCT semana_consumo
+          SELECT DISTINCT semana_abastecimento
           FROM calendario
-          WHERE semana_abastecimento = ?
-            AND semana_consumo IS NOT NULL
-            AND semana_consumo != ''
+          WHERE semana_consumo = ?
+            AND semana_abastecimento IS NOT NULL
+            AND semana_abastecimento != ''
           LIMIT 1
-        `, [semana_abastecimento]);
+        `, [semana_consumo]);
 
         if (calendario.length > 0) {
-          semanaConsumoFinal = calendario[0].semana_consumo;
+          semanaAbastecimentoFinal = calendario[0].semana_abastecimento;
         } else {
-          return errorResponse(res, 'Semana de consumo não encontrada para a semana de abastecimento informada', 400);
+          return errorResponse(res, 'Semana de abastecimento não encontrada para a semana de consumo informada', 400);
         }
       }
 
-      if (!semanaConsumoFinal) {
-        return errorResponse(res, 'Semana de consumo é obrigatória', 400);
+      if (!semanaAbastecimentoFinal) {
+        return errorResponse(res, 'Semana de abastecimento é obrigatória', 400);
       }
 
       // Buscar escolas baseado nos filtros
@@ -150,10 +150,10 @@ class NecessidadesPadroesGeracaoController {
           SELECT DISTINCT necessidade_id 
           FROM necessidades 
           WHERE escola_id = ? AND semana_consumo = ?
-        `, [escolaId, semanaConsumoFinal]);
+        `, [escolaId, semana_consumo]);
 
         if (existing.length > 0) {
-          console.warn(`Necessidade já existe para escola ${escola.nome_escola} na semana ${semanaConsumoFinal}`);
+          console.warn(`Necessidade já existe para escola ${escola.nome_escola} na semana ${semana_consumo}`);
           continue; // Pular escola que já tem necessidade
         }
 
@@ -250,8 +250,8 @@ class NecessidadesPadroesGeracaoController {
               escola.rota_id || '',
               escola.codigo_teknisa || '',
               quantidade,
-              semanaConsumoFinal,
-              semana_abastecimento,
+              semana_consumo,
+              semanaAbastecimentoFinal,
               grupo,
               grupo_id_final,
               'NEC',
@@ -294,37 +294,37 @@ class NecessidadesPadroesGeracaoController {
   }
 
   /**
-   * Buscar semana de consumo baseado na semana de abastecimento
-   * Busca na tabela calendario que contém a relação entre semana_abastecimento e semana_consumo
+   * Buscar semana de abastecimento baseado na semana de consumo
+   * Busca na tabela calendario que contém a relação entre semana_consumo e semana_abastecimento
    */
-  static async buscarSemanaConsumoPorAbastecimento(req, res) {
+  static async buscarSemanaAbastecimentoPorConsumo(req, res) {
     try {
-      const { semana_abastecimento } = req.query;
+      const { semana_consumo } = req.query;
 
-      if (!semana_abastecimento) {
-        return errorResponse(res, 'Semana de abastecimento é obrigatória', 400);
+      if (!semana_consumo) {
+        return errorResponse(res, 'Semana de consumo é obrigatória', 400);
       }
 
-      // Buscar semana de consumo na tabela calendario
+      // Buscar semana de abastecimento na tabela calendario
       const result = await executeQuery(`
-        SELECT DISTINCT semana_consumo
+        SELECT DISTINCT semana_abastecimento
         FROM calendario
-        WHERE semana_abastecimento = ?
-          AND semana_consumo IS NOT NULL
-          AND semana_consumo != ''
+        WHERE semana_consumo = ?
+          AND semana_abastecimento IS NOT NULL
+          AND semana_abastecimento != ''
         LIMIT 1
-      `, [semana_abastecimento]);
+      `, [semana_consumo]);
 
       if (result.length > 0) {
         return successResponse(res, {
-          semana_abastecimento,
-          semana_consumo: result[0].semana_consumo
-        }, 'Semana de consumo encontrada');
+          semana_consumo,
+          semana_abastecimento: result[0].semana_abastecimento
+        }, 'Semana de abastecimento encontrada');
       } else {
-        return errorResponse(res, 'Semana de consumo não encontrada para esta semana de abastecimento', 404);
+        return errorResponse(res, 'Semana de abastecimento não encontrada para esta semana de consumo', 404);
       }
     } catch (error) {
-      console.error('Erro ao buscar semana de consumo:', error);
+      console.error('Erro ao buscar semana de abastecimento:', error);
       return errorResponse(res, 'Erro interno do servidor', 500);
     }
   }

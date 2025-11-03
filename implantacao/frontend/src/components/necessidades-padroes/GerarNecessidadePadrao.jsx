@@ -28,8 +28,8 @@ const GerarNecessidadePadrao = () => {
   const [loadingFiltros, setLoadingFiltros] = useState(false);
   const [loadingEscolas, setLoadingEscolas] = useState(false);
   const [gerando, setGerando] = useState(false);
-  const [loadingSemanaConsumo, setLoadingSemanaConsumo] = useState(false);
-  const [semanaConsumoPreenchidaAuto, setSemanaConsumoPreenchidaAuto] = useState(false);
+  const [loadingSemanaAbastecimento, setLoadingSemanaAbastecimento] = useState(false);
+  const [semanaAbastecimentoPreenchidaAuto, setSemanaAbastecimentoPreenchidaAuto] = useState(false);
 
   // Carregar dados iniciais
   useEffect(() => {
@@ -46,20 +46,20 @@ const GerarNecessidadePadrao = () => {
     }
   }, [filtros.filial_id]);
 
-  const buscarSemanaConsumoPorAbastecimento = useCallback(async (semana_abastecimento) => {
+  const buscarSemanaAbastecimentoPorConsumo = useCallback(async (semana_consumo) => {
     try {
-      setLoadingSemanaConsumo(true);
-      const response = await NecessidadesPadroesService.buscarSemanaConsumoPorAbastecimento(semana_abastecimento);
-      if (response.success && response.data && response.data.semana_consumo) {
-        const semanaConsumo = response.data.semana_consumo;
+      setLoadingSemanaAbastecimento(true);
+      const response = await NecessidadesPadroesService.buscarSemanaAbastecimentoPorConsumo(semana_consumo);
+      if (response.success && response.data && response.data.semana_abastecimento) {
+        const semanaAbastecimento = response.data.semana_abastecimento;
         
-        // Verificar se a semana de consumo já está na lista, se não, adicionar
-        setSemanasConsumo(prev => {
-          const semanaJaExiste = prev.some(s => s.value === semanaConsumo);
+        // Verificar se a semana de abastecimento já está na lista, se não, adicionar
+        setSemanasAbastecimento(prev => {
+          const semanaJaExiste = prev.some(s => s.value === semanaAbastecimento);
           if (!semanaJaExiste) {
             return [
               ...prev,
-              { value: semanaConsumo, label: semanaConsumo }
+              { value: semanaAbastecimento, label: semanaAbastecimento }
             ];
           }
           return prev;
@@ -68,33 +68,33 @@ const GerarNecessidadePadrao = () => {
         // Atualizar o filtro e marcar como preenchido automaticamente
         setFiltros(prev => ({ 
           ...prev, 
-          semana_consumo: semanaConsumo 
+          semana_abastecimento: semanaAbastecimento 
         }));
-        setSemanaConsumoPreenchidaAuto(true);
+        setSemanaAbastecimentoPreenchidaAuto(true);
       } else {
         // Se não encontrou, limpar o campo
-        setFiltros(prev => ({ ...prev, semana_consumo: '' }));
-        setSemanaConsumoPreenchidaAuto(false);
+        setFiltros(prev => ({ ...prev, semana_abastecimento: '' }));
+        setSemanaAbastecimentoPreenchidaAuto(false);
       }
     } catch (error) {
-      console.error('Erro ao buscar semana de consumo:', error);
+      console.error('Erro ao buscar semana de abastecimento:', error);
       // Limpar campo em caso de erro
-      setFiltros(prev => ({ ...prev, semana_consumo: '' }));
-      setSemanaConsumoPreenchidaAuto(false);
+      setFiltros(prev => ({ ...prev, semana_abastecimento: '' }));
+      setSemanaAbastecimentoPreenchidaAuto(false);
     } finally {
-      setLoadingSemanaConsumo(false);
+      setLoadingSemanaAbastecimento(false);
     }
   }, []);
 
-  // Buscar semana de consumo quando semana de abastecimento mudar
+  // Buscar semana de abastecimento quando semana de consumo mudar
   useEffect(() => {
-    if (filtros.semana_abastecimento) {
-      buscarSemanaConsumoPorAbastecimento(filtros.semana_abastecimento);
+    if (filtros.semana_consumo) {
+      buscarSemanaAbastecimentoPorConsumo(filtros.semana_consumo);
     } else {
-      setFiltros(prev => ({ ...prev, semana_consumo: '' }));
-      setSemanaConsumoPreenchidaAuto(false);
+      setFiltros(prev => ({ ...prev, semana_abastecimento: '' }));
+      setSemanaAbastecimentoPreenchidaAuto(false);
     }
-  }, [filtros.semana_abastecimento, buscarSemanaConsumoPorAbastecimento]);
+  }, [filtros.semana_consumo, buscarSemanaAbastecimentoPorConsumo]);
 
   const carregarDadosIniciais = async () => {
     setLoadingFiltros(true);
@@ -196,24 +196,24 @@ const GerarNecessidadePadrao = () => {
       setFiltros(prev => ({ ...prev, escola_id: '' }));
     }
     
-    // Se semana de consumo for alterada manualmente, marcar como não preenchida automaticamente
-    if (name === 'semana_consumo') {
-      setSemanaConsumoPreenchidaAuto(false);
+    // Se semana de abastecimento for alterada manualmente, marcar como não preenchida automaticamente
+    if (name === 'semana_abastecimento') {
+      setSemanaAbastecimentoPreenchidaAuto(false);
     }
     
-    // Se semana de abastecimento for alterada manualmente, já será tratado pelo useEffect
+    // Se semana de consumo for alterada manualmente, já será tratado pelo useEffect
   };
 
   const handleGerar = async () => {
-    // Validar filtros obrigatórios: Filial, Semana de Abastecimento e Grupo de Produtos (Escola é opcional)
-    if (!filtros.filial_id || !filtros.semana_abastecimento || !filtros.grupo_id) {
-      toast.error('Por favor, preencha todos os campos obrigatórios: Filial, Semana de Abastecimento e Grupo de Produtos');
+    // Validar filtros obrigatórios: Filial, Semana de Consumo e Grupo de Produtos (Escola é opcional)
+    if (!filtros.filial_id || !filtros.semana_consumo || !filtros.grupo_id) {
+      toast.error('Por favor, preencha todos os campos obrigatórios: Filial, Semana de Consumo e Grupo de Produtos');
       return;
     }
 
-    // Validar se semana de consumo foi preenchida automaticamente (ela é necessária para gerar, mas vem automaticamente)
-    if (!filtros.semana_consumo) {
-      toast.error('Aguarde o preenchimento automático da Semana de Consumo ou selecione uma Semana de Abastecimento válida');
+    // Validar se semana de abastecimento foi preenchida automaticamente (ela é necessária para gerar, mas vem automaticamente)
+    if (!filtros.semana_abastecimento) {
+      toast.error('Aguarde o preenchimento automático da Semana de Abastecimento ou selecione uma Semana de Consumo válida');
       return;
     }
 
@@ -261,8 +261,8 @@ const GerarNecessidadePadrao = () => {
     }
   };
 
-  // Validar se pode gerar: Filial, Semana de Abastecimento e Grupo de Produtos (Semana de Consumo é preenchida automaticamente, Escola é opcional)
-  const podeGerar = filtros.filial_id && filtros.semana_abastecimento && filtros.grupo_id && filtros.semana_consumo && !gerando;
+  // Validar se pode gerar: Filial, Semana de Consumo e Grupo de Produtos (Semana de Abastecimento é preenchida automaticamente, Escola é opcional)
+  const podeGerar = filtros.filial_id && filtros.semana_consumo && filtros.grupo_id && filtros.semana_abastecimento && !gerando;
 
   return (
     <div className="space-y-4 md:space-y-6">
@@ -296,46 +296,45 @@ const GerarNecessidadePadrao = () => {
           />
           
           <SearchableSelect
-            label="Semana de Abastecimento"
-            name="semana_abastecimento"
-            options={semanasAbastecimento}
-            value={filtros.semana_abastecimento}
-            onChange={(value) => handleFiltroChange('semana_abastecimento', value)}
-            placeholder="Selecione a semana de abastecimento..."
+            label="Semana de Consumo"
+            name="semana_consumo"
+            options={semanasConsumo}
+            value={filtros.semana_consumo}
+            onChange={(value) => handleFiltroChange('semana_consumo', value)}
+            placeholder="Selecione a semana de consumo..."
             loading={loadingFiltros}
             required
           />
           
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Semana de Consumo
-              {filtros.semana_abastecimento && (
+              Semana de Abastecimento (AB)
+              {filtros.semana_consumo && (
                 <span className="ml-2 text-xs text-gray-500 font-normal">(Preenchido automaticamente)</span>
               )}
             </label>
             <SearchableSelect
-              name="semana_consumo"
-              options={filtros.semana_consumo && filtros.semana_abastecimento
-                ? [{ value: filtros.semana_consumo, label: filtros.semana_consumo }]
-                : semanasConsumo
+              name="semana_abastecimento"
+              options={filtros.semana_abastecimento && filtros.semana_consumo
+                ? [{ value: filtros.semana_abastecimento, label: filtros.semana_abastecimento }]
+                : semanasAbastecimento
               }
-              value={filtros.semana_consumo || ''}
+              value={filtros.semana_abastecimento || ''}
               onChange={() => {
-                // Campo apenas informativo - não permite mudança manual quando há semana de abastecimento
+                // Campo apenas informativo - não permite mudança manual quando há semana de consumo
               }}
               placeholder={
-                !filtros.semana_abastecimento
-                  ? "Selecione primeiro a semana de abastecimento"
-                  : loadingSemanaConsumo
-                  ? "Carregando semana de consumo..."
-                  : filtros.semana_consumo
-                  ? filtros.semana_consumo
+                !filtros.semana_consumo
+                  ? "Selecione primeiro a semana de consumo"
+                  : loadingSemanaAbastecimento
+                  ? "Carregando semana de abastecimento..."
+                  : filtros.semana_abastecimento
+                  ? filtros.semana_abastecimento
                   : "Carregando..."
               }
               disabled={true}
-              loading={loadingSemanaConsumo}
-              required
-              className={filtros.semana_abastecimento ? "bg-gray-50 cursor-not-allowed" : ""}
+              loading={loadingSemanaAbastecimento}
+              className={filtros.semana_consumo ? "bg-gray-50 cursor-not-allowed" : ""}
             />
           </div>
           

@@ -106,27 +106,27 @@ class NecessidadesPadroesService {
   }
 
   /**
-   * Buscar semana de consumo por semana de abastecimento
+   * Buscar semana de abastecimento por semana de consumo
    */
-  static async buscarSemanaConsumoPorAbastecimento(semana_abastecimento) {
+  static async buscarSemanaAbastecimentoPorConsumo(semana_consumo) {
     try {
-      const response = await api.get('/necessidades-padroes/buscar-semana-consumo', {
-        params: { semana_abastecimento }
+      const response = await api.get('/necessidades-padroes/buscar-semana-abastecimento', {
+        params: { semana_consumo }
       });
       return response.data;
     } catch (error) {
-      console.error('Erro ao buscar semana de consumo:', error);
+      console.error('Erro ao buscar semana de abastecimento:', error);
       // Retornar objeto estruturado em caso de erro
       if (error.response?.status === 404) {
         return {
           success: false,
-          message: error.response?.data?.message || 'Semana de consumo não encontrada',
+          message: error.response?.data?.message || 'Semana de abastecimento não encontrada',
           data: null
         };
       }
       return {
         success: false,
-        message: error.response?.data?.message || error.message || 'Erro ao buscar semana de consumo',
+        message: error.response?.data?.message || error.message || 'Erro ao buscar semana de abastecimento',
         data: null
       };
     }
