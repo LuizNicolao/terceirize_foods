@@ -44,6 +44,7 @@ const Usuarios = () => {
     handleEditUser,
     handleCloseModal,
     handlePageChange,
+    handleItemsPerPageChange,
     setSearchTerm,
     handleKeyPress,
     setItemsPerPage,
