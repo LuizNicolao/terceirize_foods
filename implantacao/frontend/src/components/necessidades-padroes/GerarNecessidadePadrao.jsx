@@ -51,6 +51,7 @@ const GerarNecessidadePadrao = () => {
     } else {
       setFiltros(prev => ({ ...prev, semana_consumo: '' }));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filtros.semana_abastecimento]);
 
   const carregarDadosIniciais = async () => {
@@ -147,17 +148,38 @@ const GerarNecessidadePadrao = () => {
 
   const buscarSemanaConsumoPorAbastecimento = async (semana_abastecimento) => {
     try {
+      setLoadingFiltros(true);
       const response = await NecessidadesPadroesService.buscarSemanaConsumoPorAbastecimento(semana_abastecimento);
       if (response.success && response.data && response.data.semana_consumo) {
+        const semanaConsumo = response.data.semana_consumo;
+        
+        // Verificar se a semana de consumo já está na lista, se não, adicionar
+        setSemanasConsumo(prev => {
+          const semanaJaExiste = prev.some(s => s.value === semanaConsumo);
+          if (!semanaJaExiste) {
+            return [
+              ...prev,
+              { value: semanaConsumo, label: semanaConsumo }
+            ];
+          }
+          return prev;
+        });
+        
+        // Atualizar o filtro
         setFiltros(prev => ({ 
           ...prev, 
-          semana_consumo: response.data.semana_consumo 
+          semana_consumo: semanaConsumo 
         }));
-        toast.success('Semana de consumo preenchida automaticamente');
+      } else {
+        // Se não encontrou, limpar o campo
+        setFiltros(prev => ({ ...prev, semana_consumo: '' }));
       }
     } catch (error) {
       console.error('Erro ao buscar semana de consumo:', error);
-      // Não mostrar toast de erro, pode não ter relacionamento ainda
+      // Limpar campo em caso de erro
+      setFiltros(prev => ({ ...prev, semana_consumo: '' }));
+    } finally {
+      setLoadingFiltros(false);
     }
   };
 
@@ -232,7 +254,7 @@ const GerarNecessidadePadrao = () => {
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <SearchableSelect
-            label="Filial *"
+            label="Filial"
             name="filial_id"
             options={filiais}
             value={filtros.filial_id}
@@ -264,18 +286,18 @@ const GerarNecessidadePadrao = () => {
           />
           
           <SearchableSelect
-            label="Semana de Consumo *"
+            label="Semana de Consumo"
             name="semana_consumo"
             options={semanasConsumo}
             value={filtros.semana_consumo}
             onChange={(value) => handleFiltroChange('semana_consumo', value)}
-            placeholder="Selecione a semana de consumo..."
+            placeholder={filtros.semana_abastecimento ? "Preenchido automaticamente..." : "Selecione a semana de consumo..."}
             loading={loadingFiltros}
             required
           />
           
           <SearchableSelect
-            label="Grupo de Produtos *"
+            label="Grupo de Produtos"
             name="grupo_id"
             options={grupos}
             value={filtros.grupo_id}
@@ -297,18 +319,6 @@ const GerarNecessidadePadrao = () => {
             {gerando ? 'Gerando...' : 'Gerar Necessidades'}
           </Button>
         </div>
-      </div>
-
-      {/* Informações */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h3 className="text-sm font-semibold text-blue-900 mb-2">ℹ️ Como funciona:</h3>
-        <ul className="text-sm text-blue-800 space-y-1 list-disc list-inside">
-          <li>O sistema buscará dados de necessidades_substituicoes com base nos filtros selecionados</li>
-          <li>Se você selecionar uma escola específica, serão geradas necessidades apenas para ela</li>
-          <li>Se não selecionar escola, serão geradas necessidades para todas as escolas da filial</li>
-          <li>As necessidades serão criadas com status 'NEC' na tabela necessidades</li>
-          <li>Ao selecionar uma Semana de Abastecimento, a Semana de Consumo será preenchida automaticamente</li>
-        </ul>
       </div>
     </div>
   );
