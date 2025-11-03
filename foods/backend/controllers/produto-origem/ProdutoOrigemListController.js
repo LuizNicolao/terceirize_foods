@@ -20,6 +20,8 @@ class ProdutoOrigemListController {
   static listarProdutosOrigem = asyncHandler(async (req, res) => {
     const { search, status, grupo_id, subgrupo_id, classe_id, sortField, sortDirection, page = 1, limit = 10 } = req.query;
     
+    console.log('[PRODUTO-ORIGEM] Recebidos sortField:', sortField, 'sortDirection:', sortDirection);
+    
     let baseQuery = `
       SELECT 
         po.*,
@@ -95,6 +97,7 @@ class ProdutoOrigemListController {
         } else {
           orderBy = `${fieldMap[sortField]} ${direction}`;
         }
+        console.log('[PRODUTO-ORIGEM] ORDER BY gerado:', orderBy);
       }
     }
     baseQuery += ` ORDER BY ${orderBy}`;
