@@ -11,6 +11,8 @@ const {
 } = require('../../middleware/responseHandler');
 const { asyncHandler } = require('../../middleware/responseHandler');
 
+console.log('[RIR] Controller RIRListController carregado');
+
 class RIRListController {
   
   /**
