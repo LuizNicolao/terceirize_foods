@@ -116,7 +116,19 @@ class NecessidadesPadroesService {
       return response.data;
     } catch (error) {
       console.error('Erro ao buscar semana de consumo:', error);
-      throw error;
+      // Retornar objeto estruturado em caso de erro
+      if (error.response?.status === 404) {
+        return {
+          success: false,
+          message: error.response?.data?.message || 'Semana de consumo não encontrada',
+          data: null
+        };
+      }
+      return {
+        success: false,
+        message: error.response?.data?.message || error.message || 'Erro ao buscar semana de consumo',
+        data: null
+      };
     }
   }
 }

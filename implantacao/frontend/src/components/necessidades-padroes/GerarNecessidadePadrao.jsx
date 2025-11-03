@@ -28,6 +28,8 @@ const GerarNecessidadePadrao = () => {
   const [loadingFiltros, setLoadingFiltros] = useState(false);
   const [loadingEscolas, setLoadingEscolas] = useState(false);
   const [gerando, setGerando] = useState(false);
+  const [loadingSemanaConsumo, setLoadingSemanaConsumo] = useState(false);
+  const [semanaConsumoPreenchidaAuto, setSemanaConsumoPreenchidaAuto] = useState(false);
 
   // Carregar dados iniciais
   useEffect(() => {
@@ -46,7 +48,7 @@ const GerarNecessidadePadrao = () => {
 
   const buscarSemanaConsumoPorAbastecimento = useCallback(async (semana_abastecimento) => {
     try {
-      setLoadingFiltros(true);
+      setLoadingSemanaConsumo(true);
       const response = await NecessidadesPadroesService.buscarSemanaConsumoPorAbastecimento(semana_abastecimento);
       if (response.success && response.data && response.data.semana_consumo) {
         const semanaConsumo = response.data.semana_consumo;
@@ -63,21 +65,24 @@ const GerarNecessidadePadrao = () => {
           return prev;
         });
         
-        // Atualizar o filtro
+        // Atualizar o filtro e marcar como preenchido automaticamente
         setFiltros(prev => ({ 
           ...prev, 
           semana_consumo: semanaConsumo 
         }));
+        setSemanaConsumoPreenchidaAuto(true);
       } else {
         // Se não encontrou, limpar o campo
         setFiltros(prev => ({ ...prev, semana_consumo: '' }));
+        setSemanaConsumoPreenchidaAuto(false);
       }
     } catch (error) {
       console.error('Erro ao buscar semana de consumo:', error);
       // Limpar campo em caso de erro
       setFiltros(prev => ({ ...prev, semana_consumo: '' }));
+      setSemanaConsumoPreenchidaAuto(false);
     } finally {
-      setLoadingFiltros(false);
+      setLoadingSemanaConsumo(false);
     }
   }, []);
 
@@ -87,6 +92,7 @@ const GerarNecessidadePadrao = () => {
       buscarSemanaConsumoPorAbastecimento(filtros.semana_abastecimento);
     } else {
       setFiltros(prev => ({ ...prev, semana_consumo: '' }));
+      setSemanaConsumoPreenchidaAuto(false);
     }
   }, [filtros.semana_abastecimento, buscarSemanaConsumoPorAbastecimento]);
 
@@ -189,6 +195,13 @@ const GerarNecessidadePadrao = () => {
     if (name === 'filial_id') {
       setFiltros(prev => ({ ...prev, escola_id: '' }));
     }
+    
+    // Se semana de consumo for alterada manualmente, marcar como não preenchida automaticamente
+    if (name === 'semana_consumo') {
+      setSemanaConsumoPreenchidaAuto(false);
+    }
+    
+    // Se semana de abastecimento for alterada manualmente, já será tratado pelo useEffect
   };
 
   const handleGerar = async () => {
@@ -284,16 +297,42 @@ const GerarNecessidadePadrao = () => {
             loading={loadingFiltros}
           />
           
-          <SearchableSelect
-            label="Semana de Consumo"
-            name="semana_consumo"
-            options={semanasConsumo}
-            value={filtros.semana_consumo}
-            onChange={(value) => handleFiltroChange('semana_consumo', value)}
-            placeholder={filtros.semana_abastecimento ? "Preenchido automaticamente..." : "Selecione a semana de consumo..."}
-            loading={loadingFiltros}
-            required
-          />
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Semana de Consumo
+              {semanaConsumoPreenchidaAuto && (
+                <span className="ml-2 text-xs text-gray-500 font-normal">(Preenchido automaticamente)</span>
+              )}
+            </label>
+            <SearchableSelect
+              name="semana_consumo"
+              options={filtros.semana_consumo && semanaConsumoPreenchidaAuto
+                ? [{ value: filtros.semana_consumo, label: filtros.semana_consumo }]
+                : semanasConsumo
+              }
+              value={filtros.semana_consumo}
+              onChange={(value) => {
+                // Se foi preenchido automaticamente, não permitir mudança
+                if (semanaConsumoPreenchidaAuto) {
+                  return;
+                }
+                handleFiltroChange('semana_consumo', value);
+              }}
+              placeholder={
+                !filtros.semana_abastecimento
+                  ? "Selecione primeiro a semana de abastecimento"
+                  : loadingSemanaConsumo
+                  ? "Carregando semana de consumo..."
+                  : filtros.semana_consumo
+                  ? filtros.semana_consumo
+                  : "Carregando..."
+              }
+              disabled={semanaConsumoPreenchidaAuto || loadingSemanaConsumo}
+              loading={loadingSemanaConsumo}
+              required
+              className={semanaConsumoPreenchidaAuto ? "bg-gray-50 cursor-not-allowed" : ""}
+            />
+          </div>
           
           <SearchableSelect
             label="Grupo de Produtos"
