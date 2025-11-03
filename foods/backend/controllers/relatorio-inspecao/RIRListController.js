@@ -36,8 +36,8 @@ class RIRListController {
         ri.visto_responsavel,
         ri.criado_em,
         ri.atualizado_em,
-        u.nome as usuario_nome,
-        JSON_LENGTH(ri.produtos_json) as total_produtos
+        ri.produtos_json,
+        u.nome as usuario_nome
       FROM relatorio_inspecao ri
       LEFT JOIN usuarios u ON ri.usuario_cadastro_id = u.id
       WHERE 1=1
@@ -84,6 +84,23 @@ class RIRListController {
     const query = `${baseQuery} LIMIT ${limit} OFFSET ${offset}`;
 
     const rirs = await executeQuery(query, params);
+
+    // Adicionar total_produtos após buscar os dados para evitar uso de JSON_LENGTH na query
+    const rirsWithTotals = rirs.map(rir => {
+      const { produtos_json, ...rirWithoutJson } = rir;
+      let total_produtos = 0;
+      if (produtos_json) {
+        try {
+          const produtos = typeof produtos_json === 'string' 
+            ? JSON.parse(produtos_json) 
+            : produtos_json;
+          total_produtos = Array.isArray(produtos) ? produtos.length : 0;
+        } catch (e) {
+          total_produtos = 0;
+        }
+      }
+      return { ...rirWithoutJson, total_produtos };
+    });
 
     // Calcular estatísticas (usando mesma lógica de filtros da query principal)
     let statsQuery = `
@@ -134,11 +151,11 @@ class RIRListController {
     const actions = res.generateActionLinks(userPermissions);
 
     // Retornar resposta no formato esperado pelo frontend
-    return successResponse(res, rirs, 'Relatórios de inspeção listados com sucesso', STATUS_CODES.OK, {
+    return successResponse(res, rirsWithTotals, 'Relatórios de inspeção listados com sucesso', STATUS_CODES.OK, {
       ...meta,
       statistics,
       actions,
-      _links: res.addListLinks(rirs, meta.pagination, queryParams)._links
+      _links: res.addListLinks(rirsWithTotals, meta.pagination, queryParams)._links
     });
   });
 
