@@ -45,6 +45,7 @@ const PlanoAmostragem = () => {
     setShowModalGrupo,
     setShowModalNQA,
     setEditingFaixa,
+    setEditingNQA,
     estatisticas
   } = usePlanoAmostragem();
 

@@ -392,6 +392,7 @@ export const usePlanoAmostragem = () => {
     setShowModalGrupo,
     setShowModalNQA,
     setEditingFaixa,
+    setEditingNQA,
     validationErrors,
     showValidationModal,
     estatisticas
