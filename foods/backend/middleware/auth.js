@@ -92,17 +92,12 @@ const checkScreenPermission = (screen, permission) => {
       }
 
       // Buscar permissões do usuário para a tela específica
-      const permStart = Date.now();
       const permissoes = await executeQuery(
         `SELECT pode_visualizar, pode_criar, pode_editar, pode_excluir, pode_movimentar 
          FROM permissoes_usuario 
          WHERE usuario_id = ? AND tela = ?`,
         [user.id, screen]
       );
-      const permTime = Date.now() - permStart;
-      if (permTime > 100) {
-        console.log(`[AUTH] Busca de permissões demorou ${permTime}ms para tela ${screen}`);
-      }
 
       if (permissoes.length === 0) {
         // Temporariamente permitir acesso se não encontrar permissões específicas

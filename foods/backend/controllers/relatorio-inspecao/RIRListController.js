@@ -11,20 +11,15 @@ const {
 } = require('../../middleware/responseHandler');
 const { asyncHandler } = require('../../middleware/responseHandler');
 
-console.log('[RIR] Controller RIRListController carregado');
-
 class RIRListController {
   
   /**
    * Listar relatórios de inspeção com paginação, busca e HATEOAS
    */
   static listarRIRs = asyncHandler(async (req, res) => {
-    console.log('=== [RIR] Iniciando listagem de RIRs ===');
-    const startTime = Date.now();
-    
     const { search = '', status_geral, fornecedor, data_inicio, data_fim } = req.query;
     const pagination = req.pagination;
-    
+
     let params = [];
     let whereClause = 'WHERE 1=1';
 
@@ -81,38 +76,15 @@ class RIRListController {
     const offset = pagination.offset;
     const query = `${baseQuery} LIMIT ${limit} OFFSET ${offset}`;
 
-    console.log('[RIR] Executando query principal');
-    const mainQueryStart = Date.now();
-    let rirs;
-    try {
-      rirs = await executeQuery(query, params);
-      const mainQueryTime = Date.now() - mainQueryStart;
-      console.log(`[RIR] Query principal executada em ${mainQueryTime}ms, registros: ${rirs.length}`);
-    } catch (mainError) {
-      const mainQueryTime = Date.now() - mainQueryStart;
-      console.error(`[RIR] ERRO na query principal após ${mainQueryTime}ms:`, mainError.message);
-      throw mainError;
-    }
+    // Executar query principal
+    const rirs = await executeQuery(query, params);
 
     // Contar total de registros (DEPOIS da query principal, como em Produtos)
-    console.log('[RIR] Executando count query');
     const countQuery = `SELECT COUNT(*) as total FROM relatorio_inspecao ri ${whereClause}`;
-    const countStart = Date.now();
-    let totalItems;
-    try {
-      const countResult = await executeQuery(countQuery, params);
-      const countTime = Date.now() - countStart;
-      console.log(`[RIR] Count query executado em ${countTime}ms, total: ${countResult[0].total}`);
-      totalItems = countResult[0].total;
-    } catch (countError) {
-      const countTime = Date.now() - countStart;
-      console.error(`[RIR] ERRO na count query após ${countTime}ms:`, countError.message);
-      throw countError;
-    }
+    const countResult = await executeQuery(countQuery, params);
+    const totalItems = countResult[0].total;
 
     // Buscar total_produtos e usuario_nome apenas para os IDs retornados (query eficiente)
-    console.log('[RIR] Buscando dados adicionais para registros retornados');
-    const totalsStart = Date.now();
     let rirsWithTotals = rirs;
     if (rirs.length > 0) {
       const ids = rirs.map(r => r.id);
@@ -144,7 +116,6 @@ class RIRListController {
           };
         });
       } catch (totalsError) {
-        console.error('[RIR] Erro ao buscar dados adicionais:', totalsError.message);
         // Se falhar, usar valores padrão
         rirsWithTotals = rirs.map(rir => {
           const { usuario_cadastro_id, ...rirWithoutId } = rir;
@@ -152,8 +123,6 @@ class RIRListController {
         });
       }
     }
-    const totalsTime = Date.now() - totalsStart;
-    console.log(`[RIR] Dados adicionais processados em ${totalsTime}ms`);
 
     // Calcular estatísticas (usando mesma lógica de filtros da query principal)
     let statsQuery = `
@@ -189,17 +158,11 @@ class RIRListController {
       statsParams.push(data_fim);
     }
     
-    console.log('[RIR] Executando query de estatísticas');
-    const statsStart = Date.now();
     let statistics = { total: 0, aprovados: 0, reprovados: 0, parciais: 0 };
     try {
       const statsResult = await executeQuery(statsQuery, statsParams);
-      const statsTime = Date.now() - statsStart;
-      console.log(`[RIR] Query de estatísticas executada em ${statsTime}ms`);
       statistics = statsResult[0] || statistics;
     } catch (statsError) {
-      const statsTime = Date.now() - statsStart;
-      console.error(`[RIR] ERRO na query de estatísticas após ${statsTime}ms:`, statsError.message);
       // Continuar mesmo se falhar nas estatísticas
     }
 
@@ -215,8 +178,6 @@ class RIRListController {
     const actions = res.generateActionLinks(userPermissions);
 
     // Retornar resposta no formato esperado pelo frontend
-    const totalTime = Date.now() - startTime;
-    console.log(`[RIR] Listagem concluída em ${totalTime}ms total`);
     return successResponse(res, rirsWithTotals, 'Relatórios de inspeção listados com sucesso', STATUS_CODES.OK, {
       ...meta,
       statistics,
