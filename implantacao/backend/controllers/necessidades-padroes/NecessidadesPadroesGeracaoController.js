@@ -325,8 +325,9 @@ class NecessidadesPadroesGeracaoController {
         const padraoData = semana_consumo.replace(/[()]/g, '').replace(/\/\d{2}$/, '');
         console.log('[buscarSemanaAbastecimentoPorConsumo] Buscando por padrão (sem ano):', padraoData);
         
-        result = await executeQuery(`
-          SELECT DISTINCT semana_abastecimento
+        // Incluir semana_consumo no SELECT para poder fazer ORDER BY
+        const resultadosCompleto = await executeQuery(`
+          SELECT DISTINCT semana_consumo, semana_abastecimento
           FROM calendario
           WHERE semana_consumo LIKE ?
             AND semana_abastecimento IS NOT NULL
@@ -335,6 +336,8 @@ class NecessidadesPadroesGeracaoController {
           LIMIT 1
         `, [`%${padraoData}%`]);
 
+        // Extrair apenas semana_abastecimento do resultado
+        result = resultadosCompleto.length > 0 ? [{ semana_abastecimento: resultadosCompleto[0].semana_abastecimento }] : [];
         console.log('[buscarSemanaAbastecimentoPorConsumo] Resultado (por padrão):', result);
       }
 
