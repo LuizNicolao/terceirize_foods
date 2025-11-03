@@ -115,6 +115,12 @@ const VincularGrupoModal = ({
               );
               return !grupoJaVinculado;
             })
+            .sort((a, b) => {
+              // Ordenar por código em ordem crescente
+              const codigoA = a.codigo || '';
+              const codigoB = b.codigo || '';
+              return codigoA.localeCompare(codigoB, undefined, { numeric: true, sensitivity: 'base' });
+            })
             .map(grupo => ({
               value: grupo.id,
               label: `${grupo.codigo} - ${grupo.nome}`,
