@@ -61,6 +61,7 @@ class NecessidadesPadroesGeracaoController {
 
       // Buscar dados de padrões que serão usados para gerar necessidades
       // JOIN com unidades_escolares para garantir que a escola pertence à filial e está ativa
+      // JOIN com rotas para buscar o nome da rota (não apenas o ID)
       const padroes = await executeQuery(`
         SELECT DISTINCT
           np.escola_id,
@@ -72,10 +73,15 @@ class NecessidadesPadroesGeracaoController {
           np.unidade_medida_sigla,
           np.quantidade,
           e.rota_id,
-          e.codigo_teknisa
+          e.codigo_teknisa,
+          GROUP_CONCAT(DISTINCT r.nome ORDER BY r.nome SEPARATOR ' - ') as rota_nome
         FROM necessidades_padroes np
         INNER JOIN foods_db.unidades_escolares e ON np.escola_id = e.id
+        LEFT JOIN foods_db.rotas r ON FIND_IN_SET(r.id, e.rota_id) > 0
         WHERE ${whereConditions.join(' AND ')}
+        GROUP BY np.escola_id, np.escola_nome, np.grupo_id, np.grupo_nome, 
+                 np.produto_id, np.produto_nome, np.unidade_medida_sigla, 
+                 np.quantidade, e.rota_id, e.codigo_teknisa
         ORDER BY np.escola_id, np.produto_nome
       `, params);
 
@@ -95,6 +101,7 @@ class NecessidadesPadroesGeracaoController {
             id: padrao.escola_id,
             nome_escola: padrao.escola_nome,
             rota_id: padrao.rota_id || '',
+            rota_nome: padrao.rota_nome || padrao.rota_id || '', // Usar nome da rota se disponível
             codigo_teknisa: padrao.codigo_teknisa || ''
           });
         }
@@ -213,7 +220,7 @@ class NecessidadesPadroesGeracaoController {
               produto_unidade || '',
               escolaId,
               escola.nome_escola,
-              escola.rota_id || '',
+              escola.rota_nome || escola.rota_id || '', // Usar nome da rota se disponível
               escola.codigo_teknisa || '',
               quantidade,
               semana_consumo,

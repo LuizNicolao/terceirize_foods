@@ -582,12 +582,18 @@ const listarParaAjuste = async (req, res) => {
     }
 
     if (grupo) {
-      query += ` AND n.produto_id IN (
-        SELECT DISTINCT ppc.produto_id 
-        FROM produtos_per_capita ppc
-        WHERE ppc.grupo = ?
-      )`;
-      params.push(grupo);
+      // Usar filtro direto por grupo ou grupo_id (já salvos na tabela necessidades)
+      // Tenta primeiro por grupo (nome) e depois por grupo_id (caso seja um ID)
+      const grupoId = parseInt(grupo);
+      if (!isNaN(grupoId)) {
+        // Se grupo for um número, filtrar por grupo_id
+        query += ` AND n.grupo_id = ?`;
+        params.push(grupoId);
+      } else {
+        // Se grupo for texto, filtrar por grupo (nome)
+        query += ` AND n.grupo = ?`;
+        params.push(grupo);
+      }
     }
 
     // Filtros opcionais por período
