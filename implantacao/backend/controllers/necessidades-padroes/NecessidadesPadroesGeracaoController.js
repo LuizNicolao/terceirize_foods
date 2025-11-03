@@ -305,6 +305,8 @@ class NecessidadesPadroesGeracaoController {
         return errorResponse(res, 'Semana de consumo é obrigatória', 400);
       }
 
+      console.log('[buscarSemanaAbastecimentoPorConsumo] Buscando:', semana_consumo);
+
       // Buscar semana de abastecimento na tabela calendario usando o formato exato
       // Mesma lógica simples usada em buscarSemanaConsumo (inverso)
       const result = await executeQuery(`
@@ -315,6 +317,19 @@ class NecessidadesPadroesGeracaoController {
           AND semana_abastecimento != ''
         LIMIT 1
       `, [semana_consumo]);
+
+      console.log('[buscarSemanaAbastecimentoPorConsumo] Resultado:', result);
+
+      // Se não encontrou, buscar exemplos de semanas disponíveis para debug
+      if (result.length === 0) {
+        const exemplos = await executeQuery(`
+          SELECT DISTINCT semana_consumo, semana_abastecimento
+          FROM calendario
+          WHERE semana_consumo LIKE '%05/01%' OR semana_consumo LIKE '%11/01%'
+          LIMIT 5
+        `);
+        console.log('[buscarSemanaAbastecimentoPorConsumo] Exemplos de semanas com 05/01 ou 11/01:', exemplos);
+      }
 
       if (result.length > 0 && result[0].semana_abastecimento) {
         return successResponse(res, {
