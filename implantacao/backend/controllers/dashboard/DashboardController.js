@@ -11,6 +11,17 @@ class DashboardController {
    */
   static async obterEstatisticas(req, res) {
     try {
+      // Helper para executar queries com fallback
+      const safeQuery = async (query, defaultValue = { total: 0, ativos: 0, escolas_unicas: 0 }) => {
+        try {
+          const result = await executeQuery(query);
+          return result[0] || defaultValue;
+        } catch (error) {
+          console.error('Erro ao executar query:', error.message);
+          return defaultValue;
+        }
+      };
+
       // Buscar estatísticas em paralelo para melhor performance
       const [
         unidadesEscolares,
@@ -23,17 +34,16 @@ class DashboardController {
         necessidadesPadroes
       ] = await Promise.all([
         // Total de unidades escolares
-        executeQuery(`SELECT COUNT(*) as total FROM unidades_escolares WHERE ativo = 1`),
+        safeQuery(`SELECT COUNT(*) as total FROM unidades_escolares WHERE ativo = 1`),
         
         // Total de produtos per capita
-        executeQuery(`SELECT COUNT(*) as total, SUM(CASE WHEN ativo = 1 THEN 1 ELSE 0 END) as ativos FROM produtos_per_capita`),
+        safeQuery(`SELECT COUNT(*) as total, SUM(CASE WHEN ativo = 1 THEN 1 ELSE 0 END) as ativos FROM produtos_per_capita`),
         
         // Estatísticas de necessidades do mês atual
-        executeQuery(`
+        safeQuery(`
           SELECT 
             COUNT(*) as total,
             COUNT(DISTINCT escola) as escolas_unicas,
-            COUNT(DISTINCT tipo_entrega) as tipos_entrega,
             SUM(quantidade) as quantidade_total
           FROM necessidades
           WHERE MONTH(data_preenchimento) = MONTH(CURRENT_DATE)
@@ -41,7 +51,7 @@ class DashboardController {
         `),
         
         // Estatísticas de recebimentos do mês atual
-        executeQuery(`
+        safeQuery(`
           SELECT 
             COUNT(*) as total,
             COUNT(DISTINCT escola_id) as escolas_unicas,
@@ -53,7 +63,7 @@ class DashboardController {
         `),
         
         // Estatísticas de registros diários do mês atual
-        executeQuery(`
+        safeQuery(`
           SELECT 
             COUNT(*) as total,
             COUNT(DISTINCT escola_id) as escolas_unicas
@@ -64,7 +74,7 @@ class DashboardController {
         `),
         
         // Estatísticas do calendário do ano atual
-        executeQuery(`
+        safeQuery(`
           SELECT 
             COUNT(*) as total_dias,
             SUM(dia_util) as dias_uteis,
@@ -76,21 +86,21 @@ class DashboardController {
         `),
         
         // Total de usuários ativos
-        executeQuery(`SELECT COUNT(*) as total FROM usuarios WHERE status = 'ativo'`),
+        safeQuery(`SELECT COUNT(*) as total FROM usuarios WHERE status = 'ativo'`),
         
         // Total de necessidades padrão
-        executeQuery(`SELECT COUNT(*) as total FROM necessidades_padroes`)
+        safeQuery(`SELECT COUNT(*) as total FROM necessidades_padroes`)
       ]);
 
       // Estatísticas de alertas e pendências
-      const necessidadesPendentes = await executeQuery(`
+      const necessidadesPendentes = await safeQuery(`
         SELECT COUNT(*) as total
         FROM necessidades
         WHERE status = 'pendente'
         AND data_preenchimento >= DATE_SUB(CURRENT_DATE, INTERVAL 7 DAY)
       `);
 
-      const recebimentosAtrasados = await executeQuery(`
+      const recebimentosAtrasados = await safeQuery(`
         SELECT COUNT(*) as total
         FROM recebimentos_escolas
         WHERE status_entrega = 'Atrasado'
@@ -98,66 +108,72 @@ class DashboardController {
       `);
 
       // Atividades recentes (últimas 10 necessidades)
-      const atividadesRecentes = await executeQuery(`
-        SELECT 
-          'necessidade' as tipo,
-          escola as entidade,
-          data_preenchimento as data,
-          tipo_entrega as detalhe
-        FROM necessidades
-        ORDER BY data_preenchimento DESC
-        LIMIT 10
-      `);
+      let atividadesRecentes = [];
+      try {
+        const result = await executeQuery(`
+          SELECT 
+            'necessidade' as tipo,
+            escola as entidade,
+            data_preenchimento as data,
+            '' as detalhe
+          FROM necessidades
+          ORDER BY data_preenchimento DESC
+          LIMIT 10
+        `);
+        atividadesRecentes = result || [];
+      } catch (error) {
+        console.error('Erro ao buscar atividades recentes:', error.message);
+        atividadesRecentes = [];
+      }
 
       res.json({
         success: true,
         data: {
           estatisticas: {
             // Resumo geral
-            totalEscolas: unidadesEscolares[0]?.total || 0,
-            totalProdutos: produtosPerCapita[0]?.total || 0,
-            produtosAtivos: produtosPerCapita[0]?.ativos || 0,
-            totalUsuarios: usuarios[0]?.total || 0,
-            totalNecessidadesPadroes: necessidadesPadroes[0]?.total || 0,
+            totalEscolas: unidadesEscolares?.total || 0,
+            totalProdutos: produtosPerCapita?.total || 0,
+            produtosAtivos: produtosPerCapita?.ativos || 0,
+            totalUsuarios: usuarios?.total || 0,
+            totalNecessidadesPadroes: necessidadesPadroes?.total || 0,
             
             // Necessidades do mês
             necessidadesMes: {
-              total: necessidades[0]?.total || 0,
-              escolasUnicas: necessidades[0]?.escolas_unicas || 0,
-              tiposEntrega: necessidades[0]?.tipos_entrega || 0,
-              quantidadeTotal: necessidades[0]?.quantidade_total || 0
+              total: necessidades?.total || 0,
+              escolasUnicas: necessidades?.escolas_unicas || 0,
+              quantidadeTotal: necessidades?.quantidade_total || 0
             },
             
             // Recebimentos do mês
             recebimentosMes: {
-              total: recebimentos[0]?.total || 0,
-              escolasUnicas: recebimentos[0]?.escolas_unicas || 0,
-              completos: recebimentos[0]?.completos || 0,
-              parciais: recebimentos[0]?.parciais || 0
+              total: recebimentos?.total || 0,
+              escolasUnicas: recebimentos?.escolas_unicas || 0,
+              completos: recebimentos?.completos || 0,
+              parciais: recebimentos?.parciais || 0
             },
             
             // Registros diários do mês
             registrosMes: {
-              total: registrosDiarios[0]?.total || 0,
-              escolasUnicas: registrosDiarios[0]?.escolas_unicas || 0
+              total: registrosDiarios?.total || 0,
+              escolasUnicas: registrosDiarios?.escolas_unicas || 0
             },
             
             // Calendário do ano
             calendarioAno: {
-              totalDias: calendario[0]?.total_dias || 0,
-              diasUteis: calendario[0]?.dias_uteis || 0,
-              diasAbastecimento: calendario[0]?.dias_abastecimento || 0,
-              diasConsumo: calendario[0]?.dias_consumo || 0,
-              feriados: calendario[0]?.feriados || 0
+              totalDias: calendario?.total_dias || 0,
+              diasUteis: calendario?.dias_uteis || 0,
+              diasAbastecimento: calendario?.dias_abastecimento || 0,
+              diasConsumo: calendario?.dias_consumo || 0,
+              feriados: calendario?.feriados || 0
             },
             
             // Alertas e pendências
             alertas: {
-              necessidadesPendentes: necessidadesPendentes[0]?.total || 0,
-              recebimentosAtrasados: recebimentosAtrasados[0]?.total || 0
+              necessidadesPendentes: necessidadesPendentes?.total || 0,
+              recebimentosAtrasados: recebimentosAtrasados?.total || 0
             }
           },
-          atividadesRecentes: atividadesRecentes || []
+          atividadesRecentes: atividadesRecentes
         }
       });
 
