@@ -1,1464 +1,703 @@
-🔍 Validação customizada - Body recebido: [Object: null prototype] { filiais_ids: '3', unidades_ids: '17' }
-🔍 Validação customizada - filiais_ids: 3
-🔍 Validação customizada - unidades_ids: 17
-🔍 Validação customizada - rotas_ids: undefined
-✅ Validação customizada - Passou na validação
-🚀 Controller processarPDFEGerarNecessidades chamado!
-📊 Body recebido: [Object: null prototype] { filiais_ids: '3', unidades_ids: '17' }
-📁 File recebido: PDF presente
-🔍 Campos do body:
-  filiais_ids: 3
-  unidades_ids: 17
-🔍 Processando seleção por filiais/unidades
-📋 IDs das unidades: [ 17 ]
-🔍 Buscando unidades escolares com query: SELECT id, nome_escola, filial_id FROM unidades_escolares WHERE id IN (?)
-✅ Unidades escolares encontradas: 1
-🔍 Verificando se há unidades escolares: 1
-📁 Arquivo temporário criado: /tmp/temp_1758061996845_Parcial - Outubro.pdf
-🐍 Executando processador Python...
-============================================================
-JSON_RESULTADO_START
+
+
+# 📋 SISTEMA DE RELATÓRIO DE INSPEÇÃO DE RECEBIMENTO (RIR) - MÓDULO DE QUALIDADE
+
+---
+
+## 🎯 OBJETIVO DO SISTEMA
+
+Sistema para registrar e gerenciar **Relatórios de Inspeção de Recebimento (RIR)**, utilizado no controle de qualidade de produtos recebidos dos fornecedores. Permite avaliar condições higiênico-sanitárias, verificar conformidade dos produtos e integrar com planos de amostragem NQA.
+
+---
+
+## 🗄️ ESTRUTURA DO BANCO DE DADOS
+
+### **Tabela Principal: `relatorio_inspecao`**
+
+| Campo | Tipo | Descrição |
+|-------|------|-----------|
+| `id` | INT(11) AUTO_INCREMENT | ID único do relatório |
+| `data_inspecao` | DATE NOT NULL | Data da inspeção de recebimento |
+| `hora_inspecao` | TIME NOT NULL | Hora da inspeção |
+| `numero_af` | VARCHAR(50) | Número da Autorização de Fornecimento (opcional) |
+| `numero_nota_fiscal` | VARCHAR(50) NOT NULL | Número da Nota Fiscal |
+| `fornecedor` | VARCHAR(200) NOT NULL | Razão Social do fornecedor |
+| `numero_pedido` | VARCHAR(50) | Número do pedido de compra vinculado |
+| `cnpj_fornecedor` | VARCHAR(20) | CNPJ do fornecedor |
+| `nota_fiscal_id` | INT(11) | FK para `notas_fiscais` (se existir) |
+| `checklist_json` | JSON | Check list de avaliação higiênico-sanitária (formato JSON) |
+| `produtos_json` | JSON | Lista de produtos avaliados (formato JSON) |
+| `ocorrencias` | TEXT | Ocorrências e observações gerais |
+| `recebedor` | VARCHAR(100) | Nome do responsável pelo recebimento |
+| `visto_responsavel` | VARCHAR(100) | Nome do responsável técnico |
+| `status_geral` | ENUM('APROVADO', 'REPROVADO', 'PARCIAL') | Resultado geral da inspeção |
+| `usuario_cadastro_id` | INT(11) NOT NULL | ID do usuário que cadastrou (FK para `usuarios`) |
+| `usuario_atualizacao_id` | INT(11) | ID do usuário que atualizou |
+| `criado_em` | TIMESTAMP | Data de criação do registro |
+| `atualizado_em` | TIMESTAMP | Data da última atualização |
+
+**Índices:**
+- `idx_data` (data_inspecao)
+- `idx_nf` (numero_nota_fiscal)
+- `idx_fornecedor` (fornecedor)
+- `idx_status` (status_geral)
+
+**Foreign Keys:**
+- `nota_fiscal_id` → `notas_fiscais(id)` ON DELETE SET NULL
+- `usuario_cadastro_id` → `usuarios(id)`
+
+---
+
+## 📊 ESTRUTURA JSON DOS DADOS
+
+### **1. `checklist_json` - Avaliação Higiênico-Sanitária**
+
+```json
+[
+  {
+    "tipo_transporte": "Baú Refrigerado",
+    "tipo_produto": "Carnes e Derivados",
+    "isento_material": "Conforme",
+    "condicoes_caminhao": "Conforme",
+    "acondicionamento": "Conforme",
+    "condicoes_embalagem": "Conforme"
+  }
+]
+```
+
+**Campos:**
+- `tipo_transporte`: "Baú", "Baú Isotérmico", "Baú Refrigerado", "Sider", "Grade Baixa", "Graneleiro"
+- `tipo_produto`: Nome do grupo de produto (ex: "Carnes e Derivados", "Hortifruti")
+- `isento_material`: "Conforme", "Não Conforme", "N/A"
+- `condicoes_caminhao`: "Conforme", "Não Conforme", "N/A"
+- `acondicionamento`: "Conforme", "Não Conforme", "N/A"
+- `condicoes_embalagem`: "Conforme", "Não Conforme", "N/A"
+
+### **2. `produtos_json` - Produtos Avaliados**
+
+```json
+[
+  {
+    "codigo": "001234",
+    "descricao": "Filé de Frango Congelado",
+    "und": "KG",
+    "qtde": "50",
+    "fabricacao": "2024-10-01",
+    "lote": "L12345",
+    "validade": "2025-10-01",
+    "controle_validade": "5.2",
+    "temperatura": "-18",
+    "aval_sensorial": "Conforme",
+    "tam_lote": "50",
+    "num_amostras_avaliadas": "8",
+    "num_amostras_aprovadas": "8",
+    "num_amostras_reprovadas": "0",
+    "resultado_final": "Aprovado"
+  }
+]
+```
+
+**Campos:**
+- `codigo`: Código do produto
+- `descricao`: Nome/descrição do produto
+- `und`: Unidade de medida (KG, UN, CX, etc.)
+- `qtde`: Quantidade pedida
+- `fabricacao`: Data de fabricação (formato ISO: YYYY-MM-DD)
+- `lote`: Número do lote
+- `validade`: Data de validade (formato ISO: YYYY-MM-DD)
+- `controle_validade`: Percentual consumido da validade (calculado automaticamente)
+- `temperatura`: Temperatura de recebimento em °C
+- `aval_sensorial`: "Conforme" ou "Não Conforme"
+- `tam_lote`: Tamanho do lote (para buscar NQA)
+- `num_amostras_avaliadas`: Número de amostras avaliadas (preenchido automaticamente via NQA)
+- `num_amostras_aprovadas`: Número de amostras aprovadas
+- `num_amostras_reprovadas`: Número de amostras reprovadas
+- `resultado_final`: "Aprovado" ou "Reprovado" (calculado automaticamente)
+
+---
+
+## 🔗 RELACIONAMENTOS E VÍNCULOS
+
+### **Integração com Pedidos de Compras:**
+
+```
+pedidos_compras (1) ----< (N) pedido_compras_itens
+        ↓
+relatorio_inspecao (busca produtos automaticamente via AJAX)
+```
+
+**Fluxo:**
+1. Usuário seleciona um **Pedido de Compra** no dropdown
+2. Sistema busca **fornecedor** e **CNPJ** do pedido
+3. Sistema carrega automaticamente todos os **produtos do pedido** via API
+4. Para cada produto, sistema busca automaticamente o **NQA** vinculado ao grupo
+
+### **Integração com NQA e Plano de Amostragem:**
+
+```
+grupos (1) ----< (1) grupos_nqa >---- (1) nqa
+                                        ↓
+                          tabela_amostragem (múltiplas faixas)
+```
+
+**Fluxo:**
+1. Produto possui `grupo_id`
+2. Grupo possui NQA vinculado via `grupos_nqa`
+3. NQA possui múltiplas faixas em `tabela_amostragem`
+4. Sistema busca faixa adequada baseado no tamanho do lote
+
+### **Integração com Fornecedores:**
+
+```
+fornecedores (N)
+        ↓
+relatorio_inspecao (campo fornecedor com autocomplete)
+```
+
+---
+
+## 📁 ARQUIVOS DO SISTEMA
+
+### **Arquivos Principais:**
+
+1. **`index.php`** - Listagem com filtros (READ)
+2. **`cadastrar.php`** - Cadastro de RIR (CREATE)
+3. **`editar.php`** - Edição de RIR (UPDATE)
+4. **`visualizar.php`** - Visualização e impressão (READ)
+
+### **APIs (AJAX):**
+
+5. **`buscar_produtos_pedido.php`** - Busca produtos do pedido
+6. **`buscar_nqa_grupo.php`** - Busca NQA vinculado ao grupo
+7. **`buscar_plano_por_lote.php`** - Busca plano de amostragem por NQA e tamanho de lote
+
+---
+
+## ⚙️ FUNCIONALIDADES DETALHADAS
+
+### **1. VISUALIZAR / LISTAR (`index.php`)**
+
+#### **O que faz:**
+- Lista todos os relatórios de inspeção cadastrados
+- Mostra resumo: Data, NF, Fornecedor, Status, Produtos
+- Permite filtrar por:
+  - **Status** (Aprovado, Reprovado, Parcial)
+  - **Fornecedor**
+  - **Data** (início e fim)
+  - **Busca** (NF, Fornecedor, AF)
+
+#### **Consulta SQL:**
+```php
+SELECT 
+    ri.*,
+    u.nome as usuario_nome,
+    JSON_LENGTH(ri.produtos_json) as total_produtos
+FROM relatorio_inspecao ri
+LEFT JOIN usuarios u ON ri.usuario_cadastro_id = u.id
+WHERE [filtros]
+ORDER BY ri.data_inspecao DESC, ri.hora_inspecao DESC
+```
+
+#### **Funcionalidade de Exclusão:**
+```php
+// Excluir via GET
+if (isset($_GET['excluir'])) {
+    executeQuery("DELETE FROM relatorio_inspecao WHERE id = ?", [$id_excluir]);
+    $_SESSION['sucesso_msg'] = "Relatório excluído com sucesso!";
+}
+```
+
+#### **Elementos da Interface:**
+- **Filtros:**
+  - Campo de busca (NF, Fornecedor, AF)
+  - Dropdown de status
+  - Botões "Filtrar" e "Limpar"
+
+- **Tabela de listagem:**
+
+| ID | Data/Hora | Nº NF | Fornecedor | Produtos | Status | Responsável | Ações |
+|----|-----------|-------|------------|----------|--------|-------------|-------|
+| #0001 | 03/11/2024 10:30 | 12345 | Fornecedor A | 5 itens | APROVADO | João | 👁️ ✏️ 🗑️ |
+
+- **Ações:**
+  - 👁️ **Visualizar** → `visualizar.php?id={id}`
+  - ✏️ **Editar** → `editar.php?id={id}`
+  - 🗑️ **Excluir** → confirmação JavaScript + DELETE
+
+---
+
+### **2. CADASTRAR (`cadastrar.php`)**
+
+#### **O que faz:**
+Página de cadastro de RIR com **4 seções principais**:
+
+#### **A) Dados do Pedido**
+
+**Campos:**
+- **Pedido de Compra** (select) - Dropdown com pedidos aprovados
+- **Fornecedor** (text, obrigatório) - Autocomplete com fornecedores cadastrados
+- **CNPJ Fornecedor** (text, opcional)
+- **Nº Nota Fiscal** (text, obrigatório)
+- **Data Recebimento** (date, obrigatório) - Default: hoje
+- **Hora Recebimento** (time, obrigatório) - Default: hora atual
+
+**Comportamento:**
+- Ao selecionar **Pedido de Compra**:
+  - Preenche automaticamente **Fornecedor** e **CNPJ**
+  - Carrega produtos do pedido via AJAX
+
+#### **B) Check List de Avaliação Higiênico-Sanitária**
+
+**Tabela com colunas:**
+1. **Tipo de Transporte** (select):
+   - Baú, Baú Isotérmico, Baú Refrigerado, Sider, Grade Baixa, Graneleiro
+
+2. **Tipo de Produto** (select):
+   - Lista de grupos cadastrados
+
+3. **Isento de Material Estranho** (select):
+   - Conforme, Não Conforme, N/A
+
+4. **Condições do Caminhão** (select):
+   - Conforme, Não Conforme, N/A
+
+5. **Acondicionamento do Produto** (select):
+   - Conforme, Não Conforme, N/A
+
+6. **Condições da Embalagem** (select):
+   - Conforme, Não Conforme, N/A
+
+#### **C) Avaliação dos Produtos Recebidos**
+
+**Estrutura:** Cada produto é exibido em **2 linhas** (com cabeçalhos):
+
+**Linha 1 - Informações do Produto:**
+| Código | Produto | Unidade | Qtd. Pedido | Fabricação | Lote | Validade | Ctrl. Val. (%) |
+|--------|---------|---------|-------------|------------|------|----------|----------------|
+| 001234 | Produto X | KG | 50 | 01/10/2024 | L123 | 01/10/2025 | **25.3%** |
+
+**Linha 2 - Avaliação e Resultado:**
+| Temp. (°C) | Aval. Sensorial | Tam. Lote | NQA | Nº Amostras Aval. | Nº Aprov. | Nº Reprov. | Resultado Final | Ações |
+|------------|-----------------|-----------|-----|-------------------|-----------|------------|-----------------|-------|
+| -18 | Conforme | 50 | **2,5** | **8** | 8 | 0 | ✅ **Aprovado** | 🗑️ |
+
+**Campos preenchidos automaticamente:**
+- **NQA**: Busca do grupo do produto via API `buscar_nqa_grupo.php`
+- **Nº Amostras Aval.**: Busca do plano de amostragem via API `buscar_plano_por_lote.php`
+- **Ctrl. Val. (%)**: Cálculo automático baseado em fabricação e validade
+- **Resultado Final**: Cálculo automático baseado em AC/RE do plano NQA
+
+**Cálculos Automáticos:**
+
+1. **Controle de Validade (%)**
+```javascript
+// Regra dos 30%: % consumido da validade
+prazo_total = dias(validade - fabricacao)
+dias_restantes = dias(validade - hoje)
+percentual_consumido = (1 - (dias_restantes / prazo_total)) * 100
+
+// Se > 30% → Campo vermelho (produto próximo ao vencimento)
+// Se ≤ 30% → Campo verde (produto OK)
+```
+
+2. **Resultado Final (Aprovado/Reprovado)**
+```javascript
+// Baseado em AC (Aceitação) e RE (Rejeição) do plano NQA
+if (num_reprovados >= RE) {
+    resultado = "Reprovado"
+} else {
+    resultado = "Aprovado"
+}
+```
+
+3. **Status Geral do RIR**
+```php
+if ($total_reprovados > 0 && $total_aprovados > 0) {
+    $status_geral = 'PARCIAL';
+} elseif ($total_reprovados > 0) {
+    $status_geral = 'REPROVADO';
+} else {
+    $status_geral = 'APROVADO';
+}
+```
+
+#### **D) Ocorrências e Responsáveis**
+
+**Campos:**
+- **Ocorrências e Observações Gerais** (textarea, opcional)
+- **Recebedor** (text, opcional) - Nome do responsável pelo recebimento
+- **Visto Responsável** (text, opcional) - Nome do responsável técnico
+
+---
+
+### **3. EDITAR (`editar.php`)**
+
+#### **O que faz:**
+Permite editar um RIR existente.
+
+**Parâmetros:** `?id={id_do_rir}`
+
+**Carregamento de Dados:**
+```php
+// 1. Buscar relatório existente
+$rir_atual = fetchOne("SELECT * FROM relatorio_inspecao WHERE id = ?", [$rir_id]);
+
+// 2. Decodificar JSON
+$checklist_atual = json_decode($rir_atual['checklist_json'], true) ?? [];
+$produtos_atual = json_decode($rir_atual['produtos_json'], true) ?? [];
+
+// 3. Preencher formulário com dados existentes via JavaScript
+```
+
+**Mesmas seções do cadastro**, mas com dados pré-preenchidos.
+
+**Conversão de datas:**
+- Backend (PHP) armazena no formato **ISO** (YYYY-MM-DD)
+- Frontend (JavaScript) converte para **formato BR** (DD/MM/YYYY) para exibição
+- Ao salvar, converte novamente para ISO
+
+---
+
+### **4. VISUALIZAR (`visualizar.php`)**
+
+#### **O que faz:**
+Exibe o RIR completo em formato de visualização/impressão.
+
+**Parâmetros:** `?id={id_do_rir}`
+
+**Seções exibidas:**
+
+1. **Header com Status:**
+   - ID do RIR (ex: #0001)
+   - Badge de status (APROVADO/REPROVADO/PARCIAL)
+
+2. **Cards de Informação:**
+   - **Dados do Relatório:** Data, Hora, Nº NF, Nº AF
+   - **Fornecedor:** Razão Social
+   - **Responsáveis:** Recebedor, Visto, Usuário que cadastrou
+
+3. **Check List Higiênico-Sanitário:**
+   - Tabela com todos os itens avaliados
+   - Cores: Verde (Conforme), Vermelho (Não Conforme)
+
+4. **Produtos Avaliados:**
+   - Tabela completa com todos os produtos
+   - Badge de resultado por produto
+
+5. **Ocorrências:**
+   - Texto livre com observações
+
+**Botões de Ação:**
+- 📄 **Gerar PDF** → Chama `window.print()` com CSS otimizado para impressão
+- ✏️ **Editar Relatório** → Vai para `editar.php`
+- ⬅️ **Voltar para Lista** → Vai para `index.php`
+
+**CSS para Impressão:**
+- Oculta sidebar, botões e elementos desnecessários
+- Reduz fonte para 7-9px
+- Otimiza para papel A4
+- Mantém cores dos status (verde/vermelho)
+
+---
+
+## 🔌 APIs E INTEGRAÇÕES
+
+### **API 1: `buscar_produtos_pedido.php`**
+
+**Endpoint:** `GET buscar_produtos_pedido.php?id={pedido_id}`
+
+**O que faz:**
+Busca todos os produtos de um pedido de compra, incluindo:
+- Dados do produto (código, nome, quantidade, unidade)
+- Grupo do produto
+- NQA vinculado ao grupo (se existir)
+
+**Query SQL:**
+```sql
+SELECT 
+    pi.id,
+    pi.produto_generico_id,
+    pi.quantidade_pedido,
+    pg.nome as nome_produto,
+    pg.codigo as codigo_produto,
+    pg.grupo_id,
+    um.simbolo as unidade_medida,
+    g.nome as grupo_nome,
+    n.id as nqa_id,
+    n.codigo as nqa_codigo,
+    n.nome as nqa_nome
+FROM pedido_compras_itens pi
+LEFT JOIN produto_generico pg ON pi.produto_generico_id = pg.id
+LEFT JOIN unidades_medida um ON pg.unidade_medida_id = um.id
+LEFT JOIN grupos g ON pg.grupo_id = g.id
+LEFT JOIN grupos_nqa gn ON g.id = gn.grupo_id AND gn.ativo = 1
+LEFT JOIN nqa n ON gn.nqa_id = n.id AND n.ativo = 1
+WHERE pi.pedido_id = ?
+ORDER BY pi.id
+```
+
+**Resposta JSON:**
+```json
 {
-  "sucesso": true,
-  "total_refeicoes": 81,
-  "total_dias": 18,
-  "refeicoes": [
-    {
-      "data": "1/10/2025",
-      "turno": "Matutino",
-      "codigo": "R25.375",
-      "descricao": "Carne bovina em cubos refogada com tomate e cenoura, arroz, feijão, purê de batata, salada de alface e couve fatiado e um pêssego",
-      "texto_original": "R25.375 Carne bovina em cubos refogada com tomate e cenoura, arroz, feijão, purê de batata, salada de alface e couve fatiado e um pêssego"
-    },
-    {
-      "data": "1/10/2025",
-      "turno": "Vespertino",
-      "codigo": "R25.375",
-      "descricao": "Carne bovina em cubos refogada com tomate e cenoura, arroz, feijão, purê de batata, salada de alface e couve fatiado e um pêssego",
-      "texto_original": "R25.375 Carne bovina em cubos refogada com tomate e cenoura, arroz, feijão, purê de batata, salada de alface e couve fatiado e um pêssego"
-    },
-    {
-      "data": "1/10/2025",
-      "turno": "Noturno",
-      "codigo": "R25.375",
-      "descricao": "Carne bovina em cubos refogada com tomate e cenoura, arroz, feijão, purê de batata, salada de alface e couve fatiado e um pêssego",
-      "texto_original": "R25.375 Carne bovina em cubos refogada com tomate e cenoura, arroz, feijão, purê de batata, salada de alface e couve fatiado e um pêssego"
-    },
-    {
-      "data": "2/10/2025",
-      "turno": "Matutino",
-      "codigo": "R25.97",
-      "descricao": "Frango em iscas refogado com abobrinha, tomate, cebola e tempero verde, arroz, feijão, salada de pepino e uma tangerina",
-      "texto_original": "R25.97 Frango em iscas refogado com abobrinha, tomate, cebola e tempero verde, arroz, feijão, salada de pepino e uma tangerina"
-    },
-    {
-      "data": "2/10/2025",
-      "turno": "Vespertino",
-      "codigo": "R25.97",
-      "descricao": "Frango em iscas refogado com abobrinha, tomate, cebola e tempero verde, arroz, feijão, salada de pepino e uma tangerina",
-      "texto_original": "R25.97 Frango em iscas refogado com abobrinha, tomate, cebola e tempero verde, arroz, feijão, salada de pepino e uma tangerina"
-    },
-    {
-      "data": "2/10/2025",
-      "turno": "Noturno",
-      "codigo": "R25.97",
-      "descricao": "Frango em iscas refogado com abobrinha, tomate, cebola e tempero verde, arroz, feijão, salada de pepino e uma tangerina",
-      "texto_original": "R25.97 Frango em iscas refogado com abobrinha, tomate, cebola e tempero verde, arroz, feijão, salada de pepino e uma tangerina"
-    },
-    {
-      "data": "3/10/2025",
-      "turno": "Matutino",
-      "codigo": "LL25.228",
-      "descricao": "Torta de carne (com carne moída, tomate, ervilha congelada, cebola e tempero verde), suco de uva integral sem adição de açúcar e uma banana",
-      "texto_original": "LL25.228 Torta de carne (com carne moída, tomate, ervilha congelada, cebola e tempero verde), suco de uva integral sem adição de açúcar e uma banana"
-    },
-    {
-      "data": "3/10/2025",
-      "turno": "Vespertino",
-      "codigo": "LL25.228",
-      "descricao": "Torta de carne (com carne moída, tomate, ervilha congelada, cebola e tempero verde), suco de uva integral sem adição de açúcar e uma banana",
-      "texto_original": "LL25.228 Torta de carne (com carne moída, tomate, ervilha congelada, cebola e tempero verde), suco de uva integral sem adição de açúcar e uma banana"
-    },
-    {
-      "data": "3/10/2025",
-      "turno": "Noturno",
-      "codigo": "LL25.228",
-      "descricao": "Torta de carne (com carne moída, tomate, ervilha congelada, cebola e tempero verde), suco de uva integral sem adição de açúcar e uma banana",
-      "texto_original": "LL25.228 Torta de carne (com carne moída, tomate, ervilha congelada, cebola e tempero verde), suco de uva integral sem adição de açúcar e uma banana"
-    },
-    {
-      "data": "3/10/2025",
-      "turno": "Noturno",
-      "codigo": "R24.202",
-      "descricao": "Carne bovina moída refogada com tomate em cubos e tempero verde, arroz, feijão, salada de couve flor e brócolis e uma banana",
-      "texto_original": "R24.202 Carne bovina moída refogada com tomate em cubos e tempero verde, arroz, feijão, salada de couve flor e brócolis e uma banana"
-    },
-    {
-      "data": "3/10/2025",
-      "turno": "Matutino",
-      "codigo": "R24.202",
-      "descricao": "Carne bovina moída refogada com tomate em cubos e tempero verde, arroz, feijão, salada de couve flor e brócolis e uma banana",
-      "texto_original": "R24.202 Carne bovina moída refogada com tomate em cubos e tempero verde, arroz, feijão, salada de couve flor e brócolis e uma banana"
-    },
-    {
-      "data": "3/10/2025",
-      "turno": "Vespertino",
-      "codigo": "R24.202",
-      "descricao": "Carne bovina moída refogada com tomate em cubos e tempero verde, arroz, feijão, salada de couve flor e brócolis e uma banana",
-      "texto_original": "R24.202 Carne bovina moída refogada com tomate em cubos e tempero verde, arroz, feijão, salada de couve flor e brócolis e uma banana"
-    },
-    {
-      "data": "1/10/2025",
-      "turno": "Matutino",
-      "codigo": "R25.231",
-      "descricao": "Frango em iscas acebolado, arroz, feijão, batata refogada com tomate, salada de repolho roxo e uma maçã",
-      "texto_original": "R25.231 Frango em iscas acebolado, arroz, feijão, batata refogada com tomate, salada de repolho roxo e uma maçã"
-    },
-    {
-      "data": "1/10/2025",
-      "turno": "Vespertino",
-      "codigo": "R25.231",
-      "descricao": "Frango em iscas acebolado, arroz, feijão, batata refogada com tomate, salada de repolho roxo e uma maçã",
-      "texto_original": "R25.231 Frango em iscas acebolado, arroz, feijão, batata refogada com tomate, salada de repolho roxo e uma maçã"
-    },
-    {
-      "data": "1/10/2025",
-      "turno": "Noturno",
-      "codigo": "R25.231",
-      "descricao": "Frango em iscas acebolado, arroz, feijão, batata refogada com tomate, salada de repolho roxo e uma maçã",
-      "texto_original": "R25.231 Frango em iscas acebolado, arroz, feijão, batata refogada com tomate, salada de repolho roxo e uma maçã"
-    },
-    {
-      "data": "2/10/2025",
-      "turno": "Matutino",
-      "codigo": "R25.458",
-      "descricao": "Feijoada de carne bovina com legumes (feijão com carne bovina em cubos, batata doce e abóbora em cubos), arroz, farofa de cenoura ralada e uma tangerina",
-      "texto_original": "R25.458 Feijoada de carne bovina com legumes (feijão com carne bovina em cubos, batata doce e abóbora em cubos), arroz, farofa de cenoura ralada e uma tangerina"
-    },
-    {
-      "data": "2/10/2025",
-      "turno": "Vespertino",
-      "codigo": "R25.458",
-      "descricao": "Feijoada de carne bovina com legumes (feijão com carne bovina em cubos, batata doce e abóbora em cubos), arroz, farofa de cenoura ralada e uma tangerina",
-      "texto_original": "R25.458 Feijoada de carne bovina com legumes (feijão com carne bovina em cubos, batata doce e abóbora em cubos), arroz, farofa de cenoura ralada e uma tangerina"
-    },
-    {
-      "data": "2/10/2025",
-      "turno": "Noturno",
-      "codigo": "R25.458",
-      "descricao": "Feijoada de carne bovina com legumes (feijão com carne bovina em cubos, batata doce e abóbora em cubos), arroz, farofa de cenoura ralada e uma tangerina",
-      "texto_original": "R25.458 Feijoada de carne bovina com legumes (feijão com carne bovina em cubos, batata doce e abóbora em cubos), arroz, farofa de cenoura ralada e uma tangerina"
-    },
-    {
-      "data": "3/10/2025",
-      "turno": "Matutino",
-      "codigo": "LL24.22",
-      "descricao": "Pão massinha com peito de frango desfiado ensopado ao molho de tomate (feito na escola), alface, tomate em fatia, suco de laranja integral sem adição de açúcar e uma banana",
-      "texto_original": "LL24.22 Pão massinha com peito de frango desfiado ensopado ao molho de tomate (feito na escola), alface, tomate em fatia, suco de laranja integral sem adição de açúcar e uma banana"
-    },
-    {
-      "data": "3/10/2025",
-      "turno": "Vespertino",
-      "codigo": "LL24.22",
-      "descricao": "Pão massinha com peito de frango desfiado ensopado ao molho de tomate (feito na escola), alface, tomate em fatia, suco de laranja integral sem adição de açúcar e uma banana",
-      "texto_original": "LL24.22 Pão massinha com peito de frango desfiado ensopado ao molho de tomate (feito na escola), alface, tomate em fatia, suco de laranja integral sem adição de açúcar e uma banana"
-    },
-    {
-      "data": "3/10/2025",
-      "turno": "Noturno",
-      "codigo": "LL24.22",
-      "descricao": "Pão massinha com peito de frango desfiado ensopado ao molho de tomate (feito na escola), alface, tomate em fatia, suco de laranja integral sem adição de açúcar e uma banana",
-      "texto_original": "LL24.22 Pão massinha com peito de frango desfiado ensopado ao molho de tomate (feito na escola), alface, tomate em fatia, suco de laranja integral sem adição de açúcar e uma banana"
-    },
-    {
-      "data": "6/10/2025",
-      "turno": "Matutino",
-      "codigo": "R25.101",
-      "descricao": "Macarronada de frango (Macarrão (parafuso) com frango desfiado ensopado com molho de tomate), salada de repolho picado, salada de abóbora e uma laranja",
-      "texto_original": "R25.101 Macarronada de frango (Macarrão (parafuso) com frango desfiado ensopado com molho de tomate), salada de repolho picado, salada de abóbora e uma laranja"
-    },
-    {
-      "data": "6/10/2025",
-      "turno": "Vespertino",
-      "codigo": "R25.101",
-      "descricao": "Macarronada de frango (Macarrão (parafuso) com frango desfiado ensopado com molho de tomate), salada de repolho picado, salada de abóbora e uma laranja",
-      "texto_original": "R25.101 Macarronada de frango (Macarrão (parafuso) com frango desfiado ensopado com molho de tomate), salada de repolho picado, salada de abóbora e uma laranja"
-    },
-    {
-      "data": "6/10/2025",
-      "turno": "Noturno",
-      "codigo": "R25.101",
-      "descricao": "Macarronada de frango (Macarrão (parafuso) com frango desfiado ensopado com molho de tomate), salada de repolho picado, salada de abóbora e uma laranja",
-      "texto_original": "R25.101 Macarronada de frango (Macarrão (parafuso) com frango desfiado ensopado com molho de tomate), salada de repolho picado, salada de abóbora e uma laranja"
-    },
-    {
-      "data": "7/10/2025",
-      "turno": "Matutino",
-      "codigo": "R25.81",
-      "descricao": "Carne bovina em iscas acebolada, arroz, feijão, batata doce assada, salada de alface e uma fatia de mamão",
-      "texto_original": "R25.81 Carne bovina em iscas acebolada, arroz, feijão, batata doce assada, salada de alface e uma fatia de mamão"
-    },
-    {
-      "data": "7/10/2025",
-      "turno": "Vespertino",
-      "codigo": "R25.81",
-      "descricao": "Carne bovina em iscas acebolada, arroz, feijão, batata doce assada, salada de alface e uma fatia de mamão",
-      "texto_original": "R25.81 Carne bovina em iscas acebolada, arroz, feijão, batata doce assada, salada de alface e uma fatia de mamão"
-    },
-    {
-      "data": "7/10/2025",
-      "turno": "Noturno",
-      "codigo": "R25.81",
-      "descricao": "Carne bovina em iscas acebolada, arroz, feijão, batata doce assada, salada de alface e uma fatia de mamão",
-      "texto_original": "R25.81 Carne bovina em iscas acebolada, arroz, feijão, batata doce assada, salada de alface e uma fatia de mamão"
-    },
-    {
-      "data": "8/10/2025",
-      "turno": "Matutino",
-      "codigo": null,
-      "descricao": "FERIADO",
-      "texto_original": "FERIADO"
-    },
-    {
-      "data": "8/10/2025",
-      "turno": "Vespertino",
-      "codigo": null,
-      "descricao": "FERIADO",
-      "texto_original": "FERIADO"
-    },
-    {
-      "data": "8/10/2025",
-      "turno": "Noturno",
-      "codigo": null,
-      "descricao": "FERIADO",
-      "texto_original": "FERIADO"
-    },
-    {
-      "data": "9/10/2025",
-      "turno": "Matutino",
-      "codigo": "R25.575",
-      "descricao": "Arroz colorido com frango (arroz integral, frango desfiado, abobrinha em cubos e milho verde congelado), feijão, salada de agrião e uma maçã",
-      "texto_original": "R25.575 Arroz colorido com frango (arroz integral, frango desfiado, abobrinha em cubos e milho verde congelado), feijão, salada de agrião e uma maçã"
-    },
-    {
-      "data": "9/10/2025",
-      "turno": "Vespertino",
-      "codigo": "R25.575",
-      "descricao": "Arroz colorido com frango (arroz integral, frango desfiado, abobrinha em cubos e milho verde congelado), feijão, salada de agrião e uma maçã",
-      "texto_original": "R25.575 Arroz colorido com frango (arroz integral, frango desfiado, abobrinha em cubos e milho verde congelado), feijão, salada de agrião e uma maçã"
-    },
-    {
-      "data": "9/10/2025",
-      "turno": "Noturno",
-      "codigo": "R25.575",
-      "descricao": "Arroz colorido com frango (arroz integral, frango desfiado, abobrinha em cubos e milho verde congelado), feijão, salada de agrião e uma maçã",
-      "texto_original": "R25.575 Arroz colorido com frango (arroz integral, frango desfiado, abobrinha em cubos e milho verde congelado), feijão, salada de agrião e uma maçã"
-    },
-    {
-      "data": "10/10/2025",
-      "turno": "Matutino",
-      "codigo": "LL25.64",
-      "descricao": "Bolo de cenoura nutritivo (cenoura, maçã, aveia e farinha de trigo integral), leite com café, açúcar e uma banana",
-      "texto_original": "LL25.64 Bolo de cenoura nutritivo (cenoura, maçã, aveia e farinha de trigo integral), leite com café, açúcar e uma banana"
-    },
-    {
-      "data": "10/10/2025",
-      "turno": "Vespertino",
-      "codigo": "LL25.64",
-      "descricao": "Bolo de cenoura nutritivo (cenoura, maçã, aveia e farinha de trigo integral), leite com café, açúcar e uma banana",
-      "texto_original": "LL25.64 Bolo de cenoura nutritivo (cenoura, maçã, aveia e farinha de trigo integral), leite com café, açúcar e uma banana"
-    },
-    {
-      "data": "10/10/2025",
-      "turno": "Noturno",
-      "codigo": "LL25.64",
-      "descricao": "Bolo de cenoura nutritivo (cenoura, maçã, aveia e farinha de trigo integral), leite com café, açúcar e uma banana",
-      "texto_original": "LL25.64 Bolo de cenoura nutritivo (cenoura, maçã, aveia e farinha de trigo integral), leite com café, açúcar e uma banana"
-    },
-    {
-      "data": "10/10/2025",
-      "turno": "Noturno",
-      "codigo": "R25.312",
-      "descricao": "Filé de tilápia assado (temperado com limão, alho, cebola, e tempero verde), arroz, feijão, salada de batata com cenoura e tempero verde e uma banana",
-      "texto_original": "R25.312 Filé de tilápia assado (temperado com limão, alho, cebola, e tempero verde), arroz, feijão, salada de batata com cenoura e tempero verde e uma banana"
-    },
-    {
-      "data": "10/10/2025",
-      "turno": "Matutino",
-      "codigo": "R25.312",
-      "descricao": "Filé de tilápia assado (temperado com limão, alho, cebola, e tempero verde), arroz, feijão, salada de batata com cenoura e tempero verde e uma banana",
-      "texto_original": "R25.312 Filé de tilápia assado (temperado com limão, alho, cebola, e tempero verde), arroz, feijão, salada de batata com cenoura e tempero verde e uma banana"
-    },
-    {
-      "data": "10/10/2025",
-      "turno": "Vespertino",
-      "codigo": "R25.312",
-      "descricao": "Filé de tilápia assado (temperado com limão, alho, cebola, e tempero verde), arroz, feijão, salada de batata com cenoura e tempero verde e uma banana",
-      "texto_original": "R25.312 Filé de tilápia assado (temperado com limão, alho, cebola, e tempero verde), arroz, feijão, salada de batata com cenoura e tempero verde e uma banana"
-    },
-    {
-      "data": "13/10/2025",
-      "turno": "Matutino",
-      "codigo": "LL24.83",
-      "descricao": "Salada de frutas (mamão, banana e laranja), aveia*, iogurte de mel (iogurte natural batido com mel) e biscoito caseiro sem gordura trans. *servir separadamente",
-      "texto_original": "LL24.83 Salada de frutas (mamão, banana e laranja), aveia*, iogurte de mel (iogurte natural batido com mel) e biscoito caseiro sem gordura trans. *servir separadamente"
-    },
-    {
-      "data": "13/10/2025",
-      "turno": "Vespertino",
-      "codigo": "LL24.83",
-      "descricao": "Salada de frutas (mamão, banana e laranja), aveia*, iogurte de mel (iogurte natural batido com mel) e biscoito caseiro sem gordura trans. *servir separadamente",
-      "texto_original": "LL24.83 Salada de frutas (mamão, banana e laranja), aveia*, iogurte de mel (iogurte natural batido com mel) e biscoito caseiro sem gordura trans. *servir separadamente"
-    },
-    {
-      "data": "13/10/2025",
-      "turno": "Noturno",
-      "codigo": "LL24.83",
-      "descricao": "Salada de frutas (mamão, banana e laranja), aveia*, iogurte de mel (iogurte natural batido com mel) e biscoito caseiro sem gordura trans. *servir separadamente",
-      "texto_original": "LL24.83 Salada de frutas (mamão, banana e laranja), aveia*, iogurte de mel (iogurte natural batido com mel) e biscoito caseiro sem gordura trans. *servir separadamente"
-    },
-    {
-      "data": "14/10/2025",
-      "turno": "Matutino",
-      "codigo": "R25.234",
-      "descricao": "Frango em cubos refogado com tomate e ervilha congelada, arroz, feijão, farofa de cenoura, salada de repolho e uma banana",
-      "texto_original": "R25.234 Frango em cubos refogado com tomate e ervilha congelada, arroz, feijão, farofa de cenoura, salada de repolho e uma banana"
-    },
-    {
-      "data": "14/10/2025",
-      "turno": "Vespertino",
-      "codigo": "R25.234",
-      "descricao": "Frango em cubos refogado com tomate e ervilha congelada, arroz, feijão, farofa de cenoura, salada de repolho e uma banana",
-      "texto_original": "R25.234 Frango em cubos refogado com tomate e ervilha congelada, arroz, feijão, farofa de cenoura, salada de repolho e uma banana"
-    },
-    {
-      "data": "14/10/2025",
-      "turno": "Noturno",
-      "codigo": "R25.234",
-      "descricao": "Frango em cubos refogado com tomate e ervilha congelada, arroz, feijão, farofa de cenoura, salada de repolho e uma banana",
-      "texto_original": "R25.234 Frango em cubos refogado com tomate e ervilha congelada, arroz, feijão, farofa de cenoura, salada de repolho e uma banana"
-    },
-    {
-      "data": "15/10/2025",
-      "turno": "Matutino",
-      "codigo": "LL23.281",
-      "descricao": "Pão massinha com carne bovina moída ensopada com molho de tomate (feito na escola), alface, tomate em fatias, suco de uva integral sem adição de açúcar e uma maçã",
-      "texto_original": "LL23.281 Pão massinha com carne bovina moída ensopada com molho de tomate (feito na escola), alface, tomate em fatias, suco de uva integral sem adição de açúcar e uma maçã"
-    },
-    {
-      "data": "15/10/2025",
-      "turno": "Vespertino",
-      "codigo": "LL23.281",
-      "descricao": "Pão massinha com carne bovina moída ensopada com molho de tomate (feito na escola), alface, tomate em fatias, suco de uva integral sem adição de açúcar e uma maçã",
-      "texto_original": "LL23.281 Pão massinha com carne bovina moída ensopada com molho de tomate (feito na escola), alface, tomate em fatias, suco de uva integral sem adição de açúcar e uma maçã"
-    },
-    {
-      "data": "15/10/2025",
-      "turno": "Noturno",
-      "codigo": "LL23.281",
-      "descricao": "Pão massinha com carne bovina moída ensopada com molho de tomate (feito na escola), alface, tomate em fatias, suco de uva integral sem adição de açúcar e uma maçã",
-      "texto_original": "LL23.281 Pão massinha com carne bovina moída ensopada com molho de tomate (feito na escola), alface, tomate em fatias, suco de uva integral sem adição de açúcar e uma maçã"
-    },
-    {
-      "data": "16/10/2025",
-      "turno": "Matutino",
-      "codigo": "R25.464",
-      "descricao": "Omelete de cenoura com queijo e orégano (Fortaia), arroz, feijão, salada de abobrinha com chuchu e uma fatia de mamão",
-      "texto_original": "R25.464 Omelete de cenoura com queijo e orégano (Fortaia), arroz, feijão, salada de abobrinha com chuchu e uma fatia de mamão"
-    },
-    {
-      "data": "16/10/2025",
-      "turno": "Vespertino",
-      "codigo": "R25.464",
-      "descricao": "Omelete de cenoura com queijo e orégano (Fortaia), arroz, feijão, salada de abobrinha com chuchu e uma fatia de mamão",
-      "texto_original": "R25.464 Omelete de cenoura com queijo e orégano (Fortaia), arroz, feijão, salada de abobrinha com chuchu e uma fatia de mamão"
-    },
-    {
-      "data": "16/10/2025",
-      "turno": "Noturno",
-      "codigo": "R25.464",
-      "descricao": "Omelete de cenoura com queijo e orégano (Fortaia), arroz, feijão, salada de abobrinha com chuchu e uma fatia de mamão",
-      "texto_original": "R25.464 Omelete de cenoura com queijo e orégano (Fortaia), arroz, feijão, salada de abobrinha com chuchu e uma fatia de mamão"
-    },
-    {
-      "data": "17/10/2025",
-      "turno": "Matutino",
-      "codigo": "R24.181",
-      "descricao": "Frango ensopado (coxa e sobrecoxa sem osso) com molho de tomate (feito na escola) e batata, arroz, feijão, couve-flor refogado, salada de brócolis e uma fatia de melancia",
-      "texto_original": "R24.181 Frango ensopado (coxa e sobrecoxa sem osso) com molho de tomate (feito na escola) e batata, arroz, feijão, couve-flor refogado, salada de brócolis e uma fatia de melancia"
-    },
-    {
-      "data": "17/10/2025",
-      "turno": "Vespertino",
-      "codigo": "R24.181",
-      "descricao": "Frango ensopado (coxa e sobrecoxa sem osso) com molho de tomate (feito na escola) e batata, arroz, feijão, couve-flor refogado, salada de brócolis e uma fatia de melancia",
-      "texto_original": "R24.181 Frango ensopado (coxa e sobrecoxa sem osso) com molho de tomate (feito na escola) e batata, arroz, feijão, couve-flor refogado, salada de brócolis e uma fatia de melancia"
-    },
-    {
-      "data": "17/10/2025",
-      "turno": "Noturno",
-      "codigo": "R24.181",
-      "descricao": "Frango ensopado (coxa e sobrecoxa sem osso) com molho de tomate (feito na escola) e batata, arroz, feijão, couve-flor refogado, salada de brócolis e uma fatia de melancia",
-      "texto_original": "R24.181 Frango ensopado (coxa e sobrecoxa sem osso) com molho de tomate (feito na escola) e batata, arroz, feijão, couve-flor refogado, salada de brócolis e uma fatia de melancia"
-    },
-    {
-      "data": "13/10/2025",
-      "turno": "Noturno",
-      "codigo": "R25.341",
-      "descricao": "Estrogonofe de carne bovina em iscas com molho branco (feito na escola), arroz, batata doce assada, salada de beterraba ralada e uma laranja",
-      "texto_original": "R25.341 Estrogonofe de carne bovina em iscas com molho branco (feito na escola), arroz, batata doce assada, salada de beterraba ralada e uma laranja"
-    },
-    {
-      "data": "13/10/2025",
-      "turno": "Matutino",
-      "codigo": "R25.341",
-      "descricao": "Estrogonofe de carne bovina em iscas com molho branco (feito na escola), arroz, batata doce assada, salada de beterraba ralada e uma laranja",
-      "texto_original": "R25.341 Estrogonofe de carne bovina em iscas com molho branco (feito na escola), arroz, batata doce assada, salada de beterraba ralada e uma laranja"
-    },
-    {
-      "data": "13/10/2025",
-      "turno": "Vespertino",
-      "codigo": "R25.341",
-      "descricao": "Estrogonofe de carne bovina em iscas com molho branco (feito na escola), arroz, batata doce assada, salada de beterraba ralada e uma laranja",
-      "texto_original": "R25.341 Estrogonofe de carne bovina em iscas com molho branco (feito na escola), arroz, batata doce assada, salada de beterraba ralada e uma laranja"
-    },
-    {
-      "data": "14/10/2025",
-      "turno": "Noturno",
-      "codigo": "R25.234",
-      "descricao": "Frango em cubos refogado com tomate e e rvilha congelada, arroz, feijão, farofa de cenoura, salada de repolho e uma banana",
-      "texto_original": "R25.234 Frango em cubos refogado com tomate e e rvilha congelada, arroz, feijão, farofa de cenoura, salada de repolho e uma banana"
-    },
-    {
-      "data": "14/10/2025",
-      "turno": "Matutino",
-      "codigo": "R25.234",
-      "descricao": "Frango em cubos refogado com tomate e e rvilha congelada, arroz, feijão, farofa de cenoura, salada de repolho e uma banana",
-      "texto_original": "R25.234 Frango em cubos refogado com tomate e e rvilha congelada, arroz, feijão, farofa de cenoura, salada de repolho e uma banana"
-    },
-    {
-      "data": "14/10/2025",
-      "turno": "Vespertino",
-      "codigo": "R25.234",
-      "descricao": "Frango em cubos refogado com tomate e e rvilha congelada, arroz, feijão, farofa de cenoura, salada de repolho e uma banana",
-      "texto_original": "R25.234 Frango em cubos refogado com tomate e e rvilha congelada, arroz, feijão, farofa de cenoura, salada de repolho e uma banana"
-    },
-    {
-      "data": "20/10/2025",
-      "turno": "Matutino",
-      "codigo": "R25.401",
-      "descricao": "Carreteiro (arroz integral, carne bovina em iscas, tomate e cebola), legumes refogados (cenoura e chuchu), salada de alface e uma laranja",
-      "texto_original": "R25.401 Carreteiro (arroz integral, carne bovina em iscas, tomate e cebola), legumes refogados (cenoura e chuchu), salada de alface e uma laranja"
-    },
-    {
-      "data": "20/10/2025",
-      "turno": "Vespertino",
-      "codigo": "R25.401",
-      "descricao": "Carreteiro (arroz integral, carne bovina em iscas, tomate e cebola), legumes refogados (cenoura e chuchu), salada de alface e uma laranja",
-      "texto_original": "R25.401 Carreteiro (arroz integral, carne bovina em iscas, tomate e cebola), legumes refogados (cenoura e chuchu), salada de alface e uma laranja"
-    },
-    {
-      "data": "20/10/2025",
-      "turno": "Noturno",
-      "codigo": "R25.401",
-      "descricao": "Carreteiro (arroz integral, carne bovina em iscas, tomate e cebola), legumes refogados (cenoura e chuchu), salada de alface e uma laranja",
-      "texto_original": "R25.401 Carreteiro (arroz integral, carne bovina em iscas, tomate e cebola), legumes refogados (cenoura e chuchu), salada de alface e uma laranja"
-    },
-    {
-      "data": "21/10/2025",
-      "turno": "Matutino",
-      "codigo": "LL25.303",
-      "descricao": "Torta de frango com 50% aveia (com peito de frango desfiado, tomate e abobrinha em cubos, cebola e tempero verde), suco de uva integral sem adição de açúcar e uma banana",
-      "texto_original": "LL25.303 Torta de frango com 50% aveia (com peito de frango desfiado, tomate e abobrinha em cubos, cebola e tempero verde), suco de uva integral sem adição de açúcar e uma banana"
-    },
-    {
-      "data": "21/10/2025",
-      "turno": "Vespertino",
-      "codigo": "LL25.303",
-      "descricao": "Torta de frango com 50% aveia (com peito de frango desfiado, tomate e abobrinha em cubos, cebola e tempero verde), suco de uva integral sem adição de açúcar e uma banana",
-      "texto_original": "LL25.303 Torta de frango com 50% aveia (com peito de frango desfiado, tomate e abobrinha em cubos, cebola e tempero verde), suco de uva integral sem adição de açúcar e uma banana"
-    },
-    {
-      "data": "21/10/2025",
-      "turno": "Noturno",
-      "codigo": "LL25.303",
-      "descricao": "Torta de frango com 50% aveia (com peito de frango desfiado, tomate e abobrinha em cubos, cebola e tempero verde), suco de uva integral sem adição de açúcar e uma banana",
-      "texto_original": "LL25.303 Torta de frango com 50% aveia (com peito de frango desfiado, tomate e abobrinha em cubos, cebola e tempero verde), suco de uva integral sem adição de açúcar e uma banana"
-    },
-    {
-      "data": "22/10/2025",
-      "turno": "Matutino",
-      "codigo": "R25.282",
-      "descricao": "Polenta com molho de carne moída (carne bovina moída e molho de tomate feito na escola), arroz, feijão, salada de couve-flor e uma tangerina",
-      "texto_original": "R25.282 Polenta com molho de carne moída (carne bovina moída e molho de tomate feito na escola), arroz, feijão, salada de couve-flor e uma tangerina"
-    },
-    {
-      "data": "22/10/2025",
-      "turno": "Vespertino",
-      "codigo": "R25.282",
-      "descricao": "Polenta com molho de carne moída (carne bovina moída e molho de tomate feito na escola), arroz, feijão, salada de couve-flor e uma tangerina",
-      "texto_original": "R25.282 Polenta com molho de carne moída (carne bovina moída e molho de tomate feito na escola), arroz, feijão, salada de couve-flor e uma tangerina"
-    },
-    {
-      "data": "22/10/2025",
-      "turno": "Noturno",
-      "codigo": "R25.282",
-      "descricao": "Polenta com molho de carne moída (carne bovina moída e molho de tomate feito na escola), arroz, feijão, salada de couve-flor e uma tangerina",
-      "texto_original": "R25.282 Polenta com molho de carne moída (carne bovina moída e molho de tomate feito na escola), arroz, feijão, salada de couve-flor e uma tangerina"
-    },
-    {
-      "data": "23/10/2025",
-      "turno": "Matutino",
-      "codigo": "LL25.740",
-      "descricao": "Cuca de banana com aveia e canela, leite com café, açúcar e uma fatia de mamão",
-      "texto_original": "LL25.740 Cuca de banana com aveia e canela, leite com café, açúcar e uma fatia de mamão"
-    },
-    {
-      "data": "23/10/2025",
-      "turno": "Vespertino",
-      "codigo": "LL25.740",
-      "descricao": "Cuca de banana com aveia e canela, leite com café, açúcar e uma fatia de mamão",
-      "texto_original": "LL25.740 Cuca de banana com aveia e canela, leite com café, açúcar e uma fatia de mamão"
-    },
-    {
-      "data": "23/10/2025",
-      "turno": "Noturno",
-      "codigo": "LL25.740",
-      "descricao": "Cuca de banana com aveia e canela, leite com café, açúcar e uma fatia de mamão",
-      "texto_original": "LL25.740 Cuca de banana com aveia e canela, leite com café, açúcar e uma fatia de mamão"
-    },
-    {
-      "data": "24/10/2025",
-      "turno": "Matutino",
-      "codigo": "R25.260",
-      "descricao": "Macarronada de frango (macarrão parafuso com frango desfiado ensopado com molho de tomate), salada de couve picada, salada de beterraba cozida e uma fatia de melancia",
-      "texto_original": "R25.260 Macarronada de frango (macarrão parafuso com frango desfiado ensopado com molho de tomate), salada de couve picada, salada de beterraba cozida e uma fatia de melancia"
-    },
-    {
-      "data": "24/10/2025",
-      "turno": "Vespertino",
-      "codigo": "R25.260",
-      "descricao": "Macarronada de frango (macarrão parafuso com frango desfiado ensopado com molho de tomate), salada de couve picada, salada de beterraba cozida e uma fatia de melancia",
-      "texto_original": "R25.260 Macarronada de frango (macarrão parafuso com frango desfiado ensopado com molho de tomate), salada de couve picada, salada de beterraba cozida e uma fatia de melancia"
-    },
-    {
-      "data": "24/10/2025",
-      "turno": "Noturno",
-      "codigo": "R25.260",
-      "descricao": "Macarronada de frango (macarrão parafuso com frango desfiado ensopado com molho de tomate), salada de couve picada, salada de beterraba cozida e uma fatia de melancia",
-      "texto_original": "R25.260 Macarronada de frango (macarrão parafuso com frango desfiado ensopado com molho de tomate), salada de couve picada, salada de beterraba cozida e uma fatia de melancia"
-    },
-    {
-      "data": "21/10/2025",
-      "turno": "Noturno",
-      "codigo": "R25.335",
-      "descricao": "Frango em cubos refogado com tomate e ervilha congelada, arroz, feijão, farofa de beterraba, salada de repolho e uma banana",
-      "texto_original": "R25.335 Frango em cubos refogado com tomate e ervilha congelada, arroz, feijão, farofa de beterraba, salada de repolho e uma banana"
-    },
-    {
-      "data": "21/10/2025",
-      "turno": "Matutino",
-      "codigo": "R25.335",
-      "descricao": "Frango em cubos refogado com tomate e ervilha congelada, arroz, feijão, farofa de beterraba, salada de repolho e uma banana",
-      "texto_original": "R25.335 Frango em cubos refogado com tomate e ervilha congelada, arroz, feijão, farofa de beterraba, salada de repolho e uma banana"
-    },
-    {
-      "data": "21/10/2025",
-      "turno": "Vespertino",
-      "codigo": "R25.335",
-      "descricao": "Frango em cubos refogado com tomate e ervilha congelada, arroz, feijão, farofa de beterraba, salada de repolho e uma banana",
-      "texto_original": "R25.335 Frango em cubos refogado com tomate e ervilha congelada, arroz, feijão, farofa de beterraba, salada de repolho e uma banana"
-    },
-    {
-      "data": "23/10/2025",
-      "turno": "Noturno",
-      "codigo": "R25.332",
-      "descricao": "Filé de Tilápia (temperado com limão, alho, cebola e tempero verde) ensopado com molho de tomate (feito na escola), arroz com espinafre, feijão, batata assada, salada de rúcula e uma fatia de mamão",
-      "texto_original": "R25.332 Filé de Tilápia (temperado com limão, alho, cebola e tempero verde) ensopado com molho de tomate (feito na escola), arroz com espinafre, feijão, batata assada, salada de rúcula e uma fatia de mamão"
-    },
-    {
-      "data": "23/10/2025",
-      "turno": "Matutino",
-      "codigo": "R25.332",
-      "descricao": "Filé de Tilápia (temperado com limão, alho, cebola e tempero verde) ensopado com molho de tomate (feito na escola), arroz com espinafre, feijão, batata assada, salada de rúcula e uma fatia de mamão",
-      "texto_original": "R25.332 Filé de Tilápia (temperado com limão, alho, cebola e tempero verde) ensopado com molho de tomate (feito na escola), arroz com espinafre, feijão, batata assada, salada de rúcula e uma fatia de mamão"
-    },
-    {
-      "data": "23/10/2025",
-      "turno": "Vespertino",
-      "codigo": "R25.332",
-      "descricao": "Filé de Tilápia (temperado com limão, alho, cebola e tempero verde) ensopado com molho de tomate (feito na escola), arroz com espinafre, feijão, batata assada, salada de rúcula e uma fatia de mamão",
-      "texto_original": "R25.332 Filé de Tilápia (temperado com limão, alho, cebola e tempero verde) ensopado com molho de tomate (feito na escola), arroz com espinafre, feijão, batata assada, salada de rúcula e uma fatia de mamão"
+  "success": true,
+  "produtos": [
+    {
+      "id": 1,
+      "codigo_produto": "001234",
+      "nome_produto": "Filé de Frango",
+      "quantidade_pedido": "50",
+      "unidade_medida": "KG",
+      "grupo_id": 5,
+      "grupo_nome": "Carnes e Derivados",
+      "nqa_id": 2,
+      "nqa_codigo": "2,5",
+      "nqa_nome": "NQA Padrão"
     }
-  ],
-  "cardapio_por_data": {
-    "1/10/2025": [
-      {
-        "data": "1/10/2025",
-        "turno": "Matutino",
-        "codigo": "R25.375",
-        "descricao": "Carne bovina em cubos refogada com tomate e cenoura, arroz, feijão, purê de batata, salada de alface e couve fatiado e um pêssego",
-        "texto_original": "R25.375 Carne bovina em cubos refogada com tomate e cenoura, arroz, feijão, purê de batata, salada de alface e couve fatiado e um pêssego"
-      },
-      {
-        "data": "1/10/2025",
-        "turno": "Vespertino",
-        "codigo": "R25.375",
-        "descricao": "Carne bovina em cubos refogada com tomate e cenoura, arroz, feijão, purê de batata, salada de alface e couve fatiado e um pêssego",
-        "texto_original": "R25.375 Carne bovina em cubos refogada com tomate e cenoura, arroz, feijão, purê de batata, salada de alface e couve fatiado e um pêssego"
-      },
-      {
-        "data": "1/10/2025",
-        "turno": "Noturno",
-        "codigo": "R25.375",
-        "descricao": "Carne bovina em cubos refogada com tomate e cenoura, arroz, feijão, purê de batata, salada de alface e couve fatiado e um pêssego",
-        "texto_original": "R25.375 Carne bovina em cubos refogada com tomate e cenoura, arroz, feijão, purê de batata, salada de alface e couve fatiado e um pêssego"
-      },
-      {
-        "data": "1/10/2025",
-        "turno": "Matutino",
-        "codigo": "R25.231",
-        "descricao": "Frango em iscas acebolado, arroz, feijão, batata refogada com tomate, salada de repolho roxo e uma maçã",
-        "texto_original": "R25.231 Frango em iscas acebolado, arroz, feijão, batata refogada com tomate, salada de repolho roxo e uma maçã"
-      },
-      {
-        "data": "1/10/2025",
-        "turno": "Vespertino",
-        "codigo": "R25.231",
-        "descricao": "Frango em iscas acebolado, arroz, feijão, batata refogada com tomate, salada de repolho roxo e uma maçã",
-        "texto_original": "R25.231 Frango em iscas acebolado, arroz, feijão, batata refogada com tomate, salada de repolho roxo e uma maçã"
-      },
-      {
-        "data": "1/10/2025",
-        "turno": "Noturno",
-        "codigo": "R25.231",
-        "descricao": "Frango em iscas acebolado, arroz, feijão, batata refogada com tomate, salada de repolho roxo e uma maçã",
-        "texto_original": "R25.231 Frango em iscas acebolado, arroz, feijão, batata refogada com tomate, salada de repolho roxo e uma maçã"
-      }
-    ],
-    "2/10/2025": [
-      {
-        "data": "2/10/2025",
-        "turno": "Matutino",
-        "codigo": "R25.97",
-        "descricao": "Frango em iscas refogado com abobrinha, tomate, cebola e tempero verde, arroz, feijão, salada de pepino e uma tangerina",
-        "texto_original": "R25.97 Frango em iscas refogado com abobrinha, tomate, cebola e tempero verde, arroz, feijão, salada de pepino e uma tangerina"
-      },
-      {
-        "data": "2/10/2025",
-        "turno": "Vespertino",
-        "codigo": "R25.97",
-        "descricao": "Frango em iscas refogado com abobrinha, tomate, cebola e tempero verde, arroz, feijão, salada de pepino e uma tangerina",
-        "texto_original": "R25.97 Frango em iscas refogado com abobrinha, tomate, cebola e tempero verde, arroz, feijão, salada de pepino e uma tangerina"
-      },
-      {
-        "data": "2/10/2025",
-        "turno": "Noturno",
-        "codigo": "R25.97",
-        "descricao": "Frango em iscas refogado com abobrinha, tomate, cebola e tempero verde, arroz, feijão, salada de pepino e uma tangerina",
-        "texto_original": "R25.97 Frango em iscas refogado com abobrinha, tomate, cebola e tempero verde, arroz, feijão, salada de pepino e uma tangerina"
-      },
-      {
-        "data": "2/10/2025",
-        "turno": "Matutino",
-        "codigo": "R25.458",
-        "descricao": "Feijoada de carne bovina com legumes (feijão com carne bovina em cubos, batata doce e abóbora em cubos), arroz, farofa de cenoura ralada e uma tangerina",
-        "texto_original": "R25.458 Feijoada de carne bovina com legumes (feijão com carne bovina em cubos, batata doce e abóbora em cubos), arroz, farofa de cenoura ralada e uma tangerina"
-      },
-      {
-        "data": "2/10/2025",
-        "turno": "Vespertino",
-        "codigo": "R25.458",
-        "descricao": "Feijoada de carne bovina com legumes (feijão com carne bovina em cubos, batata doce e abóbora em cubos), arroz, farofa de cenoura ralada e uma tangerina",
-        "texto_original": "R25.458 Feijoada de carne bovina com legumes (feijão com carne bovina em cubos, batata doce e abóbora em cubos), arroz, farofa de cenoura ralada e uma tangerina"
-      },
-      {
-        "data": "2/10/2025",
-        "turno": "Noturno",
-        "codigo": "R25.458",
-        "descricao": "Feijoada de carne bovina com legumes (feijão com carne bovina em cubos, batata doce e abóbora em cubos), arroz, farofa de cenoura ralada e uma tangerina",
-        "texto_original": "R25.458 Feijoada de carne bovina com legumes (feijão com carne bovina em cubos, batata doce e abóbora em cubos), arroz, farofa de cenoura ralada e uma tangerina"
-      }
-    ],
-    "3/10/2025": [
-      {
-        "data": "3/10/2025",
-        "turno": "Matutino",
-        "codigo": "LL25.228",
-        "descricao": "Torta de carne (com carne moída, tomate, ervilha congelada, cebola e tempero verde), suco de uva integral sem adição de açúcar e uma banana",
-        "texto_original": "LL25.228 Torta de carne (com carne moída, tomate, ervilha congelada, cebola e tempero verde), suco de uva integral sem adição de açúcar e uma banana"
-      },
-      {
-        "data": "3/10/2025",
-        "turno": "Vespertino",
-        "codigo": "LL25.228",
-        "descricao": "Torta de carne (com carne moída, tomate, ervilha congelada, cebola e tempero verde), suco de uva integral sem adição de açúcar e uma banana",
-        "texto_original": "LL25.228 Torta de carne (com carne moída, tomate, ervilha congelada, cebola e tempero verde), suco de uva integral sem adição de açúcar e uma banana"
-      },
-      {
-        "data": "3/10/2025",
-        "turno": "Noturno",
-        "codigo": "LL25.228",
-        "descricao": "Torta de carne (com carne moída, tomate, ervilha congelada, cebola e tempero verde), suco de uva integral sem adição de açúcar e uma banana",
-        "texto_original": "LL25.228 Torta de carne (com carne moída, tomate, ervilha congelada, cebola e tempero verde), suco de uva integral sem adição de açúcar e uma banana"
-      },
-      {
-        "data": "3/10/2025",
-        "turno": "Noturno",
-        "codigo": "R24.202",
-        "descricao": "Carne bovina moída refogada com tomate em cubos e tempero verde, arroz, feijão, salada de couve flor e brócolis e uma banana",
-        "texto_original": "R24.202 Carne bovina moída refogada com tomate em cubos e tempero verde, arroz, feijão, salada de couve flor e brócolis e uma banana"
-      },
-      {
-        "data": "3/10/2025",
-        "turno": "Matutino",
-        "codigo": "R24.202",
-        "descricao": "Carne bovina moída refogada com tomate em cubos e tempero verde, arroz, feijão, salada de couve flor e brócolis e uma banana",
-        "texto_original": "R24.202 Carne bovina moída refogada com tomate em cubos e tempero verde, arroz, feijão, salada de couve flor e brócolis e uma banana"
-      },
-      {
-        "data": "3/10/2025",
-        "turno": "Vespertino",
-        "codigo": "R24.202",
-        "descricao": "Carne bovina moída refogada com tomate em cubos e tempero verde, arroz, feijão, salada de couve flor e brócolis e uma banana",
-        "texto_original": "R24.202 Carne bovina moída refogada com tomate em cubos e tempero verde, arroz, feijão, salada de couve flor e brócolis e uma banana"
-      },
-      {
-        "data": "3/10/2025",
-        "turno": "Matutino",
-        "codigo": "LL24.22",
-        "descricao": "Pão massinha com peito de frango desfiado ensopado ao molho de tomate (feito na escola), alface, tomate em fatia, suco de laranja integral sem adição de açúcar e uma banana",
-        "texto_original": "LL24.22 Pão massinha com peito de frango desfiado ensopado ao molho de tomate (feito na escola), alface, tomate em fatia, suco de laranja integral sem adição de açúcar e uma banana"
-      },
-      {
-        "data": "3/10/2025",
-        "turno": "Vespertino",
-        "codigo": "LL24.22",
-        "descricao": "Pão massinha com peito de frango desfiado ensopado ao molho de tomate (feito na escola), alface, tomate em fatia, suco de laranja integral sem adição de açúcar e uma banana",
-        "texto_original": "LL24.22 Pão massinha com peito de frango desfiado ensopado ao molho de tomate (feito na escola), alface, tomate em fatia, suco de laranja integral sem adição de açúcar e uma banana"
-      },
-      {
-        "data": "3/10/2025",
-        "turno": "Noturno",
-        "codigo": "LL24.22",
-        "descricao": "Pão massinha com peito de frango desfiado ensopado ao molho de tomate (feito na escola), alface, tomate em fatia, suco de laranja integral sem adição de açúcar e uma banana",
-        "texto_original": "LL24.22 Pão massinha com peito de frango desfiado ensopado ao molho de tomate (feito na escola), alface, tomate em fatia, suco de laranja integral sem adição de açúcar e uma banana"
-      }
-    ],
-    "6/10/2025": [
-      {
-        "data": "6/10/2025",
-        "turno": "Matutino",
-        "codigo": "R25.101",
-        "descricao": "Macarronada de frango (Macarrão (parafuso) com frango desfiado ensopado com molho de tomate), salada de repolho picado, salada de abóbora e uma laranja",
-        "texto_original": "R25.101 Macarronada de frango (Macarrão (parafuso) com frango desfiado ensopado com molho de tomate), salada de repolho picado, salada de abóbora e uma laranja"
-      },
-      {
-        "data": "6/10/2025",
-        "turno": "Vespertino",
-        "codigo": "R25.101",
-        "descricao": "Macarronada de frango (Macarrão (parafuso) com frango desfiado ensopado com molho de tomate), salada de repolho picado, salada de abóbora e uma laranja",
-        "texto_original": "R25.101 Macarronada de frango (Macarrão (parafuso) com frango desfiado ensopado com molho de tomate), salada de repolho picado, salada de abóbora e uma laranja"
-      },
-      {
-        "data": "6/10/2025",
-        "turno": "Noturno",
-        "codigo": "R25.101",
-        "descricao": "Macarronada de frango (Macarrão (parafuso) com frango desfiado ensopado com molho de tomate), salada de repolho picado, salada de abóbora e uma laranja",
-        "texto_original": "R25.101 Macarronada de frango (Macarrão (parafuso) com frango desfiado ensopado com molho de tomate), salada de repolho picado, salada de abóbora e uma laranja"
-      }
-    ],
-    "7/10/2025": [
-      {
-        "data": "7/10/2025",
-        "turno": "Matutino",
-        "codigo": "R25.81",
-        "descricao": "Carne bovina em iscas acebolada, arroz, feijão, batata doce assada, salada de alface e uma fatia de mamão",
-        "texto_original": "R25.81 Carne bovina em iscas acebolada, arroz, feijão, batata doce assada, salada de alface e uma fatia de mamão"
-      },
-      {
-        "data": "7/10/2025",
-        "turno": "Vespertino",
-        "codigo": "R25.81",
-        "descricao": "Carne bovina em iscas acebolada, arroz, feijão, batata doce assada, salada de alface e uma fatia de mamão",
-        "texto_original": "R25.81 Carne bovina em iscas acebolada, arroz, feijão, batata doce assada, salada de alface e uma fatia de mamão"
-      },
-      {
-        "data": "7/10/2025",
-        "turno": "Noturno",
-        "codigo": "R25.81",
-        "descricao": "Carne bovina em iscas acebolada, arroz, feijão, batata doce assada, salada de alface e uma fatia de mamão",
-        "texto_original": "R25.81 Carne bovina em iscas acebolada, arroz, feijão, batata doce assada, salada de alface e uma fatia de mamão"
-      }
-    ],
-    "8/10/2025": [
-      {
-        "data": "8/10/2025",
-        "turno": "Matutino",
-        "codigo": null,
-        "descricao": "FERIADO",
-        "texto_original": "FERIADO"
-      },
-      {
-        "data": "8/10/2025",
-        "turno": "Vespertino",
-        "codigo": null,
-        "descricao": "FERIADO",
-        "texto_original": "FERIADO"
-      },
-      {
-        "data": "8/10/2025",
-        "turno": "Noturno",
-        "codigo": null,
-        "descricao": "FERIADO",
-        "texto_original": "FERIADO"
-      }
-    ],
-    "9/10/2025": [
-      {
-        "data": "9/10/2025",
-        "turno": "Matutino",
-        "codigo": "R25.575",
-        "descricao": "Arroz colorido com frango (arroz integral, frango desfiado, abobrinha em cubos e milho verde congelado), feijão, salada de agrião e uma maçã",
-        "texto_original": "R25.575 Arroz colorido com frango (arroz integral, frango desfiado, abobrinha em cubos e milho verde congelado), feijão, salada de agrião e uma maçã"
-      },
-      {
-        "data": "9/10/2025",
-        "turno": "Vespertino",
-        "codigo": "R25.575",
-        "descricao": "Arroz colorido com frango (arroz integral, frango desfiado, abobrinha em cubos e milho verde congelado), feijão, salada de agrião e uma maçã",
-        "texto_original": "R25.575 Arroz colorido com frango (arroz integral, frango desfiado, abobrinha em cubos e milho verde congelado), feijão, salada de agrião e uma maçã"
-      },
-      {
-        "data": "9/10/2025",
-        "turno": "Noturno",
-        "codigo": "R25.575",
-        "descricao": "Arroz colorido com frango (arroz integral, frango desfiado, abobrinha em cubos e milho verde congelado), feijão, salada de agrião e uma maçã",
-        "texto_original": "R25.575 Arroz colorido com frango (arroz integral, frango desfiado, abobrinha em cubos e milho verde congelado), feijão, salada de agrião e uma maçã"
-      }
-    ],
-    "10/10/2025": [
-      {
-        "data": "10/10/2025",
-        "turno": "Matutino",
-        "codigo": "LL25.64",
-        "descricao": "Bolo de cenoura nutritivo (cenoura, maçã, aveia e farinha de trigo integral), leite com café, açúcar e uma banana",
-        "texto_original": "LL25.64 Bolo de cenoura nutritivo (cenoura, maçã, aveia e farinha de trigo integral), leite com café, açúcar e uma banana"
-      },
-      {
-        "data": "10/10/2025",
-        "turno": "Vespertino",
-        "codigo": "LL25.64",
-        "descricao": "Bolo de cenoura nutritivo (cenoura, maçã, aveia e farinha de trigo integral), leite com café, açúcar e uma banana",
-        "texto_original": "LL25.64 Bolo de cenoura nutritivo (cenoura, maçã, aveia e farinha de trigo integral), leite com café, açúcar e uma banana"
-      },
-      {
-        "data": "10/10/2025",
-        "turno": "Noturno",
-        "codigo": "LL25.64",
-        "descricao": "Bolo de cenoura nutritivo (cenoura, maçã, aveia e farinha de trigo integral), leite com café, açúcar e uma banana",
-        "texto_original": "LL25.64 Bolo de cenoura nutritivo (cenoura, maçã, aveia e farinha de trigo integral), leite com café, açúcar e uma banana"
-      },
-      {
-        "data": "10/10/2025",
-        "turno": "Noturno",
-        "codigo": "R25.312",
-        "descricao": "Filé de tilápia assado (temperado com limão, alho, cebola, e tempero verde), arroz, feijão, salada de batata com cenoura e tempero verde e uma banana",
-        "texto_original": "R25.312 Filé de tilápia assado (temperado com limão, alho, cebola, e tempero verde), arroz, feijão, salada de batata com cenoura e tempero verde e uma banana"
-      },
-      {
-        "data": "10/10/2025",
-        "turno": "Matutino",
-        "codigo": "R25.312",
-        "descricao": "Filé de tilápia assado (temperado com limão, alho, cebola, e tempero verde), arroz, feijão, salada de batata com cenoura e tempero verde e uma banana",
-        "texto_original": "R25.312 Filé de tilápia assado (temperado com limão, alho, cebola, e tempero verde), arroz, feijão, salada de batata com cenoura e tempero verde e uma banana"
-      },
-      {
-        "data": "10/10/2025",
-        "turno": "Vespertino",
-        "codigo": "R25.312",
-        "descricao": "Filé de tilápia assado (temperado com limão, alho, cebola, e tempero verde), arroz, feijão, salada de batata com cenoura e tempero verde e uma banana",
-        "texto_original": "R25.312 Filé de tilápia assado (temperado com limão, alho, cebola, e tempero verde), arroz, feijão, salada de batata com cenoura e tempero verde e uma banana"
-      }
-    ],
-    "13/10/2025": [
-      {
-        "data": "13/10/2025",
-        "turno": "Matutino",
-        "codigo": "LL24.83",
-        "descricao": "Salada de frutas (mamão, banana e laranja), aveia*, iogurte de mel (iogurte natural batido com mel) e biscoito caseiro sem gordura trans. *servir separadamente",
-        "texto_original": "LL24.83 Salada de frutas (mamão, banana e laranja), aveia*, iogurte de mel (iogurte natural batido com mel) e biscoito caseiro sem gordura trans. *servir separadamente"
-      },
-      {
-        "data": "13/10/2025",
-        "turno": "Vespertino",
-        "codigo": "LL24.83",
-        "descricao": "Salada de frutas (mamão, banana e laranja), aveia*, iogurte de mel (iogurte natural batido com mel) e biscoito caseiro sem gordura trans. *servir separadamente",
-        "texto_original": "LL24.83 Salada de frutas (mamão, banana e laranja), aveia*, iogurte de mel (iogurte natural batido com mel) e biscoito caseiro sem gordura trans. *servir separadamente"
-      },
-      {
-        "data": "13/10/2025",
-        "turno": "Noturno",
-        "codigo": "LL24.83",
-        "descricao": "Salada de frutas (mamão, banana e laranja), aveia*, iogurte de mel (iogurte natural batido com mel) e biscoito caseiro sem gordura trans. *servir separadamente",
-        "texto_original": "LL24.83 Salada de frutas (mamão, banana e laranja), aveia*, iogurte de mel (iogurte natural batido com mel) e biscoito caseiro sem gordura trans. *servir separadamente"
-      },
-      {
-        "data": "13/10/2025",
-        "turno": "Noturno",
-        "codigo": "R25.341",
-        "descricao": "Estrogonofe de carne bovina em iscas com molho branco (feito na escola), arroz, batata doce assada, salada de beterraba ralada e uma laranja",
-        "texto_original": "R25.341 Estrogonofe de carne bovina em iscas com molho branco (feito na escola), arroz, batata doce assada, salada de beterraba ralada e uma laranja"
-      },
-      {
-        "data": "13/10/2025",
-        "turno": "Matutino",
-        "codigo": "R25.341",
-        "descricao": "Estrogonofe de carne bovina em iscas com molho branco (feito na escola), arroz, batata doce assada, salada de beterraba ralada e uma laranja",
-        "texto_original": "R25.341 Estrogonofe de carne bovina em iscas com molho branco (feito na escola), arroz, batata doce assada, salada de beterraba ralada e uma laranja"
-      },
-      {
-        "data": "13/10/2025",
-        "turno": "Vespertino",
-        "codigo": "R25.341",
-        "descricao": "Estrogonofe de carne bovina em iscas com molho branco (feito na escola), arroz, batata doce assada, salada de beterraba ralada e uma laranja",
-        "texto_original": "R25.341 Estrogonofe de carne bovina em iscas com molho branco (feito na escola), arroz, batata doce assada, salada de beterraba ralada e uma laranja"
-      }
-    ],
-    "14/10/2025": [
-      {
-        "data": "14/10/2025",
-        "turno": "Matutino",
-        "codigo": "R25.234",
-        "descricao": "Frango em cubos refogado com tomate e ervilha congelada, arroz, feijão, farofa de cenoura, salada de repolho e uma banana",
-        "texto_original": "R25.234 Frango em cubos refogado com tomate e ervilha congelada, arroz, feijão, farofa de cenoura, salada de repolho e uma banana"
-      },
-      {
-        "data": "14/10/2025",
-        "turno": "Vespertino",
-        "codigo": "R25.234",
-        "descricao": "Frango em cubos refogado com tomate e ervilha congelada, arroz, feijão, farofa de cenoura, salada de repolho e uma banana",
-        "texto_original": "R25.234 Frango em cubos refogado com tomate e ervilha congelada, arroz, feijão, farofa de cenoura, salada de repolho e uma banana"
-      },
-      {
-        "data": "14/10/2025",
-        "turno": "Noturno",
-        "codigo": "R25.234",
-        "descricao": "Frango em cubos refogado com tomate e ervilha congelada, arroz, feijão, farofa de cenoura, salada de repolho e uma banana",
-        "texto_original": "R25.234 Frango em cubos refogado com tomate e ervilha congelada, arroz, feijão, farofa de cenoura, salada de repolho e uma banana"
-      },
-      {
-        "data": "14/10/2025",
-        "turno": "Noturno",
-        "codigo": "R25.234",
-        "descricao": "Frango em cubos refogado com tomate e e rvilha congelada, arroz, feijão, farofa de cenoura, salada de repolho e uma banana",
-        "texto_original": "R25.234 Frango em cubos refogado com tomate e e rvilha congelada, arroz, feijão, farofa de cenoura, salada de repolho e uma banana"
-      },
-      {
-        "data": "14/10/2025",
-        "turno": "Matutino",
-        "codigo": "R25.234",
-        "descricao": "Frango em cubos refogado com tomate e e rvilha congelada, arroz, feijão, farofa de cenoura, salada de repolho e uma banana",
-        "texto_original": "R25.234 Frango em cubos refogado com tomate e e rvilha congelada, arroz, feijão, farofa de cenoura, salada de repolho e uma banana"
-      },
-      {
-        "data": "14/10/2025",
-        "turno": "Vespertino",
-        "codigo": "R25.234",
-        "descricao": "Frango em cubos refogado com tomate e e rvilha congelada, arroz, feijão, farofa de cenoura, salada de repolho e uma banana",
-        "texto_original": "R25.234 Frango em cubos refogado com tomate e e rvilha congelada, arroz, feijão, farofa de cenoura, salada de repolho e uma banana"
-      }
-    ],
-    "15/10/2025": [
-      {
-        "data": "15/10/2025",
-        "turno": "Matutino",
-        "codigo": "LL23.281",
-        "descricao": "Pão massinha com carne bovina moída ensopada com molho de tomate (feito na escola), alface, tomate em fatias, suco de uva integral sem adição de açúcar e uma maçã",
-        "texto_original": "LL23.281 Pão massinha com carne bovina moída ensopada com molho de tomate (feito na escola), alface, tomate em fatias, suco de uva integral sem adição de açúcar e uma maçã"
-      },
-      {
-        "data": "15/10/2025",
-        "turno": "Vespertino",
-        "codigo": "LL23.281",
-        "descricao": "Pão massinha com carne bovina moída ensopada com molho de tomate (feito na escola), alface, tomate em fatias, suco de uva integral sem adição de açúcar e uma maçã",
-        "texto_original": "LL23.281 Pão massinha com carne bovina moída ensopada com molho de tomate (feito na escola), alface, tomate em fatias, suco de uva integral sem adição de açúcar e uma maçã"
-      },
-      {
-        "data": "15/10/2025",
-        "turno": "Noturno",
-        "codigo": "LL23.281",
-        "descricao": "Pão massinha com carne bovina moída ensopada com molho de tomate (feito na escola), alface, tomate em fatias, suco de uva integral sem adição de açúcar e uma maçã",
-        "texto_original": "LL23.281 Pão massinha com carne bovina moída ensopada com molho de tomate (feito na escola), alface, tomate em fatias, suco de uva integral sem adição de açúcar e uma maçã"
-      }
-    ],
-    "16/10/2025": [
-      {
-        "data": "16/10/2025",
-        "turno": "Matutino",
-        "codigo": "R25.464",
-        "descricao": "Omelete de cenoura com queijo e orégano (Fortaia), arroz, feijão, salada de abobrinha com chuchu e uma fatia de mamão",
-        "texto_original": "R25.464 Omelete de cenoura com queijo e orégano (Fortaia), arroz, feijão, salada de abobrinha com chuchu e uma fatia de mamão"
-      },
-      {
-        "data": "16/10/2025",
-        "turno": "Vespertino",
-        "codigo": "R25.464",
-        "descricao": "Omelete de cenoura com queijo e orégano (Fortaia), arroz, feijão, salada de abobrinha com chuchu e uma fatia de mamão",
-        "texto_original": "R25.464 Omelete de cenoura com queijo e orégano (Fortaia), arroz, feijão, salada de abobrinha com chuchu e uma fatia de mamão"
-      },
-      {
-        "data": "16/10/2025",
-        "turno": "Noturno",
-        "codigo": "R25.464",
-        "descricao": "Omelete de cenoura com queijo e orégano (Fortaia), arroz, feijão, salada de abobrinha com chuchu e uma fatia de mamão",
-        "texto_original": "R25.464 Omelete de cenoura com queijo e orégano (Fortaia), arroz, feijão, salada de abobrinha com chuchu e uma fatia de mamão"
-      }
-    ],
-    "17/10/2025": [
-      {
-        "data": "17/10/2025",
-        "turno": "Matutino",
-        "codigo": "R24.181",
-        "descricao": "Frango ensopado (coxa e sobrecoxa sem osso) com molho de tomate (feito na escola) e batata, arroz, feijão, couve-flor refogado, salada de brócolis e uma fatia de melancia",
-        "texto_original": "R24.181 Frango ensopado (coxa e sobrecoxa sem osso) com molho de tomate (feito na escola) e batata, arroz, feijão, couve-flor refogado, salada de brócolis e uma fatia de melancia"
-      },
-      {
-        "data": "17/10/2025",
-        "turno": "Vespertino",
-        "codigo": "R24.181",
-        "descricao": "Frango ensopado (coxa e sobrecoxa sem osso) com molho de tomate (feito na escola) e batata, arroz, feijão, couve-flor refogado, salada de brócolis e uma fatia de melancia",
-        "texto_original": "R24.181 Frango ensopado (coxa e sobrecoxa sem osso) com molho de tomate (feito na escola) e batata, arroz, feijão, couve-flor refogado, salada de brócolis e uma fatia de melancia"
-      },
-      {
-        "data": "17/10/2025",
-        "turno": "Noturno",
-        "codigo": "R24.181",
-        "descricao": "Frango ensopado (coxa e sobrecoxa sem osso) com molho de tomate (feito na escola) e batata, arroz, feijão, couve-flor refogado, salada de brócolis e uma fatia de melancia",
-        "texto_original": "R24.181 Frango ensopado (coxa e sobrecoxa sem osso) com molho de tomate (feito na escola) e batata, arroz, feijão, couve-flor refogado, salada de brócolis e uma fatia de melancia"
-      }
-    ],
-    "20/10/2025": [
-      {
-        "data": "20/10/2025",
-        "turno": "Matutino",
-        "codigo": "R25.401",
-        "descricao": "Carreteiro (arroz integral, carne bovina em iscas, tomate e cebola), legumes refogados (cenoura e chuchu), salada de alface e uma laranja",
-        "texto_original": "R25.401 Carreteiro (arroz integral, carne bovina em iscas, tomate e cebola), legumes refogados (cenoura e chuchu), salada de alface e uma laranja"
-      },
-      {
-        "data": "20/10/2025",
-        "turno": "Vespertino",
-        "codigo": "R25.401",
-        "descricao": "Carreteiro (arroz integral, carne bovina em iscas, tomate e cebola), legumes refogados (cenoura e chuchu), salada de alface e uma laranja",
-        "texto_original": "R25.401 Carreteiro (arroz integral, carne bovina em iscas, tomate e cebola), legumes refogados (cenoura e chuchu), salada de alface e uma laranja"
-      },
-      {
-        "data": "20/10/2025",
-        "turno": "Noturno",
-        "codigo": "R25.401",
-        "descricao": "Carreteiro (arroz integral, carne bovina em iscas, tomate e cebola), legumes refogados (cenoura e chuchu), salada de alface e uma laranja",
-        "texto_original": "R25.401 Carreteiro (arroz integral, carne bovina em iscas, tomate e cebola), legumes refogados (cenoura e chuchu), salada de alface e uma laranja"
-      }
-    ],
-    "21/10/2025": [
-      {
-        "data": "21/10/2025",
-        "turno": "Matutino",
-        "codigo": "LL25.303",
-        "descricao": "Torta de frango com 50% aveia (com peito de frango desfiado, tomate e abobrinha em cubos, cebola e tempero verde), suco de uva integral sem adição de açúcar e uma banana",
-        "texto_original": "LL25.303 Torta de frango com 50% aveia (com peito de frango desfiado, tomate e abobrinha em cubos, cebola e tempero verde), suco de uva integral sem adição de açúcar e uma banana"
-      },
-      {
-        "data": "21/10/2025",
-        "turno": "Vespertino",
-        "codigo": "LL25.303",
-        "descricao": "Torta de frango com 50% aveia (com peito de frango desfiado, tomate e abobrinha em cubos, cebola e tempero verde), suco de uva integral sem adição de açúcar e uma banana",
-        "texto_original": "LL25.303 Torta de frango com 50% aveia (com peito de frango desfiado, tomate e abobrinha em cubos, cebola e tempero verde), suco de uva integral sem adição de açúcar e uma banana"
-      },
-      {
-        "data": "21/10/2025",
-        "turno": "Noturno",
-        "codigo": "LL25.303",
-        "descricao": "Torta de frango com 50% aveia (com peito de frango desfiado, tomate e abobrinha em cubos, cebola e tempero verde), suco de uva integral sem adição de açúcar e uma banana",
-        "texto_original": "LL25.303 Torta de frango com 50% aveia (com peito de frango desfiado, tomate e abobrinha em cubos, cebola e tempero verde), suco de uva integral sem adição de açúcar e uma banana"
-      },
-      {
-        "data": "21/10/2025",
-        "turno": "Noturno",
-        "codigo": "R25.335",
-        "descricao": "Frango em cubos refogado com tomate e ervilha congelada, arroz, feijão, farofa de beterraba, salada de repolho e uma banana",
-        "texto_original": "R25.335 Frango em cubos refogado com tomate e ervilha congelada, arroz, feijão, farofa de beterraba, salada de repolho e uma banana"
-      },
-      {
-        "data": "21/10/2025",
-        "turno": "Matutino",
-        "codigo": "R25.335",
-        "descricao": "Frango em cubos refogado com tomate e ervilha congelada, arroz, feijão, farofa de beterraba, salada de repolho e uma banana",
-        "texto_original": "R25.335 Frango em cubos refogado com tomate e ervilha congelada, arroz, feijão, farofa de beterraba, salada de repolho e uma banana"
-      },
-      {
-        "data": "21/10/2025",
-        "turno": "Vespertino",
-        "codigo": "R25.335",
-        "descricao": "Frango em cubos refogado com tomate e ervilha congelada, arroz, feijão, farofa de beterraba, salada de repolho e uma banana",
-        "texto_original": "R25.335 Frango em cubos refogado com tomate e ervilha congelada, arroz, feijão, farofa de beterraba, salada de repolho e uma banana"
-      }
-    ],
-    "22/10/2025": [
-      {
-        "data": "22/10/2025",
-        "turno": "Matutino",
-        "codigo": "R25.282",
-        "descricao": "Polenta com molho de carne moída (carne bovina moída e molho de tomate feito na escola), arroz, feijão, salada de couve-flor e uma tangerina",
-        "texto_original": "R25.282 Polenta com molho de carne moída (carne bovina moída e molho de tomate feito na escola), arroz, feijão, salada de couve-flor e uma tangerina"
-      },
-      {
-        "data": "22/10/2025",
-        "turno": "Vespertino",
-        "co
-digo": "R25.282",
-        "descricao": "Polenta com molho de carne moída (carne bovina moída e molho de tomate feito na escola), arroz, feijão, salada de couve-flor e uma tangerina",
-        "texto_original": "R25.282 Polenta com molho de carne moída (carne bovina moída e molho de tomate feito na escola), arroz, feijão, salada de couve-flor e uma tangerina"
-      },
-      {
-        "data": "22/10/2025",
-        "turno": "Noturno",
-        "codigo": "R25.282",
-        "descricao": "Polenta com molho de carne moída (carne bovina moída e molho de tomate feito na escola), arroz, feijão, salada de couve-flor e uma tangerina",
-        "texto_original": "R25.282 Polenta com molho de carne moída (carne bovina moída e molho de tomate feito na escola), arroz, feijão, salada de couve-flor e uma tangerina"
-      }
-    ],
-    "23/10/2025": [
-      {
-        "data": "23/10/2025",
-        "turno": "Matutino",
-        "codigo": "LL25.740",
-        "descricao": "Cuca de banana com aveia e canela, leite com café, açúcar e uma fatia de mamão",
-        "texto_original": "LL25.740 Cuca de banana com aveia e canela, leite com café, açúcar e uma fatia de mamão"
-      },
-      {
-        "data": "23/10/2025",
-        "turno": "Vespertino",
-        "codigo": "LL25.740",
-        "descricao": "Cuca de banana com aveia e canela, leite com café, açúcar e uma fatia de mamão",
-        "texto_original": "LL25.740 Cuca de banana com aveia e canela, leite com café, açúcar e uma fatia de mamão"
-      },
-      {
-        "data": "23/10/2025",
-        "turno": "Noturno",
-        "codigo": "LL25.740",
-        "descricao": "Cuca de banana com aveia e canela, leite com café, açúcar e uma fatia de mamão",
-        "texto_original": "LL25.740 Cuca de banana com aveia e canela, leite com café, açúcar e uma fatia de mamão"
-      },
-      {
-        "data": "23/10/2025",
-        "turno": "Noturno",
-        "codigo": "R25.332",
-        "descricao": "Filé de Tilápia (temperado com limão, alho, cebola e tempero verde) ensopado com molho de tomate (feito na escola), arroz com espinafre, feijão, batata assada, salada de rúcula e uma fatia de mamão",
-        "texto_original": "R25.332 Filé de Tilápia (temperado com limão, alho, cebola e tempero verde) ensopado com molho de tomate (feito na escola), arroz com espinafre, feijão, batata assada, salada de rúcula e uma fatia de mamão"
-      },
-      {
-        "data": "23/10/2025",
-        "turno": "Matutino",
-        "codigo": "R25.332",
-        "descricao": "Filé de Tilápia (temperado com limão, alho, cebola e tempero verde) ensopado com molho de tomate (feito na escola), arroz com espinafre, feijão, batata assada, salada de rúcula e uma fatia de mamão",
-        "texto_original": "R25.332 Filé de Tilápia (temperado com limão, alho, cebola e tempero verde) ensopado com molho de tomate (feito na escola), arroz com espinafre, feijão, batata assada, salada de rúcula e uma fatia de mamão"
-      },
-      {
-        "data": "23/10/2025",
-        "turno": "Vespertino",
-        "codigo": "R25.332",
-        "descricao": "Filé de Tilápia (temperado com limão, alho, cebola e tempero verde) ensopado com molho de tomate (feito na escola), arroz com espinafre, feijão, batata assada, salada de rúcula e uma fatia de mamão",
-        "texto_original": "R25.332 Filé de Tilápia (temperado com limão, alho, cebola e tempero verde) ensopado com molho de tomate (feito na escola), arroz com espinafre, feijão, batata assada, salada de rúcula e uma fatia de mamão"
-      }
-    ],
-    "24/10/2025": [
-      {
-        "data": "24/10/2025",
-        "turno": "Matutino",
-        "codigo": "R25.260",
-        "descricao": "Macarronada de frango (macarrão parafuso com frango desfiado ensopado com molho de tomate), salada de couve picada, salada de beterraba cozida e uma fatia de melancia",
-        "texto_original": "R25.260 Macarronada de frango (macarrão parafuso com frango desfiado ensopado com molho de tomate), salada de couve picada, salada de beterraba cozida e uma fatia de melancia"
-      },
-      {
-        "data": "24/10/2025",
-        "turno": "Vespertino",
-        "codigo": "R25.260",
-        "descricao": "Macarronada de frango (macarrão parafuso com frango desfiado ensopado com molho de tomate), salada de couve picada, salada de beterraba cozida e uma fatia de melancia",
-        "texto_original": "R25.260 Macarronada de frango (macarrão parafuso com frango desfiado ensopado com molho de tomate), salada de couve picada, salada de beterraba cozida e uma fatia de melancia"
-      },
-      {
-        "data": "24/10/2025",
-        "turno": "Noturno",
-        "codigo": "R25.260",
-        "descricao": "Macarronada de frango (macarrão parafuso com frango desfiado ensopado com molho de tomate), salada de couve picada, salada de beterraba cozida e uma fatia de melancia",
-        "texto_original": "R25.260 Macarronada de frango (macarrão parafuso com frango desfiado ensopado com molho de tomate), salada de couve picada, salada de beterraba cozida e uma fatia de melancia"
-      }
-    ]
-  },
-  "tabela_bruta": [
-    [
-      "CARDÁPIO – PARCIAL OUTUBRO/2025",
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      ""
-    ],
-    [
-      "",
-      "",
-      "",
-      "Quarta – feira 1/10/2025",
-      "Quinta – feira 2/10/2025",
-      "Sexta – feira 3/10/2025",
-      "",
-      ""
-    ],
-    [
-      "Matutino\nVespertino\nSemana 1",
-      "",
-      "",
-      "R25.375 Carne bovina em cubos\nrefogada com tomate e cenoura,\narroz, feijão, purê de batata,\nsalada de alface e couve fatiado e\num pêssego",
-      "R25.97 Frango em iscas refogado\ncom abobrinha, tomate, cebola e\ntempero verde, arroz, feijão,\nsalada de pepino e uma tangerina",
-      "LL25.228 Torta de carne (com\ncarne moída, tomate, ervilha\ncongelada, cebola e tempero\nverde), suco de uva integral sem\nadição de açúcar e uma banana",
-      "",
-      ""
-    ],
-    [
-      "Noturno\nSemana 1",
-      "",
-      "",
-      "R25.375 Carne bovina em cubos\nrefogada com tomate e cenoura,\narroz, feijão, purê de batata,\nsalada de alface e couve fatiado e\num pêssego",
-      "R25.97 Frango em iscas refogado\ncom abobrinha, tomate, cebola e\ntempero verde, arroz, feijão,\nsalada de pepino e uma tangerina",
-      "R24.202 Carne bovina moída\nrefogada com tomate em cubos e\ntempero verde, arroz, feijão,\nsalada de couve flor e brócolis e\numa banana",
-      "",
-      ""
-    ],
-    [
-      "PAGE_MARKER_1",
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      ""
-    ],
-    [
-      "CARDÁPIO – PARCIAL OUTUBRO/2025",
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      ""
-    ],
-    [
-      "",
-      "Segunda – feira 6/10/2025",
-      "Terça – feira 7/10/2025",
-      "Quarta – feira 8/10/2025",
-      "Quinta – feira 9/10/2025",
-      "Sexta – feira 10/10/2025",
-      "",
-      ""
-    ],
-    [
-      "Matutino\nVespertino\nSemana 2",
-      "LL24.222 Leite batido com\nmorango e banana, biscoito\ncaseiro sem gordura trans e uma\nlaranja",
-      "R25.218 Carne suína em cubos\nrefogada com molho de tomate\n(feito na escola), polenta, arroz,\nfeijão, salada de beterraba\ncozida e uma fatia de mamão",
-      "R25.231 Frango em iscas\nacebolado, arroz, feijão, batata\nrefogada com tomate, salada de\nrepolho roxo e uma maçã",
-      "R25.458 Feijoada de carne\nbovina com legumes (feijão com\ncarne bovina em cubos, batata\ndoce e abóbora em cubos),\narroz, farofa de cenoura ralada e\numa tangerina",
-      "LL24.22 Pão massinha com peito\nde frango desfiado ensopado ao\nmolho de tomate (feito na\nescola), alface, tomate em fatia,\nsuco de laranja integral sem\nadição de açúcar e uma banana",
-      "",
-      ""
-    ],
-    [
-      "Noturno\nSemana 2",
-      "R25.579 Omelete de espinafre\ncom queijo e orégano (Fortaia),\narroz, feijão, salada de chuchu\ncom tempero verde e uma\nlaranja",
-      "R25.218 Carne suína em cubos\nrefogada com molho de tomate\n(feito na escola), polenta, arroz,\nfeijão, salada de beterraba\ncozida e uma fatia de mamão",
-      "R25.231 Frango em iscas\nacebolado, arroz, feijão, batata\nrefogada com tomate, salada de\nrepolho roxo e uma maçã",
-      "R25.458 Feijoada de carne\nbovina com legumes (feijão com\ncarne bovina em cubos, batata\ndoce e abóbora em cubos),\narroz, farofa de cenoura ralada\ne uma tangerina",
-      "LL24.22 Pão massinha com peito\nde frango desfiado ensopado ao\nmolho de tomate (feito na\nescola), alface, tomate em fatia,\nsuco de laranja integral sem\nadição de açúcar e uma banana",
-      "",
-      ""
-    ],
-    [
-      "PAGE_MARKER_2",
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      ""
-    ],
-    [
-      "CARDÁPIO – PARCIAL OUTUBRO/2025",
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      ""
-    ],
-    [
-      "",
-      "Segunda – feira 13/10/2025",
-      "Terça – feira 14/10/2025",
-      "Quarta – feira 15/10/2025",
-      "Quinta – feira 16/10/2025",
-      "Sexta – feira 17/10/2025",
-      "",
-      ""
-    ],
-    [
-      "Matutino\nVespertino\nSemana 3",
-      "R25.101 Macarronada de frango\n(Macarrão (parafuso) com frango\ndesfiado ensopado com molho\nde tomate), salada de repolho\npicado, salada de abóbora e uma\nlaranja",
-      "R25.81 Carne bovina em iscas\nacebolada, arroz, feijão, batata\ndoce assada, salada de alface e\numa fatia de mamão",
-      "FERIADO",
-      "R25.575 Arroz colorido com\nfrango (arroz integral, frango\ndesfiado, abobrinha em cubos e\nmilho verde congelado), feijão,\nsalada de agrião e uma maçã",
-      "LL25.64 Bolo de cenoura\nnutritivo (cenoura, maçã, aveia e\nfarinha de trigo integral), leite\ncom café, açúcar e uma banana",
-      "",
-      ""
-    ],
-    [
-      "Noturno\nSemana 3",
-      "R25.101 Macarronada de frango\n(Macarrão (parafuso) com frango\ndesfiado ensopado com molho\nde tomate), salada de repolho\npicado, salada de abóbora e uma\nlaranja",
-      "R25.81 Carne bovina em iscas\nacebolada, arroz, feijão, batata\ndoce assada, salada de alface e\numa fatia de mamão",
-      "FERIADO",
-      "R25.575 Arroz colorido com\nfrango (arroz integral, frango\ndesfiado, abobrinha em cubos e\nmilho verde congelado), feijão,\nsalada de agrião e uma maçã",
-      "R25.312 Filé de tilápia assado\n(temperado com limão, alho,\ncebola, e tempero verde), arroz,\nfeijão, salada de batata com\ncenoura e tempero verde e uma\nbanana",
-      "",
-      ""
-    ],
-    [
-      "PAGE_MARKER_3",
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      ""
-    ],
-    [
-      "CARDÁPIO – PARCIAL OUTUBRO/2025",
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      ""
-    ],
-    [
-      "",
-      "Segunda – feira 20/10/2025",
-      "Terça – feira 21/10/2025",
-      "Quarta – feira 22/10/2025",
-      "Quinta – feira 23/10/2025",
-      "Sexta – feira 24/10/2025",
-      "",
-      ""
-    ],
-    [
-      "Matutino\nVespertino\nSemana 4",
-      "LL24.83 Salada de frutas\n(mamão, banana e laranja),\naveia*, iogurte de mel (iogurte\nnatural batido com mel) e\nbiscoito caseiro sem gordura\ntrans. *servir separadamente",
-      "R25.234 Frango em cubos\nrefogado com tomate e ervilha\ncongelada, arroz, feijão, farofa de\ncenoura, salada de repolho e\numa banana",
-      "LL23.281 Pão massinha com\ncarne bovina moída ensopada\ncom molho de tomate (feito na\nescola), alface, tomate em fatias,\nsuco de uva integral sem adição\nde açúcar e uma maçã",
-      "R25.464 Omelete de cenoura\ncom queijo e orégano (Fortaia),\narroz, feijão, salada de abobrinha\ncom chuchu e uma fatia de\nmamão",
-      "R24.181 Frango ensopado (coxa e\nsobrecoxa sem osso) com molho\nde tomate (feito na escola) e\nbatata, arroz, feijão, couve-flor\nrefogado, salada de brócolis e\numa fatia de melancia",
-      "",
-      ""
-    ],
-    [
-      "Noturno\nSemana 4",
-      "R25.341 Estrogonofe de carne\nbovina em iscas com molho\nbranco (feito na escola), arroz,\nbatata doce assada, salada de\nbeterraba ralada e uma laranja",
-      "R25.234 Frango em cubos\nrefogado com tomate e e\nrvilha congelada, arroz, feijão,\nfarofa de cenoura, salada de\nrepolho e uma banana",
-      "LL23.281 Pão massinha com\ncarne bovina moída ensopada\ncom molho de tomate (feito na\nescola), alface, tomate em fatias,\nsuco de uva integral sem adição\nde açúcar e uma maçã",
-      "R25.464 Omelete de cenoura\ncom queijo e orégano (Fortaia),\narroz, feijão, salada de abobrinha\ncom chuchu e uma fatia de\nmamão",
-      "R24.181 Frango ensopado (coxa e\nsobrecoxa sem osso) com molho\nde tomate (feito na escola) e\nbatata, arroz, feijão, couve-flor\nrefogado, salada de brócolis e\numa fatia de melancia",
-      "",
-      ""
-    ],
-    [
-      "PAGE_MARKER_4",
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      ""
-    ],
-    [
-      "CARDÁPIO – PARCIAL OUTUBRO/2025",
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      ""
-    ],
-    [
-      "",
-      "Segunda – feira 27/10/2025",
-      "Terça – feira 28/10/2025",
-      "Quarta – feira 29/10/2025",
-      "Quinta – feira 30/10/2025",
-      "Sexta – feira 31/10/2025",
-      "",
-      ""
-    ],
-    [
-      "Matutino\nVespertino\nSemana 5",
-      "R25.401 Carreteiro (arroz\nintegral, carne bovina em iscas,\ntomate e cebola), legumes\nrefogados (cenoura e chuchu),\nsalada de alface e uma laranja",
-      "LL25.303 Torta de frango com\n50% aveia (com peito de frango\ndesfiado, tomate e abobrinha em\ncubos, cebola e tempero verde),\nsuco de uva integral sem adição\nde açúcar e uma banana",
-      "R25.282 Polenta com molho de\ncarne moída (carne bovina moída\ne molho de tomate feito na\nescola), arroz, feijão, salada de\ncouve-flor e uma tangerina",
-      "LL25.740 Cuca de banana com\naveia e canela, leite com café,\naçúcar e uma fatia de mamão",
-      "R25.260 Macarronada de frango\n(macarrão parafuso com frango\ndesfiado ensopado com molho\nde tomate), salada de couve\npicada, salada de beterraba\ncozida e uma fatia de melancia",
-      "",
-      ""
-    ],
-    [
-      "Noturno\nSemana 5",
-      "R25.401 Carreteiro (arroz\nintegral, carne bovina em iscas,\ntomate e cebola), legumes\nrefogados (cenoura e chuchu),\nsalada de alface e uma laranja",
-      "R25.335 Frango em cubos\nrefogado com tomate e ervilha\ncongelada, arroz, feijão, farofa de\nbeterraba, salada de repolho e\numa banana",
-      "R25.282 Polenta com molho de\ncarne moída (carne bovina\nmoída e molho de tomate feito\nna escola), arroz, feijão, salada\nde couve-flor e uma tangerina",
-      "R25.332 Filé de Tilápia\n(temperado com limão, alho,\ncebola e tempero verde)\nensopado com molho de tomate\n(feito na escola), arroz com\nespinafre, feijão, batata assada,\nsalada de rúcula e uma fatia de\nmamão",
-      "R25.260 Macarronada de frango\n(macarrão parafuso com frango\ndesfiado ensopado com molho\nde tomate), salada de couve\npicada, salada de beterraba\ncozida e uma fatia de melancia",
-      "",
-      ""
-    ],
-    [
-      "PAGE_MARKER_5",
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      ""
-    ]
-  ],
-  "metadados": {
-    "arquivo_original": "temp_1758061996845_Parcial - Outubro.pdf",
-    "data_processamento": "2025-09-16T19:33:17.648061",
-    "metodo": "pdfplumber",
-    "dimensoes_tabela": "25 linhas x 8 colunas"
+  ]
+}
+```
+
+---
+
+### **API 2: `buscar_nqa_grupo.php`**
+
+**Endpoint:** `GET buscar_nqa_grupo.php?grupo_id={grupo_id}`
+
+**O que faz:**
+Busca o NQA vinculado a um grupo de produtos.
+
+**Query SQL:**
+```sql
+SELECT n.id, n.codigo, n.nome, n.nivel_inspecao
+FROM nqa n
+INNER JOIN grupos_nqa gn ON n.id = gn.nqa_id
+WHERE gn.grupo_id = ? AND gn.ativo = 1 AND n.ativo = 1
+LIMIT 1
+```
+
+**Fallback:**
+Se não encontrar NQA vinculado, retorna o **NQA Padrão (2,5)**:
+```sql
+SELECT id, codigo, nome, nivel_inspecao 
+FROM nqa 
+WHERE codigo = '2,5' 
+LIMIT 1
+```
+
+**Resposta JSON:**
+```json
+{
+  "success": true,
+  "nqa": {
+    "id": 2,
+    "codigo": "2,5",
+    "nome": "NQA Padrão",
+    "nivel_inspecao": "II"
   }
 }
-JSON_RESULTADO_END
+```
 
-🗑️ Arquivo temporário removido
-✅ JSON extraído com sucesso dos marcadores
-✅ Processamento Python concluído com sucesso
-📊 Dados extraídos: { total_refeicoes: 81, total_dias: 18, tem_tabela_bruta: true }
+---
+
+### **API 3: `buscar_plano_por_lote.php`**
+
+**Endpoint:** `GET buscar_plano_por_lote.php?nqa_id={nqa_id}&tamanho_lote={tamanho}`
+
+**O que faz:**
+Busca o plano de amostragem adequado baseado no NQA e tamanho do lote.
+
+**Query SQL:**
+```sql
+-- 1. Buscar faixa que engloba o tamanho do lote
+SELECT id, faixa_inicial, faixa_final, tamanho_amostra, ac, re
+FROM tabela_amostragem
+WHERE nqa_id = ?
+  AND faixa_inicial <= ?
+  AND faixa_final >= ?
+  AND ativo = 1
+ORDER BY faixa_inicial ASC
+LIMIT 1
+
+-- 2. Se não encontrou, buscar próximo maior
+SELECT id, faixa_inicial, faixa_final, tamanho_amostra, ac, re
+FROM tabela_amostragem
+WHERE nqa_id = ?
+  AND faixa_inicial > ?
+  AND ativo = 1
+ORDER BY faixa_inicial ASC
+LIMIT 1
+```
+
+**Resposta JSON:**
+```json
+{
+  "success": true,
+  "plano": {
+    "id": 3,
+    "faixa_inicial": 26,
+    "faixa_final": 50,
+    "tamanho_amostra": 8,
+    "ac": 0,
+    "re": 1,
+    "tamanho_lote_informado": 50,
+    "inspecao_100": false,
+    "recomendacao": "Inspecionar 8 unidades de 50"
+  }
+}
+```
+
+---
+
+## 📊 FLUXO COMPLETO DE CADASTRO
+
+**1. Usuário seleciona Pedido de Compra**
+```
+Pedido #1234 → Fornecedor A (CNPJ: 12.345.678/0001-00)
+```
+
+**2. Sistema carrega produtos automaticamente**
+```javascript
+fetch('buscar_produtos_pedido.php?id=1234')
+  → Retorna 5 produtos com grupo_id e nqa_codigo
+```
+
+**3. Para cada produto, sistema busca NQA do grupo**
+```javascript
+// Se produto não trouxe NQA, buscar via grupo
+fetch('buscar_nqa_grupo.php?grupo_id=5')
+  → Retorna NQA 2,5
+```
+
+**4. Usuário preenche Tamanho do Lote**
+```javascript
+// Quando digita tamanho do lote (ex: 50)
+fetch('buscar_plano_por_lote.php?nqa_id=2&tamanho_lote=50')
+  → Retorna: tamanho_amostra=8, ac=0, re=1
+  → Preenche automaticamente "Nº Amostras Aval." = 8
+```
+
+**5. Usuário preenche datas (Fabricação e Validade)**
+```javascript
+// Sistema calcula Controle de Validade
+fabricacao = "01/10/2024"
+validade = "01/10/2025"
+hoje = "03/11/2024"
+
+prazo_total = 365 dias
+dias_restantes = 332 dias
+percentual_consumido = (1 - (332/365)) * 100 = 9%
+
+→ Campo verde (< 30%)
+```
+
+**6. Usuário preenche amostras aprovadas/reprovadas**
+```javascript
+num_amostras_aprovadas = 8
+num_amostras_reprovadas = 0
+
+// Sistema verifica resultado automaticamente
+if (num_reprovadas >= RE) → Reprovado
+else → Aprovado
+
+→ Resultado Final: Aprovado ✅
+```
+
+**7. Sistema calcula Status Geral do RIR**
+```php
+Produto 1: Aprovado
+Produto 2: Aprovado
+Produto 3: Reprovado
+Produto 4: Aprovado
+Produto 5: Aprovado
+
+→ Status Geral: PARCIAL (tem aprovados e reprovados)
+```
+
+---
+
+## 📊 ESTRUTURA SQL PARA CRIAR A TABELA
+
+```sql
+CREATE TABLE IF NOT EXISTS relatorio_inspecao (
+    id INT(11) AUTO_INCREMENT PRIMARY KEY,
+    
+    -- Cabeçalho
+    data_inspecao DATE NOT NULL,
+    hora_inspecao TIME NOT NULL,
+    numero_af VARCHAR(50) NULL,
+    numero_nota_fiscal VARCHAR(50) NOT NULL,
+    fornecedor VARCHAR(200) NOT NULL,
+    numero_pedido VARCHAR(50) NULL,
+    cnpj_fornecedor VARCHAR(20) NULL,
+    nota_fiscal_id INT(11) NULL,
+    
+    -- Dados completos em JSON
+    checklist_json JSON NULL,
+    produtos_json JSON NULL,
+    ocorrencias TEXT NULL,
+    
+    -- Responsáveis
+    recebedor VARCHAR(100) NULL,
+    visto_responsavel VARCHAR(100) NULL,
+    
+    -- Resultado geral
+    status_geral ENUM('APROVADO', 'REPROVADO', 'PARCIAL') NULL,
+    
+    -- Auditoria
+    usuario_cadastro_id INT(11) NOT NULL,
+    usuario_atualizacao_id INT(11) NULL,
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    atualizado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    -- Índices
+    INDEX idx_data (data_inspecao),
+    INDEX idx_nf (numero_nota_fiscal),
+    INDEX idx_fornecedor (fornecedor),
+    INDEX idx_status (status_geral),
+    
+    -- Foreign Keys
+    FOREIGN KEY (nota_fiscal_id) REFERENCES notas_fiscais(id) ON DELETE SET NULL,
+    FOREIGN KEY (usuario_cadastro_id) REFERENCES usuarios(id)
+    
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+```
+
+---
+
+## ✅ RESUMO DAS FUNCIONALIDADES CRUD
+
+| Funcionalidade | Arquivo | Método | Descrição |
+|---------------|---------|--------|-----------|
+| **Visualizar Lista** | `index.php` | GET | Lista todos os RIRs com filtros |
+| **Criar RIR** | `cadastrar.php` | POST | Cadastra novo relatório completo |
+| **Editar RIR** | `editar.php` | POST | Edita relatório existente |
+| **Visualizar RIR** | `visualizar.php` | GET | Exibe RIR completo (modo visualização/impressão) |
+| **Excluir RIR** | `index.php` | GET | Exclui relatório |
+| **Buscar Produtos** | `buscar_produtos_pedido.php` | GET | API: Retorna produtos do pedido |
+| **Buscar NQA** | `buscar_nqa_grupo.php` | GET | API: Retorna NQA do grupo |
+| **Buscar Plano** | `buscar_plano_por_lote.php` | GET | API: Retorna plano de amostragem |
+
+---
+
+## 🔄 INTEGRAÇÕES COM OUTROS MÓDULOS
+
+### **1. Pedidos de Compras:**
+- RIR carrega produtos automaticamente do pedido
+- Vincula `numero_pedido` para rastreabilidade
+
+### **2. NQA (Plano de Amostragem):**
+- Busca NQA do grupo do produto
+- Busca faixa de amostragem baseado no tamanho do lote
+- Calcula automaticamente AC (Aceitação) e RE (Rejeição)
+
+### **3. Grupos de Produtos:**
+- Cada produto pertence a um grupo
+- Grupo determina qual NQA usar
+
+### **4. Fornecedores:**
+- Autocomplete com fornecedores cadastrados
+- Armazena CNPJ para rastreabilidade
+
+---
+
+**Essa é a estrutura completa do módulo de Relatório de Inspeção de Recebimento (RIR)!** 🚀

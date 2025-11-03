@@ -12,25 +12,35 @@ class NecessidadesPadroesGeracaoController {
    */
   static async gerarNecessidadesPadrao(req, res) {
     try {
-      const { filial_id, escola_id, semana_consumo, grupo_id } = req.body;
+      const { filial_id, escola_id, semana_abastecimento, semana_consumo, grupo_id } = req.body;
       const usuario_id = req.user.id;
 
       // Validar dados obrigatórios
-      if (!filial_id || !semana_consumo || !grupo_id) {
-        return errorResponse(res, 'Filial, Semana de Consumo e Grupo de Produtos são obrigatórios', 400);
+      if (!filial_id || !escola_id || !semana_abastecimento || !grupo_id) {
+        return errorResponse(res, 'Filial, Escola, Semana de Abastecimento e Grupo de Produtos são obrigatórios', 400);
       }
 
-      // Buscar semana de abastecimento baseado na semana de consumo (usando tabela calendario)
-      const calendario = await executeQuery(`
-        SELECT semana_abastecimento
-        FROM calendario
-        WHERE semana_consumo = ?
-        LIMIT 1
-      `, [semana_consumo]);
+      // Se semana_consumo não foi enviada, buscar automaticamente a partir de semana_abastecimento
+      let semanaConsumoFinal = semana_consumo;
+      if (!semanaConsumoFinal && semana_abastecimento) {
+        const calendario = await executeQuery(`
+          SELECT DISTINCT semana_consumo
+          FROM calendario
+          WHERE semana_abastecimento = ?
+            AND semana_consumo IS NOT NULL
+            AND semana_consumo != ''
+          LIMIT 1
+        `, [semana_abastecimento]);
 
-      let semana_abastecimento = null;
-      if (calendario.length > 0) {
-        semana_abastecimento = calendario[0].semana_abastecimento;
+        if (calendario.length > 0) {
+          semanaConsumoFinal = calendario[0].semana_consumo;
+        } else {
+          return errorResponse(res, 'Semana de consumo não encontrada para a semana de abastecimento informada', 400);
+        }
+      }
+
+      if (!semanaConsumoFinal) {
+        return errorResponse(res, 'Semana de consumo é obrigatória', 400);
       }
 
       // Buscar escolas baseado nos filtros
@@ -65,58 +75,45 @@ class NecessidadesPadroesGeracaoController {
         return errorResponse(res, 'Nenhuma escola encontrada para processar', 404);
       }
 
-      // Buscar dados de necessidades_substituicoes com os filtros
+      // Buscar dados de necessidades_padroes com os filtros
       let whereConditions = [
-        'ns.ativo = 1',
-        'ns.grupo_id = ?',
-        'ns.semana_consumo = ?'
+        'np.ativo = 1',
+        'np.grupo_id = ?'
       ];
-      let params = [grupo_id, semana_consumo];
-
-      // Adicionar filtro de semana de abastecimento se encontrada
-      if (semana_abastecimento) {
-        whereConditions.push('ns.semana_abastecimento = ?');
-        params.push(semana_abastecimento);
-      }
+      let params = [grupo_id];
 
       // Filtrar por escolas que serão processadas
       const escolaIds = escolasParaProcessar.map(e => e.id);
-      whereConditions.push(`ns.escola_id IN (${escolaIds.map(() => '?').join(',')})`);
+      whereConditions.push(`np.escola_id IN (${escolaIds.map(() => '?').join(',')})`);
       params.push(...escolaIds);
 
-      // Buscar dados de substituições que serão usados como padrão
-      const substituicoes = await executeQuery(`
+      // Buscar dados de padrões que serão usados para gerar necessidades
+      const padroes = await executeQuery(`
         SELECT DISTINCT
-          ns.escola_id,
-          ns.escola_nome,
-          ns.produto_origem_id,
-          ns.produto_origem_nome,
-          ns.produto_origem_unidade,
-          ns.produto_generico_id,
-          ns.produto_generico_codigo,
-          ns.produto_generico_nome,
-          ns.produto_generico_unidade,
-          ns.quantidade_generico as quantidade,
-          ns.semana_abastecimento,
-          ns.semana_consumo,
-          ns.grupo,
-          ns.grupo_id
-        FROM necessidades_substituicoes ns
+          np.escola_id,
+          np.escola_nome,
+          np.grupo_id,
+          np.grupo_nome,
+          np.produto_id,
+          np.produto_nome,
+          np.unidade_medida_sigla,
+          np.quantidade
+        FROM necessidades_padroes np
         WHERE ${whereConditions.join(' AND ')}
-        ORDER BY ns.escola_id, ns.produto_origem_nome
+        ORDER BY np.escola_id, np.produto_nome
       `, params);
 
-      if (substituicoes.length === 0) {
+      if (padroes.length === 0) {
         return errorResponse(res, 'Nenhum dado padrão encontrado para os filtros selecionados', 404);
       }
 
       // Agrupar por escola
       const necessidadesPorEscola = {};
-      substituicoes.forEach(sub => {
-        if (!necessidadesPorEscola[sub.escola_id]) {
-          necessidadesPorEscola[sub.escola_id] = [];
+      padroes.forEach(padrao => {
+        if (!necessidadesPorEscola[padrao.escola_id]) {
+          necessidadesPorEscola[padrao.escola_id] = [];
         }
-        necessidadesPorEscola[sub.escola_id].push(sub);
+        necessidadesPorEscola[padrao.escola_id].push(padrao);
       });
 
       const necessidadesCriadas = [];
@@ -153,10 +150,10 @@ class NecessidadesPadroesGeracaoController {
           SELECT DISTINCT necessidade_id 
           FROM necessidades 
           WHERE escola_id = ? AND semana_consumo = ?
-        `, [escolaId, semana_consumo]);
+        `, [escolaId, semanaConsumoFinal]);
 
         if (existing.length > 0) {
-          console.warn(`Necessidade já existe para escola ${escola.nome_escola} na semana ${semana_consumo}`);
+          console.warn(`Necessidade já existe para escola ${escola.nome_escola} na semana ${semanaConsumoFinal}`);
           continue; // Pular escola que já tem necessidade
         }
 
@@ -170,36 +167,32 @@ class NecessidadesPadroesGeracaoController {
         const proximoId = (ultimoId[0]?.ultimo_id || 0) + 1;
         const necessidadeId = proximoId.toString();
 
-        // Buscar produtos padrão para esta escola (se houver dados de substituições)
+        // Buscar produtos padrão para esta escola
         const produtosEscola = necessidadesPorEscola[escolaId] || [];
 
-        // Se não houver dados de substituições para esta escola, buscar do padrão geral
+        // Se não houver dados de padrão para esta escola, buscar do padrão geral (outras escolas do mesmo grupo)
         if (produtosEscola.length === 0) {
           // Buscar dados padrão mais recentes para o grupo (de qualquer escola)
           const dadosPadrao = await executeQuery(`
             SELECT DISTINCT
-              ns.produto_origem_id,
-              ns.produto_origem_nome,
-              ns.produto_origem_unidade,
-              ns.produto_generico_id,
-              ns.produto_generico_codigo,
-              ns.produto_generico_nome,
-              ns.produto_generico_unidade,
-              ns.quantidade_generico as quantidade,
-              ns.grupo,
-              ns.grupo_id
-            FROM necessidades_substituicoes ns
-            WHERE ns.ativo = 1
-              AND ns.grupo_id = ?
-              AND ns.quantidade_generico > 0
-            ORDER BY ns.data_atualizacao DESC
+              np.produto_id,
+              np.produto_nome,
+              np.unidade_medida_sigla,
+              np.quantidade,
+              np.grupo_id,
+              np.grupo_nome
+            FROM necessidades_padroes np
+            WHERE np.ativo = 1
+              AND np.grupo_id = ?
+              AND np.quantidade > 0
+            ORDER BY np.data_atualizacao DESC
             LIMIT 50
           `, [grupo_id]);
 
           // Agrupar por produto para evitar duplicatas
           const produtosUnicos = {};
           dadosPadrao.forEach(prod => {
-            const chave = prod.produto_origem_id || prod.produto_generico_id;
+            const chave = prod.produto_id;
             if (chave && !produtosUnicos[chave]) {
               produtosUnicos[chave] = prod;
             }
@@ -210,37 +203,19 @@ class NecessidadesPadroesGeracaoController {
 
         // Inserir necessidades para cada produto
         for (const produto of produtosEscola) {
-          // Usar produto genérico como referência (se disponível), senão usar produto origem
-          const produto_id = produto.produto_generico_id || produto.produto_origem_id;
-          const produto_nome = produto.produto_generico_nome || produto.produto_origem_nome;
-          const produto_unidade = produto.produto_generico_unidade || produto.produto_origem_unidade;
+          // Usar dados da tabela necessidades_padroes
+          const produto_id = produto.produto_id;
+          const produto_nome = produto.produto_nome;
+          const produto_unidade = produto.unidade_medida_sigla || '';
           const quantidade = parseFloat(produto.quantidade) || 0;
 
           if (!produto_id || !produto_nome || quantidade <= 0) {
             continue; // Pular produtos inválidos
           }
 
-          // Buscar grupo e grupo_id do produto se não vier no produto
-          let grupo = produto.grupo || null;
-          let grupo_id_final = produto.grupo_id || grupo_id;
-
-          if (!grupo && produto_id) {
-            try {
-              const grupoResult = await executeQuery(`
-                SELECT ppc.grupo, ppc.grupo_id 
-                FROM produtos_per_capita ppc 
-                WHERE ppc.produto_id = ? 
-                LIMIT 1
-              `, [produto_id]);
-              
-              if (grupoResult.length > 0) {
-                grupo = grupoResult[0].grupo;
-                grupo_id_final = grupoResult[0].grupo_id || grupo_id;
-              }
-            } catch (error) {
-              console.warn(`Erro ao buscar grupo para produto ${produto_id}:`, error);
-            }
-          }
+          // Usar grupo_id e grupo_nome da tabela necessidades_padroes
+          const grupo = produto.grupo_nome || null;
+          const grupo_id_final = produto.grupo_id || grupo_id;
 
           try {
             const result = await executeQuery(`
@@ -274,8 +249,8 @@ class NecessidadesPadroesGeracaoController {
               escola.rota_id || '',
               escola.codigo_teknisa || '',
               quantidade,
-              semana_consumo,
-              semana_abastecimento || null,
+              semanaConsumoFinal,
+              semana_abastecimento,
               grupo,
               grupo_id_final,
               'NEC',
@@ -319,6 +294,7 @@ class NecessidadesPadroesGeracaoController {
 
   /**
    * Buscar semana de consumo baseado na semana de abastecimento
+   * Busca na tabela calendario que contém a relação entre semana_abastecimento e semana_consumo
    */
   static async buscarSemanaConsumoPorAbastecimento(req, res) {
     try {
@@ -328,18 +304,20 @@ class NecessidadesPadroesGeracaoController {
         return errorResponse(res, 'Semana de abastecimento é obrigatória', 400);
       }
 
-      // Buscar na tabela calendario
-      const calendario = await executeQuery(`
-        SELECT semana_consumo
+      // Buscar semana de consumo na tabela calendario
+      const result = await executeQuery(`
+        SELECT DISTINCT semana_consumo
         FROM calendario
-        WHERE semana_abastecimento = ? OR TRIM(semana_abastecimento) = TRIM(?)
+        WHERE semana_abastecimento = ?
+          AND semana_consumo IS NOT NULL
+          AND semana_consumo != ''
         LIMIT 1
-      `, [semana_abastecimento, semana_abastecimento]);
+      `, [semana_abastecimento]);
 
-      if (calendario.length > 0) {
+      if (result.length > 0) {
         return successResponse(res, {
           semana_abastecimento,
-          semana_consumo: calendario[0].semana_consumo
+          semana_consumo: result[0].semana_consumo
         }, 'Semana de consumo encontrada');
       } else {
         return errorResponse(res, 'Semana de consumo não encontrada para esta semana de abastecimento', 404);

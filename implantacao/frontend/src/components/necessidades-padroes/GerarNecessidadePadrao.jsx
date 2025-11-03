@@ -205,9 +205,15 @@ const GerarNecessidadePadrao = () => {
   };
 
   const handleGerar = async () => {
-    // Validar filtros obrigatórios
-    if (!filtros.filial_id || !filtros.semana_consumo || !filtros.grupo_id) {
-      toast.error('Por favor, preencha todos os campos obrigatórios: Filial, Semana de Consumo e Grupo de Produtos');
+    // Validar filtros obrigatórios: Filial, Escola, Semana de Abastecimento e Grupo de Produtos
+    if (!filtros.filial_id || !filtros.escola_id || !filtros.semana_abastecimento || !filtros.grupo_id) {
+      toast.error('Por favor, preencha todos os campos obrigatórios: Filial, Escola, Semana de Abastecimento e Grupo de Produtos');
+      return;
+    }
+
+    // Validar se semana de consumo foi preenchida automaticamente (ela é necessária para gerar, mas vem automaticamente)
+    if (!filtros.semana_consumo) {
+      toast.error('Aguarde o preenchimento automático da Semana de Consumo ou selecione uma Semana de Abastecimento válida');
       return;
     }
 
@@ -215,7 +221,8 @@ const GerarNecessidadePadrao = () => {
     try {
       const response = await NecessidadesPadroesService.gerarNecessidadesPadrao({
         filial_id: filtros.filial_id,
-        escola_id: filtros.escola_id || null,
+        escola_id: filtros.escola_id,
+        semana_abastecimento: filtros.semana_abastecimento,
         semana_consumo: filtros.semana_consumo,
         grupo_id: filtros.grupo_id
       });
@@ -254,7 +261,8 @@ const GerarNecessidadePadrao = () => {
     }
   };
 
-  const podeGerar = filtros.filial_id && filtros.semana_consumo && filtros.grupo_id && !gerando;
+  // Validar se pode gerar: Filial, Escola, Semana de Abastecimento e Grupo de Produtos (Semana de Consumo é preenchida automaticamente)
+  const podeGerar = filtros.filial_id && filtros.escola_id && filtros.semana_abastecimento && filtros.grupo_id && filtros.semana_consumo && !gerando;
 
   return (
     <div className="space-y-4 md:space-y-6">
@@ -285,6 +293,7 @@ const GerarNecessidadePadrao = () => {
             placeholder={filtros.filial_id ? "Digite para buscar uma escola..." : "Selecione uma filial primeiro"}
             loading={loadingEscolas}
             disabled={!filtros.filial_id}
+            required
           />
           
           <SearchableSelect
@@ -295,6 +304,7 @@ const GerarNecessidadePadrao = () => {
             onChange={(value) => handleFiltroChange('semana_abastecimento', value)}
             placeholder="Selecione a semana de abastecimento..."
             loading={loadingFiltros}
+            required
           />
           
           <div>

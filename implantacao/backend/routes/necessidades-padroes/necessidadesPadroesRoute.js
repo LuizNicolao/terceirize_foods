@@ -15,6 +15,10 @@ const { canView, canCreate, canEdit, canDelete } = require('../../middleware/per
 // Aplicar autenticação em todas as rotas
 router.use(authenticateToken);
 
+// Rotas específicas (devem vir ANTES das rotas com parâmetros dinâmicos como /:id)
+router.get('/escola/:escola_id/grupo/:grupo_id', canView('necessidades_padroes'), NecessidadesPadroesListController.buscarPorEscolaGrupo);
+router.get('/buscar-semana-consumo', canView('necessidades_padroes'), NecessidadesPadroesGeracaoController.buscarSemanaConsumoPorAbastecimento);
+
 // Rotas CRUD
 router.get('/', canView('necessidades_padroes'), NecessidadesPadroesListController.listar);
 router.get('/:id', canView('necessidades_padroes'), NecessidadesPadroesCRUDController.buscarPorId);
@@ -22,12 +26,8 @@ router.post('/', canCreate('necessidades_padroes'), NecessidadesPadroesCRUDContr
 router.put('/:id', canEdit('necessidades_padroes'), NecessidadesPadroesCRUDController.atualizar);
 router.delete('/:id', canDelete('necessidades_padroes'), NecessidadesPadroesCRUDController.excluir);
 
-// Rotas específicas
-router.get('/escola/:escola_id/grupo/:grupo_id', canView('necessidades_padroes'), NecessidadesPadroesListController.buscarPorEscolaGrupo);
+// Rotas específicas (POST)
 router.post('/salvar-padrao', canCreate('necessidades_padroes'), NecessidadesPadroesCRUDController.salvarPadrao);
-
-// Rotas de geração
 router.post('/gerar-necessidades', canCreate('necessidades_padroes'), NecessidadesPadroesGeracaoController.gerarNecessidadesPadrao);
-router.get('/buscar-semana-consumo', canView('necessidades_padroes'), NecessidadesPadroesGeracaoController.buscarSemanaConsumoPorAbastecimento);
 
 module.exports = router;
