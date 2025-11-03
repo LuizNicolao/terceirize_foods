@@ -422,28 +422,6 @@ const App = () => {
       />
 
       <Route 
-        path="/foods/relatorio-inspecao/novo" 
-        element={
-          <AuthenticatedRoute>
-            <ProtectedRoute screen="relatorio_inspecao">
-              <RelatorioInspecao />
-            </ProtectedRoute>
-          </AuthenticatedRoute>
-        } 
-      />
-
-      <Route 
-        path="/foods/relatorio-inspecao/:id/editar" 
-        element={
-          <AuthenticatedRoute>
-            <ProtectedRoute screen="relatorio_inspecao">
-              <RelatorioInspecao />
-            </ProtectedRoute>
-          </AuthenticatedRoute>
-        } 
-      />
-
-      <Route 
         path="/foods/relatorio-inspecao/:id/visualizar" 
         element={
           <AuthenticatedRoute>

@@ -1,20 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import { FaPlus, FaEye, FaEdit, FaTrash, FaPrint, FaArrowLeft } from 'react-icons/fa';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { FaPlus, FaEye, FaEdit, FaTrash } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { useRelatorioInspecao } from '../../hooks/useRelatorioInspecao';
 import { useAuditoria } from '../../hooks/common/useAuditoria';
-import { Button, ConfirmModal, CadastroFilterBar, Pagination, StatCard, LoadingSpinner, Input, SearchableSelect } from '../../components/ui';
+import { Button, ConfirmModal, CadastroFilterBar, Pagination, StatCard, LoadingSpinner } from '../../components/ui';
 import { AuditModal, ExportButtons } from '../../components/shared';
-import ChecklistTable from '../../components/relatorio-inspecao/ChecklistTable';
-import ProdutosTable from '../../components/relatorio-inspecao/ProdutosTable';
-import RelatorioInspecaoForm from './RelatorioInspecaoForm';
+import RelatorioInspecaoModal from '../../components/relatorio-inspecao/RelatorioInspecaoModal';
 import RelatorioInspecaoView from './RelatorioInspecaoView';
 
 const RelatorioInspecao = () => {
   const navigate = useNavigate();
-  const { id } = useParams();
   const location = useLocation();
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
   
@@ -96,7 +93,8 @@ const RelatorioInspecao = () => {
   };
 
   const handleEditRIR = (rir) => {
-    navigate(`/foods/relatorio-inspecao/${rir.id}/editar`);
+    setEditingRirId(rir.id);
+    setShowModal(true);
   };
 
   const handleDeleteRIR = (rir) => {
@@ -115,7 +113,17 @@ const RelatorioInspecao = () => {
   };
 
   const handleAddRIR = () => {
-    navigate('/foods/relatorio-inspecao/novo');
+    setEditingRirId(null);
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setEditingRirId(null);
+  };
+
+  const handleModalSuccess = () => {
+    carregarRIRs();
   };
 
   const handleExportXLSX = () => {
@@ -155,26 +163,28 @@ const RelatorioInspecao = () => {
     );
   };
 
-  // Detectar se está em modo de cadastro/edição ou visualização
-  const isFormMode = location.pathname.includes('/novo') || location.pathname.includes('/editar');
+  // Detectar se está em modo de visualização
   const isViewMode = location.pathname.includes('/visualizar');
-  const rirId = id ? parseInt(id) : null;
+  const pathParts = location.pathname.split('/');
+  const rirId = isViewMode && pathParts[pathParts.length - 2] ? parseInt(pathParts[pathParts.length - 2]) : null;
+
+  // Estados do modal
+  const [showModal, setShowModal] = useState(false);
+  const [editingRirId, setEditingRirId] = useState(null);
 
   // Se estiver em modo de visualização, renderizar componente de visualização
   if (isViewMode && rirId) {
     return <RelatorioInspecaoView rirId={rirId} />;
   }
 
-  // Se estiver em modo de formulário, renderizar componente de formulário
-  if (isFormMode) {
-    return <RelatorioInspecaoForm rirId={rirId} />;
-  }
-
   // Caso contrário, renderizar lista
   if (loading && rirs.length === 0) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <LoadingSpinner />
+      <div className="p-6">
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+          <span className="ml-3 text-gray-600">Carregando relatórios...</span>
+        </div>
       </div>
     );
   }
@@ -410,6 +420,14 @@ const RelatorioInspecao = () => {
         confirmText="Excluir"
         cancelText="Cancelar"
         type="danger"
+      />
+
+      {/* Modal de Relatório de Inspeção */}
+      <RelatorioInspecaoModal
+        isOpen={showModal}
+        onClose={handleCloseModal}
+        rirId={editingRirId}
+        onSuccess={handleModalSuccess}
       />
     </div>
   );

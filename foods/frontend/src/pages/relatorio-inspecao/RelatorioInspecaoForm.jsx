@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { FaArrowLeft, FaSave } from 'react-icons/fa';
+import { FaSave } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { useRelatorioInspecao } from '../../hooks/useRelatorioInspecao';
@@ -8,8 +7,7 @@ import { Button, Input, SearchableSelect, LoadingSpinner } from '../../component
 import ChecklistTable from '../../components/relatorio-inspecao/ChecklistTable';
 import ProdutosTable from '../../components/relatorio-inspecao/ProdutosTable';
 
-const RelatorioInspecaoForm = ({ rirId }) => {
-  const navigate = useNavigate();
+const RelatorioInspecaoForm = ({ rirId, onSuccess, onCancel }) => {
   const { canCreate, canEdit } = usePermissions();
   const isEditMode = !!rirId;
 
@@ -228,7 +226,9 @@ const RelatorioInspecaoForm = ({ rirId }) => {
 
       if (response.success) {
         toast.success(response.message || 'Relatório salvo com sucesso!');
-        navigate('/foods/relatorio-inspecao');
+        if (onSuccess) {
+          onSuccess();
+        }
       } else {
         if (response.validationErrors) {
           // Erros de validação serão tratados pelo componente
@@ -261,29 +261,7 @@ const RelatorioInspecaoForm = ({ rirId }) => {
   }
 
   return (
-    <div className="p-6">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex items-center gap-4">
-          <Button
-            onClick={() => navigate('/foods/relatorio-inspecao')}
-            variant="ghost"
-            size="sm"
-          >
-            <FaArrowLeft className="mr-2" />
-            Voltar
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              {isEditMode ? 'Editar Relatório de Inspeção' : 'Novo Relatório de Inspeção'}
-            </h1>
-            <p className="text-sm text-gray-600 mt-1">
-              {isEditMode ? 'Edite os dados do relatório de inspeção' : 'Preencha os dados do novo relatório de inspeção'}
-            </p>
-          </div>
-        </div>
-      </div>
-
+    <div>
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* SEÇÃO A: Dados do Pedido */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -442,21 +420,25 @@ const RelatorioInspecaoForm = ({ rirId }) => {
         </div>
 
         {/* Botões de Ação */}
-        <div className="flex justify-end gap-4">
-          <Button
-            type="button"
-            onClick={() => navigate('/foods/relatorio-inspecao')}
-            variant="outline"
-          >
-            Cancelar
-          </Button>
+        <div className="flex justify-end gap-4 pt-4 border-t">
+          {onCancel && (
+            <Button
+              type="button"
+              onClick={onCancel}
+              variant="outline"
+              size="sm"
+            >
+              Cancelar
+            </Button>
+          )}
           <Button
             type="submit"
             disabled={saving || (!canCreate('relatorio_inspecao') && !isEditMode) || (!canEdit('relatorio_inspecao') && isEditMode)}
             loading={saving}
+            size="sm"
           >
             <FaSave className="mr-2" />
-            {saving ? 'Salvando...' : 'Salvar Relatório'}
+            {saving ? 'Salvando...' : (isEditMode ? 'Atualizar' : 'Criar')}
           </Button>
         </div>
       </form>
