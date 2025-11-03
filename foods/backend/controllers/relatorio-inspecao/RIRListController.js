@@ -75,9 +75,9 @@ class RIRListController {
       ${whereClause}
     `;
 
-    // Contar total de registros (sem ORDER BY para melhor performance)
+    // Contar total de registros (query simples sem JOIN desnecessário)
     console.log('[RIR] Executando count query');
-    let countQuery = baseQuery.replace(/SELECT[\s\S]*?FROM/i, 'SELECT COUNT(*) as total FROM');
+    const countQuery = `SELECT COUNT(*) as total FROM relatorio_inspecao ri ${whereClause}`;
     console.log('[RIR] Count query gerada:', countQuery.substring(0, 200));
     const countStart = Date.now();
     let totalItems;
