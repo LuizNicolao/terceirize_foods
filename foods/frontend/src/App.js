@@ -441,9 +441,7 @@ const App = () => {
         path="/foods/calendario" 
         element={
           <AuthenticatedRoute>
-            <ProtectedRoute screen="calendario">
-              <CalendarioDashboard />
-            </ProtectedRoute>
+            <CalendarioDashboard />
           </AuthenticatedRoute>
         } 
       />
@@ -452,9 +450,7 @@ const App = () => {
         path="/foods/calendario/visualizacao" 
         element={
           <AuthenticatedRoute>
-            <ProtectedRoute screen="calendario">
-              <CalendarioVisualizacao />
-            </ProtectedRoute>
+            <CalendarioVisualizacao />
           </AuthenticatedRoute>
         } 
       />
@@ -463,9 +459,7 @@ const App = () => {
         path="/foods/calendario/configuracao" 
         element={
           <AuthenticatedRoute>
-            <ProtectedRoute screen="calendario">
-              <CalendarioConfiguracao />
-            </ProtectedRoute>
+            <CalendarioConfiguracao />
           </AuthenticatedRoute>
         } 
       />
@@ -474,9 +468,7 @@ const App = () => {
         path="/foods/calendario/relatorios" 
         element={
           <AuthenticatedRoute>
-            <ProtectedRoute screen="calendario">
-              <CalendarioRelatorios />
-            </ProtectedRoute>
+            <CalendarioRelatorios />
           </AuthenticatedRoute>
         } 
       />
