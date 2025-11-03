@@ -104,7 +104,7 @@ export const useProdutoGenerico = () => {
     
     await baseEntity.onSubmit(cleanData);
     // Recalcular estatísticas após salvar
-    setEstatisticasProdutoGenerico(baseEntity.statistics || { total_produtos_genericos: 0, produtos_ativos: 0, produtos_inativos: 0 });
+    setEstatisticasProdutoGenerico(baseEntity.estatisticas || { total_produtos_genericos: 0, produtos_ativos: 0, produtos_inativos: 0 });
   }, [baseEntity]);
 
   /**
@@ -113,7 +113,7 @@ export const useProdutoGenerico = () => {
   const handleDeleteCustom = useCallback(async () => {
     await baseEntity.handleConfirmDelete();
     // Recalcular estatísticas após excluir
-    setEstatisticasProdutoGenerico(baseEntity.statistics || { total_produtos_genericos: 0, produtos_ativos: 0, produtos_inativos: 0 });
+    setEstatisticasProdutoGenerico(baseEntity.estatisticas || { total_produtos_genericos: 0, produtos_ativos: 0, produtos_inativos: 0 });
   }, [baseEntity]);
 
   // Carregar dados auxiliares na inicialização
@@ -125,14 +125,14 @@ export const useProdutoGenerico = () => {
 
   // Atualizar estatísticas quando os dados mudam
   useEffect(() => {
-    if (baseEntity.statistics) {
+    if (baseEntity.estatisticas) {
       setEstatisticasProdutoGenerico({
-        total_produtos_genericos: baseEntity.statistics.total || baseEntity.statistics.total_produtos_genericos || 0,
-        produtos_ativos: baseEntity.statistics.ativos || baseEntity.statistics.produtos_ativos || 0,
-        produtos_inativos: baseEntity.statistics.inativos || baseEntity.statistics.produtos_inativos || 0,
-        produtos_padrao: baseEntity.statistics.produtos_padrao || 0,
-        com_produto_origem: baseEntity.statistics.com_produto_origem || 0,
-        total_produtos_vinculados: baseEntity.statistics.total_produtos_vinculados || 0
+        total_produtos_genericos: baseEntity.estatisticas.total || baseEntity.estatisticas.total_produtos_genericos || 0,
+        produtos_ativos: baseEntity.estatisticas.ativos || baseEntity.estatisticas.produtos_ativos || 0,
+        produtos_inativos: baseEntity.estatisticas.inativos || baseEntity.estatisticas.produtos_inativos || 0,
+        produtos_padrao: baseEntity.estatisticas.produtos_padrao || 0,
+        com_produto_origem: baseEntity.estatisticas.com_produto_origem || 0,
+        total_produtos_vinculados: baseEntity.estatisticas.total_produtos_vinculados || 0
       });
     } else {
       setEstatisticasProdutoGenerico({
@@ -144,7 +144,7 @@ export const useProdutoGenerico = () => {
         total_produtos_vinculados: 0
       });
     }
-  }, [baseEntity.statistics]);
+  }, [baseEntity.estatisticas]);
 
   /**
    * Funções auxiliares
