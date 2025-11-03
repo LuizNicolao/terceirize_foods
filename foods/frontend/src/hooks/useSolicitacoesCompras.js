@@ -93,7 +93,7 @@ export const useSolicitacoesCompras = () => {
   // Carregar dados quando filtros ou paginação mudam
   useEffect(() => {
     loadDataWithFilters();
-  }, [baseEntity.currentPage, baseEntity.itemsPerPage, customFilters.filters.status, customFilters.filters.filial_id, customFilters.filters.data_inicio, customFilters.filters.data_fim, loadDataWithFilters]);
+  }, [baseEntity.currentPage, baseEntity.itemsPerPage, customFilters.filters.status, customFilters.filters.filial_id, customFilters.filters.data_inicio, customFilters.filters.data_fim]);
 
   /**
    * Submissão customizada

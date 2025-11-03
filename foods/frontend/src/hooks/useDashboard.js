@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import DashboardService from '../services/dashboard';
 
@@ -10,7 +10,7 @@ export const useDashboard = () => {
   const [dadosRecentes, setDadosRecentes] = useState({});
 
   // Carregar dados do dashboard
-  const loadDashboardData = async () => {
+  const loadDashboardData = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -46,12 +46,12 @@ export const useDashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   // Carregar dados iniciais
   useEffect(() => {
     loadDashboardData();
-  }, []);
+  }, [loadDashboardData]);
 
   // Dados de estatísticas do backend
   const statsData = {
