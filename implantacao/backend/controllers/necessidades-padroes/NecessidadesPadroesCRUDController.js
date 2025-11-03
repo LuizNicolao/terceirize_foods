@@ -46,7 +46,27 @@ class NecessidadesPadroesCRUDController {
   static async criar(req, res) {
     try {
       const { escola_id, grupo_id, produto_id, quantidade } = req.body;
-      const usuario_id = req.user?.id;
+
+      // Buscar nutricionista vinculada à escola
+      const nutricionista = await executeQuery(`
+        SELECT DISTINCT 
+          rn.usuario_id,
+          u.nome as usuario_nome,
+          u.email as usuario_email
+        FROM foods_db.rotas_nutricionistas rn
+        LEFT JOIN foods_db.usuarios u ON rn.usuario_id = u.id
+        WHERE rn.status = 'ativo'
+          AND rn.escolas_responsaveis IS NOT NULL 
+          AND rn.escolas_responsaveis != ''
+          AND FIND_IN_SET(?, rn.escolas_responsaveis) > 0
+        LIMIT 1
+      `, [escola_id]);
+
+      if (!nutricionista || nutricionista.length === 0) {
+        return errorResponse(res, 'Nenhuma nutricionista vinculada à escola encontrada. Verifique as rotas nutricionistas.', 400);
+      }
+
+      const usuario_id = nutricionista[0].usuario_id;
 
       // Verificar se já existe padrão para esta combinação
       const existeQuery = `
@@ -134,7 +154,6 @@ class NecessidadesPadroesCRUDController {
     
     try {
       const { escola_id, grupo_id, produtos } = req.body;
-      const usuario_id = req.user?.id;
 
       // Iniciar transação
       await connection.beginTransaction();
@@ -149,6 +168,28 @@ class NecessidadesPadroesCRUDController {
           'SELECT nome FROM foods_db.grupos WHERE id = ?',
           [grupo_id]
         );
+
+        // Buscar nutricionista vinculada à escola
+        const [nutricionistaData] = await connection.execute(`
+          SELECT DISTINCT 
+            rn.usuario_id,
+            u.nome as usuario_nome,
+            u.email as usuario_email
+          FROM foods_db.rotas_nutricionistas rn
+          LEFT JOIN foods_db.usuarios u ON rn.usuario_id = u.id
+          WHERE rn.status = 'ativo'
+            AND rn.escolas_responsaveis IS NOT NULL 
+            AND rn.escolas_responsaveis != ''
+            AND FIND_IN_SET(?, rn.escolas_responsaveis) > 0
+          LIMIT 1
+        `, [escola_id]);
+
+        if (!nutricionistaData || nutricionistaData.length === 0) {
+          await connection.rollback();
+          return errorResponse(res, `Nenhuma nutricionista vinculada à escola encontrada. Verifique as rotas nutricionistas.`, 400);
+        }
+
+        const usuario_id = nutricionistaData[0].usuario_id;
 
         // Inserir/atualizar padrões com nomes
         for (const produto of produtos) {
