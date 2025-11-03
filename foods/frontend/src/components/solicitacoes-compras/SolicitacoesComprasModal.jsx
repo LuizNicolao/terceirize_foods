@@ -213,7 +213,7 @@ const SolicitacoesComprasModal = ({
                 <option value="">Selecione uma filial</option>
                 {filiais.map(filial => (
                   <option key={filial.id} value={filial.id}>
-                    {filial.nome} {filial.codigo ? `(${filial.codigo})` : ''}
+                    {filial.filial || filial.nome || 'Filial'} {filial.codigo_filial ? `(${filial.codigo_filial})` : ''}
                   </option>
                 ))}
               </Input>
