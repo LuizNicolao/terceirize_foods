@@ -52,8 +52,11 @@ export const useSolicitacoesCompras = () => {
 
       // Processar dados auxiliares
       const processData = (response) => {
+        // Tentar diferentes estruturas de resposta
         if (response.data?.data?.items) return response.data.data.items;
+        if (response.data?.data && Array.isArray(response.data.data)) return response.data.data;
         if (response.data?.data) return response.data.data;
+        if (Array.isArray(response.data)) return response.data;
         return response.data || [];
       };
 

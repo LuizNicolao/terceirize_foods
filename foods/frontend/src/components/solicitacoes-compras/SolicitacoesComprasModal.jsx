@@ -104,11 +104,19 @@ const SolicitacoesComprasModal = ({
     const updated = [...itens];
     updated[index] = { ...updated[index], [field]: value };
     
-    // Se mudou produto, auto-preenche unidade
+    // Se mudou produto, auto-preenche unidade e símbolo
     if (field === 'produto_id' && value) {
       const produto = produtosGenericos.find(p => p.id === parseInt(value));
-      if (produto && produto.unidade_medida_id) {
-        updated[index].unidade_medida_id = produto.unidade_medida_id;
+      if (produto) {
+        if (produto.unidade_medida_id) {
+          updated[index].unidade_medida_id = produto.unidade_medida_id;
+        }
+        // Buscar símbolo da unidade
+        const unidade = unidadesMedida.find(u => u.id === produto.unidade_medida_id);
+        if (unidade) {
+          updated[index].unidade_simbolo = unidade.simbolo || unidade.sigla;
+          updated[index].unidade_medida = unidade.nome || unidade.simbolo || unidade.sigla;
+        }
       }
       
       // Verificar duplicidade
@@ -211,11 +219,15 @@ const SolicitacoesComprasModal = ({
                 disabled={viewMode}
               >
                 <option value="">Selecione uma filial</option>
-                {filiais.map(filial => (
-                  <option key={filial.id} value={filial.id}>
-                    {filial.filial || filial.nome || 'Filial'} {filial.codigo_filial ? `(${filial.codigo_filial})` : ''}
-                  </option>
-                ))}
+                {filiais && filiais.length > 0 ? (
+                  filiais.map(filial => (
+                    <option key={filial.id} value={filial.id}>
+                      {filial.filial || filial.nome || 'Filial'} {filial.codigo_filial ? `(${filial.codigo_filial})` : ''}
+                    </option>
+                  ))
+                ) : (
+                  <option value="" disabled>Carregando filiais...</option>
+                )}
               </Input>
 
               {/* Data de Entrega CD */}
@@ -356,24 +368,13 @@ const SolicitacoesComprasModal = ({
                             )}
                           </td>
                           <td className="px-4 py-3">
-                            {viewMode ? (
-                              <span className="text-sm text-gray-900">
-                                {item.unidade_medida || item.unidade_simbolo || '-'}
-                              </span>
-                            ) : (
-                              <select
-                                value={item.unidade_medida_id || ''}
-                                onChange={(e) => handleItemChange(index, 'unidade_medida_id', e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                              >
-                                <option value="">Selecione...</option>
-                                {unidadesMedida.map(unidade => (
-                                  <option key={unidade.id} value={unidade.id}>
-                                    {unidade.simbolo || unidade.sigla}
-                                  </option>
-                                ))}
-                              </select>
-                            )}
+                            <Input
+                              type="text"
+                              value={item.unidade_simbolo || item.unidade_medida || '-'}
+                              disabled={true}
+                              className="bg-gray-50 cursor-not-allowed"
+                              readOnly
+                            />
                           </td>
                           <td className="px-4 py-3">
                             {viewMode ? (
