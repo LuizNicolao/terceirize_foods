@@ -24,7 +24,17 @@ const RelatorioInspecao = () => {
     filtros,
     setFiltros,
     carregarRIRs,
-    excluirRIR
+    excluirRIR,
+    setSearchTerm,
+    handleKeyPress,
+    clearFiltros,
+    handlePageChange,
+    handleItemsPerPageChange,
+    handleDeleteRIR,
+    handleConfirmDelete,
+    handleCloseDeleteModal,
+    showDeleteConfirmModal,
+    rirToDelete
   } = useRelatorioInspecao();
 
   const {
@@ -47,91 +57,34 @@ const RelatorioInspecao = () => {
   const pathParts = location.pathname.split('/');
   const rirId = isViewMode && pathParts[pathParts.length - 2] ? parseInt(pathParts[pathParts.length - 2]) : null;
 
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [rirToDelete, setRirToDelete] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
-  const [dataInicioFilter, setDataInicioFilter] = useState('');
-  const [dataFimFilter, setDataFimFilter] = useState('');
-  const hasLoadedRef = useRef(false);
-
   // Paginação
   const currentPage = pagination?.current_page || 1;
   const totalPages = pagination?.total_pages || 1;
   const totalItems = pagination?.total_items || 0;
   const itemsPerPage = pagination?.items_per_page || 20;
 
-  // Carregar dados quando filtros de seleção mudam (status e datas)
-  useEffect(() => {
-    if (!isViewMode && hasLoadedRef.current) {
-      const params = {};
-      if (filtros.search) params.search = filtros.search;
-      if (statusFilter) params.status_geral = statusFilter;
-      if (dataInicioFilter) params.data_inicio = dataInicioFilter;
-      if (dataFimFilter) params.data_fim = dataFimFilter;
-      
-      setFiltros(prev => ({
-        ...prev,
-        status_geral: statusFilter,
-        data_inicio: dataInicioFilter,
-        data_fim: dataFimFilter
-      }));
-      
-      carregarRIRs(params);
-    }
-  }, [statusFilter, dataInicioFilter, dataFimFilter, isViewMode]);
+  // Estados locais para filtros de seleção (status e datas)
+  const [statusFilter, setStatusFilter] = useState('');
+  const [dataInicioFilter, setDataInicioFilter] = useState('');
+  const [dataFimFilter, setDataFimFilter] = useState('');
 
-  // Carregar dados iniciais
+  // Atualizar filtros customizados quando os estados locais mudam
   useEffect(() => {
-    if (!isViewMode && !hasLoadedRef.current) {
-      hasLoadedRef.current = true;
-      carregarRIRs();
-    }
-  }, [isViewMode]);
-
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
-      const params = {};
-      if (searchTerm) params.search = searchTerm;
-      if (statusFilter) params.status_geral = statusFilter;
-      if (dataInicioFilter) params.data_inicio = dataInicioFilter;
-      if (dataFimFilter) params.data_fim = dataFimFilter;
-      
+    if (!isViewMode) {
       setFiltros({
-        search: searchTerm,
         status_geral: statusFilter,
-        fornecedor: '',
         data_inicio: dataInicioFilter,
         data_fim: dataFimFilter
       });
-      
-      carregarRIRs(params);
     }
-  };
+  }, [statusFilter, dataInicioFilter, dataFimFilter, isViewMode]);
 
-  const clearFiltros = () => {
-    setSearchTerm('');
+  // Limpar filtros customizados
+  const handleClearFiltros = () => {
     setStatusFilter('');
     setDataInicioFilter('');
     setDataFimFilter('');
-    
-    const newFiltros = {
-      search: '',
-      status_geral: '',
-      fornecedor: '',
-      data_inicio: '',
-      data_fim: ''
-    };
-    setFiltros(newFiltros);
-    carregarRIRs();
-  };
-
-  const handlePageChange = (page) => {
-    carregarRIRs({ page });
-  };
-
-  const handleItemsPerPageChange = (itemsPerPage) => {
-    carregarRIRs({ limit: itemsPerPage, page: 1 });
+    clearFiltros();
   };
 
   const handleViewRIR = (rir) => {
@@ -143,19 +96,8 @@ const RelatorioInspecao = () => {
     setShowModal(true);
   };
 
-  const handleDeleteRIR = (rir) => {
-    setRirToDelete(rir);
-    setShowDeleteConfirm(true);
-  };
-
-  const handleConfirmDelete = async () => {
-    if (rirToDelete) {
-      const success = await excluirRIR(rirToDelete.id);
-      if (success) {
-        setShowDeleteConfirm(false);
-        setRirToDelete(null);
-      }
-    }
+  const handleDeleteRIRClick = (rir) => {
+    handleDeleteRIR(rir);
   };
 
   const handleAddRIR = () => {
@@ -209,7 +151,7 @@ const RelatorioInspecao = () => {
     );
   };
 
-  // Estados do modal
+  // Estados do modal (usando estados locais para controle customizado)
   const [showModal, setShowModal] = useState(false);
   const [editingRirId, setEditingRirId] = useState(null);
 
@@ -252,10 +194,10 @@ const RelatorioInspecao = () => {
 
       {/* Filtros */}
       <CadastroFilterBar
-        searchTerm={searchTerm}
+        searchTerm={filtros.search || ''}
         onSearchChange={setSearchTerm}
         onKeyPress={handleKeyPress}
-        onClear={clearFiltros}
+        onClear={handleClearFiltros}
         additionalFilters={[
           {
             label: 'Status',
@@ -380,7 +322,7 @@ const RelatorioInspecao = () => {
                         )}
                         {canDelete('relatorio_inspecao') && (
                           <button
-                            onClick={() => handleDeleteRIR(rir)}
+                            onClick={() => handleDeleteRIRClick(rir)}
                             className="text-red-600 hover:text-red-900 p-1 rounded transition-colors"
                             title="Excluir"
                           >
@@ -424,11 +366,8 @@ const RelatorioInspecao = () => {
 
       {/* Modal de Confirmação de Exclusão */}
       <ConfirmModal
-        isOpen={showDeleteConfirm}
-        onClose={() => {
-          setShowDeleteConfirm(false);
-          setRirToDelete(null);
-        }}
+        isOpen={showDeleteConfirmModal}
+        onClose={handleCloseDeleteModal}
         onConfirm={handleConfirmDelete}
         title="Confirmar Exclusão"
         message={`Tem certeza que deseja excluir o relatório de inspeção #${rirToDelete?.id.toString().padStart(4, '0')}? Esta ação não pode ser desfeita.`}

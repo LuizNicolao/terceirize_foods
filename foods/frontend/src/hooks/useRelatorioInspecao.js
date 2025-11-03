@@ -1,69 +1,69 @@
+/**
+ * Hook customizado para Relatório de Inspeção de Recebimento (RIR)
+ * Gerencia estado e operações relacionadas a relatórios de inspeção
+ */
+
 import { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import RelatorioInspecaoService from '../services/relatorioInspecao';
+import { useBaseEntity } from './common/useBaseEntity';
+import { useFilters } from './common/useFilters';
 
 export const useRelatorioInspecao = () => {
-  const [rirs, setRirs] = useState([]);
-  const [rir, setRir] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [pagination, setPagination] = useState(null);
-  const [statistics, setStatistics] = useState(null);
-  const [grupos, setGrupos] = useState([]);
-  const [filtros, setFiltros] = useState({
-    search: '',
+  // Hook base para funcionalidades CRUD
+  // Desabilitar busca com debounce para ter controle manual
+  const baseEntity = useBaseEntity('relatorio-inspecao', RelatorioInspecaoService, {
+    initialItemsPerPage: 20,
+    initialFilters: {},
+    enableStats: true,
+    enableDelete: true,
+    enableDebouncedSearch: false // Desabilitar para controle manual dos filtros
+  });
+
+  // Hook de filtros customizados para RIR
+  const customFilters = useFilters({
     status_geral: '',
-    fornecedor: '',
     data_inicio: '',
     data_fim: ''
   });
 
+  // Estados específicos do RIR
+  const [rir, setRir] = useState(null);
+  const [grupos, setGrupos] = useState([]);
+
   /**
-   * Carregar lista de RIRs
+   * Carrega dados com filtros customizados
    */
-  const carregarRIRs = useCallback(async (params = {}) => {
-    setLoading(true);
-    try {
-      const queryParams = {
-        ...filtros,
-        ...params
-      };
+  const loadDataWithFilters = useCallback(async () => {
+    const params = {
+      ...baseEntity.getPaginationParams(),
+      ...customFilters.getFilterParams(),
+      search: baseEntity.searchTerm || undefined,
+      status_geral: customFilters.filters.status_geral || undefined,
+      data_inicio: customFilters.filters.data_inicio || undefined,
+      data_fim: customFilters.filters.data_fim || undefined
+    };
 
-      // Remover filtros vazios
-      Object.keys(queryParams).forEach(key => {
-        if (queryParams[key] === '' || queryParams[key] === null || queryParams[key] === undefined) {
-          delete queryParams[key];
-        }
-      });
-
-      const response = await RelatorioInspecaoService.listar(queryParams);
-      
-      if (response.success) {
-        setRirs(response.data || []);
-        setPagination(response.pagination || null);
-        setStatistics(response.statistics || null);
-      } else {
-        console.error('Erro ao carregar RIRs:', response.error);
-        // Não mostrar toast automaticamente, deixar a página mostrar estado vazio
-        setRirs([]);
-        setPagination(null);
-        setStatistics(null);
+    // Remover parâmetros vazios
+    Object.keys(params).forEach(key => {
+      if (params[key] === '' || params[key] === null || params[key] === undefined) {
+        delete params[key];
       }
-    } catch (error) {
-      console.error('Erro ao carregar RIRs:', error);
-      // Não mostrar toast automaticamente no catch também
-      setRirs([]);
-      setPagination(null);
-      setStatistics(null);
-    } finally {
-      setLoading(false);
-    }
-  }, [filtros]);
+    });
+
+    await baseEntity.loadData(params);
+  }, [baseEntity, customFilters]);
+
+  // Carregar dados quando filtros ou paginação mudam
+  useEffect(() => {
+    loadDataWithFilters();
+  }, [baseEntity.currentPage, baseEntity.itemsPerPage, customFilters.filters.status_geral, customFilters.filters.data_inicio, customFilters.filters.data_fim]);
 
   /**
-   * Buscar RIR por ID
+   * Buscar RIR por ID (mantido para compatibilidade)
    */
   const buscarRIRPorId = useCallback(async (id) => {
-    setLoading(true);
+    baseEntity.setLoading(true);
     try {
       const response = await RelatorioInspecaoService.buscarPorId(id);
       
@@ -79,9 +79,9 @@ export const useRelatorioInspecao = () => {
       toast.error('Erro ao buscar relatório de inspeção');
       return null;
     } finally {
-      setLoading(false);
+      baseEntity.setLoading(false);
     }
-  }, []);
+  }, [baseEntity]);
 
   /**
    * Criar novo RIR
@@ -92,6 +92,7 @@ export const useRelatorioInspecao = () => {
       
       if (response.success) {
         toast.success(response.message || 'Relatório de inspeção criado com sucesso!');
+        await loadDataWithFilters(); // Recarregar lista
         return response;
       } else {
         if (response.validationErrors) {
@@ -105,7 +106,7 @@ export const useRelatorioInspecao = () => {
       toast.error('Erro ao criar relatório de inspeção');
       return { success: false };
     }
-  }, []);
+  }, [loadDataWithFilters]);
 
   /**
    * Atualizar RIR
@@ -116,6 +117,7 @@ export const useRelatorioInspecao = () => {
       
       if (response.success) {
         toast.success(response.message || 'Relatório de inspeção atualizado com sucesso!');
+        await loadDataWithFilters(); // Recarregar lista
         return response;
       } else {
         if (response.validationErrors) {
@@ -129,7 +131,7 @@ export const useRelatorioInspecao = () => {
       toast.error('Erro ao atualizar relatório de inspeção');
       return { success: false };
     }
-  }, []);
+  }, [loadDataWithFilters]);
 
   /**
    * Excluir RIR
@@ -140,7 +142,7 @@ export const useRelatorioInspecao = () => {
       
       if (response.success) {
         toast.success(response.message || 'Relatório de inspeção excluído com sucesso!');
-        await carregarRIRs(); // Recarregar lista
+        await loadDataWithFilters(); // Recarregar lista
         return true;
       } else {
         toast.error(response.error || 'Erro ao excluir relatório de inspeção');
@@ -151,7 +153,7 @@ export const useRelatorioInspecao = () => {
       toast.error('Erro ao excluir relatório de inspeção');
       return false;
     }
-  }, [carregarRIRs]);
+  }, [loadDataWithFilters]);
 
   /**
    * Buscar produtos do pedido
@@ -226,23 +228,101 @@ export const useRelatorioInspecao = () => {
     buscarGrupos();
   }, [buscarGrupos]);
 
-  return {
-    // Estados
-    rirs,
-    rir,
-    loading,
-    pagination,
-    statistics,
-    grupos,
-    filtros,
+  /**
+   * Handle key press para buscar ao pressionar Enter
+   */
+  const handleKeyPress = useCallback((e) => {
+    if (e.key === 'Enter') {
+      loadDataWithFilters();
+    }
+  }, [loadDataWithFilters]);
 
-    // Ações
-    carregarRIRs,
+  /**
+   * Limpar filtros
+   */
+  const clearFiltros = useCallback(() => {
+    baseEntity.setSearchTerm('');
+    customFilters.setFilters({
+      status_geral: '',
+      data_inicio: '',
+      data_fim: ''
+    });
+  }, [baseEntity, customFilters]);
+
+  /**
+   * Atualizar filtros customizados
+   */
+  const setFiltros = useCallback((filtros) => {
+    customFilters.setFilters(prev => ({
+      ...prev,
+      ...filtros
+    }));
+  }, [customFilters]);
+
+  return {
+    // Estados principais (do hook base)
+    rirs: baseEntity.items,
+    rir,
+    loading: baseEntity.loading,
+    
+    // Estados de paginação (do hook base)
+    pagination: {
+      current_page: baseEntity.currentPage,
+      total_pages: baseEntity.totalPages,
+      total_items: baseEntity.totalItems,
+      items_per_page: baseEntity.itemsPerPage
+    },
+    
+    // Estados de estatísticas (do hook base)
+    statistics: baseEntity.estatisticas,
+    
+    // Estados específicos
+    grupos,
+    filtros: {
+      search: baseEntity.searchTerm,
+      ...customFilters.filters
+    },
+    
+    // Estados de modal (do hook base)
+    showModal: baseEntity.showModal,
+    viewMode: baseEntity.viewMode,
+    editingRir: baseEntity.editingItem,
+    
+    // Estados de exclusão (do hook base)
+    showDeleteConfirmModal: baseEntity.showDeleteConfirmModal,
+    rirToDelete: baseEntity.itemToDelete,
+    
+    // Estados de validação (do hook base)
+    validationErrors: baseEntity.validationErrors,
+    showValidationModal: baseEntity.showValidationModal,
+    
+    // Ações de modal (do hook base)
+    handleAddRIR: baseEntity.handleAdd,
+    handleViewRIR: baseEntity.handleView,
+    handleEditRIR: baseEntity.handleEdit,
+    handleCloseModal: baseEntity.handleCloseModal,
+    
+    // Ações de paginação (do hook base)
+    handlePageChange: baseEntity.handlePageChange,
+    handleItemsPerPageChange: baseEntity.handleItemsPerPageChange,
+    
+    // Ações de filtros (do hook base + customizadas)
+    setSearchTerm: baseEntity.setSearchTerm,
+    handleKeyPress,
+    clearFiltros,
+    setFiltros,
+    
+    // Ações CRUD (customizadas)
+    carregarRIRs: loadDataWithFilters,
     buscarRIRPorId,
     criarRIR,
     atualizarRIR,
     excluirRIR,
-    setFiltros,
+    
+    // Ações de exclusão (do hook base)
+    handleDeleteRIR: baseEntity.handleDelete,
+    handleConfirmDelete: baseEntity.handleConfirmDelete,
+    handleCloseDeleteModal: baseEntity.handleCloseDeleteModal,
     
     // Integrações
     buscarProdutosPedido,
@@ -252,4 +332,3 @@ export const useRelatorioInspecao = () => {
     buscarGrupos
   };
 };
-

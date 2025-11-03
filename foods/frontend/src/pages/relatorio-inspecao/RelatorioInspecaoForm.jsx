@@ -20,7 +20,8 @@ const RelatorioInspecaoForm = ({ rirId, onSuccess, onCancel }) => {
     atualizarRIR,
     buscarPedidosAprovados,
     buscarGrupos,
-    buscarProdutosPedido
+    buscarProdutosPedido,
+    buscarNQAGrupo
   } = useRelatorioInspecao();
 
   const [saving, setSaving] = useState(false);

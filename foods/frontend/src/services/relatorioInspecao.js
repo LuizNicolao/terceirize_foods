@@ -33,10 +33,21 @@ class RelatorioInspecaoService {
         statistics = response.data?.statistics || response.data?.meta?.statistics;
       }
       
+      // Formatar paginação para o formato esperado pelo useBaseEntity
+      let paginationData = null;
+      if (pagination) {
+        paginationData = {
+          page: pagination.current_page || pagination.page || 1,
+          pages: pagination.total_pages || pagination.pages || 1,
+          total: pagination.total_items || pagination.total || 0,
+          limit: pagination.items_per_page || pagination.limit || 20
+        };
+      }
+
       return {
         success: true,
         data: rirs || [],
-        pagination: pagination || null,
+        pagination: paginationData,
         statistics: statistics || null
       };
     } catch (error) {
