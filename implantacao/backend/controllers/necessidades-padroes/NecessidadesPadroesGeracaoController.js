@@ -61,7 +61,7 @@ class NecessidadesPadroesGeracaoController {
 
       // Buscar dados de padrões que serão usados para gerar necessidades
       // JOIN com unidades_escolares para garantir que a escola pertence à filial e está ativa
-      // JOIN com rotas para buscar o nome da rota (não apenas o ID)
+      // A rota será buscada depois baseada no grupo de produto
       const padroes = await executeQuery(`
         SELECT DISTINCT
           np.escola_id,
@@ -72,16 +72,10 @@ class NecessidadesPadroesGeracaoController {
           np.produto_nome,
           np.unidade_medida_sigla,
           np.quantidade,
-          e.rota_id,
-          e.codigo_teknisa,
-          GROUP_CONCAT(DISTINCT r.nome ORDER BY r.nome SEPARATOR ' - ') as rota_nome
+          e.codigo_teknisa
         FROM necessidades_padroes np
         INNER JOIN foods_db.unidades_escolares e ON np.escola_id = e.id
-        LEFT JOIN foods_db.rotas r ON FIND_IN_SET(r.id, e.rota_id) > 0
         WHERE ${whereConditions.join(' AND ')}
-        GROUP BY np.escola_id, np.escola_nome, np.grupo_id, np.grupo_nome, 
-                 np.produto_id, np.produto_nome, np.unidade_medida_sigla, 
-                 np.quantidade, e.rota_id, e.codigo_teknisa
         ORDER BY np.escola_id, np.produto_nome
       `, params);
 
@@ -96,12 +90,10 @@ class NecessidadesPadroesGeracaoController {
       padroes.forEach(padrao => {
         if (!necessidadesPorEscola[padrao.escola_id]) {
           necessidadesPorEscola[padrao.escola_id] = [];
-          // Armazenar dados da escola
+          // Armazenar dados da escola (sem rota ainda, será buscada depois baseada no grupo)
           escolasComPadroes.set(padrao.escola_id, {
             id: padrao.escola_id,
             nome_escola: padrao.escola_nome,
-            rota_id: padrao.rota_id || '',
-            rota_nome: padrao.rota_nome || padrao.rota_id || '', // Usar nome da rota se disponível
             codigo_teknisa: padrao.codigo_teknisa || ''
           });
         }
@@ -175,6 +167,43 @@ class NecessidadesPadroesGeracaoController {
           continue;
         }
 
+        // Buscar rota vinculada ao grupo de produto para esta escola
+        // Cada grupo de produto está vinculado a um tipo_rota através do campo grupo_id no tipo_rota
+        const rotaPorGrupo = {};
+        
+        // Buscar todas as rotas vinculadas aos grupos dos produtos desta escola
+        const gruposIds = [...new Set(produtosEscola.map(p => p.grupo_id).filter(g => g))];
+        
+        if (gruposIds.length > 0) {
+          const rotasGrupo = await executeQuery(`
+            SELECT DISTINCT
+              g.id as grupo_id,
+              r.id as rota_id,
+              r.nome as rota_nome
+            FROM foods_db.grupos g
+            INNER JOIN foods_db.tipo_rota tr ON FIND_IN_SET(g.id, tr.grupo_id) > 0
+            INNER JOIN foods_db.rotas r ON r.tipo_rota_id = tr.id
+            INNER JOIN foods_db.unidades_escolares ue ON FIND_IN_SET(r.id, ue.rota_id) > 0
+            WHERE g.id IN (${gruposIds.map(() => '?').join(',')})
+              AND ue.id = ?
+              AND ue.status = 'ativo'
+              AND tr.status = 'ativo'
+              AND r.status = 'ativo'
+            ORDER BY r.nome ASC
+          `, [...gruposIds, escolaId]);
+          
+          // Agrupar rotas por grupo_id
+          rotasGrupo.forEach(rota => {
+            if (!rotaPorGrupo[rota.grupo_id]) {
+              rotaPorGrupo[rota.grupo_id] = [];
+            }
+            rotaPorGrupo[rota.grupo_id].push({
+              id: rota.rota_id,
+              nome: rota.rota_nome
+            });
+          });
+        }
+
         // Inserir necessidades para cada produto
         for (const produto of produtosEscola) {
           // Usar dados da tabela necessidades_padroes
@@ -190,6 +219,13 @@ class NecessidadesPadroesGeracaoController {
           // Usar grupo_id e grupo_nome da tabela necessidades_padroes
           const grupo = produto.grupo_nome || null;
           const grupo_id_final = produto.grupo_id || grupo_id;
+          
+          // Buscar rota vinculada a este grupo de produto
+          let rotaNome = '';
+          if (grupo_id_final && rotaPorGrupo[grupo_id_final] && rotaPorGrupo[grupo_id_final].length > 0) {
+            // Pegar a primeira rota vinculada ao grupo (se houver múltiplas, usar a primeira)
+            rotaNome = rotaPorGrupo[grupo_id_final][0].nome;
+          }
 
           try {
             const result = await executeQuery(`
@@ -220,7 +256,7 @@ class NecessidadesPadroesGeracaoController {
               produto_unidade || '',
               escolaId,
               escola.nome_escola,
-              escola.rota_nome || escola.rota_id || '', // Usar nome da rota se disponível
+              rotaNome, // Usar rota vinculada ao grupo de produto
               escola.codigo_teknisa || '',
               quantidade,
               semana_consumo,
