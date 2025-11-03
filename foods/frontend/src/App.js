@@ -36,6 +36,10 @@ import NecessidadesMerenda from './pages/necessidades-merenda/NecessidadesMerend
 import PlanoAmostragem from './pages/plano-amostragem/PlanoAmostragem';
 import RelatorioInspecao from './pages/relatorio-inspecao/RelatorioInspecao';
 import SolicitacoesCompras from './pages/solicitacoes-compras/SolicitacoesCompras';
+import CalendarioDashboard from './pages/calendario/CalendarioDashboard';
+import CalendarioVisualizacao from './pages/calendario/CalendarioVisualizacao';
+import CalendarioConfiguracao from './pages/calendario/CalendarioConfiguracao';
+import CalendarioRelatorios from './pages/calendario/CalendarioRelatorios';
 
 // Componente para rotas protegidas com autenticação
 const AuthenticatedRoute = ({ children }) => {
@@ -428,6 +432,50 @@ const App = () => {
           <AuthenticatedRoute>
             <ProtectedRoute screen="solicitacoes_compras">
               <SolicitacoesCompras />
+            </ProtectedRoute>
+          </AuthenticatedRoute>
+        } 
+      />
+
+      <Route 
+        path="/foods/calendario" 
+        element={
+          <AuthenticatedRoute>
+            <ProtectedRoute screen="calendario">
+              <CalendarioDashboard />
+            </ProtectedRoute>
+          </AuthenticatedRoute>
+        } 
+      />
+
+      <Route 
+        path="/foods/calendario/visualizacao" 
+        element={
+          <AuthenticatedRoute>
+            <ProtectedRoute screen="calendario">
+              <CalendarioVisualizacao />
+            </ProtectedRoute>
+          </AuthenticatedRoute>
+        } 
+      />
+
+      <Route 
+        path="/foods/calendario/configuracao" 
+        element={
+          <AuthenticatedRoute>
+            <ProtectedRoute screen="calendario">
+              <CalendarioConfiguracao />
+            </ProtectedRoute>
+          </AuthenticatedRoute>
+        } 
+      />
+
+      <Route 
+        path="/foods/calendario/relatorios" 
+        element={
+          <AuthenticatedRoute>
+            <ProtectedRoute screen="calendario">
+              <CalendarioRelatorios />
             </ProtectedRoute>
           </AuthenticatedRoute>
         } 
