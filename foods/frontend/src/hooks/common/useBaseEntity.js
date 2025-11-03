@@ -90,10 +90,14 @@ export const useBaseEntity = (entityName, service, options = {}) => {
         if (enableStats) {
           // Priorizar estatísticas do backend se disponíveis
           if (response.statistics) {
+            // Preservar TODAS as estatísticas do backend, não apenas total/ativos/inativos
             setEstatisticas({
+              // Campos padrão
               total: response.statistics.total || 0,
               ativos: response.statistics.ativos || 0,
-              inativos: response.statistics.inativos || 0
+              inativos: response.statistics.inativos || 0,
+              // Preservar todos os outros campos do backend
+              ...response.statistics
             });
           } else if (response.data && Array.isArray(response.data)) {
             // Fallback: usar totalItems da paginação para total, calcular ativos/inativos localmente
