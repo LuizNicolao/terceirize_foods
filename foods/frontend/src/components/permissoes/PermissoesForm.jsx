@@ -39,7 +39,8 @@ const PermissoesForm = ({
       { key: 'faturamento', label: 'Faturamento' },
       { key: 'receitas', label: 'Receitas' },
       { key: 'necessidades_merenda', label: 'Necessidades da Merenda' },
-      { key: 'plano_amostragem', label: 'Plano de Amostragem' }
+      { key: 'plano_amostragem', label: 'Plano de Amostragem' },
+      { key: 'relatorio_inspecao', label: 'Relatório de Inspeção' }
     ],
     'Logística': [
       { key: 'veiculos', label: 'Veículos' },

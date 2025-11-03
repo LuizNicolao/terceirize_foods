@@ -34,6 +34,7 @@ import FaturamentoPage from './pages/faturamento/FaturamentoPage';
 import Receitas from './pages/receitas/Receitas';
 import NecessidadesMerenda from './pages/necessidades-merenda/NecessidadesMerenda';
 import PlanoAmostragem from './pages/plano-amostragem/PlanoAmostragem';
+import RelatorioInspecao from './pages/relatorio-inspecao/RelatorioInspecao';
 
 // Componente para rotas protegidas com autenticação
 const AuthenticatedRoute = ({ children }) => {
@@ -404,6 +405,50 @@ const App = () => {
           <AuthenticatedRoute>
             <ProtectedRoute screen="plano_amostragem">
               <PlanoAmostragem />
+            </ProtectedRoute>
+          </AuthenticatedRoute>
+        } 
+      />
+
+      <Route 
+        path="/foods/relatorio-inspecao" 
+        element={
+          <AuthenticatedRoute>
+            <ProtectedRoute screen="relatorio_inspecao">
+              <RelatorioInspecao />
+            </ProtectedRoute>
+          </AuthenticatedRoute>
+        } 
+      />
+
+      <Route 
+        path="/foods/relatorio-inspecao/novo" 
+        element={
+          <AuthenticatedRoute>
+            <ProtectedRoute screen="relatorio_inspecao">
+              <RelatorioInspecao />
+            </ProtectedRoute>
+          </AuthenticatedRoute>
+        } 
+      />
+
+      <Route 
+        path="/foods/relatorio-inspecao/:id/editar" 
+        element={
+          <AuthenticatedRoute>
+            <ProtectedRoute screen="relatorio_inspecao">
+              <RelatorioInspecao />
+            </ProtectedRoute>
+          </AuthenticatedRoute>
+        } 
+      />
+
+      <Route 
+        path="/foods/relatorio-inspecao/:id/visualizar" 
+        element={
+          <AuthenticatedRoute>
+            <ProtectedRoute screen="relatorio_inspecao">
+              <RelatorioInspecao />
             </ProtectedRoute>
           </AuthenticatedRoute>
         } 

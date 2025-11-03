@@ -37,6 +37,7 @@ const faturamentoRoutes = require('./faturamento');
 const receitasRoutes = require('./receitas');
 const necessidadesMerendaRoutes = require('./necessidades-merenda');
 const planoAmostragemRoutes = require('./plano-amostragem/planoAmostragemRoute');
+const relatorioInspecaoRoutes = require('./relatorio-inspecao/relatorioInspecaoRoute');
 const openaiRoutes = require('./openai/openaiRoute');
 const cepRoutes = require('./shared/cepRoute');
 
@@ -75,6 +76,7 @@ const routes = [
   { path: '/receitas', router: receitasRoutes },
   { path: '/necessidades-merenda', router: necessidadesMerendaRoutes },
   { path: '/plano-amostragem', router: planoAmostragemRoutes },
+  { path: '/relatorio-inspecao', router: relatorioInspecaoRoutes },
   { path: '/openai', router: openaiRoutes },
   { path: '/shared', router: cepRoutes }
 ];

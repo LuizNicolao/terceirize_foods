@@ -103,6 +103,7 @@ const menuGroups = [
       { path: '/foods/receitas', icon: FaUtensils, label: 'Receitas', screen: 'receitas' },
       { path: '/foods/necessidades-merenda', icon: FaShoppingCart, label: 'Necessidades da Merenda', screen: 'necessidades_merenda' },
       { path: '/foods/plano-amostragem', icon: FaClipboardCheck, label: 'Plano de Amostragem', screen: 'plano_amostragem' },
+      { path: '/foods/relatorio-inspecao', icon: FaClipboardCheck, label: 'Relatório de Inspeção', screen: 'relatorio_inspecao' },
     ]
   },
   {
