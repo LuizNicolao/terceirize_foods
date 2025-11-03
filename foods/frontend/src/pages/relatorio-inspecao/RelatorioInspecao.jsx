@@ -41,6 +41,11 @@ const RelatorioInspecao = () => {
     setAuditFilters
   } = useAuditoria('relatorio_inspecao');
 
+  // Detectar se está em modo de visualização (precisa estar antes do useEffect)
+  const isViewMode = location.pathname.includes('/visualizar');
+  const pathParts = location.pathname.split('/');
+  const rirId = isViewMode && pathParts[pathParts.length - 2] ? parseInt(pathParts[pathParts.length - 2]) : null;
+
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [rirToDelete, setRirToDelete] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -58,7 +63,7 @@ const RelatorioInspecao = () => {
       hasLoadedRef.current = true;
       carregarRIRs();
     }
-  }, [isViewMode]);
+  }, [isViewMode]); // carregarRIRs está memoizado no hook, não precisa estar nas dependências
 
   const handleKeyPress = (e) => {
     if (e.key === 'Enter') {
@@ -167,11 +172,6 @@ const RelatorioInspecao = () => {
       </span>
     );
   };
-
-  // Detectar se está em modo de visualização
-  const isViewMode = location.pathname.includes('/visualizar');
-  const pathParts = location.pathname.split('/');
-  const rirId = isViewMode && pathParts[pathParts.length - 2] ? parseInt(pathParts[pathParts.length - 2]) : null;
 
   // Estados do modal
   const [showModal, setShowModal] = useState(false);
