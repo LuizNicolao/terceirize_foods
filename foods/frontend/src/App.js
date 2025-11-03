@@ -33,6 +33,7 @@ import Periodicidade from './pages/periodicidade/Periodicidade';
 import FaturamentoPage from './pages/faturamento/FaturamentoPage';
 import Receitas from './pages/receitas/Receitas';
 import NecessidadesMerenda from './pages/necessidades-merenda/NecessidadesMerenda';
+import PlanoAmostragem from './pages/plano-amostragem/PlanoAmostragem';
 
 // Componente para rotas protegidas com autenticação
 const AuthenticatedRoute = ({ children }) => {
@@ -392,6 +393,17 @@ const App = () => {
           <AuthenticatedRoute>
             <ProtectedRoute screen="necessidades_merenda">
               <NecessidadesMerenda />
+            </ProtectedRoute>
+          </AuthenticatedRoute>
+        } 
+      />
+
+      <Route 
+        path="/foods/plano-amostragem" 
+        element={
+          <AuthenticatedRoute>
+            <ProtectedRoute screen="plano_amostragem">
+              <PlanoAmostragem />
             </ProtectedRoute>
           </AuthenticatedRoute>
         } 

@@ -35,6 +35,7 @@ const PERMISSOES_PADRAO = {
       faturamento: { visualizar: true, criar: true, editar: true, excluir: false },
       receitas: { visualizar: true, criar: true, editar: true, excluir: false },
       necessidades_merenda: { visualizar: true, criar: true, editar: true, excluir: false },
+      plano_amostragem: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
       
     },
@@ -67,6 +68,7 @@ const PERMISSOES_PADRAO = {
       faturamento: { visualizar: true, criar: true, editar: true, excluir: false },
       receitas: { visualizar: true, criar: true, editar: true, excluir: false },
       necessidades_merenda: { visualizar: true, criar: true, editar: true, excluir: false },
+      plano_amostragem: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -98,6 +100,7 @@ const PERMISSOES_PADRAO = {
       faturamento: { visualizar: true, criar: true, editar: true, excluir: true },
       receitas: { visualizar: true, criar: true, editar: true, excluir: true },
       necessidades_merenda: { visualizar: true, criar: true, editar: true, excluir: true },
+      plano_amostragem: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: true, criar: true, editar: true, excluir: true }
     }
   },
@@ -131,6 +134,7 @@ const PERMISSOES_PADRAO = {
       faturamento: { visualizar: true, criar: true, editar: true, excluir: true },
       receitas: { visualizar: true, criar: true, editar: true, excluir: true },
       necessidades_merenda: { visualizar: true, criar: true, editar: true, excluir: true },
+      plano_amostragem: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -162,6 +166,7 @@ const PERMISSOES_PADRAO = {
       faturamento: { visualizar: true, criar: true, editar: true, excluir: false },
       receitas: { visualizar: true, criar: true, editar: true, excluir: false },
       necessidades_merenda: { visualizar: true, criar: true, editar: true, excluir: false },
+      plano_amostragem: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -193,6 +198,7 @@ const PERMISSOES_PADRAO = {
       faturamento: { visualizar: true, criar: true, editar: true, excluir: false },
       receitas: { visualizar: true, criar: true, editar: true, excluir: false },
       necessidades_merenda: { visualizar: true, criar: true, editar: true, excluir: false },
+      plano_amostragem: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -226,6 +232,7 @@ const PERMISSOES_PADRAO = {
       faturamento: { visualizar: true, criar: true, editar: true, excluir: false },
       receitas: { visualizar: true, criar: true, editar: true, excluir: false },
       necessidades_merenda: { visualizar: true, criar: true, editar: true, excluir: false },
+      plano_amostragem: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -257,6 +264,7 @@ const PERMISSOES_PADRAO = {
       faturamento: { visualizar: true, criar: true, editar: true, excluir: false },
       receitas: { visualizar: true, criar: true, editar: true, excluir: false },
       necessidades_merenda: { visualizar: true, criar: true, editar: true, excluir: false },
+      plano_amostragem: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -288,6 +296,7 @@ const PERMISSOES_PADRAO = {
       faturamento: { visualizar: true, criar: true, editar: true, excluir: false },
       receitas: { visualizar: true, criar: true, editar: true, excluir: false },
       necessidades_merenda: { visualizar: true, criar: true, editar: true, excluir: false },
+      plano_amostragem: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -321,6 +330,7 @@ const PERMISSOES_PADRAO = {
       faturamento: { visualizar: true, criar: true, editar: true, excluir: false },
       receitas: { visualizar: true, criar: true, editar: true, excluir: false },
       necessidades_merenda: { visualizar: true, criar: true, editar: true, excluir: false },
+      plano_amostragem: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -352,6 +362,7 @@ const PERMISSOES_PADRAO = {
       faturamento: { visualizar: true, criar: true, editar: true, excluir: false },
       receitas: { visualizar: true, criar: true, editar: true, excluir: false },
       necessidades_merenda: { visualizar: true, criar: true, editar: true, excluir: false },
+      plano_amostragem: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -383,6 +394,7 @@ const PERMISSOES_PADRAO = {
       faturamento: { visualizar: true, criar: true, editar: true, excluir: false },
       receitas: { visualizar: true, criar: true, editar: true, excluir: false },
       necessidades_merenda: { visualizar: true, criar: true, editar: true, excluir: false },
+      plano_amostragem: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -416,6 +428,7 @@ const PERMISSOES_PADRAO = {
       faturamento: { visualizar: true, criar: true, editar: true, excluir: false },
       receitas: { visualizar: true, criar: true, editar: true, excluir: false },
       necessidades_merenda: { visualizar: true, criar: true, editar: true, excluir: false },
+      plano_amostragem: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -447,6 +460,7 @@ const PERMISSOES_PADRAO = {
       faturamento: { visualizar: true, criar: true, editar: true, excluir: false },
       receitas: { visualizar: true, criar: true, editar: true, excluir: false },
       necessidades_merenda: { visualizar: true, criar: true, editar: true, excluir: false },
+      plano_amostragem: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -478,6 +492,7 @@ const PERMISSOES_PADRAO = {
       faturamento: { visualizar: true, criar: true, editar: true, excluir: false },
       receitas: { visualizar: true, criar: true, editar: true, excluir: false },
       necessidades_merenda: { visualizar: true, criar: true, editar: true, excluir: false },
+      plano_amostragem: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -511,6 +526,7 @@ const PERMISSOES_PADRAO = {
       faturamento: { visualizar: true, criar: true, editar: true, excluir: false },
       receitas: { visualizar: true, criar: true, editar: true, excluir: false },
       necessidades_merenda: { visualizar: true, criar: true, editar: true, excluir: false },
+      plano_amostragem: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -542,6 +558,7 @@ const PERMISSOES_PADRAO = {
       faturamento: { visualizar: true, criar: true, editar: true, excluir: false },
       receitas: { visualizar: true, criar: true, editar: true, excluir: false },
       necessidades_merenda: { visualizar: true, criar: true, editar: true, excluir: false },
+      plano_amostragem: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -573,6 +590,7 @@ const PERMISSOES_PADRAO = {
       faturamento: { visualizar: true, criar: true, editar: true, excluir: false },
       receitas: { visualizar: true, criar: true, editar: true, excluir: false },
       necessidades_merenda: { visualizar: true, criar: true, editar: true, excluir: false },
+      plano_amostragem: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   }
@@ -609,7 +627,8 @@ const TODAS_TELAS = [
   'periodicidade',
   'faturamento',
   'receitas',
-  'necessidades_merenda'
+  'necessidades_merenda',
+  'plano_amostragem'
 ];
 
 // Tipos de acesso disponíveis
@@ -660,7 +679,8 @@ const TELAS_COM_DESCRICOES = [
   { nome: 'periodicidade', descricao: 'Gerenciamento de Periodicidade' },
   { nome: 'faturamento', descricao: 'Gerenciamento de Faturamento' },
   { nome: 'receitas', descricao: 'Gerenciamento de Receitas' },
-  { nome: 'necessidades_merenda', descricao: 'Gerenciamento de Necessidades da Merenda' }
+  { nome: 'necessidades_merenda', descricao: 'Gerenciamento de Necessidades da Merenda' },
+  { nome: 'plano_amostragem', descricao: 'Gerenciamento de Plano de Amostragem' }
 ];
 
 module.exports = {

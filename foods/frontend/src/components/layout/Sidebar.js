@@ -32,7 +32,8 @@ import {
   FaUtensils,
   FaCalendarAlt,
   FaFileInvoice,
-  FaShoppingCart
+  FaShoppingCart,
+  FaClipboardCheck
 } from 'react-icons/fa';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePermissions } from '../../contexts/PermissionsContext';
@@ -101,6 +102,7 @@ const menuGroups = [
       { path: '/foods/faturamento', icon: FaFileInvoice, label: 'Faturamento', screen: 'faturamento' },
       { path: '/foods/receitas', icon: FaUtensils, label: 'Receitas', screen: 'receitas' },
       { path: '/foods/necessidades-merenda', icon: FaShoppingCart, label: 'Necessidades da Merenda', screen: 'necessidades_merenda' },
+      { path: '/foods/plano-amostragem', icon: FaClipboardCheck, label: 'Plano de Amostragem', screen: 'plano_amostragem' },
     ]
   },
   {
