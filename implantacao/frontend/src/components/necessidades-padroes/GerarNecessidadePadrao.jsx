@@ -44,6 +44,43 @@ const GerarNecessidadePadrao = () => {
     }
   }, [filtros.filial_id]);
 
+  const buscarSemanaConsumoPorAbastecimento = useCallback(async (semana_abastecimento) => {
+    try {
+      setLoadingFiltros(true);
+      const response = await NecessidadesPadroesService.buscarSemanaConsumoPorAbastecimento(semana_abastecimento);
+      if (response.success && response.data && response.data.semana_consumo) {
+        const semanaConsumo = response.data.semana_consumo;
+        
+        // Verificar se a semana de consumo já está na lista, se não, adicionar
+        setSemanasConsumo(prev => {
+          const semanaJaExiste = prev.some(s => s.value === semanaConsumo);
+          if (!semanaJaExiste) {
+            return [
+              ...prev,
+              { value: semanaConsumo, label: semanaConsumo }
+            ];
+          }
+          return prev;
+        });
+        
+        // Atualizar o filtro
+        setFiltros(prev => ({ 
+          ...prev, 
+          semana_consumo: semanaConsumo 
+        }));
+      } else {
+        // Se não encontrou, limpar o campo
+        setFiltros(prev => ({ ...prev, semana_consumo: '' }));
+      }
+    } catch (error) {
+      console.error('Erro ao buscar semana de consumo:', error);
+      // Limpar campo em caso de erro
+      setFiltros(prev => ({ ...prev, semana_consumo: '' }));
+    } finally {
+      setLoadingFiltros(false);
+    }
+  }, []);
+
   // Buscar semana de consumo quando semana de abastecimento mudar
   useEffect(() => {
     if (filtros.semana_abastecimento) {
@@ -51,8 +88,7 @@ const GerarNecessidadePadrao = () => {
     } else {
       setFiltros(prev => ({ ...prev, semana_consumo: '' }));
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filtros.semana_abastecimento]);
+  }, [filtros.semana_abastecimento, buscarSemanaConsumoPorAbastecimento]);
 
   const carregarDadosIniciais = async () => {
     setLoadingFiltros(true);
@@ -143,43 +179,6 @@ const GerarNecessidadePadrao = () => {
       setEscolas([]);
     } finally {
       setLoadingEscolas(false);
-    }
-  };
-
-  const buscarSemanaConsumoPorAbastecimento = async (semana_abastecimento) => {
-    try {
-      setLoadingFiltros(true);
-      const response = await NecessidadesPadroesService.buscarSemanaConsumoPorAbastecimento(semana_abastecimento);
-      if (response.success && response.data && response.data.semana_consumo) {
-        const semanaConsumo = response.data.semana_consumo;
-        
-        // Verificar se a semana de consumo já está na lista, se não, adicionar
-        setSemanasConsumo(prev => {
-          const semanaJaExiste = prev.some(s => s.value === semanaConsumo);
-          if (!semanaJaExiste) {
-            return [
-              ...prev,
-              { value: semanaConsumo, label: semanaConsumo }
-            ];
-          }
-          return prev;
-        });
-        
-        // Atualizar o filtro
-        setFiltros(prev => ({ 
-          ...prev, 
-          semana_consumo: semanaConsumo 
-        }));
-      } else {
-        // Se não encontrou, limpar o campo
-        setFiltros(prev => ({ ...prev, semana_consumo: '' }));
-      }
-    } catch (error) {
-      console.error('Erro ao buscar semana de consumo:', error);
-      // Limpar campo em caso de erro
-      setFiltros(prev => ({ ...prev, semana_consumo: '' }));
-    } finally {
-      setLoadingFiltros(false);
     }
   };
 
