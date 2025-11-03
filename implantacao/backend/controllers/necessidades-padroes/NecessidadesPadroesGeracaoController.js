@@ -307,9 +307,8 @@ class NecessidadesPadroesGeracaoController {
 
       console.log('[buscarSemanaAbastecimentoPorConsumo] Buscando:', semana_consumo);
 
-      // Buscar semana de abastecimento na tabela calendario usando o formato exato
-      // Mesma lógica simples usada em buscarSemanaConsumo (inverso)
-      const result = await executeQuery(`
+      // Primeiro, tentar busca exata
+      let result = await executeQuery(`
         SELECT DISTINCT semana_abastecimento
         FROM calendario
         WHERE semana_consumo = ?
@@ -318,17 +317,25 @@ class NecessidadesPadroesGeracaoController {
         LIMIT 1
       `, [semana_consumo]);
 
-      console.log('[buscarSemanaAbastecimentoPorConsumo] Resultado:', result);
+      console.log('[buscarSemanaAbastecimentoPorConsumo] Resultado (exato):', result);
 
-      // Se não encontrou, buscar exemplos de semanas disponíveis para debug
+      // Se não encontrou, tentar buscar pelo padrão de data (ignorando ano)
+      // Extrair padrão "05/01 a 11/01" da string "(05/01 a 11/01/25)"
       if (result.length === 0) {
-        const exemplos = await executeQuery(`
-          SELECT DISTINCT semana_consumo, semana_abastecimento
+        const padraoData = semana_consumo.replace(/[()]/g, '').replace(/\/\d{2}$/, '');
+        console.log('[buscarSemanaAbastecimentoPorConsumo] Buscando por padrão (sem ano):', padraoData);
+        
+        result = await executeQuery(`
+          SELECT DISTINCT semana_abastecimento
           FROM calendario
-          WHERE semana_consumo LIKE '%05/01%' OR semana_consumo LIKE '%11/01%'
-          LIMIT 5
-        `);
-        console.log('[buscarSemanaAbastecimentoPorConsumo] Exemplos de semanas com 05/01 ou 11/01:', exemplos);
+          WHERE semana_consumo LIKE ?
+            AND semana_abastecimento IS NOT NULL
+            AND semana_abastecimento != ''
+          ORDER BY semana_consumo DESC
+          LIMIT 1
+        `, [`%${padraoData}%`]);
+
+        console.log('[buscarSemanaAbastecimentoPorConsumo] Resultado (por padrão):', result);
       }
 
       if (result.length > 0 && result[0].semana_abastecimento) {
