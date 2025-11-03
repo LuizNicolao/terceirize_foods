@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaPlus, FaEdit, FaQuestionCircle } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaQuestionCircle } from 'react-icons/fa';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { usePlanoAmostragem } from '../../hooks/usePlanoAmostragem';
 import { useAuditoria } from '../../hooks/common/useAuditoria';
@@ -39,10 +39,12 @@ const PlanoAmostragem = () => {
     handleAddNQA,
     handleEditNQA,
     handleSaveNQA,
+    handleDeleteNQA,
     handleCloseValidationModal,
     setShowModalFaixa,
     setShowModalGrupo,
     setShowModalNQA,
+    setEditingFaixa,
     estatisticas
   } = usePlanoAmostragem();
 
@@ -64,6 +66,8 @@ const PlanoAmostragem = () => {
 
   const [showDeleteConfirm, setShowDeleteConfirm] = React.useState(false);
   const [faixaToDelete, setFaixaToDelete] = React.useState(null);
+  const [showDeleteNQAConfirm, setShowDeleteNQAConfirm] = React.useState(false);
+  const [nqaToDelete, setNqaToDelete] = React.useState(null);
 
   const handleDeleteClick = (faixa) => {
     setFaixaToDelete(faixa);
@@ -75,6 +79,19 @@ const PlanoAmostragem = () => {
       await handleDeleteFaixa(faixaToDelete);
       setShowDeleteConfirm(false);
       setFaixaToDelete(null);
+    }
+  };
+
+  const handleDeleteNQAClick = (nqa) => {
+    setNqaToDelete(nqa);
+    setShowDeleteNQAConfirm(true);
+  };
+
+  const handleConfirmDeleteNQA = async () => {
+    if (nqaToDelete) {
+      await handleDeleteNQA(nqaToDelete);
+      setShowDeleteNQAConfirm(false);
+      setNqaToDelete(null);
     }
   };
 
@@ -237,18 +254,31 @@ const PlanoAmostragem = () => {
                     )}
                   </div>
 
-                  {/* Botão Editar NQA */}
-                  {canEdit('plano_amostragem') && (
-                    <Button
-                      onClick={() => handleEditNQA(nqa)}
-                      size="sm"
-                      variant="outline"
-                      className="w-full"
-                    >
-                      <FaEdit className="mr-2" />
-                      Editar NQA
-                    </Button>
-                  )}
+                  {/* Botões de Ação */}
+                  <div className="flex gap-2">
+                    {canEdit('plano_amostragem') && (
+                      <Button
+                        onClick={() => handleEditNQA(nqa)}
+                        size="sm"
+                        variant="outline"
+                        className="flex-1"
+                      >
+                        <FaEdit className="mr-2" />
+                        Editar
+                      </Button>
+                    )}
+                    {canDelete('plano_amostragem') && (
+                      <Button
+                        onClick={() => handleDeleteNQAClick(nqa)}
+                        size="sm"
+                        variant="outline"
+                        className="flex-1 text-red-600 hover:text-red-700 hover:border-red-700"
+                      >
+                        <FaTrash className="mr-2" />
+                        Excluir
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </div>
             );
@@ -286,7 +316,7 @@ const PlanoAmostragem = () => {
         onSubmit={handleSaveVinculoGrupo}
       />
 
-      {/* Modal de Confirmação de Exclusão */}
+      {/* Modal de Confirmação de Exclusão de Faixa */}
       <ConfirmModal
         isOpen={showDeleteConfirm}
         onClose={() => {
@@ -296,6 +326,21 @@ const PlanoAmostragem = () => {
         onConfirm={handleConfirmDelete}
         title="Excluir Faixa de Amostragem"
         message={`Tem certeza que deseja excluir esta faixa de amostragem?`}
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        type="danger"
+      />
+
+      {/* Modal de Confirmação de Exclusão de NQA */}
+      <ConfirmModal
+        isOpen={showDeleteNQAConfirm}
+        onClose={() => {
+          setShowDeleteNQAConfirm(false);
+          setNqaToDelete(null);
+        }}
+        onConfirm={handleConfirmDeleteNQA}
+        title="Excluir NQA"
+        message={`Tem certeza que deseja excluir o NQA "${nqaToDelete?.codigo} - ${nqaToDelete?.nome}"? Esta ação não pode ser desfeita.`}
         confirmText="Excluir"
         cancelText="Cancelar"
         type="danger"

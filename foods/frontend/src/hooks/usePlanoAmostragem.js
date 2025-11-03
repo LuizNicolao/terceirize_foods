@@ -302,6 +302,27 @@ export const usePlanoAmostragem = () => {
   }, [editingNQA, carregarDadosCompletos]);
 
   /**
+   * Excluir NQA
+   */
+  const handleDeleteNQA = useCallback(async (nqa) => {
+    try {
+      const response = await PlanoAmostragemService.excluirNQA(nqa.id);
+      if (response.success) {
+        toast.success('NQA excluído com sucesso!');
+        await carregarDadosCompletos();
+        return response;
+      } else {
+        toast.error(response.message || 'Erro ao excluir NQA');
+        return response;
+      }
+    } catch (error) {
+      console.error('Erro ao excluir NQA:', error);
+      toast.error('Erro ao excluir NQA');
+      return { success: false };
+    }
+  }, [carregarDadosCompletos]);
+
+  /**
    * Calcular estatísticas
    */
   const estatisticas = React.useMemo(() => {
@@ -362,6 +383,7 @@ export const usePlanoAmostragem = () => {
     handleAddNQA,
     handleEditNQA,
     handleSaveNQA,
+    handleDeleteNQA,
     handleCloseValidationModal: () => {
       setShowValidationModal(false);
       setValidationErrors(null);
@@ -369,6 +391,7 @@ export const usePlanoAmostragem = () => {
     setShowModalFaixa,
     setShowModalGrupo,
     setShowModalNQA,
+    setEditingFaixa,
     validationErrors,
     showValidationModal,
     estatisticas
