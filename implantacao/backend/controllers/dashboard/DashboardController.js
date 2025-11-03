@@ -23,7 +23,7 @@ class DashboardController {
         necessidadesPadroes
       ] = await Promise.all([
         // Total de unidades escolares
-        executeQuery(`SELECT COUNT(*) as total FROM unidades_escolares WHERE status = 'ativo'`),
+        executeQuery(`SELECT COUNT(*) as total FROM unidades_escolares WHERE ativo = 1`),
         
         // Total de produtos per capita
         executeQuery(`SELECT COUNT(*) as total, SUM(CASE WHEN ativo = 1 THEN 1 ELSE 0 END) as ativos FROM produtos_per_capita`),
@@ -56,10 +56,11 @@ class DashboardController {
         executeQuery(`
           SELECT 
             COUNT(*) as total,
-            COUNT(DISTINCT escola) as escolas_unicas
+            COUNT(DISTINCT escola_id) as escolas_unicas
           FROM registros_diarios
-          WHERE MONTH(data_registro) = MONTH(CURRENT_DATE)
-            AND YEAR(data_registro) = YEAR(CURRENT_DATE)
+          WHERE MONTH(data) = MONTH(CURRENT_DATE)
+            AND YEAR(data) = YEAR(CURRENT_DATE)
+            AND ativo = 1
         `),
         
         // Estatísticas do calendário do ano atual
@@ -75,7 +76,7 @@ class DashboardController {
         `),
         
         // Total de usuários ativos
-        executeQuery(`SELECT COUNT(*) as total FROM usuarios WHERE ativo = 1`),
+        executeQuery(`SELECT COUNT(*) as total FROM usuarios WHERE status = 'ativo'`),
         
         // Total de necessidades padrão
         executeQuery(`SELECT COUNT(*) as total FROM necessidades_padroes`)
