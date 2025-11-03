@@ -140,8 +140,11 @@ const SolicitacoesCompras = () => {
             value: filialFilter,
             onChange: setFilialFilter,
             options: [
-              { value: '', label: 'Todas as filiais' },
-              ...filiais.map(f => ({ value: f.id, label: f.nome }))
+              { value: 'todos', label: 'Todas as filiais' },
+              ...filiais.map(filial => ({
+                value: filial.id.toString(),
+                label: `${filial.filial || filial.nome || 'Filial'} ${filial.codigo_filial ? `(${filial.codigo_filial})` : ''}`
+              }))
             ]
           },
           {

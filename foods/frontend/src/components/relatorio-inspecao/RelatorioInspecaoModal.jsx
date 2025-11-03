@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
 import { FaSave, FaTimes, FaEye, FaEdit } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import { usePermissions } from '../../contexts/PermissionsContext';
@@ -13,6 +14,8 @@ const RelatorioInspecaoModal = ({ isOpen, onClose, onSubmit, rir, viewMode, grup
   const isViewMode = viewMode || false;
   const rirId = rir?.id || null;
 
+  const { register, handleSubmit, reset, formState: { errors }, setValue, watch } = useForm();
+  
   const {
     rir: rirData,
     loading: loadingRIR,
@@ -29,48 +32,44 @@ const RelatorioInspecaoModal = ({ isOpen, onClose, onSubmit, rir, viewMode, grup
   const [saving, setSaving] = useState(false);
   const [pedidos, setPedidos] = useState([]);
   const [loadingPedidos, setLoadingPedidos] = useState(false);
+  const [checklist, setChecklist] = useState([]);
+  const [produtos, setProdutos] = useState([]);
 
-  // Estados do formulário
-  const [formData, setFormData] = useState({
-    data_inspecao: new Date().toISOString().split('T')[0],
-    hora_inspecao: new Date().toTimeString().slice(0, 5),
-    numero_nota_fiscal: '',
-    fornecedor: '',
-    numero_pedido: '',
-    cnpj_fornecedor: '',
-    checklist_json: [],
-    produtos_json: [],
-    ocorrencias: '',
-    recebedor: '',
-    visto_responsavel: ''
-  });
-
-  // Carregar dados iniciais
+  // Carregar dados quando modal abrir
   useEffect(() => {
     if (isOpen) {
       if (isEditMode && rirId) {
         loadRIRData();
+      } else {
+        // Resetar formulário para novo relatório
+        reset();
+        setValue('data_inspecao', new Date().toISOString().split('T')[0]);
+        setValue('hora_inspecao', new Date().toTimeString().slice(0, 5));
+        setChecklist([]);
+        setProdutos([]);
       }
       loadInitialData();
     }
-  }, [rirId, isEditMode, isOpen]);
+  }, [rirId, isEditMode, isOpen, setValue, reset]);
 
   const loadRIRData = async () => {
-    const data = await buscarRIRPorId(rirId);
-    if (data) {
-      setFormData({
-        data_inspecao: data.data_inspecao || new Date().toISOString().split('T')[0],
-        hora_inspecao: data.hora_inspecao || new Date().toTimeString().slice(0, 5),
-        numero_nota_fiscal: data.numero_nota_fiscal || '',
-        fornecedor: data.fornecedor || '',
-        numero_pedido: data.numero_pedido || '',
-        cnpj_fornecedor: data.cnpj_fornecedor || '',
-        checklist_json: data.checklist_json || [],
-        produtos_json: data.produtos_json || [],
-        ocorrencias: data.ocorrencias || '',
-        recebedor: data.recebedor || '',
-        visto_responsavel: data.visto_responsavel || ''
+    const response = await buscarRIRPorId(rirId);
+    if (response.success && response.data) {
+      const data = response.data;
+      // Preencher formulário com dados do RIR
+      Object.keys(data).forEach(key => {
+        if (data[key] !== null && data[key] !== undefined && key !== 'checklist_json' && key !== 'produtos_json') {
+          setValue(key, data[key]);
+        }
       });
+      
+      // Carregar checklist e produtos
+      if (data.checklist_json) {
+        setChecklist(Array.isArray(data.checklist_json) ? data.checklist_json : []);
+      }
+      if (data.produtos_json) {
+        setProdutos(Array.isArray(data.produtos_json) ? data.produtos_json : []);
+      }
     }
   };
 
@@ -88,30 +87,20 @@ const RelatorioInspecaoModal = ({ isOpen, onClose, onSubmit, rir, viewMode, grup
     // grupos já está disponível no hook
   };
 
-  const handleInputChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
   const handlePedidoChange = async (pedidoId) => {
     if (!pedidoId) {
-      setFormData(prev => ({
-        ...prev,
-        numero_pedido: '',
-        fornecedor: '',
-        cnpj_fornecedor: '',
-        produtos_json: []
-      }));
+      setValue('numero_pedido', '');
+      setValue('fornecedor', '');
+      setValue('cnpj_fornecedor', '');
+      setProdutos([]);
       return;
     }
 
     const pedido = pedidos.find(p => p.id.toString() === pedidoId.toString());
     if (pedido) {
-      setFormData(prev => ({
-        ...prev,
-        numero_pedido: pedido.numero_pedido || '',
-        fornecedor: pedido.fornecedor || '',
-        cnpj_fornecedor: pedido.cnpj || ''
-      }));
+      setValue('numero_pedido', pedido.numero_pedido || '');
+      setValue('fornecedor', pedido.fornecedor || '');
+      setValue('cnpj_fornecedor', pedido.cnpj || '');
     }
 
     // Buscar produtos do pedido
@@ -166,53 +155,39 @@ const RelatorioInspecaoModal = ({ isOpen, onClose, onSubmit, rir, viewMode, grup
         })
       );
 
-      setFormData(prev => ({ ...prev, produtos_json: produtosMapeados }));
+      setProdutos(produtosMapeados);
     }
   };
 
-  const handleChecklistChange = (checklist) => {
-    setFormData(prev => ({ ...prev, checklist_json: checklist }));
+  const handleChecklistChange = (checklistData) => {
+    setChecklist(checklistData);
   };
 
-  const handleProdutosChange = (produtos) => {
-    setFormData(prev => ({ ...prev, produtos_json: produtos }));
+  const handleProdutosChange = (produtosData) => {
+    setProdutos(produtosData);
   };
 
   const handleAddChecklistItem = () => {
-    setFormData(prev => ({
-      ...prev,
-      checklist_json: [
-        ...prev.checklist_json,
-        {
-          tipo_transporte: '',
-          tipo_produto: '',
-          isento_material: '',
-          condicoes_caminhao: '',
-          acondicionamento: '',
-          condicoes_embalagem: ''
-        }
-      ]
-    }));
+    setChecklist([...checklist, {
+      tipo_transporte: '',
+      tipo_produto: '',
+      isento_material: '',
+      condicoes_caminhao: '',
+      acondicionamento: '',
+      condicoes_embalagem: ''
+    }]);
   };
 
   const handleRemoveChecklistItem = (index) => {
-    setFormData(prev => ({
-      ...prev,
-      checklist_json: prev.checklist_json.filter((_, i) => i !== index)
-    }));
+    setChecklist(checklist.filter((_, i) => i !== index));
   };
 
   const handleRemoveProduto = (index) => {
-    setFormData(prev => ({
-      ...prev,
-      produtos_json: prev.produtos_json.filter((_, i) => i !== index)
-    }));
+    setProdutos(produtos.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (!formData.numero_nota_fiscal || !formData.fornecedor) {
+  const handleFormSubmit = async (data) => {
+    if (!data.numero_nota_fiscal || !data.fornecedor) {
       toast.error('Campos obrigatórios: Número da Nota Fiscal e Fornecedor');
       return;
     }
@@ -220,6 +195,12 @@ const RelatorioInspecaoModal = ({ isOpen, onClose, onSubmit, rir, viewMode, grup
     setSaving(true);
 
     try {
+      const formData = {
+        ...data,
+        checklist_json: checklist,
+        produtos_json: produtos
+      };
+
       let response;
       if (isEditMode) {
         response = await atualizarRIR(rirId, formData);
@@ -235,7 +216,6 @@ const RelatorioInspecaoModal = ({ isOpen, onClose, onSubmit, rir, viewMode, grup
         onClose();
       } else {
         if (response.validationErrors) {
-          // Erros de validação serão tratados pelo componente
           toast.error('Erros de validação encontrados');
         } else {
           toast.error(response.message || 'Erro ao salvar relatório');
@@ -269,104 +249,115 @@ const RelatorioInspecaoModal = ({ isOpen, onClose, onSubmit, rir, viewMode, grup
   }
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title={viewMode ? 'Visualizar Relatório de Inspeção' : rir ? 'Editar Relatório de Inspeção' : 'Novo Relatório de Inspeção'}
-      size="full"
-    >
-      <div className="max-h-[75vh] overflow-y-auto">
-        <form onSubmit={handleSubmit} className="space-y-6">
+    <Modal isOpen={isOpen} onClose={onClose} size="full">
+      <div className="bg-white rounded-lg shadow-xl max-h-[90vh] overflow-y-auto">
+        {/* Header */}
+        <div className="flex justify-between items-center p-6 border-b border-gray-200 bg-gradient-to-r from-green-50 to-blue-50">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
+              {viewMode ? <FaEye className="w-5 h-5 text-white" /> : rir ? <FaEdit className="w-5 h-5 text-white" /> : <FaSave className="w-5 h-5 text-white" />}
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900">
+                {viewMode ? 'Visualizar Relatório de Inspeção' : rir ? 'Editar Relatório de Inspeção' : 'Novo Relatório de Inspeção'}
+              </h2>
+              <p className="text-sm text-gray-600">
+                {viewMode ? 'Visualizando informações do relatório de inspeção' : rir ? 'Editando informações do relatório de inspeção' : 'Preencha as informações do novo relatório de inspeção'}
+              </p>
+            </div>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClose}
+            className="p-2"
+          >
+            <FaTimes className="w-5 h-5" />
+          </Button>
+        </div>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit(handleFormSubmit)} className="p-6 space-y-6">
           {/* SEÇÃO A: Dados do Pedido */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">A) Dados do Pedido</h2>
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">A) Dados do Pedido</h3>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* Pedido de Compra */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Pedido de Compra
                 </label>
                 <SearchableSelect
-                  value={formData.pedido_id || ''}
-                  onChange={handlePedidoChange}
+                  value={watch('pedido_id') || ''}
+                  onChange={(value) => {
+                    setValue('pedido_id', value);
+                    handlePedidoChange(value);
+                  }}
                   options={getPedidoOptions()}
                   placeholder="Selecione o pedido..."
                   disabled={loadingPedidos || isViewMode}
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Fornecedor <span className="text-red-500">*</span>
-                </label>
-                <Input
-                  type="text"
-                  value={formData.fornecedor}
-                  onChange={(e) => handleInputChange('fornecedor', e.target.value)}
-                  placeholder="Razão Social do fornecedor"
-                  required
-                  disabled={isViewMode}
-                />
-              </div>
+              {/* Fornecedor */}
+              <Input
+                label="Fornecedor *"
+                {...register('fornecedor', {
+                  required: 'Fornecedor é obrigatório'
+                })}
+                error={errors.fornecedor?.message}
+                disabled={isViewMode}
+                placeholder="Razão Social do fornecedor"
+              />
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  CNPJ Fornecedor
-                </label>
-                <Input
-                  type="text"
-                  value={formData.cnpj_fornecedor}
-                  onChange={(e) => handleInputChange('cnpj_fornecedor', e.target.value)}
-                  placeholder="00.000.000/0000-00"
-                  disabled={isViewMode}
-                />
-              </div>
+              {/* CNPJ Fornecedor */}
+              <Input
+                label="CNPJ Fornecedor"
+                {...register('cnpj_fornecedor')}
+                error={errors.cnpj_fornecedor?.message}
+                disabled={isViewMode}
+                placeholder="00.000.000/0000-00"
+              />
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Nº Nota Fiscal <span className="text-red-500">*</span>
-                </label>
-                <Input
-                  type="text"
-                  value={formData.numero_nota_fiscal}
-                  onChange={(e) => handleInputChange('numero_nota_fiscal', e.target.value)}
-                  placeholder="Número da NF"
-                  required
-                  disabled={isViewMode}
-                />
-              </div>
+              {/* Nº Nota Fiscal */}
+              <Input
+                label="Nº Nota Fiscal *"
+                {...register('numero_nota_fiscal', {
+                  required: 'Número da Nota Fiscal é obrigatório'
+                })}
+                error={errors.numero_nota_fiscal?.message}
+                disabled={isViewMode}
+                placeholder="Número da NF"
+              />
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Data Recebimento <span className="text-red-500">*</span>
-                </label>
-                <Input
-                  type="date"
-                  value={formData.data_inspecao}
-                  onChange={(e) => handleInputChange('data_inspecao', e.target.value)}
-                  required
-                  disabled={isViewMode}
-                />
-              </div>
+              {/* Data Recebimento */}
+              <Input
+                label="Data Recebimento *"
+                type="date"
+                {...register('data_inspecao', {
+                  required: 'Data de recebimento é obrigatória'
+                })}
+                error={errors.data_inspecao?.message}
+                disabled={isViewMode}
+              />
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Hora Recebimento <span className="text-red-500">*</span>
-                </label>
-                <Input
-                  type="time"
-                  value={formData.hora_inspecao}
-                  onChange={(e) => handleInputChange('hora_inspecao', e.target.value)}
-                  required
-                  disabled={isViewMode}
-                />
-              </div>
+              {/* Hora Recebimento */}
+              <Input
+                label="Hora Recebimento *"
+                type="time"
+                {...register('hora_inspecao', {
+                  required: 'Hora de recebimento é obrigatória'
+                })}
+                error={errors.hora_inspecao?.message}
+                disabled={isViewMode}
+              />
             </div>
           </div>
 
           {/* SEÇÃO B: Check List Higiênico-Sanitário */}
           <ChecklistTable
-            checklist={formData.checklist_json}
+            checklist={checklist}
             grupos={gruposData || grupos || []}
             onChange={handleChecklistChange}
             onAdd={handleAddChecklistItem}
@@ -376,24 +367,24 @@ const RelatorioInspecaoModal = ({ isOpen, onClose, onSubmit, rir, viewMode, grup
 
           {/* SEÇÃO C: Avaliação dos Produtos */}
           <ProdutosTable
-            produtos={formData.produtos_json}
+            produtos={produtos}
             onChange={handleProdutosChange}
             onRemove={handleRemoveProduto}
             viewMode={isViewMode}
           />
 
           {/* SEÇÃO D: Ocorrências e Responsáveis */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">D) Ocorrências e Responsáveis</h2>
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">D) Ocorrências e Responsáveis</h3>
             
             <div className="space-y-4">
+              {/* Ocorrências */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Ocorrências e Observações Gerais
                 </label>
                 <textarea
-                  value={formData.ocorrencias}
-                  onChange={(e) => handleInputChange('ocorrencias', e.target.value)}
+                  {...register('ocorrencias')}
                   rows={4}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                   placeholder="Digite as ocorrências e observações gerais..."
@@ -401,70 +392,49 @@ const RelatorioInspecaoModal = ({ isOpen, onClose, onSubmit, rir, viewMode, grup
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Recebedor
-                  </label>
-                  <Input
-                    type="text"
-                    value={formData.recebedor}
-                    onChange={(e) => handleInputChange('recebedor', e.target.value)}
-                    placeholder="Nome do responsável pelo recebimento"
-                    disabled={isViewMode}
-                  />
-                </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Recebedor */}
+                <Input
+                  label="Recebedor"
+                  {...register('recebedor')}
+                  error={errors.recebedor?.message}
+                  disabled={isViewMode}
+                  placeholder="Nome do responsável pelo recebimento"
+                />
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Visto Responsável
-                  </label>
-                  <Input
-                    type="text"
-                    value={formData.visto_responsavel}
-                    onChange={(e) => handleInputChange('visto_responsavel', e.target.value)}
-                    placeholder="Nome do responsável técnico"
-                    disabled={isViewMode}
-                  />
-                </div>
+                {/* Visto Responsável */}
+                <Input
+                  label="Visto Responsável"
+                  {...register('visto_responsavel')}
+                  error={errors.visto_responsavel?.message}
+                  disabled={isViewMode}
+                  placeholder="Nome do responsável técnico"
+                />
               </div>
             </div>
           </div>
 
-          {/* Botões de Ação */}
-          {!isViewMode && (
-            <div className="flex justify-end gap-4 pt-6 border-t border-gray-200 mt-6">
-              <Button
-                type="button"
-                onClick={onClose}
-                variant="outline"
-                size="sm"
+          {/* Footer */}
+          <div className="flex justify-end gap-3 pt-6 border-t border-gray-200">
+            {!isViewMode && (
+              <Button 
+                type="submit" 
+                variant="primary" 
+                size="lg" 
+                disabled={saving || loading}
               >
-                Cancelar
+                {saving ? 'Salvando...' : rir ? 'Atualizar' : 'Criar'}
               </Button>
-              <Button
-                type="submit"
-                disabled={saving || (!canCreate('relatorio_inspecao') && !isEditMode) || (!canEdit('relatorio_inspecao') && isEditMode)}
-                loading={saving}
-                size="sm"
-              >
-                <FaSave className="mr-2" />
-                {saving ? 'Salvando...' : (isEditMode ? 'Atualizar' : 'Criar')}
-              </Button>
-            </div>
-          )}
-          {isViewMode && (
-            <div className="flex justify-end gap-4 pt-6 border-t border-gray-200 mt-6">
-              <Button
-                type="button"
-                onClick={onClose}
-                variant="outline"
-                size="sm"
-              >
-                Fechar
-              </Button>
-            </div>
-          )}
+            )}
+            <Button 
+              type="button" 
+              variant="outline" 
+              size="lg" 
+              onClick={onClose}
+            >
+              {isViewMode ? 'Fechar' : 'Cancelar'}
+            </Button>
+          </div>
         </form>
       </div>
     </Modal>

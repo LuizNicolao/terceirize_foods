@@ -26,7 +26,7 @@ export const useSolicitacoesCompras = () => {
   // Hook de filtros customizados
   const customFilters = useFilters({
     status: '',
-    filial_id: '',
+    filial_id: 'todos',
     data_inicio: '',
     data_fim: ''
   });
@@ -75,14 +75,14 @@ export const useSolicitacoesCompras = () => {
       ...customFilters.getFilterParams(),
       search: baseEntity.searchTerm || undefined,
       status: customFilters.filters.status || undefined,
-      filial_id: customFilters.filters.filial_id || undefined,
+      filial_id: customFilters.filters.filial_id && customFilters.filters.filial_id !== 'todos' ? customFilters.filters.filial_id : undefined,
       data_inicio: customFilters.filters.data_inicio || undefined,
       data_fim: customFilters.filters.data_fim || undefined
     };
 
     // Remover parâmetros vazios
     Object.keys(params).forEach(key => {
-      if (params[key] === '' || params[key] === null || params[key] === undefined) {
+      if (params[key] === '' || params[key] === null || params[key] === undefined || params[key] === 'todos') {
         delete params[key];
       }
     });
@@ -188,7 +188,7 @@ export const useSolicitacoesCompras = () => {
     baseEntity.setSearchTerm('');
     customFilters.setFilters({
       status: '',
-      filial_id: '',
+      filial_id: 'todos',
       data_inicio: '',
       data_fim: ''
     });
@@ -202,8 +202,8 @@ export const useSolicitacoesCompras = () => {
 
   // Funções auxiliares para obter nomes
   const getFilialName = useCallback((filialId) => {
-    const filial = filiais.find(f => f.id === filialId);
-    return filial ? filial.nome : '-';
+    const filial = filiais.find(f => f.id === filialId || f.id.toString() === filialId?.toString());
+    return filial ? (filial.filial || filial.nome || `Filial ${filial.id}`) : '-';
   }, [filiais]);
 
   const getProdutoName = useCallback((produtoId) => {

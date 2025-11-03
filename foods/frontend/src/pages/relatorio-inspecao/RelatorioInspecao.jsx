@@ -84,7 +84,7 @@ const RelatorioInspecao = () => {
     <div className="p-4 sm:p-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Relatórios de Inspeção de Recebimento</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Relatórios de Inspeção de Recebimento</h1>
         
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
           <Button
@@ -96,13 +96,13 @@ const RelatorioInspecao = () => {
             <span className="hidden sm:inline">Auditoria</span>
             <span className="sm:hidden">Auditoria</span>
           </Button>
-          {canCreate('relatorio_inspecao') && (
+        {canCreate('relatorio_inspecao') && (
             <Button onClick={handleAddRIR} variant="primary" size="sm">
-              <FaPlus className="mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">Novo Relatório</span>
-              <span className="sm:hidden">Novo</span>
-            </Button>
-          )}
+            <FaPlus className="mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Novo Relatório</span>
+            <span className="sm:hidden">Novo</span>
+          </Button>
+        )}
         </div>
       </div>
 
@@ -165,14 +165,14 @@ const RelatorioInspecao = () => {
       />
 
       {/* Paginação */}
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
         onPageChange={handlePageChange}
-        totalItems={totalItems}
-        itemsPerPage={itemsPerPage}
-        onItemsPerPageChange={handleItemsPerPageChange}
-      />
+          totalItems={totalItems}
+          itemsPerPage={itemsPerPage}
+          onItemsPerPageChange={handleItemsPerPageChange}
+        />
 
       {/* Modal */}
       <RelatorioInspecaoModal

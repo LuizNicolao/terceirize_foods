@@ -42,10 +42,10 @@ const ChecklistTable = ({ checklist, grupos, onChange, onAdd, onRemove, viewMode
       <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
         <h3 className="text-lg font-semibold text-gray-900">Check List de Avaliação Higiênico-Sanitária</h3>
         {!viewMode && (
-          <Button onClick={onAdd} size="sm" variant="ghost">
-            <FaPlus className="mr-1" />
-            Adicionar Item
-          </Button>
+        <Button onClick={onAdd} size="sm" variant="ghost">
+          <FaPlus className="mr-1" />
+          Adicionar Item
+        </Button>
         )}
       </div>
 
@@ -77,9 +77,9 @@ const ChecklistTable = ({ checklist, grupos, onChange, onAdd, onRemove, viewMode
                   Condições da Embalagem
                 </th>
                 {!viewMode && (
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Ações
-                  </th>
+                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Ações
+                </th>
                 )}
               </tr>
             </thead>
@@ -147,15 +147,15 @@ const ChecklistTable = ({ checklist, grupos, onChange, onAdd, onRemove, viewMode
                     />
                   </td>
                   {!viewMode && (
-                    <td className="px-4 py-3 whitespace-nowrap text-center">
-                      <button
-                        onClick={() => onRemove(index)}
-                        className="text-red-600 hover:text-red-900 p-1 rounded transition-colors"
-                        title="Remover item"
-                      >
-                        <FaTrash className="w-4 h-4" />
-                      </button>
-                    </td>
+                  <td className="px-4 py-3 whitespace-nowrap text-center">
+                    <button
+                      onClick={() => onRemove(index)}
+                      className="text-red-600 hover:text-red-900 p-1 rounded transition-colors"
+                      title="Remover item"
+                    >
+                      <FaTrash className="w-4 h-4" />
+                    </button>
+                  </td>
                   )}
                   {viewMode && (
                     <td className="px-4 py-3 whitespace-nowrap text-center">
