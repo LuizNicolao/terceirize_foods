@@ -31,7 +31,6 @@ const RelatorioInspecaoForm = ({ rirId, onSuccess, onCancel }) => {
   const [formData, setFormData] = useState({
     data_inspecao: new Date().toISOString().split('T')[0],
     hora_inspecao: new Date().toTimeString().slice(0, 5),
-    numero_af: '',
     numero_nota_fiscal: '',
     fornecedor: '',
     numero_pedido: '',
@@ -57,7 +56,6 @@ const RelatorioInspecaoForm = ({ rirId, onSuccess, onCancel }) => {
       setFormData({
         data_inspecao: data.data_inspecao || new Date().toISOString().split('T')[0],
         hora_inspecao: data.hora_inspecao || new Date().toTimeString().slice(0, 5),
-        numero_af: data.numero_af || '',
         numero_nota_fiscal: data.numero_nota_fiscal || '',
         fornecedor: data.fornecedor || '',
         numero_pedido: data.numero_pedido || '',
@@ -316,18 +314,6 @@ const RelatorioInspecaoForm = ({ rirId, onSuccess, onCancel }) => {
                 onChange={(e) => handleInputChange('numero_nota_fiscal', e.target.value)}
                 placeholder="Número da NF"
                 required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Nº AF
-              </label>
-              <Input
-                type="text"
-                value={formData.numero_af}
-                onChange={(e) => handleInputChange('numero_af', e.target.value)}
-                placeholder="Número da Autorização de Fornecimento"
               />
             </div>
 

@@ -25,8 +25,8 @@ class RIRListController {
 
     // Aplicar filtros (para WHERE clause)
     if (search) {
-      whereClause += ' AND (ri.numero_nota_fiscal LIKE ? OR ri.fornecedor LIKE ? OR ri.numero_af LIKE ?)';
-      params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+      whereClause += ' AND (ri.numero_nota_fiscal LIKE ? OR ri.fornecedor LIKE ?)';
+      params.push(`%${search}%`, `%${search}%`);
     }
 
     if (status_geral) {
@@ -55,7 +55,6 @@ class RIRListController {
         ri.id,
         ri.data_inspecao,
         ri.hora_inspecao,
-        ri.numero_af,
         ri.numero_nota_fiscal,
         ri.fornecedor,
         ri.numero_pedido,
@@ -76,55 +75,18 @@ class RIRListController {
     const offset = pagination.offset;
     const query = `${baseQuery} LIMIT ${limit} OFFSET ${offset}`;
 
-    // Executar query principal
-    const rirs = await executeQuery(query, params);
-
-    // Contar total de registros (DEPOIS da query principal, como em Produtos)
+    // Executar queries principais em paralelo para melhor performance
     const countQuery = `SELECT COUNT(*) as total FROM relatorio_inspecao ri ${whereClause}`;
-    const countResult = await executeQuery(countQuery, params);
+    
+    const [rirs, countResult] = await Promise.all([
+      executeQuery(query, params),
+      executeQuery(countQuery, params)
+    ]);
+    
     const totalItems = countResult[0].total;
 
-    // Buscar total_produtos e usuario_nome apenas para os IDs retornados (query eficiente)
-    let rirsWithTotals = rirs;
-    if (rirs.length > 0) {
-      const ids = rirs.map(r => r.id);
-      const userIds = [...new Set(rirs.map(r => r.usuario_cadastro_id).filter(id => id))];
-      const placeholders = ids.map(() => '?').join(',');
-      
-      // Buscar total_produtos e usuario_nome em uma única query
-      let totalsQuery = `SELECT ri.id, JSON_LENGTH(ri.produtos_json) as total_produtos, u.nome as usuario_nome 
-        FROM relatorio_inspecao ri 
-        LEFT JOIN usuarios u ON ri.usuario_cadastro_id = u.id 
-        WHERE ri.id IN (${placeholders})`;
-      
-      try {
-        const totalsResult = await executeQuery(totalsQuery, ids);
-        const totalsMap = {};
-        totalsResult.forEach(row => {
-          totalsMap[row.id] = {
-            total_produtos: row.total_produtos || 0,
-            usuario_nome: row.usuario_nome || '-'
-          };
-        });
-        rirsWithTotals = rirs.map(rir => {
-          const extra = totalsMap[rir.id] || { total_produtos: 0, usuario_nome: '-' };
-          const { usuario_cadastro_id, ...rirWithoutId } = rir;
-          return {
-            ...rirWithoutId,
-            total_produtos: extra.total_produtos,
-            usuario_nome: extra.usuario_nome
-          };
-        });
-      } catch (totalsError) {
-        // Se falhar, usar valores padrão
-        rirsWithTotals = rirs.map(rir => {
-          const { usuario_cadastro_id, ...rirWithoutId } = rir;
-          return { ...rirWithoutId, total_produtos: 0, usuario_nome: '-' };
-        });
-      }
-    }
-
     // Calcular estatísticas (usando mesma lógica de filtros da query principal)
+    // Executar em paralelo com a busca de totals para melhor performance
     let statsQuery = `
       SELECT 
         COUNT(*) as total,
@@ -138,8 +100,8 @@ class RIRListController {
     
     // Aplicar mesmos filtros da query principal
     if (search) {
-      statsQuery += ' AND (ri.numero_nota_fiscal LIKE ? OR ri.fornecedor LIKE ? OR ri.numero_af LIKE ?)';
-      statsParams.push(`%${search}%`, `%${search}%`, `%${search}%`);
+      statsQuery += ' AND (ri.numero_nota_fiscal LIKE ? OR ri.fornecedor LIKE ?)';
+      statsParams.push(`%${search}%`, `%${search}%`);
     }
     if (status_geral) {
       statsQuery += ' AND ri.status_geral = ?';
@@ -158,12 +120,64 @@ class RIRListController {
       statsParams.push(data_fim);
     }
     
+    // Buscar total_produtos e usuario_nome apenas para os IDs retornados
+    let totalsQueryPromise = null;
+    if (rirs.length > 0) {
+      const ids = rirs.map(r => r.id);
+      const placeholders = ids.map(() => '?').join(',');
+      totalsQueryPromise = executeQuery(
+        `SELECT ri.id, JSON_LENGTH(ri.produtos_json) as total_produtos, u.nome as usuario_nome 
+        FROM relatorio_inspecao ri 
+        LEFT JOIN usuarios u ON ri.usuario_cadastro_id = u.id 
+        WHERE ri.id IN (${placeholders})`,
+        ids
+      );
+    }
+    
+    // Executar queries de estatísticas e totals em paralelo
     let statistics = { total: 0, aprovados: 0, reprovados: 0, parciais: 0 };
+    let totalsResult = [];
+    
     try {
-      const statsResult = await executeQuery(statsQuery, statsParams);
-      statistics = statsResult[0] || statistics;
-    } catch (statsError) {
-      // Continuar mesmo se falhar nas estatísticas
+      const [statsResult, totalsData] = await Promise.all([
+        executeQuery(statsQuery, statsParams).catch(() => null),
+        totalsQueryPromise ? totalsQueryPromise.catch(() => []) : Promise.resolve([])
+      ]);
+      
+      if (statsResult && statsResult[0]) {
+        statistics = statsResult[0];
+      }
+      totalsResult = totalsData || [];
+    } catch (error) {
+      // Continuar mesmo se falhar nas estatísticas ou totals
+      console.error('Erro ao buscar estatísticas ou totals:', error);
+    }
+
+    // Mapear totals para os RIRs
+    let rirsWithTotals = rirs;
+    if (totalsResult.length > 0) {
+      const totalsMap = {};
+      totalsResult.forEach(row => {
+        totalsMap[row.id] = {
+          total_produtos: row.total_produtos || 0,
+          usuario_nome: row.usuario_nome || '-'
+        };
+      });
+      rirsWithTotals = rirs.map(rir => {
+        const extra = totalsMap[rir.id] || { total_produtos: 0, usuario_nome: '-' };
+        const { usuario_cadastro_id, ...rirWithoutId } = rir;
+        return {
+          ...rirWithoutId,
+          total_produtos: extra.total_produtos,
+          usuario_nome: extra.usuario_nome
+        };
+      });
+    } else {
+      // Se não houver totals, usar valores padrão
+      rirsWithTotals = rirs.map(rir => {
+        const { usuario_cadastro_id, ...rirWithoutId } = rir;
+        return { ...rirWithoutId, total_produtos: 0, usuario_nome: '-' };
+      });
     }
 
     // Gerar metadados de paginação

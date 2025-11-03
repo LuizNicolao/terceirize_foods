@@ -55,11 +55,6 @@ const rirValidations = {
       .isLength({ min: 1, max: 200 })
       .withMessage('Fornecedor deve ter entre 1 e 200 caracteres')
       .trim(),
-    body('numero_af')
-      .optional()
-      .isLength({ max: 50 })
-      .withMessage('Número da AF deve ter no máximo 50 caracteres')
-      .trim(),
     body('numero_pedido')
       .optional()
       .isLength({ max: 50 })

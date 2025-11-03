@@ -21,7 +21,6 @@ class RIRCRUDController {
     const {
       data_inspecao,
       hora_inspecao,
-      numero_af,
       numero_nota_fiscal,
       fornecedor,
       numero_pedido,
@@ -63,7 +62,6 @@ class RIRCRUDController {
       `INSERT INTO relatorio_inspecao (
         data_inspecao,
         hora_inspecao,
-        numero_af,
         numero_nota_fiscal,
         fornecedor,
         numero_pedido,
@@ -77,11 +75,10 @@ class RIRCRUDController {
         status_geral,
         usuario_cadastro_id,
         criado_em
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
       [
         data_inspecao,
         hora_inspecao,
-        numero_af || null,
         numero_nota_fiscal,
         fornecedor,
         numero_pedido || null,
@@ -145,7 +142,6 @@ class RIRCRUDController {
     const {
       data_inspecao,
       hora_inspecao,
-      numero_af,
       numero_nota_fiscal,
       fornecedor,
       numero_pedido,
@@ -192,7 +188,6 @@ class RIRCRUDController {
       `UPDATE relatorio_inspecao SET
         data_inspecao = ?,
         hora_inspecao = ?,
-        numero_af = ?,
         numero_nota_fiscal = ?,
         fornecedor = ?,
         numero_pedido = ?,
@@ -210,7 +205,6 @@ class RIRCRUDController {
       [
         data_inspecao,
         hora_inspecao,
-        numero_af || null,
         numero_nota_fiscal,
         fornecedor,
         numero_pedido || null,

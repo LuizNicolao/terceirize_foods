@@ -26,7 +26,7 @@ const ChecklistTable = ({ checklist, grupos, onChange, onAdd, onRemove }) => {
 
   const getGrupoOptions = () => {
     return grupos.map(grupo => ({
-      value: grupo.id.toString(),
+      value: grupo.nome, // Salvar o nome do grupo, não o ID
       label: `${grupo.codigo} - ${grupo.nome}`
     }));
   };

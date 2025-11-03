@@ -50,6 +50,9 @@ const RelatorioInspecao = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [rirToDelete, setRirToDelete] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [dataInicioFilter, setDataInicioFilter] = useState('');
+  const [dataFimFilter, setDataFimFilter] = useState('');
   const hasLoadedRef = useRef(false);
 
   // Paginação
@@ -58,27 +61,61 @@ const RelatorioInspecao = () => {
   const totalItems = pagination?.total_items || 0;
   const itemsPerPage = pagination?.items_per_page || 20;
 
+  // Carregar dados quando filtros de seleção mudam (status e datas)
   useEffect(() => {
-    // Só carregar uma vez ao montar, se não estiver em modo de visualização
+    if (!isViewMode && hasLoadedRef.current) {
+      const params = {};
+      if (filtros.search) params.search = filtros.search;
+      if (statusFilter) params.status_geral = statusFilter;
+      if (dataInicioFilter) params.data_inicio = dataInicioFilter;
+      if (dataFimFilter) params.data_fim = dataFimFilter;
+      
+      setFiltros(prev => ({
+        ...prev,
+        status_geral: statusFilter,
+        data_inicio: dataInicioFilter,
+        data_fim: dataFimFilter
+      }));
+      
+      carregarRIRs(params);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [statusFilter, dataInicioFilter, dataFimFilter]);
+
+  // Carregar dados iniciais
+  useEffect(() => {
     if (!isViewMode && !hasLoadedRef.current) {
       hasLoadedRef.current = true;
       carregarRIRs();
     }
-  }, [isViewMode]); // carregarRIRs está memoizado no hook, não precisa estar nas dependências
+  }, [isViewMode]);
 
   const handleKeyPress = (e) => {
     if (e.key === 'Enter') {
-      setFiltros(prev => ({ ...prev, search: searchTerm }));
-      carregarRIRs({ search: searchTerm });
+      const params = {};
+      if (searchTerm) params.search = searchTerm;
+      if (statusFilter) params.status_geral = statusFilter;
+      if (dataInicioFilter) params.data_inicio = dataInicioFilter;
+      if (dataFimFilter) params.data_fim = dataFimFilter;
+      
+      setFiltros({
+        search: searchTerm,
+        status_geral: statusFilter,
+        fornecedor: '',
+        data_inicio: dataInicioFilter,
+        data_fim: dataFimFilter
+      });
+      
+      carregarRIRs(params);
     }
   };
 
-  const handleFiltroChange = (key, value) => {
-    setFiltros(prev => ({ ...prev, [key]: value }));
-    carregarRIRs({ [key]: value });
-  };
-
   const clearFiltros = () => {
+    setSearchTerm('');
+    setStatusFilter('');
+    setDataInicioFilter('');
+    setDataFimFilter('');
+    
     const newFiltros = {
       search: '',
       status_geral: '',
@@ -87,8 +124,7 @@ const RelatorioInspecao = () => {
       data_fim: ''
     };
     setFiltros(newFiltros);
-    setSearchTerm('');
-    carregarRIRs(newFiltros);
+    carregarRIRs();
   };
 
   const handlePageChange = (page) => {
@@ -224,8 +260,8 @@ const RelatorioInspecao = () => {
         additionalFilters={[
           {
             label: 'Status',
-            value: filtros.status_geral,
-            onChange: (value) => handleFiltroChange('status_geral', value),
+            value: statusFilter,
+            onChange: setStatusFilter,
             options: [
               { value: '', label: 'Todos os status' },
               { value: 'APROVADO', label: 'Aprovado' },
@@ -235,18 +271,18 @@ const RelatorioInspecao = () => {
           },
           {
             label: 'Data Início',
-            value: filtros.data_inicio,
-            onChange: (value) => handleFiltroChange('data_inicio', value),
+            value: dataInicioFilter,
+            onChange: setDataInicioFilter,
             type: 'date'
           },
           {
             label: 'Data Fim',
-            value: filtros.data_fim,
-            onChange: (value) => handleFiltroChange('data_fim', value),
+            value: dataFimFilter,
+            onChange: setDataFimFilter,
             type: 'date'
           }
         ]}
-        placeholder="Buscar por NF, Fornecedor ou AF..."
+        placeholder="Buscar por NF ou Fornecedor..."
       />
 
       {/* Ações de Exportação */}

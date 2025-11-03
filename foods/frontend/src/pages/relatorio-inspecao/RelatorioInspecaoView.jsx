@@ -152,7 +152,6 @@ const RelatorioInspecaoView = ({ rirId }) => {
               <h3 className="text-sm font-medium text-gray-500 mb-2">Dados do Relatório</h3>
               <div className="space-y-1 text-sm text-gray-900">
                 <p><span className="font-semibold">Nº NF:</span> {rir.numero_nota_fiscal || '-'}</p>
-                <p><span className="font-semibold">Nº AF:</span> {rir.numero_af || '-'}</p>
                 <p><span className="font-semibold">Nº Pedido:</span> {rir.numero_pedido || '-'}</p>
               </div>
             </div>
