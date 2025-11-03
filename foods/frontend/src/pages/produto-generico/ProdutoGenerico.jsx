@@ -58,6 +58,7 @@ const ProdutoGenerico = () => {
     handleCloseModal,
     handleCloseValidationModal,
     handlePageChange,
+    handleItemsPerPageChange,
     handleClearFilters,
     setSearchTerm,
     handleKeyPress,
@@ -225,7 +226,7 @@ const ProdutoGenerico = () => {
         totalPages={totalPages}
         onPageChange={handlePageChange}
         itemsPerPage={itemsPerPage}
-        onItemsPerPageChange={setItemsPerPage}
+        onItemsPerPageChange={handleItemsPerPageChange}
         totalItems={totalItems}
       />
 
