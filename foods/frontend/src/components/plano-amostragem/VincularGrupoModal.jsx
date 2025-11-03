@@ -10,7 +10,6 @@ const VincularGrupoModal = ({
 }) => {
   const [grupos, setGrupos] = useState([]);
   const [nqas, setNqas] = useState([]);
-  const [gruposVinculados, setGruposVinculados] = useState([]);
   const [loadingGrupos, setLoadingGrupos] = useState(false);
   const [loadingNQAs, setLoadingNQAs] = useState(false);
   const [grupoSelecionado, setGrupoSelecionado] = useState(null);
@@ -20,7 +19,6 @@ const VincularGrupoModal = ({
     if (isOpen) {
       carregarGrupos();
       carregarNQAs();
-      carregarGruposVinculados();
     } else {
       setGrupoSelecionado(null);
       setNqaSelecionado(null);
@@ -63,16 +61,6 @@ const VincularGrupoModal = ({
     }
   };
 
-  const carregarGruposVinculados = async () => {
-    try {
-      const response = await PlanoAmostragemService.listarTodosVinculos();
-      if (response.success) {
-        setGruposVinculados(response.data || []);
-      }
-    } catch (error) {
-      console.error('Erro ao carregar grupos vinculados:', error);
-    }
-  };
 
   return (
     <Modal
@@ -98,27 +86,17 @@ const VincularGrupoModal = ({
         if (result && result.success) {
           setGrupoSelecionado(null);
           setNqaSelecionado(null);
-          // Recarregar grupos vinculados para atualizar o filtro
-          await carregarGruposVinculados();
         }
       }} className="space-y-4">
         <SearchableSelect
-          label="Grupo de Produto *"
+          label="Grupo de Produto"
           value={grupoSelecionado || ''}
           onChange={(value) => setGrupoSelecionado(value || null)}
-          options={grupos
-            .filter(grupo => {
-              // Filtrar grupos que já estão vinculados a algum NQA
-              const grupoJaVinculado = gruposVinculados.some(
-                vinculo => vinculo.grupo_id === grupo.id
-              );
-              return !grupoJaVinculado;
-            })
-            .map(grupo => ({
-              value: grupo.id,
-              label: `${grupo.codigo} - ${grupo.nome}`,
-              description: grupo.descricao || 'Sem descrição'
-            }))}
+          options={grupos.map(grupo => ({
+            value: grupo.id,
+            label: `${grupo.codigo} - ${grupo.nome}`,
+            description: grupo.descricao || 'Sem descrição'
+          }))}
           placeholder="Digite para buscar um grupo..."
           disabled={loadingGrupos}
           required
