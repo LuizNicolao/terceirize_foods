@@ -67,28 +67,53 @@ export const PermissionsProvider = ({ children }) => {
   };
 
   const hasPermission = (screen, action, aba = null) => {
-    // Se especificou uma aba, verificar permissão específica primeiro
+    // Se especificou uma aba, precisa verificar:
+    // 1. Permissão específica da aba E
+    // 2. Permissão geral da tela (pai) - obrigatória para funcionar
     if (aba) {
       const screenAba = `${screen}.${aba}`;
+      
+      // Verificar se tem permissão geral da tela (pai)
+      const hasParentPermission = userPermissions[screen] && 
+        (action === 'visualizar' ? userPermissions[screen].pode_visualizar :
+         action === 'criar' ? userPermissions[screen].pode_criar :
+         action === 'editar' ? userPermissions[screen].pode_editar :
+         action === 'excluir' ? userPermissions[screen].pode_excluir :
+         action === 'movimentar' ? userPermissions[screen].pode_movimentar : false);
+      
+      // Se tem permissão específica da aba
       if (userPermissions[screenAba]) {
+        // Verificar ação específica da aba
+        let hasAbaPermission = false;
         switch (action) {
           case 'visualizar':
-            return userPermissions[screenAba].pode_visualizar;
+            hasAbaPermission = userPermissions[screenAba].pode_visualizar;
+            break;
           case 'criar':
-            return userPermissions[screenAba].pode_criar;
+            hasAbaPermission = userPermissions[screenAba].pode_criar;
+            break;
           case 'editar':
-            return userPermissions[screenAba].pode_editar;
+            hasAbaPermission = userPermissions[screenAba].pode_editar;
+            break;
           case 'excluir':
-            return userPermissions[screenAba].pode_excluir;
+            hasAbaPermission = userPermissions[screenAba].pode_excluir;
+            break;
           case 'movimentar':
-            return userPermissions[screenAba].pode_movimentar;
+            hasAbaPermission = userPermissions[screenAba].pode_movimentar;
+            break;
           default:
-            return false;
+            hasAbaPermission = false;
         }
+        
+        // Para a aba funcionar, precisa ter AMBAS: permissão pai E permissão filha
+        return hasParentPermission && hasAbaPermission;
       }
+      
+      // Se não tem permissão específica da aba, mas tem permissão pai, usa a pai
+      return hasParentPermission;
     }
     
-    // Fallback: verificar permissão geral da tela
+    // Sem aba especificada: verificar apenas permissão geral da tela
     if (!userPermissions[screen]) {
       return false;
     }
