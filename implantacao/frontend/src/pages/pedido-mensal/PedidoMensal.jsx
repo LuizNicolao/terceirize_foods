@@ -7,6 +7,7 @@ import {
   AdicionarProdutoModal,
   PedidoMensalTabs
 } from '../../components/necessidades-padroes';
+import GerarNecessidadePadrao from '../../components/necessidades-padroes/GerarNecessidadePadrao';
 import { Button, SearchableSelect } from '../../components/ui';
 import FoodsApiService from '../../services/FoodsApiService';
 import NecessidadesPadroesService from '../../services/necessidadesPadroes';
@@ -398,16 +399,7 @@ const PedidoMensal = () => {
       )}
 
       {activeTab === 'gerenciar' && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">
-            Gerar Necessidade Padrão
-          </h2>
-          <div className="text-center py-8 text-gray-500">
-            <FaCog className="text-4xl mx-auto mb-4 text-gray-300" />
-            <p className="text-lg font-medium mb-2">Funcionalidade em desenvolvimento</p>
-            <p className="text-sm">Esta funcionalidade será implementada em breve.</p>
-          </div>
-        </div>
+        <GerarNecessidadePadrao />
       )}
 
       {/* Modal de Adicionar Produto */}

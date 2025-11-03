@@ -5,8 +5,10 @@
 
 const NecessidadesPadroesListController = require('./NecessidadesPadroesListController');
 const NecessidadesPadroesCRUDController = require('./NecessidadesPadroesCRUDController');
+const NecessidadesPadroesGeracaoController = require('./NecessidadesPadroesGeracaoController');
 
 module.exports = {
   NecessidadesPadroesListController,
-  NecessidadesPadroesCRUDController
+  NecessidadesPadroesCRUDController,
+  NecessidadesPadroesGeracaoController
 };

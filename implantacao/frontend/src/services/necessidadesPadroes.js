@@ -91,6 +91,34 @@ class NecessidadesPadroesService {
       throw error;
     }
   }
+
+  /**
+   * Gerar necessidades padrão a partir de necessidades_substituicoes
+   */
+  static async gerarNecessidadesPadrao(dados) {
+    try {
+      const response = await api.post('/necessidades-padroes/gerar-necessidades', dados);
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao gerar necessidades padrão:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Buscar semana de consumo por semana de abastecimento
+   */
+  static async buscarSemanaConsumoPorAbastecimento(semana_abastecimento) {
+    try {
+      const response = await api.get('/necessidades-padroes/buscar-semana-consumo', {
+        params: { semana_abastecimento }
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao buscar semana de consumo:', error);
+      throw error;
+    }
+  }
 }
 
 export default NecessidadesPadroesService;
