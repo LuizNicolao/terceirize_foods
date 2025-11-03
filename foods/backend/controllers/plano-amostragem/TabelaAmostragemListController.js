@@ -6,7 +6,8 @@
 const { executeQuery } = require('../../config/database');
 const { 
   successResponse, 
-  notFoundResponse, 
+  notFoundResponse,
+  errorResponse,
   STATUS_CODES 
 } = require('../../middleware/responseHandler');
 const { asyncHandler } = require('../../middleware/responseHandler');
@@ -30,9 +31,6 @@ class TabelaAmostragemListController {
         ta.tamanho_amostra,
         ta.ac,
         ta.re,
-        ta.meses_validade,
-        ta.dias_validade,
-        ta.dias_70,
         ta.observacoes,
         ta.ativo,
         ta.criado_em,
@@ -127,9 +125,6 @@ class TabelaAmostragemListController {
         ta.tamanho_amostra,
         ta.ac,
         ta.re,
-        ta.meses_validade,
-        ta.dias_validade,
-        ta.dias_70,
         ta.observacoes,
         ta.ativo,
         ta.criado_em,
@@ -175,9 +170,6 @@ class TabelaAmostragemListController {
         ta.tamanho_amostra,
         ta.ac,
         ta.re,
-        ta.meses_validade,
-        ta.dias_validade,
-        ta.dias_70,
         ta.observacoes,
         ta.ativo,
         ta.criado_em,

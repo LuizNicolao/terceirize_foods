@@ -26,9 +26,6 @@ class TabelaAmostragemCRUDController {
       tamanho_amostra, 
       ac, 
       re,
-      meses_validade,
-      dias_validade,
-      dias_70,
       observacoes,
       ativo
     } = req.body;
@@ -73,8 +70,8 @@ class TabelaAmostragemCRUDController {
     // Inserir faixa
     const result = await executeQuery(
       `INSERT INTO tabela_amostragem 
-       (nqa_id, faixa_inicial, faixa_final, tamanho_amostra, ac, re, meses_validade, dias_validade, dias_70, observacoes, ativo, usuario_cadastro_id, criado_em) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
+       (nqa_id, faixa_inicial, faixa_final, tamanho_amostra, ac, re, observacoes, ativo, usuario_cadastro_id, criado_em) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
       [
         nqa_id,
         faixa_inicial,
@@ -82,9 +79,6 @@ class TabelaAmostragemCRUDController {
         tamanho_amostra,
         ac,
         re,
-        meses_validade || null,
-        dias_validade || null,
-        dias_70 || null,
         observacoes && observacoes.trim() ? observacoes.trim() : null,
         ativo === 1 || ativo === '1' ? 1 : 0,
         usuario_id
@@ -103,9 +97,6 @@ class TabelaAmostragemCRUDController {
         ta.tamanho_amostra,
         ta.ac,
         ta.re,
-        ta.meses_validade,
-        ta.dias_validade,
-        ta.dias_70,
         ta.observacoes,
         ta.ativo,
         ta.criado_em,
@@ -189,8 +180,7 @@ class TabelaAmostragemCRUDController {
     const updateParams = [];
     const camposValidos = [
       'nqa_id', 'faixa_inicial', 'faixa_final', 'tamanho_amostra', 
-      'ac', 're', 'meses_validade', 'dias_validade', 'dias_70', 
-      'observacoes', 'ativo'
+      'ac', 're', 'observacoes', 'ativo'
     ];
 
     Object.keys(updateData).forEach(key => {
@@ -240,9 +230,6 @@ class TabelaAmostragemCRUDController {
         ta.tamanho_amostra,
         ta.ac,
         ta.re,
-        ta.meses_validade,
-        ta.dias_validade,
-        ta.dias_70,
         ta.observacoes,
         ta.ativo,
         ta.criado_em,
