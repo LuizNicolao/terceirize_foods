@@ -54,17 +54,22 @@ class GruposNQAController {
       return errorResponse(res, 'NQA deve estar ativo para ser vinculado', STATUS_CODES.BAD_REQUEST);
     }
 
-    // Verificar se já existe vinculação
+    // Verificar se já existe vinculação (independente do status ativo)
     const existingVinculo = await executeQuery(
-      'SELECT id, nqa_id FROM grupos_nqa WHERE grupo_id = ? AND ativo = 1',
+      'SELECT id, nqa_id, ativo FROM grupos_nqa WHERE grupo_id = ?',
       [grupo_id]
     );
 
     if (existingVinculo.length > 0) {
-      // Se já existe, atualizar para o novo NQA
+      // Se já existe (ativo ou inativo), reativar e atualizar para o novo NQA
       await executeQuery(
-        'UPDATE grupos_nqa SET nqa_id = ?, observacoes = ?, atualizado_em = NOW() WHERE grupo_id = ?',
-        [nqa_id, observacoes && observacoes.trim() ? observacoes.trim() : null, grupo_id]
+        'UPDATE grupos_nqa SET nqa_id = ?, observacoes = ?, ativo = 1, atualizado_em = NOW(), usuario_cadastro_id = ? WHERE grupo_id = ?',
+        [
+          nqa_id, 
+          observacoes && observacoes.trim() ? observacoes.trim() : null,
+          usuario_id,
+          grupo_id
+        ]
       );
 
       const vinculoAtualizado = await executeQuery(
@@ -86,7 +91,7 @@ class GruposNQAController {
         [grupo_id]
       );
 
-      return successResponse(res, vinculoAtualizado[0], `Grupo atualizado: vinculado ao NQA ${nqa[0].codigo}`, STATUS_CODES.OK);
+      return successResponse(res, vinculoAtualizado[0], `Grupo ${existingVinculo[0].ativo === 1 ? 'atualizado' : 'reativado'}: vinculado ao NQA ${nqa[0].codigo}`, STATUS_CODES.OK);
     }
 
     // Criar nova vinculação
