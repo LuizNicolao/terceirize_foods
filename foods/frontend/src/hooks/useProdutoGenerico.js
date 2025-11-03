@@ -27,15 +27,26 @@ export const useProdutoGenerico = () => {
   // Hook de ordenação híbrida
   const {
     sortedData: produtosGenericosOrdenados,
-    sortField,
-    sortDirection,
+    sortField: localSortField,
+    sortDirection: localSortDirection,
     handleSort,
     isSortingLocally
   } = useTableSort({
     data: baseEntity.items,
-    threshold: 100,
-    totalItems: baseEntity.totalItems
+    threshold: 50,
+    totalItems: baseEntity.totalItems,
+    onBackendSort: (field, direction) => {
+      // Atualizar estados de ordenação no baseEntity
+      baseEntity.setSortField(field);
+      baseEntity.setSortDirection(direction);
+      // Recarregar dados com nova ordenação, passando os valores diretamente
+      baseEntity.loadData({ sortField: field, sortDirection: direction });
+    }
   });
+  
+  // Usar ordenação do baseEntity quando disponível, senão usar local
+  const sortField = baseEntity.sortField || localSortField;
+  const sortDirection = baseEntity.sortDirection || localSortDirection;
 
   // Hook de busca com debounce removido - useBaseEntity já gerencia
   
@@ -323,6 +334,8 @@ export const useProdutoGenerico = () => {
     getUnidadeMedidaName,
     
     // Ações de ordenação
+    sortField,
+    sortDirection,
     handleSort
   };
 };
