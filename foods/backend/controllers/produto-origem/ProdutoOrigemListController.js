@@ -91,13 +91,7 @@ class ProdutoOrigemListController {
           'unidade_medida_id': 'po.unidade_medida_id'
         };
         
-        // Ordenação especial para código (numérica)
-        if (sortField === 'codigo') {
-          orderBy = `CAST(po.codigo AS UNSIGNED) ${direction}`;
-        } else {
-          orderBy = `${fieldMap[sortField]} ${direction}`;
-        }
-        console.log('[PRODUTO-ORIGEM] ORDER BY gerado:', orderBy);
+        orderBy = `${fieldMap[sortField]} ${direction}`;
       }
     }
     baseQuery += ` ORDER BY ${orderBy}`;
