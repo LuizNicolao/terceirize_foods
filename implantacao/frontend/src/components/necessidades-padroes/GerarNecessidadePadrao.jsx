@@ -300,23 +300,19 @@ const GerarNecessidadePadrao = () => {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Semana de Consumo
-              {semanaConsumoPreenchidaAuto && (
+              {filtros.semana_abastecimento && (
                 <span className="ml-2 text-xs text-gray-500 font-normal">(Preenchido automaticamente)</span>
               )}
             </label>
             <SearchableSelect
               name="semana_consumo"
-              options={filtros.semana_consumo && semanaConsumoPreenchidaAuto
+              options={filtros.semana_consumo && filtros.semana_abastecimento
                 ? [{ value: filtros.semana_consumo, label: filtros.semana_consumo }]
                 : semanasConsumo
               }
-              value={filtros.semana_consumo}
-              onChange={(value) => {
-                // Se foi preenchido automaticamente, não permitir mudança
-                if (semanaConsumoPreenchidaAuto) {
-                  return;
-                }
-                handleFiltroChange('semana_consumo', value);
+              value={filtros.semana_consumo || ''}
+              onChange={() => {
+                // Campo apenas informativo - não permite mudança manual quando há semana de abastecimento
               }}
               placeholder={
                 !filtros.semana_abastecimento
@@ -327,10 +323,10 @@ const GerarNecessidadePadrao = () => {
                   ? filtros.semana_consumo
                   : "Carregando..."
               }
-              disabled={semanaConsumoPreenchidaAuto || loadingSemanaConsumo}
+              disabled={true}
               loading={loadingSemanaConsumo}
               required
-              className={semanaConsumoPreenchidaAuto ? "bg-gray-50 cursor-not-allowed" : ""}
+              className={filtros.semana_abastecimento ? "bg-gray-50 cursor-not-allowed" : ""}
             />
           </div>
           

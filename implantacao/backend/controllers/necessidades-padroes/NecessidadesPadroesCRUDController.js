@@ -13,24 +13,17 @@ class NecessidadesPadroesCRUDController {
         SELECT 
           np.id,
           np.escola_id,
+          np.escola_nome,
           np.grupo_id,
+          np.grupo_nome,
           np.produto_id,
+          np.produto_nome,
+          np.unidade_medida_sigla,
           np.quantidade,
           np.data_criacao,
           np.data_atualizacao,
-          np.usuario_id,
-          e.nome as escola_nome,
-          g.nome as grupo_nome,
-          po.nome as produto_nome,
-          po.codigo as produto_codigo,
-          um.sigla as unidade_medida,
-          u.nome as usuario_nome
+          np.usuario_id
         FROM necessidades_padroes np
-        LEFT JOIN foods_db.unidades_escolares e ON np.escola_id = e.id
-        LEFT JOIN foods_db.grupos g ON np.grupo_id = g.id
-        LEFT JOIN foods_db.produto_origem po ON np.produto_id = po.id
-        LEFT JOIN foods_db.unidades_medida um ON po.unidade_medida_id = um.id
-        LEFT JOIN usuarios u ON np.usuario_id = u.id
         WHERE np.id = ? AND np.ativo = 1
       `;
 
