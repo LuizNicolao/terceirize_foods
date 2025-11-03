@@ -338,6 +338,8 @@ class NecessidadesPadroesGeracaoController {
           const semanaLimpa = semanaConsumo.replace(/[()]/g, '').replace(/\/\d{2}$/, '');
           const [inicioStr, fimStr] = semanaLimpa.split(' a ');
           
+          console.log('[buscarSemanaAbastecimentoPorConsumo] Parse datas - semanaLimpa:', semanaLimpa, 'inicioStr:', inicioStr, 'fimStr:', fimStr);
+          
           if (inicioStr && fimStr) {
             const [diaInicio, mesInicio] = inicioStr.split('/');
             const [diaFim, mesFim] = fimStr.split('/');
@@ -346,6 +348,8 @@ class NecessidadesPadroesGeracaoController {
             const anoMatch = semanaConsumo.match(/\/(\d{2})[)]?$/);
             const ano2digitos = anoMatch ? anoMatch[1] : new Date().getFullYear().toString().slice(-2);
             const ano = parseInt(`20${ano2digitos}`);
+            
+            console.log('[buscarSemanaAbastecimentoPorConsumo] Parse datas - diaInicio:', diaInicio, 'mesInicio:', mesInicio, 'diaFim:', diaFim, 'mesFim:', mesFim, 'ano:', ano);
             
             // Criar datas diretamente
             const dataInicio = new Date(Date.UTC(ano, parseInt(mesInicio) - 1, parseInt(diaInicio)));
@@ -362,6 +366,8 @@ class NecessidadesPadroesGeracaoController {
             const dataInicioFormatada = formatarParaMySQL(dataInicio);
             const dataFimFormatada = formatarParaMySQL(dataFim);
             
+            console.log('[buscarSemanaAbastecimentoPorConsumo] Buscando por datas:', dataInicioFormatada, 'a', dataFimFormatada);
+            
             const resultadosPorData = await executeQuery(`
               SELECT DISTINCT semana_abastecimento
               FROM calendario
@@ -371,6 +377,21 @@ class NecessidadesPadroesGeracaoController {
                 AND semana_abastecimento != ''
               LIMIT 1
             `, [dataInicioFormatada, dataFimFormatada]);
+
+            console.log('[buscarSemanaAbastecimentoPorConsumo] Resultados por data:', resultadosPorData);
+            
+            // Se ainda não encontrou, buscar todas as semanas de consumo disponíveis para debug
+            if (resultadosPorData.length === 0) {
+              const semanasDisponiveis = await executeQuery(`
+                SELECT DISTINCT semana_consumo, semana_consumo_inicio, semana_consumo_fim
+                FROM calendario
+                WHERE semana_consumo IS NOT NULL
+                  AND semana_consumo != ''
+                ORDER BY semana_consumo_inicio DESC
+                LIMIT 10
+              `);
+              console.log('[buscarSemanaAbastecimentoPorConsumo] Primeiras 10 semanas de consumo disponíveis:', semanasDisponiveis);
+            }
 
             result = resultadosPorData.length > 0 ? resultadosPorData[0] : null;
             console.log('[buscarSemanaAbastecimentoPorConsumo] Query resultado (por datas):', result ? 'encontrado' : 'não encontrado');
