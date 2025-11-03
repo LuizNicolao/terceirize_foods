@@ -190,6 +190,7 @@ const Usuarios = () => {
         onPageChange={handlePageChange}
         totalItems={totalItems}
         itemsPerPage={itemsPerPage}
+        onItemsPerPageChange={handleItemsPerPageChange}
       />
 
       {/* Modal de Confirmação de Exclusão */}
