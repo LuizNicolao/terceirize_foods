@@ -78,8 +78,8 @@ class SolicitacoesComprasListController {
         sc.filial_id,
         sc.criado_em,
         sc.atualizado_em,
-        f.nome as filial_nome,
-        f.codigo as filial_codigo
+        f.filial as filial_nome,
+        f.codigo_filial as filial_codigo
       FROM solicitacoes_compras sc
       LEFT JOIN filiais f ON sc.filial_id = f.id
       ${whereClause}
@@ -179,8 +179,8 @@ class SolicitacoesComprasListController {
     const [solicitacao] = await executeQuery(
       `SELECT 
         sc.*,
-        f.nome as filial_nome,
-        f.codigo as filial_codigo,
+        f.filial as filial_nome,
+        f.codigo_filial as filial_codigo,
         u.nome as usuario_nome
       FROM solicitacoes_compras sc
       LEFT JOIN filiais f ON sc.filial_id = f.id

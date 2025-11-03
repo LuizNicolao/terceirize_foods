@@ -105,7 +105,7 @@ class SolicitacoesComprasCRUDController {
 
     // Verificar se filial existe
     const [filial] = await executeQuery(
-      'SELECT nome FROM filiais WHERE id = ?',
+      'SELECT filial FROM filiais WHERE id = ?',
       [filial_id]
     );
 
@@ -225,8 +225,8 @@ class SolicitacoesComprasCRUDController {
     const [solicitacao] = await executeQuery(
       `SELECT 
         sc.*,
-        f.nome as filial_nome,
-        f.codigo as filial_codigo
+        f.filial as filial_nome,
+        f.codigo_filial as filial_codigo
       FROM solicitacoes_compras sc
       LEFT JOIN filiais f ON sc.filial_id = f.id
       WHERE sc.id = ?`,
@@ -275,7 +275,7 @@ class SolicitacoesComprasCRUDController {
 
     // Verificar se filial existe
     const [filial] = await executeQuery(
-      'SELECT nome FROM filiais WHERE id = ?',
+      'SELECT filial FROM filiais WHERE id = ?',
       [filial_id]
     );
 
@@ -377,8 +377,8 @@ class SolicitacoesComprasCRUDController {
     const [solicitacaoAtualizada] = await executeQuery(
       `SELECT 
         sc.*,
-        f.nome as filial_nome,
-        f.codigo as filial_codigo
+        f.filial as filial_nome,
+        f.codigo_filial as filial_codigo
       FROM solicitacoes_compras sc
       LEFT JOIN filiais f ON sc.filial_id = f.id
       WHERE sc.id = ?`,
