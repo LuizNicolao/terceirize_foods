@@ -21,7 +21,7 @@ const router = express.Router();
 // Aplicar middlewares globais
 router.use(authenticateToken);
 router.use(paginationMiddleware);
-router.use(hateoasMiddleware);
+router.use(hateoasMiddleware('solicitacoes-compras'));
 
 // ========== ROTAS PRINCIPAIS ==========
 

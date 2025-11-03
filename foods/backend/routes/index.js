@@ -37,8 +37,8 @@ const faturamentoRoutes = require('./faturamento');
 const receitasRoutes = require('./receitas');
 const necessidadesMerendaRoutes = require('./necessidades-merenda');
 const planoAmostragemRoutes = require('./plano-amostragem/planoAmostragemRoute');
-const relatorioInspecaoRoutes = require('./relatorio-inspecao/relatorioInspecaoRoute');
-const solicitacoesComprasRoutes = require('./solicitacoes-compras/solicitacoesComprasRoute');
+const relatorioInspecaoRoutes = require('./relatorio-inspecao');
+const solicitacoesComprasRoutes = require('./solicitacoes-compras');
 const openaiRoutes = require('./openai/openaiRoute');
 const cepRoutes = require('./shared/cepRoute');
 
