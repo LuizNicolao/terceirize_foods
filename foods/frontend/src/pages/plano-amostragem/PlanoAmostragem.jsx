@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaPlus, FaQuestionCircle } from 'react-icons/fa';
+import { FaPlus, FaQuestionCircle, FaTimes } from 'react-icons/fa';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { usePlanoAmostragem } from '../../hooks/usePlanoAmostragem';
 import { useAuditoria } from '../../hooks/common/useAuditoria';
@@ -40,6 +40,7 @@ const PlanoAmostragem = () => {
     handleEditNQA,
     handleSaveNQA,
     handleDeleteNQA,
+    handleDesvincularGrupo,
     handleCloseValidationModal,
     setShowModalFaixa,
     setShowModalGrupo,
@@ -69,6 +70,8 @@ const PlanoAmostragem = () => {
   const [faixaToDelete, setFaixaToDelete] = React.useState(null);
   const [showDeleteNQAConfirm, setShowDeleteNQAConfirm] = React.useState(false);
   const [nqaToDelete, setNqaToDelete] = React.useState(null);
+  const [showDesvincularGrupoConfirm, setShowDesvincularGrupoConfirm] = React.useState(false);
+  const [grupoToDesvincular, setGrupoToDesvincular] = React.useState(null);
 
   const handleDeleteClick = (faixa) => {
     setFaixaToDelete(faixa);
@@ -93,6 +96,19 @@ const PlanoAmostragem = () => {
       await handleDeleteNQA(nqaToDelete);
       setShowDeleteNQAConfirm(false);
       setNqaToDelete(null);
+    }
+  };
+
+  const handleDesvincularGrupoClick = (grupo) => {
+    setGrupoToDesvincular(grupo);
+    setShowDesvincularGrupoConfirm(true);
+  };
+
+  const handleConfirmDesvincularGrupo = async () => {
+    if (grupoToDesvincular) {
+      await handleDesvincularGrupo(grupoToDesvincular);
+      setShowDesvincularGrupoConfirm(false);
+      setGrupoToDesvincular(null);
     }
   };
 
@@ -246,9 +262,20 @@ const PlanoAmostragem = () => {
                     ) : (
                       <ul className="space-y-1">
                         {grupos.map((grupo) => (
-                          <li key={grupo.id} className="text-xs text-gray-600 flex items-center">
-                            <span className="inline-block w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                            {grupo.grupo_nome} ({grupo.grupo_codigo})
+                          <li key={grupo.id} className="text-xs text-gray-600 flex items-center justify-between">
+                            <div className="flex items-center flex-1">
+                              <span className="inline-block w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                              <span>{grupo.grupo_nome} ({grupo.grupo_codigo})</span>
+                            </div>
+                            {canDelete('plano_amostragem') && (
+                              <button
+                                onClick={() => handleDesvincularGrupoClick(grupo)}
+                                className="ml-2 text-red-600 hover:text-red-800 hover:bg-red-50 p-1 rounded transition-colors"
+                                title="Desvincular grupo"
+                              >
+                                <FaTimes className="w-3 h-3" />
+                              </button>
+                            )}
                           </li>
                         ))}
                       </ul>
@@ -330,6 +357,21 @@ const PlanoAmostragem = () => {
         title="Excluir NQA"
         message={`Tem certeza que deseja excluir o NQA "${nqaToDelete?.codigo} - ${nqaToDelete?.nome}"? Esta ação não pode ser desfeita.`}
         confirmText="Excluir"
+        cancelText="Cancelar"
+        type="danger"
+      />
+
+      {/* Modal de Confirmação de Desvinculação de Grupo */}
+      <ConfirmModal
+        isOpen={showDesvincularGrupoConfirm}
+        onClose={() => {
+          setShowDesvincularGrupoConfirm(false);
+          setGrupoToDesvincular(null);
+        }}
+        onConfirm={handleConfirmDesvincularGrupo}
+        title="Desvincular Grupo"
+        message={`Tem certeza que deseja desvincular o grupo "${grupoToDesvincular?.grupo_nome} (${grupoToDesvincular?.grupo_codigo})" deste NQA?`}
+        confirmText="Desvincular"
         cancelText="Cancelar"
         type="danger"
       />

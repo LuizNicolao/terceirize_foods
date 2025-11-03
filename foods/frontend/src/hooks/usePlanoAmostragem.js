@@ -323,6 +323,27 @@ export const usePlanoAmostragem = () => {
   }, [carregarDadosCompletos]);
 
   /**
+   * Desvincular grupo de NQA
+   */
+  const handleDesvincularGrupo = useCallback(async (grupo) => {
+    try {
+      const response = await PlanoAmostragemService.desvincularGrupo(grupo.grupo_id);
+      if (response.success) {
+        toast.success('Grupo desvinculado com sucesso!');
+        await carregarDadosCompletos();
+        return response;
+      } else {
+        toast.error(response.message || 'Erro ao desvincular grupo');
+        return response;
+      }
+    } catch (error) {
+      console.error('Erro ao desvincular grupo:', error);
+      toast.error('Erro ao desvincular grupo');
+      return { success: false };
+    }
+  }, [carregarDadosCompletos]);
+
+  /**
    * Calcular estatísticas
    */
   const estatisticas = React.useMemo(() => {
@@ -384,6 +405,7 @@ export const usePlanoAmostragem = () => {
     handleEditNQA,
     handleSaveNQA,
     handleDeleteNQA,
+    handleDesvincularGrupo,
     handleCloseValidationModal: () => {
       setShowValidationModal(false);
       setValidationErrors(null);
