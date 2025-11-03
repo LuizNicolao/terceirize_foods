@@ -17,6 +17,9 @@ class RIRListController {
    * Listar relatórios de inspeção com paginação, busca e HATEOAS
    */
   static listarRIRs = asyncHandler(async (req, res) => {
+    console.log('[RIR] Iniciando listagem de RIRs');
+    const startTime = Date.now();
+    
     const { search = '', status_geral, fornecedor, data_inicio, data_fim } = req.query;
     const pagination = req.pagination;
 
@@ -74,8 +77,12 @@ class RIRListController {
     baseQuery += ' ORDER BY ri.data_inspecao DESC, ri.hora_inspecao DESC';
 
     // Contar total de registros
+    console.log('[RIR] Executando count query');
     const countQuery = `SELECT COUNT(*) as total FROM (${baseQuery}) as count_query`;
+    const countStart = Date.now();
     const countResult = await executeQuery(countQuery, params);
+    const countTime = Date.now() - countStart;
+    console.log(`[RIR] Count query executado em ${countTime}ms`);
     const totalItems = countResult[0].total;
 
     // Aplicar paginação
@@ -83,9 +90,15 @@ class RIRListController {
     const offset = pagination.offset;
     const query = `${baseQuery} LIMIT ${limit} OFFSET ${offset}`;
 
+    console.log('[RIR] Executando query principal');
+    const mainQueryStart = Date.now();
     const rirs = await executeQuery(query, params);
+    const mainQueryTime = Date.now() - mainQueryStart;
+    console.log(`[RIR] Query principal executada em ${mainQueryTime}ms, registros: ${rirs.length}`);
 
     // Adicionar total_produtos após buscar os dados para evitar uso de JSON_LENGTH na query
+    console.log('[RIR] Processando produtos JSON');
+    const processStart = Date.now();
     const rirsWithTotals = rirs.map(rir => {
       const { produtos_json, ...rirWithoutJson } = rir;
       let total_produtos = 0;
@@ -101,6 +114,8 @@ class RIRListController {
       }
       return { ...rirWithoutJson, total_produtos };
     });
+    const processTime = Date.now() - processStart;
+    console.log(`[RIR] Produtos JSON processados em ${processTime}ms`);
 
     // Calcular estatísticas (usando mesma lógica de filtros da query principal)
     let statsQuery = `
@@ -136,7 +151,11 @@ class RIRListController {
       statsParams.push(data_fim);
     }
     
+    console.log('[RIR] Executando query de estatísticas');
+    const statsStart = Date.now();
     const statsResult = await executeQuery(statsQuery, statsParams);
+    const statsTime = Date.now() - statsStart;
+    console.log(`[RIR] Query de estatísticas executada em ${statsTime}ms`);
     const statistics = statsResult[0] || { total: 0, aprovados: 0, reprovados: 0, parciais: 0 };
 
     // Gerar metadados de paginação
@@ -151,6 +170,8 @@ class RIRListController {
     const actions = res.generateActionLinks(userPermissions);
 
     // Retornar resposta no formato esperado pelo frontend
+    const totalTime = Date.now() - startTime;
+    console.log(`[RIR] Listagem concluída em ${totalTime}ms total`);
     return successResponse(res, rirsWithTotals, 'Relatórios de inspeção listados com sucesso', STATUS_CODES.OK, {
       ...meta,
       statistics,
