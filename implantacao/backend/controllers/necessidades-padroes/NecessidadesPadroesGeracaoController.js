@@ -308,7 +308,8 @@ class NecessidadesPadroesGeracaoController {
       }
 
       // Buscar semana de abastecimento na tabela calendario
-      const result = await executeQuery(`
+      // Tentar buscar com o formato exato primeiro
+      let result = await executeQuery(`
         SELECT DISTINCT semana_abastecimento
         FROM calendario
         WHERE semana_consumo = ?
@@ -317,12 +318,45 @@ class NecessidadesPadroesGeracaoController {
         LIMIT 1
       `, [semana_consumo]);
 
+      console.log('[buscarSemanaAbastecimentoPorConsumo] Query resultado (exato):', result.length, result);
+
+      // Se não encontrar, tentar buscar sem parênteses (caso o banco não tenha os parênteses)
+      if (result.length === 0 && semana_consumo.includes('(')) {
+        const semanaSemParenteses = semana_consumo.replace(/[()]/g, '').trim();
+        result = await executeQuery(`
+          SELECT DISTINCT semana_abastecimento
+          FROM calendario
+          WHERE semana_consumo = ?
+            AND semana_abastecimento IS NOT NULL
+            AND semana_abastecimento != ''
+          LIMIT 1
+        `, [semanaSemParenteses]);
+        
+        console.log('[buscarSemanaAbastecimentoPorConsumo] Query resultado (sem parênteses):', result.length, result);
+      }
+
+      // Se ainda não encontrar, tentar busca com LIKE (mais flexível)
+      if (result.length === 0) {
+        const semanaLike = semana_consumo.replace(/[()]/g, '').trim();
+        result = await executeQuery(`
+          SELECT DISTINCT semana_abastecimento
+          FROM calendario
+          WHERE semana_consumo LIKE ?
+            AND semana_abastecimento IS NOT NULL
+            AND semana_abastecimento != ''
+          LIMIT 1
+        `, [`%${semanaLike}%`]);
+        
+        console.log('[buscarSemanaAbastecimentoPorConsumo] Query resultado (LIKE):', result.length, result);
+      }
+
       if (result.length > 0) {
         return successResponse(res, {
           semana_consumo,
           semana_abastecimento: result[0].semana_abastecimento
         }, 'Semana de abastecimento encontrada');
       } else {
+        console.log('[buscarSemanaAbastecimentoPorConsumo] Semana não encontrada, retornando 404');
         return errorResponse(res, 'Semana de abastecimento não encontrada para esta semana de consumo', 404);
       }
     } catch (error) {
