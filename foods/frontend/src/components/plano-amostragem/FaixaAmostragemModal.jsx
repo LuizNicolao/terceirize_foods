@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Input, Button } from '../ui';
+import { Modal, Input, Button, SearchableSelect } from '../ui';
 import PlanoAmostragemService from '../../services/planoAmostragem';
 
 const FaixaAmostragemModal = ({ 
@@ -12,19 +12,20 @@ const FaixaAmostragemModal = ({
 }) => {
   const [nqas, setNqas] = useState([]);
   const [nqaCodigo, setNqaCodigo] = useState('');
+  const [nqaSelecionadoId, setNqaSelecionadoId] = useState(null);
 
   useEffect(() => {
     if (isOpen) {
       carregarNQAs();
       if (faixa) {
         setNqaCodigo(faixa.nqa_codigo || '');
+        setNqaSelecionadoId(faixa.nqa_id || null);
       } else if (nqaSelecionado) {
-        // Buscar código do NQA selecionado
-        const nqaSelecionadoObj = nqas.find(n => n.id === nqaSelecionado);
-        if (nqaSelecionadoObj) {
-          setNqaCodigo(nqaSelecionadoObj.codigo);
-        }
+        setNqaSelecionadoId(nqaSelecionado);
       }
+    } else {
+      setNqaCodigo('');
+      setNqaSelecionadoId(null);
     }
   }, [isOpen, faixa, nqaSelecionado]);
 
@@ -43,8 +44,8 @@ const FaixaAmostragemModal = ({
     e.preventDefault();
     const formData = new FormData(e.target);
     const data = {
-      nqa_id: formData.get('nqa_id') || null,
-      nqa_codigo: formData.get('nqa_codigo') || nqaCodigo,
+      nqa_id: nqaSelecionadoId || null,
+      nqa_codigo: nqaCodigo || null,
       faixa_inicial: parseInt(formData.get('faixa_inicial')),
       faixa_final: parseInt(formData.get('faixa_final')),
       tamanho_amostra: parseInt(formData.get('tamanho_amostra')),
@@ -57,6 +58,7 @@ const FaixaAmostragemModal = ({
     const result = await onSubmit(data);
     if (result && result.success) {
       setNqaCodigo('');
+      setNqaSelecionadoId(null);
     }
   };
 
@@ -68,34 +70,61 @@ const FaixaAmostragemModal = ({
       size="lg"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
-        {!faixa && (
+        {!faixa ? (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <Input
-              label="NQA (código ou selecionar) *"
-              name="nqa_codigo"
-              value={nqaCodigo}
-              onChange={(e) => setNqaCodigo(e.target.value)}
-              disabled={isViewMode}
-              placeholder="Ex: 2,5"
-            />
-            <Input
-              label="Ou selecionar NQA existente"
-              name="nqa_id"
-              type="select"
-              disabled={isViewMode || nqaCodigo}
-              defaultValue={faixa?.nqa_id || nqaSelecionado || ''}
-            >
-              <option value="">Selecione um NQA</option>
-              {nqas.map(nqa => (
-                <option key={nqa.id} value={nqa.id}>
-                  {nqa.codigo} - {nqa.nome}
-                </option>
-              ))}
-            </Input>
+            <div>
+              <Input
+                label="NQA (código) *"
+                name="nqa_codigo"
+                value={nqaCodigo}
+                onChange={(e) => {
+                  setNqaCodigo(e.target.value);
+                  if (e.target.value) {
+                    setNqaSelecionadoId(null);
+                  }
+                }}
+                disabled={isViewMode || nqaSelecionadoId}
+                placeholder="Ex: 2,5"
+              />
+            </div>
+            <div>
+              <SearchableSelect
+                label="Ou selecionar NQA existente"
+                value={nqaSelecionadoId || ''}
+                onChange={(value) => {
+                  setNqaSelecionadoId(value ? parseInt(value) : null);
+                  if (value) {
+                    const nqaSelecionado = nqas.find(n => n.id === parseInt(value));
+                    if (nqaSelecionado) {
+                      setNqaCodigo(nqaSelecionado.codigo);
+                    }
+                  }
+                }}
+                options={nqas.map(nqa => ({
+                  value: nqa.id,
+                  label: `${nqa.codigo} - ${nqa.nome}`,
+                  description: `Nível: ${nqa.nivel_inspecao}`
+                }))}
+                placeholder="Digite para buscar um NQA..."
+                disabled={isViewMode || !!nqaCodigo}
+                filterBy={(option, searchTerm) => {
+                  const label = option.label.toLowerCase();
+                  const description = option.description?.toLowerCase() || '';
+                  const term = searchTerm.toLowerCase();
+                  return label.includes(term) || description.includes(term);
+                }}
+                renderOption={(option) => (
+                  <div className="flex flex-col">
+                    <span className="font-medium text-gray-900">{option.label}</span>
+                    {option.description && (
+                      <span className="text-xs text-gray-500 mt-1">{option.description}</span>
+                    )}
+                  </div>
+                )}
+              />
+            </div>
           </div>
-        )}
-
-        {faixa && (
+        ) : (
           <Input
             label="NQA"
             name="nqa_codigo"

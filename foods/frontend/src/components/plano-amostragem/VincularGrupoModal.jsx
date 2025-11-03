@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Input, Button } from '../ui';
+import { Modal, Input, Button, SearchableSelect } from '../ui';
 import GruposService from '../../services/grupos';
 import PlanoAmostragemService from '../../services/planoAmostragem';
 
@@ -12,11 +12,16 @@ const VincularGrupoModal = ({
   const [nqas, setNqas] = useState([]);
   const [loadingGrupos, setLoadingGrupos] = useState(false);
   const [loadingNQAs, setLoadingNQAs] = useState(false);
+  const [grupoSelecionado, setGrupoSelecionado] = useState(null);
+  const [nqaSelecionado, setNqaSelecionado] = useState(null);
 
   useEffect(() => {
     if (isOpen) {
       carregarGrupos();
       carregarNQAs();
+    } else {
+      setGrupoSelecionado(null);
+      setNqaSelecionado(null);
     }
   }, [isOpen]);
 
@@ -63,45 +68,80 @@ const VincularGrupoModal = ({
       title="Vincular Grupo ao NQA"
       size="lg"
     >
-      <form onSubmit={(e) => {
+      <form onSubmit={async (e) => {
         e.preventDefault();
         const formData = new FormData(e.target);
         const data = {
-          grupo_id: parseInt(formData.get('grupo_id')),
-          nqa_id: parseInt(formData.get('nqa_id')),
+          grupo_id: grupoSelecionado ? parseInt(grupoSelecionado) : null,
+          nqa_id: nqaSelecionado ? parseInt(nqaSelecionado) : null,
           observacoes: formData.get('observacoes')
         };
-        onSubmit(data);
+        
+        if (!data.grupo_id || !data.nqa_id) {
+          return;
+        }
+        
+        const result = await onSubmit(data);
+        if (result && result.success) {
+          setGrupoSelecionado(null);
+          setNqaSelecionado(null);
+        }
       }} className="space-y-4">
-        <Input
+        <SearchableSelect
           label="Grupo de Produto *"
-          name="grupo_id"
-          type="select"
-          required
+          value={grupoSelecionado || ''}
+          onChange={(value) => setGrupoSelecionado(value || null)}
+          options={grupos.map(grupo => ({
+            value: grupo.id,
+            label: `${grupo.codigo} - ${grupo.nome}`,
+            description: grupo.descricao || 'Sem descrição'
+          }))}
+          placeholder="Digite para buscar um grupo..."
           disabled={loadingGrupos}
-        >
-          <option value="">Selecione um grupo</option>
-          {grupos.map(grupo => (
-            <option key={grupo.id} value={grupo.id}>
-              {grupo.codigo} - {grupo.nome}
-            </option>
-          ))}
-        </Input>
-
-        <Input
-          label="NQA *"
-          name="nqa_id"
-          type="select"
           required
+          filterBy={(option, searchTerm) => {
+            const label = option.label.toLowerCase();
+            const description = option.description?.toLowerCase() || '';
+            const term = searchTerm.toLowerCase();
+            return label.includes(term) || description.includes(term);
+          }}
+          renderOption={(option) => (
+            <div className="flex flex-col">
+              <span className="font-medium text-gray-900">{option.label}</span>
+              {option.description && (
+                <span className="text-xs text-gray-500 mt-1">{option.description}</span>
+              )}
+            </div>
+          )}
+        />
+
+        <SearchableSelect
+          label="NQA *"
+          value={nqaSelecionado || ''}
+          onChange={(value) => setNqaSelecionado(value || null)}
+          options={nqas.map(nqa => ({
+            value: nqa.id,
+            label: `${nqa.codigo} - ${nqa.nome}`,
+            description: `Nível: ${nqa.nivel_inspecao}`
+          }))}
+          placeholder="Digite para buscar um NQA..."
           disabled={loadingNQAs}
-        >
-          <option value="">Selecione um NQA</option>
-          {nqas.map(nqa => (
-            <option key={nqa.id} value={nqa.id}>
-              {nqa.codigo} - {nqa.nome} ({nqa.nivel_inspecao})
-            </option>
-          ))}
-        </Input>
+          required
+          filterBy={(option, searchTerm) => {
+            const label = option.label.toLowerCase();
+            const description = option.description?.toLowerCase() || '';
+            const term = searchTerm.toLowerCase();
+            return label.includes(term) || description.includes(term);
+          }}
+          renderOption={(option) => (
+            <div className="flex flex-col">
+              <span className="font-medium text-gray-900">{option.label}</span>
+              {option.description && (
+                <span className="text-xs text-gray-500 mt-1">{option.description}</span>
+              )}
+            </div>
+          )}
+        />
 
         <Input
           label="Observações"
