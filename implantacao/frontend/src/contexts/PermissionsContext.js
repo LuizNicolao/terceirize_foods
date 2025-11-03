@@ -66,7 +66,29 @@ export const PermissionsProvider = ({ children }) => {
     }
   };
 
-  const hasPermission = (screen, action) => {
+  const hasPermission = (screen, action, aba = null) => {
+    // Se especificou uma aba, verificar permissão específica primeiro
+    if (aba) {
+      const screenAba = `${screen}.${aba}`;
+      if (userPermissions[screenAba]) {
+        switch (action) {
+          case 'visualizar':
+            return userPermissions[screenAba].pode_visualizar;
+          case 'criar':
+            return userPermissions[screenAba].pode_criar;
+          case 'editar':
+            return userPermissions[screenAba].pode_editar;
+          case 'excluir':
+            return userPermissions[screenAba].pode_excluir;
+          case 'movimentar':
+            return userPermissions[screenAba].pode_movimentar;
+          default:
+            return false;
+        }
+      }
+    }
+    
+    // Fallback: verificar permissão geral da tela
     if (!userPermissions[screen]) {
       return false;
     }
@@ -87,11 +109,11 @@ export const PermissionsProvider = ({ children }) => {
     }
   };
 
-  const canView = (screen) => hasPermission(screen, 'visualizar');
-  const canCreate = (screen) => hasPermission(screen, 'criar');
-  const canEdit = (screen) => hasPermission(screen, 'editar');
-  const canDelete = (screen) => hasPermission(screen, 'excluir');
-  const canMovimentar = (screen) => hasPermission(screen, 'movimentar');
+  const canView = (screen, aba = null) => hasPermission(screen, 'visualizar', aba);
+  const canCreate = (screen, aba = null) => hasPermission(screen, 'criar', aba);
+  const canEdit = (screen, aba = null) => hasPermission(screen, 'editar', aba);
+  const canDelete = (screen, aba = null) => hasPermission(screen, 'excluir', aba);
+  const canMovimentar = (screen, aba = null) => hasPermission(screen, 'movimentar', aba);
 
   const value = {
     userPermissions,

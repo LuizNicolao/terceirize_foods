@@ -79,10 +79,13 @@ const AjusteNecessidades = () => {
     handleCloseDeleteModal
   } = useAjusteNecessidadesOrchestrator();
 
-  // Verificar permissões específicas
+  // Verificar permissões específicas por aba
   const tiposComAcesso = ['nutricionista', 'coordenador', 'supervisor', 'administrador'];
-  const canViewAjuste = canView('analise_necessidades') || tiposComAcesso.includes(user.tipo_de_acesso);
-  const canEditAjuste = canEdit('analise_necessidades') || tiposComAcesso.includes(user.tipo_de_acesso);
+  // Verificar se tem permissão geral ou por tipo de acesso (compatibilidade)
+  const hasGeneralPermission = canView('analise_necessidades') || tiposComAcesso.includes(user.tipo_de_acesso);
+  // Verificar permissão específica da aba ativa
+  const canViewAjuste = hasGeneralPermission || canView('analise_necessidades', activeTab);
+  const canEditAjuste = (canEdit('analise_necessidades') || tiposComAcesso.includes(user.tipo_de_acesso)) || canEdit('analise_necessidades', activeTab);
 
   // Verificar se pode visualizar
   if (permissionsLoading) {
