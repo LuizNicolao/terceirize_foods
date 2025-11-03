@@ -75,23 +75,6 @@ class RIRListController {
       ${whereClause}
     `;
 
-    // Contar total de registros (query simples sem JOIN desnecessário)
-    console.log('[RIR] Executando count query');
-    const countQuery = `SELECT COUNT(*) as total FROM relatorio_inspecao ri ${whereClause}`;
-    console.log('[RIR] Count query gerada:', countQuery.substring(0, 200));
-    const countStart = Date.now();
-    let totalItems;
-    try {
-      const countResult = await executeQuery(countQuery, params);
-      const countTime = Date.now() - countStart;
-      console.log(`[RIR] Count query executado em ${countTime}ms, total: ${countResult[0].total}`);
-      totalItems = countResult[0].total;
-    } catch (countError) {
-      const countTime = Date.now() - countStart;
-      console.error(`[RIR] ERRO na count query após ${countTime}ms:`, countError.message);
-      throw countError;
-    }
-
     // Aplicar paginação
     baseQuery += ' ORDER BY ri.data_inspecao DESC, ri.hora_inspecao DESC';
     const limit = pagination.limit;
@@ -109,6 +92,22 @@ class RIRListController {
       const mainQueryTime = Date.now() - mainQueryStart;
       console.error(`[RIR] ERRO na query principal após ${mainQueryTime}ms:`, mainError.message);
       throw mainError;
+    }
+
+    // Contar total de registros (DEPOIS da query principal, como em Produtos)
+    console.log('[RIR] Executando count query');
+    const countQuery = `SELECT COUNT(*) as total FROM relatorio_inspecao ri ${whereClause}`;
+    const countStart = Date.now();
+    let totalItems;
+    try {
+      const countResult = await executeQuery(countQuery, params);
+      const countTime = Date.now() - countStart;
+      console.log(`[RIR] Count query executado em ${countTime}ms, total: ${countResult[0].total}`);
+      totalItems = countResult[0].total;
+    } catch (countError) {
+      const countTime = Date.now() - countStart;
+      console.error(`[RIR] ERRO na count query após ${countTime}ms:`, countError.message);
+      throw countError;
     }
 
     // Buscar total_produtos e usuario_nome apenas para os IDs retornados (query eficiente)
