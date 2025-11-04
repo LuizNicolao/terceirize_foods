@@ -110,30 +110,23 @@ const PedidosCompras = () => {
   return (
     <div className="p-3 sm:p-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 gap-3 sm:gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Pedidos de Compras</h1>
-          <p className="text-sm text-gray-600 mt-1">Gerencie os pedidos de compras do sistema</p>
-        </div>
-        <div className="flex items-center gap-3">
-          {canView('pedidos_compras') && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleOpenAuditModal}
-              className="text-xs"
-            >
-              <FaQuestionCircle className="mr-2" />
-              Auditoria
-            </Button>
-          )}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3 sm:gap-4">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Pedidos de Compras</h1>
+        <div className="flex gap-2 sm:gap-3">
+          <Button
+            onClick={handleOpenAuditModal}
+            variant="ghost"
+            size="sm"
+            className="text-xs"
+          >
+            <FaQuestionCircle className="mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Auditoria</span>
+          </Button>
           {canCreate('pedidos_compras') && (
-            <Button
-              onClick={handleAddPedidoCompras}
-              size="sm"
-            >
-              <FaPlus className="mr-2" />
-              Novo Pedido
+            <Button onClick={handleAddPedidoCompras} size="sm">
+              <FaPlus className="mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Novo Pedido</span>
+              <span className="sm:hidden">Novo</span>
             </Button>
           )}
         </div>
