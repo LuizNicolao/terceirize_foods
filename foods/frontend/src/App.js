@@ -41,6 +41,7 @@ import CalendarioVisualizacao from './pages/calendario/CalendarioVisualizacao';
 import CalendarioConfiguracao from './pages/calendario/CalendarioConfiguracao';
 import CalendarioRelatorios from './pages/calendario/CalendarioRelatorios';
 import FormasPagamento from './pages/formas-pagamento/FormasPagamento';
+import PrazosPagamento from './pages/prazos-pagamento/PrazosPagamento';
 
 // Componente para rotas protegidas com autenticação
 const AuthenticatedRoute = ({ children }) => {
@@ -444,6 +445,17 @@ const App = () => {
           <AuthenticatedRoute>
             <ProtectedRoute screen="formas_pagamento">
               <FormasPagamento />
+            </ProtectedRoute>
+          </AuthenticatedRoute>
+        } 
+      />
+
+      <Route 
+        path="/foods/prazos-pagamento" 
+        element={
+          <AuthenticatedRoute>
+            <ProtectedRoute screen="prazos_pagamento">
+              <PrazosPagamento />
             </ProtectedRoute>
           </AuthenticatedRoute>
         } 

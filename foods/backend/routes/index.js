@@ -41,6 +41,7 @@ const relatorioInspecaoRoutes = require('./relatorio-inspecao');
 const solicitacoesComprasRoutes = require('./solicitacoes-compras');
 const calendarioRoutes = require('./calendario');
 const formasPagamentoRoutes = require('./formas-pagamento');
+const prazosPagamentoRoutes = require('./prazos-pagamento');
 const openaiRoutes = require('./openai/openaiRoute');
 const cepRoutes = require('./shared/cepRoute');
 
@@ -83,6 +84,7 @@ const routes = [
   { path: '/solicitacoes-compras', router: solicitacoesComprasRoutes },
   { path: '/calendario', router: calendarioRoutes },
   { path: '/formas-pagamento', router: formasPagamentoRoutes },
+  { path: '/prazos-pagamento', router: prazosPagamentoRoutes },
   { path: '/openai', router: openaiRoutes },
   { path: '/shared', router: cepRoutes }
 ];

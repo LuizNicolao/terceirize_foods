@@ -34,7 +34,8 @@ import {
   FaFileInvoice,
   FaShoppingCart,
   FaClipboardCheck,
-  FaCreditCard
+  FaCreditCard,
+  FaCalendarAlt as FaCalendarAltPayment
 } from 'react-icons/fa';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePermissions } from '../../contexts/PermissionsContext';
@@ -107,6 +108,7 @@ const menuGroups = [
       { path: '/foods/relatorio-inspecao', icon: FaClipboardCheck, label: 'Relatório de Inspeção', screen: 'relatorio_inspecao' },
       { path: '/foods/solicitacoes-compras', icon: FaShoppingCart, label: 'Solicitações de Compras', screen: 'solicitacoes_compras' },
       { path: '/foods/formas-pagamento', icon: FaCreditCard, label: 'Formas de Pagamento', screen: 'formas_pagamento' },
+      { path: '/foods/prazos-pagamento', icon: FaCalendarAltPayment, label: 'Prazos de Pagamento', screen: 'prazos_pagamento' },
       { path: '/foods/calendario', icon: FaCalendarAlt, label: 'Calendário', screen: 'calendario' },
     ]
   },
