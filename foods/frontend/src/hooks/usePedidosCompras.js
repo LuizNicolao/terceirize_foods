@@ -22,19 +22,7 @@ export const usePedidosCompras = () => {
   const [solicitacoesDisponiveis, setSolicitacoesDisponiveis] = useState([]);
   const [selectedIds, setSelectedIds] = useState([]);
   const [loadingBatch, setLoadingBatch] = useState(false);
-
-  /**
-   * Carrega dados com filtros
-   * Não passa 'search' nos params quando enableDebouncedSearch está ativo,
-   * pois o useBaseEntity já gerencia isso internamente
-   */
-  const loadDataWithFilters = useCallback(async () => {
-    const params = {
-      status: statusFilter || undefined
-    };
-
-    await baseEntity.loadData(params);
-  }, [statusFilter, baseEntity.loadData]);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   /**
    * Carregar solicitações disponíveis
@@ -51,13 +39,47 @@ export const usePedidosCompras = () => {
   }, []);
 
   /**
-   * Carregar dados quando filtros mudarem
-   * Não inclui baseEntity.searchTerm nas dependências porque o useBaseEntity
-   * já gerencia a busca com debounce internamente
+   * Carrega dados com filtros
+   * Usa o sistema de filtros do baseEntity, mas sobrescreve com statusFilter quando necessário
+   */
+  const loadDataWithFilters = useCallback(async () => {
+    const params = {
+      status: statusFilter || undefined
+    };
+
+    await baseEntity.loadData(params);
+  }, [statusFilter, baseEntity.loadData]);
+
+  /**
+   * Interceptar mudanças de paginação e busca para incluir statusFilter
+   * O useBaseEntity já gerencia o carregamento, mas precisamos garantir que o status seja incluído
    */
   useEffect(() => {
-    loadDataWithFilters();
-  }, [baseEntity.currentPage, baseEntity.itemsPerPage, statusFilter, loadDataWithFilters]);
+    if (isInitialLoad) {
+      // Primeiro carregamento: aguardar um tick para garantir que baseEntity está pronto
+      const timer = setTimeout(() => {
+        const params = {
+          status: statusFilter || undefined
+        };
+        baseEntity.loadData(params);
+        setIsInitialLoad(false);
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+  }, [isInitialLoad]);
+
+  /**
+   * Carregar dados quando statusFilter mudar
+   */
+  useEffect(() => {
+    if (!isInitialLoad) {
+      const params = {
+        status: statusFilter || undefined
+      };
+      baseEntity.loadData(params);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [statusFilter]); // baseEntity.loadData é estável, não precisa nas dependências
 
   /**
    * Carregar solicitações disponíveis ao montar
@@ -241,11 +263,11 @@ export const usePedidosCompras = () => {
     handleItemsPerPageChange: baseEntity.handleItemsPerPageChange,
     handleClearFilters,
     setSearchTerm: baseEntity.setSearchTerm,
-    handleKeyPress: (e) => {
+    handleKeyPress: baseEntity.handleKeyPress || ((e) => {
       if (e.key === 'Enter') {
         loadDataWithFilters();
       }
-    },
+    }),
     getStatusBadge,
     loadSolicitacoesDisponiveis,
     // Seleção e ações em lote
