@@ -169,6 +169,10 @@ class PedidosComprasCRUDController {
       [valorTotal, pedidoId]
     );
 
+    // Atualizar status da solicitação baseado nos pedidos aprovados
+    // Não atualiza aqui porque o pedido está em 'em_digitacao', não 'aprovado'
+    // A atualização será feita quando o pedido for aprovado
+
     // Buscar pedido criado com todos os dados
     const pedidoCriado = await PedidosComprasHelpers.buscarPedidoCompleto(pedidoId);
 

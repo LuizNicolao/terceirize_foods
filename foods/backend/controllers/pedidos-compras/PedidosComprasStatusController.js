@@ -30,19 +30,38 @@ class PedidosComprasStatusController {
       const pedidosAprovados = [];
       const pedidosIgnorados = [];
 
+      const PedidosComprasHelpers = require('./PedidosComprasHelpers');
+      const solicitacoesParaAtualizar = new Set();
+
       for (const pedido of pedidos) {
         if (pedido.status === 'em_digitacao') {
+          // Buscar solicitacao_compras_id antes de aprovar
+          const [pedidoCompleto] = await executeQuery(
+            'SELECT solicitacao_compras_id FROM pedidos_compras WHERE id = ?',
+            [pedido.id]
+          );
+
           await executeQuery(
             'UPDATE pedidos_compras SET status = ? WHERE id = ?',
             ['aprovado', pedido.id]
           );
           pedidosAprovados.push(pedido.numero_pedido);
+
+          // Adicionar solicitação para atualizar status
+          if (pedidoCompleto?.solicitacao_compras_id) {
+            solicitacoesParaAtualizar.add(pedidoCompleto.solicitacao_compras_id);
+          }
         } else {
           pedidosIgnorados.push({
             numero: pedido.numero_pedido,
             motivo: `Status atual: ${pedido.status}`
           });
         }
+      }
+
+      // Atualizar status das solicitações afetadas
+      for (const solicitacaoId of solicitacoesParaAtualizar) {
+        await PedidosComprasHelpers.atualizarStatusSolicitacao(solicitacaoId);
       }
 
       const message = pedidosAprovados.length > 0
@@ -85,14 +104,27 @@ class PedidosComprasStatusController {
 
       const pedidosReabertos = [];
       const pedidosIgnorados = [];
+      const PedidosComprasHelpers = require('./PedidosComprasHelpers');
+      const solicitacoesParaAtualizar = new Set();
 
       for (const pedido of pedidos) {
         if (pedido.status === 'aprovado') {
+          // Buscar solicitacao_compras_id antes de reabrir
+          const [pedidoCompleto] = await executeQuery(
+            'SELECT solicitacao_compras_id FROM pedidos_compras WHERE id = ?',
+            [pedido.id]
+          );
+
           await executeQuery(
             'UPDATE pedidos_compras SET status = ? WHERE id = ?',
             ['em_digitacao', pedido.id]
           );
           pedidosReabertos.push(pedido.numero_pedido);
+
+          // Adicionar solicitação para atualizar status
+          if (pedidoCompleto?.solicitacao_compras_id) {
+            solicitacoesParaAtualizar.add(pedidoCompleto.solicitacao_compras_id);
+          }
         } else {
           pedidosIgnorados.push({
             numero: pedido.numero_pedido,
@@ -101,6 +133,11 @@ class PedidosComprasStatusController {
               : `Status atual: ${pedido.status}`
           });
         }
+      }
+
+      // Atualizar status das solicitações afetadas
+      for (const solicitacaoId of solicitacoesParaAtualizar) {
+        await PedidosComprasHelpers.atualizarStatusSolicitacao(solicitacaoId);
       }
 
       const message = pedidosReabertos.length > 0

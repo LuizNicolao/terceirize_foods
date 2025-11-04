@@ -177,6 +177,64 @@ class PedidosComprasHelpers {
   }
 
   /**
+   * Atualizar status da solicitação baseado nos pedidos aprovados
+   * Considera apenas pedidos com status 'aprovado' ou superior
+   */
+  static async atualizarStatusSolicitacao(solicitacaoId) {
+    // Buscar todos os itens da solicitação com quantidades utilizadas em pedidos aprovados
+    const itens = await executeQuery(
+      `SELECT 
+        sci.id,
+        sci.quantidade as quantidade_solicitada,
+        COALESCE(SUM(CASE WHEN pc.status IN ('aprovado', 'enviado', 'confirmado', 'em_transito', 'entregue', 'parcial', 'finalizado') 
+          THEN pci.quantidade_pedido ELSE 0 END), 0) as quantidade_utilizada
+      FROM solicitacao_compras_itens sci
+      LEFT JOIN pedido_compras_itens pci ON pci.solicitacao_item_id = sci.id
+      LEFT JOIN pedidos_compras pc ON pci.pedido_id = pc.id
+      WHERE sci.solicitacao_id = ?
+      GROUP BY sci.id, sci.quantidade`,
+      [solicitacaoId]
+    );
+
+    if (itens.length === 0) {
+      // Se não tem itens, manter status atual ou definir como 'aberto'
+      return;
+    }
+
+    let todosAtendidos = true;
+    let algumAtendido = false;
+
+    for (const item of itens) {
+      const solicitado = parseFloat(item.quantidade_solicitada || 0);
+      const utilizado = parseFloat(item.quantidade_utilizada || 0);
+
+      if (utilizado > 0) {
+        algumAtendido = true;
+      }
+
+      if (utilizado < solicitado) {
+        todosAtendidos = false;
+      }
+    }
+
+    // Determinar status
+    let novoStatus = 'aberto';
+    if (algumAtendido && todosAtendidos) {
+      novoStatus = 'finalizado';
+    } else if (algumAtendido) {
+      novoStatus = 'parcial';
+    }
+
+    // Atualizar status da solicitação
+    await executeQuery(
+      'UPDATE solicitacoes_compras SET status = ? WHERE id = ?',
+      [novoStatus, solicitacaoId]
+    );
+
+    return novoStatus;
+  }
+
+  /**
    * Obter permissões do usuário (helper)
    */
   static getUserPermissions(user) {
