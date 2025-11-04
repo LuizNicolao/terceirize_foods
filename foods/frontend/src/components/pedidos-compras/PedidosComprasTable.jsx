@@ -119,10 +119,13 @@ const PedidosComprasTable = ({
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex justify-end">
                         <ActionButtons
+                          canView={canView}
+                          canEdit={canEdit}
+                          canDelete={canDelete}
+                          onView={onView}
+                          onEdit={onEdit}
+                          onDelete={onDelete}
                           item={pedido}
-                          onView={canView ? onView : undefined}
-                          onEdit={canEdit ? onEdit : undefined}
-                          onDelete={canDelete ? onDelete : undefined}
                           size="xs"
                         />
                       </div>
@@ -184,10 +187,13 @@ const PedidosComprasTable = ({
 
               <div className="mt-4 pt-4 border-t border-gray-200">
                 <ActionButtons
+                  canView={canView}
+                  canEdit={canEdit}
+                  canDelete={canDelete}
+                  onView={onView}
+                  onEdit={onEdit}
+                  onDelete={onDelete}
                   item={pedido}
-                  onView={canView ? onView : undefined}
-                  onEdit={canEdit ? onEdit : undefined}
-                  onDelete={canDelete ? onDelete : undefined}
                   size="sm"
                 />
               </div>

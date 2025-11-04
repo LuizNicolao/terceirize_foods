@@ -110,7 +110,7 @@ const PedidosCompras = () => {
           <p className="text-sm text-gray-600 mt-1">Gerencie os pedidos de compras do sistema</p>
         </div>
         <div className="flex items-center gap-3">
-          {canView && (
+          {canView('pedidos_compras') && (
             <Button
               variant="outline"
               size="sm"
@@ -121,7 +121,7 @@ const PedidosCompras = () => {
               Auditoria
             </Button>
           )}
-          {canCreate && (
+          {canCreate('pedidos_compras') && (
             <Button
               onClick={handleAddPedidoCompras}
               size="sm"
@@ -178,9 +178,9 @@ const PedidosCompras = () => {
           onView={handleViewPedidoCompras}
           onEdit={handleEditPedidoCompras}
           onDelete={handleDeletePedidoCompras}
-          canView={canView}
-          canEdit={canEdit}
-          canDelete={canDelete}
+          canView={canView('pedidos_compras')}
+          canEdit={canEdit('pedidos_compras')}
+          canDelete={canDelete('pedidos_compras')}
           getStatusBadge={getStatusBadge}
         />
 
