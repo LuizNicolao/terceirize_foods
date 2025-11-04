@@ -198,7 +198,7 @@ class SolicitacoesComprasCRUDController {
 
       // Buscar dados do produto
       const [produto] = await executeQuery(
-        'SELECT codigo_produto, nome FROM produto_generico WHERE id = ?',
+        'SELECT codigo, nome FROM produto_generico WHERE id = ?',
         [produto_id]
       );
 
@@ -228,7 +228,7 @@ class SolicitacoesComprasCRUDController {
         [
           solicitacao_id,
           produto_id,
-          produto.codigo_produto,
+          produto.codigo,
           produto.nome,
           unidade_medida_id,
           unidade ? unidade.simbolo : null,
@@ -347,7 +347,7 @@ class SolicitacoesComprasCRUDController {
 
       // Buscar dados do produto
       const [produto] = await executeQuery(
-        'SELECT codigo_produto, nome FROM produto_generico WHERE id = ?',
+        'SELECT codigo, nome FROM produto_generico WHERE id = ?',
         [produto_id]
       );
 
@@ -376,7 +376,7 @@ class SolicitacoesComprasCRUDController {
         [
           id,
           produto_id,
-          produto.codigo_produto,
+          produto.codigo,
           produto.nome,
           unidade_medida_id,
           unidade ? unidade.simbolo : null,
