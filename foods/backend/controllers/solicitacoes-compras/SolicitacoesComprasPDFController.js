@@ -257,6 +257,10 @@ class SolicitacoesComprasPDFController {
       status: 60,
       pedidos: 100
     };
+    const tableWidth = Object.values(colWidths).reduce((a, b) => a + b, 0);
+
+    // Desenhar caixa ao redor da tabela (vai ser ajustada depois)
+    const produtosBox = drawBox(tableLeft - 10, tableStartY, tableWidth + 20, 750 - tableStartY);
 
     // Cabeçalho da tabela
     doc.fontSize(8).font('Helvetica-Bold');
@@ -278,20 +282,22 @@ class SolicitacoesComprasPDFController {
     doc.text('PEDIDOS VINCULADOS', x, tableTop);
 
     // Linha separadora
-    doc.moveTo(tableLeft, tableTop + 15).lineTo(tableLeft + Object.values(colWidths).reduce((a, b) => a + b, 0), tableTop + 15).stroke();
+    doc.moveTo(tableLeft, tableTop + 15).lineTo(tableLeft + tableWidth, tableTop + 15).stroke();
 
     // Dados dos itens
     doc.fontSize(8).font('Helvetica');
     let currentY = tableTop + 20;
-    const tableWidth = Object.values(colWidths).reduce((a, b) => a + b, 0);
     const maxY = 700; // Altura máxima antes de quebrar página
+    let pageBreakOccurred = false;
     
     itensComPedidos.forEach((item, index) => {
       // Verificar se precisa de nova página (deixar espaço para pelo menos uma linha + footer)
       if (currentY > maxY) {
-        // Desenhar borda inferior da caixa antes de quebrar
+        pageBreakOccurred = true;
+        
+        // Fechar a caixa na página atual
         const boxBottom = currentY - 5;
-        doc.moveTo(tableLeft, boxBottom).lineTo(tableLeft + tableWidth, boxBottom).stroke();
+        doc.moveTo(tableLeft - 10, boxBottom).lineTo(tableLeft + tableWidth + 10, boxBottom).stroke();
         
         // Nova página
         doc.addPage();
@@ -365,14 +371,17 @@ class SolicitacoesComprasPDFController {
       currentY += 15;
     });
 
-    // Desenhar caixa ao redor da tabela (calcular altura total)
-    const tableEndY = currentY;
-    const tableHeight = tableEndY - tableStartY + 10;
-    const tableBox = drawBox(tableLeft - 10, tableStartY, tableWidth + 20, tableHeight);
-    
-    // Se a tabela continuou em outra página, fechar a caixa na última página também
-    if (tableEndY < maxY) {
-      // Apenas uma página, já desenhou a caixa
+    // Fechar a caixa na última página (se não houve quebra de página, ajustar altura)
+    if (!pageBreakOccurred) {
+      // Ajustar altura da caixa para o conteúdo real
+      const tableEndY = currentY;
+      const tableHeight = tableEndY - tableStartY + 10;
+      // Redesenhar a caixa com altura correta
+      doc.rect(tableLeft - 10, tableStartY, tableWidth + 20, tableHeight).stroke();
+    } else {
+      // Se houve quebra, fechar a caixa na última página
+      const boxBottom = currentY - 5;
+      doc.moveTo(tableLeft - 10, boxBottom).lineTo(tableLeft + tableWidth + 10, boxBottom).stroke();
     }
 
     // Finalizar PDF
