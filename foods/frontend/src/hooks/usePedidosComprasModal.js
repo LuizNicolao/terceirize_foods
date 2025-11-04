@@ -451,6 +451,9 @@ export const usePedidosComprasModal = ({ pedidoCompras, isOpen, solicitacoesDisp
         if (pedidoCompras.observacoes) {
           setValue('observacoes', pedidoCompras.observacoes);
         }
+        if (pedidoCompras.status) {
+          setValue('status', pedidoCompras.status);
+        }
         
         // Carregar fornecedor
         if (pedidoCompras.fornecedor_id) {

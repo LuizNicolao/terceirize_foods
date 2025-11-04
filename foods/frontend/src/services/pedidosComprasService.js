@@ -146,6 +146,30 @@ class PedidosComprasService {
       };
     }
   }
+
+  static async aprovarPedidosEmLote(ids) {
+    try {
+      const response = await api.post('/pedidos-compras/acoes-em-lote/aprovar', { ids });
+      return response.data;
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Erro ao aprovar pedidos'
+      };
+    }
+  }
+
+  static async reabrirPedidosEmLote(ids) {
+    try {
+      const response = await api.post('/pedidos-compras/acoes-em-lote/reabrir', { ids });
+      return response.data;
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Erro ao reabrir pedidos'
+      };
+    }
+  }
 }
 
 export default PedidosComprasService;

@@ -68,6 +68,7 @@ const PedidosComprasModal = ({
         forma_pagamento_id: data.forma_pagamento_id || null,
         prazo_pagamento_id: data.prazo_pagamento_id || null,
         observacoes: data.observacoes || null,
+        status: pedidoCompras ? (data.status || pedidoCompras.status) : undefined,
         filial_faturamento_id: solicitacaoSelecionada?.filial_id || pedidoCompras?.filial_id || null,
         filial_cobranca_id: data.filial_cobranca_id || null,
         filial_entrega_id: data.filial_entrega_id || null,

@@ -98,5 +98,21 @@ router.delete('/:id',
   PedidosComprasController.excluirPedidoCompras
 );
 
+// ========== ROTAS DE AÇÕES EM LOTE ==========
+
+// POST /api/pedidos-compras/acoes-em-lote/aprovar - Aprovar múltiplos pedidos
+router.post('/acoes-em-lote/aprovar',
+  checkScreenPermission('pedidos-compras', 'editar'),
+  auditMiddleware(AUDIT_ACTIONS.UPDATE, 'pedidos_compras'),
+  PedidosComprasController.aprovarPedidosEmLote
+);
+
+// POST /api/pedidos-compras/acoes-em-lote/reabrir - Reabrir múltiplos pedidos
+router.post('/acoes-em-lote/reabrir',
+  checkScreenPermission('pedidos-compras', 'editar'),
+  auditMiddleware(AUDIT_ACTIONS.UPDATE, 'pedidos_compras'),
+  PedidosComprasController.reabrirPedidosEmLote
+);
+
 module.exports = router;
 

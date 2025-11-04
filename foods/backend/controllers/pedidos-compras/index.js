@@ -5,6 +5,7 @@
 
 const PedidosComprasListController = require('./PedidosComprasListController');
 const PedidosComprasCRUDController = require('./PedidosComprasCRUDController');
+const PedidosComprasStatusController = require('./PedidosComprasStatusController');
 
 module.exports = {
   // Métodos de Listagem
@@ -17,6 +18,10 @@ module.exports = {
   // Métodos CRUD
   criarPedidoCompras: PedidosComprasCRUDController.criarPedidoCompras,
   atualizarPedidoCompras: PedidosComprasCRUDController.atualizarPedidoCompras,
-  excluirPedidoCompras: PedidosComprasCRUDController.excluirPedidoCompras
+  excluirPedidoCompras: PedidosComprasCRUDController.excluirPedidoCompras,
+  
+  // Métodos de Status (Ações em Lote)
+  aprovarPedidosEmLote: PedidosComprasStatusController.aprovarPedidosEmLote,
+  reabrirPedidosEmLote: PedidosComprasStatusController.reabrirPedidosEmLote
 };
 

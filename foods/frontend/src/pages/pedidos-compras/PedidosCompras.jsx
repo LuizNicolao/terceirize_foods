@@ -51,7 +51,13 @@ const PedidosCompras = () => {
     handleKeyPress,
     setStatusFilter,
     getStatusBadge,
-    loadSolicitacoesDisponiveis
+    loadSolicitacoesDisponiveis,
+    selectedIds,
+    handleSelectAll,
+    handleSelectItem,
+    handleAprovarLote,
+    handleReabrirLote,
+    loadingBatch
   } = usePedidosCompras();
 
   const {
@@ -181,6 +187,12 @@ const PedidosCompras = () => {
         canEdit={canEdit('pedidos_compras')}
         canDelete={canDelete('pedidos_compras')}
         getStatusBadge={getStatusBadge}
+        selectedIds={selectedIds}
+        onSelectAll={handleSelectAll}
+        onSelectItem={handleSelectItem}
+        onAprovarLote={handleAprovarLote}
+        onReabrirLote={handleReabrirLote}
+        loadingBatch={loadingBatch}
       />
 
       {/* Paginação - sempre mostrar para permitir mudança de itens por página */}

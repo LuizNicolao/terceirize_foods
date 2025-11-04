@@ -1,5 +1,6 @@
 import React from 'react';
 import { ActionButtons, EmptyState } from '../ui';
+import { FaCheck, FaUndo } from 'react-icons/fa';
 
 const PedidosComprasTable = ({
   pedidosCompras,
@@ -9,7 +10,13 @@ const PedidosComprasTable = ({
   canView,
   canEdit,
   canDelete,
-  getStatusBadge
+  getStatusBadge,
+  selectedIds = [],
+  onSelectAll,
+  onSelectItem,
+  onAprovarLote,
+  onReabrirLote,
+  loadingBatch = false
 }) => {
   if (!pedidosCompras || pedidosCompras.length === 0) {
     return (
@@ -29,14 +36,57 @@ const PedidosComprasTable = ({
     }).format(value);
   };
 
+  const allSelected = pedidosCompras.length > 0 && selectedIds.length === pedidosCompras.length;
+  const someSelected = selectedIds.length > 0 && selectedIds.length < pedidosCompras.length;
+
   return (
     <>
+      {/* Barra de Ações em Lote */}
+      {selectedIds.length > 0 && (
+        <div className="mb-4 bg-green-50 border border-green-200 rounded-lg p-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-green-900">
+              {selectedIds.length} pedido(s) selecionado(s)
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={onAprovarLote}
+              disabled={loadingBatch}
+              className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm font-medium"
+            >
+              <FaCheck className="w-4 h-4" />
+              Aprovar Pedidos
+            </button>
+            <button
+              onClick={onReabrirLote}
+              disabled={loadingBatch}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm font-medium"
+            >
+              <FaUndo className="w-4 h-4" />
+              Reabrir Pedidos
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Versão Desktop - Tabela completa */}
       <div className="hidden xl:block bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
+                  <input
+                    type="checkbox"
+                    checked={allSelected}
+                    ref={(input) => {
+                      if (input) input.indeterminate = someSelected;
+                    }}
+                    onChange={(e) => onSelectAll(e.target.checked)}
+                    className="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                  />
+                </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   #
                 </th>
@@ -69,8 +119,17 @@ const PedidosComprasTable = ({
             <tbody className="bg-white divide-y divide-gray-200">
               {pedidosCompras.map((pedido, index) => {
                 const statusBadge = getStatusBadge(pedido.status);
+                const isSelected = selectedIds.includes(pedido.id);
                 return (
-                  <tr key={pedido.id} className="hover:bg-gray-50 transition-colors">
+                  <tr key={pedido.id} className={`hover:bg-gray-50 transition-colors ${isSelected ? 'bg-green-50' : ''}`}>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={(e) => onSelectItem(pedido.id, e.target.checked)}
+                        className="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                      />
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {index + 1}
                     </td>

@@ -19,6 +19,8 @@ export const usePedidosCompras = () => {
 
   const [statusFilter, setStatusFilter] = useState('');
   const [solicitacoesDisponiveis, setSolicitacoesDisponiveis] = useState([]);
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [loadingBatch, setLoadingBatch] = useState(false);
 
   /**
    * Carrega dados com filtros
@@ -97,6 +99,70 @@ export const usePedidosCompras = () => {
 
     return statusMap[status] || { text: status, color: 'gray' };
   }, []);
+
+  /**
+   * Seleção de itens
+   */
+  const handleSelectAll = useCallback((checked) => {
+    if (checked) {
+      setSelectedIds(baseEntity.items.map(item => item.id));
+    } else {
+      setSelectedIds([]);
+    }
+  }, [baseEntity.items]);
+
+  const handleSelectItem = useCallback((id, checked) => {
+    if (checked) {
+      setSelectedIds(prev => [...prev, id]);
+    } else {
+      setSelectedIds(prev => prev.filter(itemId => itemId !== id));
+    }
+  }, []);
+
+  /**
+   * Ações em lote
+   */
+  const handleAprovarLote = useCallback(async () => {
+    if (selectedIds.length === 0) return;
+    
+    setLoadingBatch(true);
+    try {
+      const response = await PedidosComprasService.aprovarPedidosEmLote(selectedIds);
+      if (response.success) {
+        toast.success(response.message || 'Pedidos aprovados com sucesso!');
+        setSelectedIds([]);
+        await loadDataWithFilters();
+      } else {
+        toast.error(response.error || 'Erro ao aprovar pedidos');
+      }
+    } catch (error) {
+      console.error('Erro ao aprovar pedidos:', error);
+      toast.error('Erro ao aprovar pedidos');
+    } finally {
+      setLoadingBatch(false);
+    }
+  }, [selectedIds, loadDataWithFilters]);
+
+  const handleReabrirLote = useCallback(async () => {
+    if (selectedIds.length === 0) return;
+    
+    setLoadingBatch(true);
+    try {
+      const response = await PedidosComprasService.reabrirPedidosEmLote(selectedIds);
+      if (response.success) {
+        toast.success(response.message || 'Pedidos reabertos com sucesso!');
+        setSelectedIds([]);
+        await loadDataWithFilters();
+      } else {
+        toast.error(response.error || 'Erro ao reabrir pedidos');
+      }
+    } catch (error) {
+      console.error('Erro ao reabrir pedidos:', error);
+      toast.error('Erro ao reabrir pedidos');
+    } finally {
+      setLoadingBatch(false);
+    }
+  }, [selectedIds, loadDataWithFilters]);
 
   /**
    * Visualizar pedido (busca dados completos com itens)
@@ -179,7 +245,14 @@ export const usePedidosCompras = () => {
       }
     },
     getStatusBadge,
-    loadSolicitacoesDisponiveis
+    loadSolicitacoesDisponiveis,
+    // Seleção e ações em lote
+    selectedIds,
+    handleSelectAll,
+    handleSelectItem,
+    handleAprovarLote,
+    handleReabrirLote,
+    loadingBatch
   };
 };
 
