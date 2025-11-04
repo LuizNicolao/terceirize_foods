@@ -46,6 +46,8 @@ class PedidosComprasCRUDController {
       filial_faturamento_id,
       filial_cobranca_id,
       filial_entrega_id,
+      forma_pagamento_id,
+      prazo_pagamento_id,
       forma_pagamento,
       prazo_pagamento,
       observacoes,
@@ -106,6 +108,30 @@ class PedidosComprasCRUDController {
       }
     }
 
+    // Buscar nomes de forma_pagamento e prazo_pagamento pelos IDs se fornecidos
+    let formaPagamentoNome = forma_pagamento || null;
+    let prazoPagamentoNome = prazo_pagamento || null;
+    
+    if (forma_pagamento_id && !formaPagamentoNome) {
+      const [forma] = await executeQuery(
+        'SELECT nome FROM formas_pagamento WHERE id = ?',
+        [forma_pagamento_id]
+      );
+      if (forma) {
+        formaPagamentoNome = forma.nome;
+      }
+    }
+    
+    if (prazo_pagamento_id && !prazoPagamentoNome) {
+      const [prazo] = await executeQuery(
+        'SELECT nome FROM prazos_pagamento WHERE id = ?',
+        [prazo_pagamento_id]
+      );
+      if (prazo) {
+        prazoPagamentoNome = prazo.nome;
+      }
+    }
+
     // Gerar número do pedido
     const numero_pedido = await this.gerarNumeroPedido();
 
@@ -141,8 +167,8 @@ class PedidosComprasCRUDController {
         filiaisData.entrega?.cnpj || null,
         solData.data_entrega_cd,
         solData.semana_abastecimento || null,
-        forma_pagamento || null,
-        prazo_pagamento || null,
+        formaPagamentoNome,
+        prazoPagamentoNome,
         solData.justificativa || null,
         solData.numero_solicitacao || null,
         'em_digitacao',
@@ -183,7 +209,13 @@ class PedidosComprasCRUDController {
 
       // Buscar dados do item da solicitação
       const itemSolicitacao = await executeQuery(
-        `SELECT * FROM solicitacao_compras_itens WHERE id = ?`,
+        `SELECT 
+          sci.*,
+          um.sigla as unidade_simbolo,
+          um.nome as unidade_nome
+        FROM solicitacao_compras_itens sci
+        LEFT JOIN unidades_medida um ON sci.unidade_medida_id = um.id
+        WHERE sci.id = ?`,
         [item.solicitacao_item_id]
       );
 
@@ -205,11 +237,11 @@ class PedidosComprasCRUDController {
         [
           pedidoId,
           item.solicitacao_item_id,
-          itemSol.produto_generico_id || null,
+          itemSol.produto_id || null, // produto_id na solicitação é o produto_generico_id
           itemSol.codigo_produto || null,
           itemSol.nome_produto || null,
           itemSol.unidade_medida_id || null,
-          itemSol.unidade_simbolo || null,
+          itemSol.unidade_simbolo || itemSol.unidade_medida || null,
           itemSol.quantidade || 0,
           quantidadePedido,
           parseFloat(item.valor_unitario) || 0,
@@ -245,6 +277,8 @@ class PedidosComprasCRUDController {
       filial_faturamento_id,
       filial_cobranca_id,
       filial_entrega_id,
+      forma_pagamento_id,
+      prazo_pagamento_id,
       forma_pagamento,
       prazo_pagamento,
       data_entrega_cd,
@@ -301,6 +335,30 @@ class PedidosComprasCRUDController {
       }
     }
 
+    // Buscar nomes de forma_pagamento e prazo_pagamento pelos IDs se fornecidos
+    let formaPagamentoNome = forma_pagamento || null;
+    let prazoPagamentoNome = prazo_pagamento || null;
+    
+    if (forma_pagamento_id && !formaPagamentoNome) {
+      const [forma] = await executeQuery(
+        'SELECT nome FROM formas_pagamento WHERE id = ?',
+        [forma_pagamento_id]
+      );
+      if (forma) {
+        formaPagamentoNome = forma.nome;
+      }
+    }
+    
+    if (prazo_pagamento_id && !prazoPagamentoNome) {
+      const [prazo] = await executeQuery(
+        'SELECT nome FROM prazos_pagamento WHERE id = ?',
+        [prazo_pagamento_id]
+      );
+      if (prazo) {
+        prazoPagamentoNome = prazo.nome;
+      }
+    }
+
     // Atualizar pedido
     await executeQuery(
       `UPDATE pedidos_compras 
@@ -337,8 +395,8 @@ class PedidosComprasCRUDController {
         filiaisData.cobranca?.cnpj || null,
         filiaisData.entrega?.cnpj || null,
         data_entrega_cd || null,
-        forma_pagamento || null,
-        prazo_pagamento || null,
+        formaPagamentoNome,
+        prazoPagamentoNome,
         status || null,
         observacoes || null,
         id
@@ -352,7 +410,13 @@ class PedidosComprasCRUDController {
       
       for (const item of itens) {
         const itemSolicitacao = await executeQuery(
-          `SELECT * FROM solicitacao_compras_itens WHERE id = ?`,
+          `SELECT 
+            sci.*,
+            um.sigla as unidade_simbolo,
+            um.nome as unidade_nome
+          FROM solicitacao_compras_itens sci
+          LEFT JOIN unidades_medida um ON sci.unidade_medida_id = um.id
+          WHERE sci.id = ?`,
           [item.solicitacao_item_id]
         );
 
@@ -369,11 +433,11 @@ class PedidosComprasCRUDController {
             [
               id,
               item.solicitacao_item_id,
-              itemSol.produto_generico_id || null,
+              itemSol.produto_id || null, // produto_id na solicitação é o produto_generico_id
               itemSol.codigo_produto || null,
               itemSol.nome_produto || null,
               itemSol.unidade_medida_id || null,
-              itemSol.unidade_simbolo || null,
+              itemSol.unidade_simbolo || itemSol.unidade_medida || null,
               itemSol.quantidade || 0,
               parseFloat(item.quantidade_pedido) || 0,
               parseFloat(item.valor_unitario) || 0,
@@ -443,6 +507,7 @@ class PedidosComprasCRUDController {
       `SELECT 
         p.*,
         s.numero_solicitacao,
+        s.justificativa as solicitacao_justificativa,
         u.nome as criado_por_nome,
         DATE_FORMAT(p.criado_em, '%d/%m/%Y %H:%i') as data_criacao,
         DATE_FORMAT(p.atualizado_em, '%d/%m/%Y %H:%i') as data_atualizacao,

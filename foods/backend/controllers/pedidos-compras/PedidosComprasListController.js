@@ -122,6 +122,7 @@ class PedidosComprasListController {
       `SELECT 
         p.*,
         s.numero_solicitacao,
+        s.justificativa as solicitacao_justificativa,
         u.nome as criado_por_nome,
         DATE_FORMAT(p.criado_em, '%d/%m/%Y %H:%i') as data_criacao,
         DATE_FORMAT(p.atualizado_em, '%d/%m/%Y %H:%i') as data_atualizacao,
