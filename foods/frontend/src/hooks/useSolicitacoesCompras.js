@@ -226,14 +226,9 @@ export const useSolicitacoesCompras = () => {
 
   const getStatusLabel = useCallback((status) => {
     const statusMap = {
-      'em_digitacao': { label: 'Em Digitação', color: 'bg-blue-100 text-blue-800' },
-      'em_andamento': { label: 'Em Andamento', color: 'bg-yellow-100 text-yellow-800' },
-      'finalizado': { label: 'Finalizado', color: 'bg-green-100 text-green-800' },
-      'cancelada': { label: 'Cancelada', color: 'bg-red-100 text-red-800' },
-      'pendente': { label: 'Pendente', color: 'bg-yellow-100 text-yellow-800' },
-      'aprovada': { label: 'Aprovada', color: 'bg-green-100 text-green-800' },
-      'rejeitada': { label: 'Rejeitada', color: 'bg-red-100 text-red-800' },
-      'concluida': { label: 'Concluída', color: 'bg-green-100 text-green-800' }
+      'aberto': { label: 'Aberto', color: 'bg-blue-100 text-blue-800' },
+      'parcial': { label: 'Parcial', color: 'bg-yellow-100 text-yellow-800' },
+      'finalizado': { label: 'Finalizado', color: 'bg-green-100 text-green-800' }
     };
     return statusMap[status] || { label: status || 'Desconhecido', color: 'bg-gray-100 text-gray-800' };
   }, []);

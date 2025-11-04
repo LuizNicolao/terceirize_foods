@@ -44,12 +44,12 @@ class SolicitacoesComprasStatusController {
     );
 
     if (itens.length === 0) {
-      // Se não tem itens, status é 'em_digitacao'
+      // Se não tem itens, status é 'aberto'
       await executeQuery(
         'UPDATE solicitacoes_compras SET status = ? WHERE id = ?',
-        ['em_digitacao', id]
+        ['aberto', id]
       );
-      return successResponse(res, { status: 'em_digitacao' }, 'Status recalculado com sucesso');
+      return successResponse(res, { status: 'aberto' }, 'Status recalculado com sucesso');
     }
 
     let totalSolicitado = 0;
@@ -69,13 +69,13 @@ class SolicitacoesComprasStatusController {
     }
 
     // Determinar status
-    let status = 'em_digitacao';
+    let status = 'aberto';
     if (totalAtendido === 0) {
-      status = 'em_digitacao';
+      status = 'aberto';
     } else if (todosAtendidos && totalAtendido >= totalSolicitado) {
       status = 'finalizado';
     } else {
-      status = 'em_andamento';
+      status = 'parcial';
     }
 
     // Atualizar status no banco
@@ -118,7 +118,7 @@ class SolicitacoesComprasStatusController {
         if (itens.length === 0) {
           await executeQuery(
             'UPDATE solicitacoes_compras SET status = ? WHERE id = ?',
-            ['em_digitacao', solic.id]
+            ['aberto', solic.id]
           );
           atualizadas++;
           continue;
@@ -139,13 +139,13 @@ class SolicitacoesComprasStatusController {
         }
 
         // Determinar status
-        let status = 'em_digitacao';
+        let status = 'aberto';
         if (totalAtendido === 0) {
-          status = 'em_digitacao';
+          status = 'aberto';
         } else if (todosAtendidos && totalAtendido >= totalSolicitado) {
           status = 'finalizado';
         } else {
-          status = 'em_andamento';
+          status = 'parcial';
         }
 
         await executeQuery(

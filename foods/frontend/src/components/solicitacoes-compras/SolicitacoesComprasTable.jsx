@@ -136,11 +136,11 @@ const SolicitacoesComprasTable = ({
                       <div className="flex justify-end">
                         <ActionButtons
                           canView={canView}
-                          canEdit={canEdit && solicitacao.status === 'em_digitacao'}
-                          canDelete={canDelete && solicitacao.status === 'em_digitacao'}
+                          canEdit={canEdit && solicitacao.status === 'aberto'}
+                          canDelete={canDelete && solicitacao.status === 'aberto'}
                           onView={onView ? () => onView(solicitacao.id) : null}
-                          onEdit={onEdit && solicitacao.status === 'em_digitacao' ? () => onEdit(solicitacao.id) : null}
-                          onDelete={onDelete && solicitacao.status === 'em_digitacao' ? () => onDelete(solicitacao) : null}
+                          onEdit={onEdit && solicitacao.status === 'aberto' ? () => onEdit(solicitacao.id) : null}
+                          onDelete={onDelete && solicitacao.status === 'aberto' ? () => onDelete(solicitacao) : null}
                           item={solicitacao}
                           size="xs"
                         />
@@ -194,11 +194,11 @@ const SolicitacoesComprasTable = ({
               <div className="mt-4">
                 <ActionButtons
                   canView={canView}
-                  canEdit={canEdit && solicitacao.status === 'em_digitacao'}
-                  canDelete={canDelete && solicitacao.status === 'em_digitacao'}
+                  canEdit={canEdit && solicitacao.status === 'aberto'}
+                  canDelete={canDelete && solicitacao.status === 'aberto'}
                   onView={onView ? () => onView(solicitacao.id) : null}
-                  onEdit={onEdit && solicitacao.status === 'em_digitacao' ? () => onEdit(solicitacao.id) : null}
-                  onDelete={onDelete && solicitacao.status === 'em_digitacao' ? () => onDelete(solicitacao) : null}
+                  onEdit={onEdit && solicitacao.status === 'aberto' ? () => onEdit(solicitacao.id) : null}
+                  onDelete={onDelete && solicitacao.status === 'aberto' ? () => onDelete(solicitacao) : null}
                   item={solicitacao}
                   size="sm"
                 />
