@@ -268,21 +268,31 @@ class SolicitacoesComprasPDFController {
     // Cabeçalho da tabela
     doc.fontSize(8).font('Helvetica-Bold');
     let x = tableLeft;
-    doc.text('CÓDIGO', x, tableTop);
+    doc.text('CÓDIGO', x, tableTop, { width: colWidths.codigo, align: 'center' });
     x += colWidths.codigo;
-    doc.text('PRODUTO', x, tableTop);
+    doc.text('PRODUTO', x, tableTop, { width: colWidths.produto });
     x += colWidths.produto;
-    doc.text('UN', x, tableTop);
+    doc.text('UN', x, tableTop, { width: colWidths.unidade, align: 'center' });
     x += colWidths.unidade;
-    doc.text('QTD. SOLICITADA', x, tableTop);
+    
+    // QTD. SOLICITADA em duas linhas
+    doc.text('QTD.', x, tableTop, { width: colWidths.quantidade_solicitada, align: 'center' });
+    doc.text('SOLICITADA', x, tableTop + 8, { width: colWidths.quantidade_solicitada, align: 'center' });
     x += colWidths.quantidade_solicitada;
-    doc.text('QTD. UTILIZADA', x, tableTop);
+    
+    // QTD. UTILIZADA em duas linhas
+    doc.text('QTD.', x, tableTop, { width: colWidths.quantidade_utilizada, align: 'center' });
+    doc.text('UTILIZADA', x, tableTop + 8, { width: colWidths.quantidade_utilizada, align: 'center' });
     x += colWidths.quantidade_utilizada;
-    doc.text('SALDO DISP.', x, tableTop);
+    
+    // SALDO DISP. em duas linhas
+    doc.text('SALDO', x, tableTop, { width: colWidths.saldo_disponivel, align: 'center' });
+    doc.text('DISP.', x, tableTop + 8, { width: colWidths.saldo_disponivel, align: 'center' });
     x += colWidths.saldo_disponivel;
-    doc.text('STATUS', x, tableTop);
+    
+    doc.text('STATUS', x, tableTop, { width: colWidths.status, align: 'center' });
     x += colWidths.status;
-    doc.text('PEDIDOS VINCULADOS', x, tableTop);
+    doc.text('PEDIDOS', x, tableTop, { width: colWidths.pedidos, align: 'center' });
 
     // Linha separadora (ajustada para cabeçalho em duas linhas)
     doc.moveTo(tableLeft, tableTop + 18).lineTo(tableLeft + tableWidth, tableTop + 18).stroke();
@@ -306,7 +316,7 @@ class SolicitacoesComprasPDFController {
         doc.addPage();
         
         // Desenhar caixa na nova página
-        const newTableStartY = 50;
+        const newTableStartY = 14;
         const newTableTop = newTableStartY + 10;
         drawBox(tableLeft - 10, newTableStartY, tableWidth + 20, 750 - newTableStartY);
         
@@ -314,26 +324,36 @@ class SolicitacoesComprasPDFController {
         doc.fontSize(12).font('Helvetica-Bold').fillColor('black');
         doc.text(`Produtos Solicitados (${itensComPedidos.length})`, tableLeft, newTableStartY - 15);
         
-        // Reimprimir cabeçalho da tabela
-        currentY = newTableTop + 20;
+        // Reimprimir cabeçalho da tabela (em duas linhas)
+        currentY = newTableTop + 23;
         doc.fontSize(8).font('Helvetica-Bold');
         x = tableLeft;
-        doc.text('CÓDIGO', x, newTableTop);
+        doc.text('CÓDIGO', x, newTableTop, { width: colWidths.codigo, align: 'center' });
         x += colWidths.codigo;
-        doc.text('PRODUTO', x, newTableTop);
+        doc.text('PRODUTO', x, newTableTop, { width: colWidths.produto });
         x += colWidths.produto;
-        doc.text('UN', x, newTableTop);
+        doc.text('UN', x, newTableTop, { width: colWidths.unidade, align: 'center' });
         x += colWidths.unidade;
-        doc.text('QTD. SOLICITADA', x, newTableTop);
+        
+        // QTD. SOLICITADA em duas linhas
+        doc.text('QTD.', x, newTableTop, { width: colWidths.quantidade_solicitada, align: 'center' });
+        doc.text('SOLICITADA', x, newTableTop + 8, { width: colWidths.quantidade_solicitada, align: 'center' });
         x += colWidths.quantidade_solicitada;
-        doc.text('QTD. UTILIZADA', x, newTableTop);
+        
+        // QTD. UTILIZADA em duas linhas
+        doc.text('QTD.', x, newTableTop, { width: colWidths.quantidade_utilizada, align: 'center' });
+        doc.text('UTILIZADA', x, newTableTop + 8, { width: colWidths.quantidade_utilizada, align: 'center' });
         x += colWidths.quantidade_utilizada;
-        doc.text('SALDO DISP.', x, newTableTop);
+        
+        // SALDO DISP. em duas linhas
+        doc.text('SALDO', x, newTableTop, { width: colWidths.saldo_disponivel, align: 'center' });
+        doc.text('DISP.', x, newTableTop + 8, { width: colWidths.saldo_disponivel, align: 'center' });
         x += colWidths.saldo_disponivel;
-        doc.text('STATUS', x, newTableTop);
+        
+        doc.text('STATUS', x, newTableTop, { width: colWidths.status, align: 'center' });
         x += colWidths.status;
-        doc.text('PEDIDOS VINCULADOS', x, newTableTop);
-        currentY = newTableTop + 20;
+        doc.text('PEDIDOS', x, newTableTop, { width: colWidths.pedidos, align: 'center' });
+        currentY = newTableTop + 23;
         doc.moveTo(tableLeft, currentY - 5).lineTo(tableLeft + tableWidth, currentY - 5).stroke();
       }
 
