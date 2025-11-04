@@ -221,7 +221,7 @@ export const useSolicitacoesCompras = () => {
 
   const getUnidadeMedidaSimbolo = useCallback((unidadeId) => {
     const unidade = unidadesMedida.find(um => um.id === unidadeId);
-    return unidade ? unidade.simbolo : '-';
+    return unidade ? (unidade.sigla || unidade.simbolo) : '-';
   }, [unidadesMedida]);
 
   const getStatusLabel = useCallback((status) => {
