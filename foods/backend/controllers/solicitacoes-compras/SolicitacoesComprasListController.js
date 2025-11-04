@@ -25,8 +25,8 @@ class SolicitacoesComprasListController {
 
     // Aplicar filtros
     if (search) {
-      whereClause += ' AND (sc.numero_solicitacao LIKE ? OR sc.descricao LIKE ? OR sc.solicitante LIKE ? OR sc.unidade LIKE ?)';
-      params.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
+      whereClause += ' AND (sc.numero_solicitacao LIKE ? OR sc.descricao LIKE ? OR sc.usuario_nome LIKE ? OR sc.solicitante LIKE ? OR sc.unidade LIKE ?)';
+      params.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
     }
 
     if (status) {
@@ -35,8 +35,8 @@ class SolicitacoesComprasListController {
     }
 
     if (solicitante) {
-      whereClause += ' AND sc.solicitante LIKE ?';
-      params.push(`%${solicitante}%`);
+      whereClause += ' AND (sc.usuario_nome LIKE ? OR sc.solicitante LIKE ?)';
+      params.push(`%${solicitante}%`, `%${solicitante}%`);
     }
 
     if (unidade) {
@@ -65,7 +65,9 @@ class SolicitacoesComprasListController {
         sc.id,
         sc.numero_solicitacao,
         sc.descricao,
-        sc.solicitante,
+        sc.usuario_id,
+        sc.usuario_nome,
+        COALESCE(sc.usuario_nome, sc.solicitante) as solicitante,
         sc.unidade,
         sc.data_necessidade,
         sc.data_entrega_cd,
@@ -117,16 +119,16 @@ class SolicitacoesComprasListController {
     
     // Aplicar mesmos filtros da query principal
     if (search) {
-      statsQuery += ' AND (sc.numero_solicitacao LIKE ? OR sc.descricao LIKE ? OR sc.solicitante LIKE ? OR sc.unidade LIKE ?)';
-      statsParams.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
+      statsQuery += ' AND (sc.numero_solicitacao LIKE ? OR sc.descricao LIKE ? OR sc.usuario_nome LIKE ? OR sc.solicitante LIKE ? OR sc.unidade LIKE ?)';
+      statsParams.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
     }
     if (status) {
       statsQuery += ' AND sc.status = ?';
       statsParams.push(status);
     }
     if (solicitante) {
-      statsQuery += ' AND sc.solicitante LIKE ?';
-      statsParams.push(`%${solicitante}%`);
+      statsQuery += ' AND (sc.usuario_nome LIKE ? OR sc.solicitante LIKE ?)';
+      statsParams.push(`%${solicitante}%`, `%${solicitante}%`);
     }
     if (unidade) {
       statsQuery += ' AND sc.unidade LIKE ?';
@@ -181,10 +183,10 @@ class SolicitacoesComprasListController {
         sc.*,
         f.filial as filial_nome,
         f.codigo_filial as filial_codigo,
-        u.nome as usuario_nome
+        COALESCE(sc.usuario_nome, u.nome, sc.solicitante) as solicitante_nome
       FROM solicitacoes_compras sc
       LEFT JOIN filiais f ON sc.filial_id = f.id
-      LEFT JOIN usuarios u ON sc.criado_por = u.id
+      LEFT JOIN usuarios u ON sc.usuario_id = u.id OR sc.criado_por = u.id
       WHERE sc.id = ?`,
       [id]
     );

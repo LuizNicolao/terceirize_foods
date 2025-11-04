@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { FaTimes, FaSave, FaEye, FaEdit, FaPlus, FaTrash } from 'react-icons/fa';
 import { Button, Input, Modal, SearchableSelect } from '../ui';
 import SolicitacoesComprasService from '../../services/solicitacoesCompras';
+import { useAuth } from '../../contexts/AuthContext';
 import toast from 'react-hot-toast';
 
 const SolicitacoesComprasModal = ({
@@ -17,6 +18,7 @@ const SolicitacoesComprasModal = ({
   loading
 }) => {
   const { register, handleSubmit, reset, formState: { errors }, setValue, watch } = useForm();
+  const { user } = useAuth();
   const [itens, setItens] = useState([]);
   const [semanaAbastecimento, setSemanaAbastecimento] = useState('');
   const [carregandoSemana, setCarregandoSemana] = useState(false);
@@ -289,6 +291,15 @@ const SolicitacoesComprasModal = ({
                   className="bg-gray-50"
                 />
               )}
+
+              {/* Solicitante */}
+              <Input
+                label="Solicitante"
+                value={solicitacao?.usuario_nome || solicitacao?.solicitante || user?.nome || ''}
+                disabled={true}
+                className="bg-gray-50"
+                readOnly
+              />
             </div>
 
             {/* Observações Gerais */}

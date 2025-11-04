@@ -125,14 +125,15 @@ class SolicitacoesComprasCRUDController {
       [usuario_id]
     );
 
-    const solicitante = usuario ? usuario.nome : req.user.nome || 'Usuário';
+    const usuario_nome = usuario ? usuario.nome : req.user.nome || 'Usuário';
 
     // Inserir solicitação
     const result = await executeQuery(
       `INSERT INTO solicitacoes_compras (
         numero_solicitacao,
         descricao,
-        solicitante,
+        usuario_id,
+        usuario_nome,
         unidade,
         data_necessidade,
         data_entrega_cd,
@@ -144,12 +145,13 @@ class SolicitacoesComprasCRUDController {
         filial_id,
         criado_por,
         criado_em
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'aberto', CURDATE(), ?, ?, ?, NOW())`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'aberto', CURDATE(), ?, ?, ?, NOW())`,
       [
         numero_solicitacao,
         motivo, // descricao = motivo
-        solicitante,
-        filial.nome,
+        usuario_id,
+        usuario_nome,
+        filial.filial || filial.nome,
         data_entrega_cd,
         data_entrega_cd,
         semana_abastecimento,
