@@ -136,6 +136,22 @@ class PedidosComprasCRUDController {
       return errorResponse(res, itensResult.error, STATUS_CODES.BAD_REQUEST);
     }
 
+    // Calcular valor_total do pedido (soma de quantidade_pedido * valor_unitario de todos os itens)
+    const valorTotalResult = await executeQuery(
+      `SELECT COALESCE(SUM(quantidade_pedido * valor_unitario), 0) as valor_total
+       FROM pedido_compras_itens
+       WHERE pedido_id = ?`,
+      [pedidoId]
+    );
+
+    const valorTotal = parseFloat(valorTotalResult[0]?.valor_total || 0);
+
+    // Atualizar valor_total no pedido
+    await executeQuery(
+      'UPDATE pedidos_compras SET valor_total = ? WHERE id = ?',
+      [valorTotal, pedidoId]
+    );
+
     // Buscar pedido criado com todos os dados
     const pedidoCriado = await PedidosComprasHelpers.buscarPedidoCompleto(pedidoId);
 
@@ -283,6 +299,22 @@ class PedidosComprasCRUDController {
       if (!itensResult.success) {
         return errorResponse(res, itensResult.error, STATUS_CODES.BAD_REQUEST);
       }
+
+      // Recalcular valor_total do pedido após atualizar itens
+      const valorTotalResult = await executeQuery(
+        `SELECT COALESCE(SUM(quantidade_pedido * valor_unitario), 0) as valor_total
+         FROM pedido_compras_itens
+         WHERE pedido_id = ?`,
+        [id]
+      );
+
+      const valorTotal = parseFloat(valorTotalResult[0]?.valor_total || 0);
+
+      // Atualizar valor_total no pedido
+      await executeQuery(
+        'UPDATE pedidos_compras SET valor_total = ? WHERE id = ?',
+        [valorTotal, id]
+      );
     }
 
     // Buscar pedido atualizado
