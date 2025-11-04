@@ -100,9 +100,10 @@ class SolicitacoesComprasPDFController {
     );
 
     // Gerar PDF usando PDFKit
+    // 0,5 cm = 14.17 pontos (aproximadamente 14 pontos)
     const PDFDocument = require('pdfkit');
     const doc = new PDFDocument({ 
-      margin: 50,
+      margin: 14,
       size: 'A4'
     });
 
@@ -150,15 +151,16 @@ class SolicitacoesComprasPDFController {
       return { width: statusWidth, height: statusHeight };
     };
 
-    // Título principal
-    doc.fontSize(24).font('Helvetica-Bold').fillColor('black');
-    const titleY = 50;
-    doc.text('Visualizar Solicitação de Compra', 50, titleY);
+    // Título principal (reduzido de 24 para 18)
+    doc.fontSize(18).font('Helvetica-Bold').fillColor('black');
+    const titleY = 14;
+    doc.text('Visualizar Solicitação de Compra', 14, titleY);
     
     // Linha embaixo do título
-    const titleWidth = doc.widthOfString('Visualizar Solicitação de Compra', { font: 'Helvetica-Bold', fontSize: 24 });
-    doc.moveTo(50, titleY + 25).lineTo(50 + titleWidth, titleY + 25).stroke();
+    const titleWidth = doc.widthOfString('Visualizar Solicitação de Compra', { font: 'Helvetica-Bold', fontSize: 18 });
+    doc.moveTo(14, titleY + 18).lineTo(14 + titleWidth, titleY + 18).stroke();
     
+    doc.y = titleY + 25;
     doc.moveDown(1);
 
     const startY = doc.y;
@@ -167,7 +169,7 @@ class SolicitacoesComprasPDFController {
     const spacing = 10; // Reduzido de 20 para 10
 
     // Caixa: Informações da Solicitação (esquerda)
-    const infoBox = drawBox(50, startY, boxWidth, boxHeight);
+    const infoBox = drawBox(14, startY, boxWidth, boxHeight);
     doc.fontSize(12).font('Helvetica-Bold').fillColor('black');
     doc.text('Informações da Solicitação', infoBox.x, infoBox.y);
     
@@ -207,7 +209,7 @@ class SolicitacoesComprasPDFController {
     drawStatusBadge(infoBox.x + 50, infoContentY - 2, statusLabel);
 
     // Caixa: Filial (direita)
-    const filialBox = drawBox(50 + boxWidth + spacing, startY, boxWidth, boxHeight);
+    const filialBox = drawBox(14 + boxWidth + spacing, startY, boxWidth, boxHeight);
     doc.fontSize(12).font('Helvetica-Bold').fillColor('black');
     doc.text('Filial', filialBox.x, filialBox.y);
     
@@ -224,7 +226,7 @@ class SolicitacoesComprasPDFController {
     doc.font('Helvetica').text(solicitacao.filial_codigo || '-', filialBox.x + 50, filialContentY);
 
     // Caixa: Justificativa (abaixo das informações)
-    const justificativaBox = drawBox(50, startY + boxHeight + spacing, boxWidth * 2 + spacing, 60);
+    const justificativaBox = drawBox(14, startY + boxHeight + spacing, boxWidth * 2 + spacing, 60);
     doc.fontSize(12).font('Helvetica-Bold').fillColor('black');
     doc.text('Justificativa', justificativaBox.x, justificativaBox.y);
     
@@ -234,31 +236,31 @@ class SolicitacoesComprasPDFController {
     doc.y = startY + boxHeight + spacing + 60 + 10; // Reduzido de +20 para +10
 
     // Verificar se precisa de nova página antes da tabela
-    if (doc.y > 650) {
+    if (doc.y > 750) {
       doc.addPage();
-      doc.y = 50;
+      doc.y = 14;
     }
 
     // Tabela: Produtos Solicitados
     const produtosTitleY = doc.y;
     doc.fontSize(12).font('Helvetica-Bold').fillColor('black');
-    doc.text(`Produtos Solicitados (${itensComPedidos.length})`, 50, produtosTitleY);
+    doc.text(`Produtos Solicitados (${itensComPedidos.length})`, 14, produtosTitleY);
     
     const tableStartY = produtosTitleY + 15; // Reduzido de 20 para 15
     const tableTop = tableStartY + 10;
-    const tableLeft = 50;
-    // Ajustar larguras para caber na página A4 (largura útil ~495 pontos com margem de 50)
+    const tableLeft = 14;
+    // Ajustar larguras para caber na página A4 (largura útil ~567 pontos com margem de 14)
     const colWidths = {
-      codigo: 45,
-      produto: 140,
-      unidade: 30,
-      quantidade_solicitada: 50,
-      quantidade_utilizada: 50,
-      saldo_disponivel: 50,
-      status: 50,
-      pedidos: 80
+      codigo: 50,
+      produto: 160,
+      unidade: 35,
+      quantidade_solicitada: 55,
+      quantidade_utilizada: 55,
+      saldo_disponivel: 55,
+      status: 55,
+      pedidos: 100
     };
-    const tableWidth = Object.values(colWidths).reduce((a, b) => a + b, 0); // Total: 495
+    const tableWidth = Object.values(colWidths).reduce((a, b) => a + b, 0); // Total: 565
 
     // Desenhar caixa ao redor da tabela (vai ser ajustada depois)
     const produtosBox = drawBox(tableLeft - 10, tableStartY, tableWidth + 20, 750 - tableStartY);
@@ -282,13 +284,13 @@ class SolicitacoesComprasPDFController {
     x += colWidths.status;
     doc.text('PEDIDOS VINCULADOS', x, tableTop);
 
-    // Linha separadora
-    doc.moveTo(tableLeft, tableTop + 15).lineTo(tableLeft + tableWidth, tableTop + 15).stroke();
+    // Linha separadora (ajustada para cabeçalho em duas linhas)
+    doc.moveTo(tableLeft, tableTop + 18).lineTo(tableLeft + tableWidth, tableTop + 18).stroke();
 
     // Dados dos itens
     doc.fontSize(8).font('Helvetica');
-    let currentY = tableTop + 20;
-    const maxY = 700; // Altura máxima antes de quebrar página
+    let currentY = tableTop + 23; // Ajustado para acomodar cabeçalho em duas linhas
+    const maxY = 750; // Altura máxima antes de quebrar página (ajustada para margem menor)
     let pageBreakOccurred = false;
     
     itensComPedidos.forEach((item, index) => {
