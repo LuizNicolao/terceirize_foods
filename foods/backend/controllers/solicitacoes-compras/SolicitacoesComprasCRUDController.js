@@ -36,9 +36,14 @@ class SolicitacoesComprasCRUDController {
 
   /**
    * Calcular semana de abastecimento baseado na data
+   * A semana de abastecimento é a semana SEGUINTE à data de entrega do CD
    */
   static calcularSemanaAbastecimento(dataEntrega) {
+    // Adicionar 7 dias à data de entrega para obter a semana seguinte
     const data = new Date(dataEntrega);
+    data.setDate(data.getDate() + 7);
+    
+    // Calcular o início da semana (segunda-feira)
     const diaSemana = data.getDay();
     const diferenca = diaSemana === 0 ? -6 : 1 - diaSemana; // Segunda-feira
     
