@@ -30,18 +30,18 @@ export const useFormasPagamento = () => {
       page: baseEntity.currentPage,
       limit: baseEntity.itemsPerPage,
       search: baseEntity.searchTerm || undefined,
-      ativo: baseEntity.filtros.ativoFilter === 'todos' ? undefined : baseEntity.filtros.ativoFilter
+      ativo: baseEntity.filters?.ativoFilter === 'todos' ? undefined : baseEntity.filters?.ativoFilter
     };
 
     await baseEntity.loadData(params);
-  }, [baseEntity]);
+  }, [baseEntity.currentPage, baseEntity.itemsPerPage, baseEntity.searchTerm, baseEntity.filters?.ativoFilter, baseEntity.loadData]);
 
   /**
    * Carregar dados quando filtros mudarem
    */
   useEffect(() => {
     loadDataWithFilters();
-  }, [baseEntity.currentPage, baseEntity.itemsPerPage, baseEntity.searchTerm, baseEntity.filtros.ativoFilter]);
+  }, [baseEntity.currentPage, baseEntity.itemsPerPage, baseEntity.searchTerm, baseEntity.filters?.ativoFilter]);
 
   /**
    * Submissão customizada
@@ -54,8 +54,8 @@ export const useFormasPagamento = () => {
    * Handlers de filtros
    */
   const setAtivoFilter = useCallback((value) => {
-    baseEntity.setFilter('ativoFilter', value);
-    baseEntity.setCurrentPage(1);
+    baseEntity.updateFilter('ativoFilter', value);
+    baseEntity.handlePageChange(1);
   }, [baseEntity]);
 
   /**
@@ -64,9 +64,9 @@ export const useFormasPagamento = () => {
   const handleClearFilters = useCallback(() => {
     baseEntity.clearFilters();
     baseEntity.setSearchTerm('');
-    setAtivoFilter('todos');
-    baseEntity.setCurrentPage(1);
-  }, [baseEntity, setAtivoFilter]);
+    baseEntity.updateFilter('ativoFilter', 'todos');
+    baseEntity.handlePageChange(1);
+  }, [baseEntity]);
 
   /**
    * Função para obter badge de status
@@ -90,7 +90,7 @@ export const useFormasPagamento = () => {
     showDeleteConfirmModal: baseEntity.showDeleteConfirmModal,
     formaPagamentoToDelete: baseEntity.itemToDelete,
     searchTerm: baseEntity.searchTerm,
-    ativoFilter: baseEntity.filtros.ativoFilter || 'todos',
+    ativoFilter: baseEntity.filters?.ativoFilter || 'todos',
     currentPage: baseEntity.currentPage,
     totalPages: baseEntity.totalPages,
     totalItems: baseEntity.totalItems,
