@@ -40,6 +40,7 @@ const planoAmostragemRoutes = require('./plano-amostragem/planoAmostragemRoute')
 const relatorioInspecaoRoutes = require('./relatorio-inspecao');
 const solicitacoesComprasRoutes = require('./solicitacoes-compras');
 const calendarioRoutes = require('./calendario');
+const formasPagamentoRoutes = require('./formas-pagamento');
 const openaiRoutes = require('./openai/openaiRoute');
 const cepRoutes = require('./shared/cepRoute');
 
@@ -81,6 +82,7 @@ const routes = [
   { path: '/relatorio-inspecao', router: relatorioInspecaoRoutes },
   { path: '/solicitacoes-compras', router: solicitacoesComprasRoutes },
   { path: '/calendario', router: calendarioRoutes },
+  { path: '/formas-pagamento', router: formasPagamentoRoutes },
   { path: '/openai', router: openaiRoutes },
   { path: '/shared', router: cepRoutes }
 ];

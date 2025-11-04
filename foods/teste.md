@@ -1,214 +1,82 @@
-Vou analisar o módulo de Solicitação de Compras para criar uma explicação completa. Deixe-me buscar os arquivos relacionados:
-
-[10 tools called]
-
-Perfeito! Agora tenho todas as informações necessárias. [[memory:2418210]] Vou criar uma explicação completa do sistema de **Solicitação de Compras**:
-
----
-
-# 📋 SISTEMA DE SOLICITAÇÃO DE COMPRAS
-**URL:** `http://localhost:8080/nexflow/modulos/solicitacao_compras/`
-
----
 
 ## 🎯 OBJETIVO DO SISTEMA
 
-Sistema para gerenciar **Solicitações de Compras (SC)**, que são requisições formais de produtos necessários para as filiais. Estas solicitações são posteriormente transformadas em **Pedidos de Compras** para fornecedores. O sistema gerencia o ciclo completo desde a solicitação até o atendimento através dos pedidos.
+Sistema para gerenciar **Formas de Pagamento** disponíveis no sistema Nexflow. Permite cadastrar diferentes métodos de pagamento (Boleto, PIX, Transferência, etc.) que são utilizados no módulo de **Pedidos de Compras**. Sistema simples mas essencial para padronizar as formas de pagamento aceitas pela empresa.
 
 ---
 
 ## 🗄️ ESTRUTURA DO BANCO DE DADOS
 
-### **Tabela 1: `solicitacoes_compras`**
-Tabela principal que armazena o cabeçalho das solicitações.
+### **Tabela: `formas_pagamento`**
 
 | Campo | Tipo | Descrição |
 |-------|------|-----------|
-| `id` | INT AUTO_INCREMENT | ID único da solicitação |
-| `numero_solicitacao` | VARCHAR(20) UNIQUE NOT NULL | Número sequencial (ex: SC000001, SC000002) |
-| `descricao` | TEXT | Descrição/Motivo da solicitação |
-| `solicitante` | VARCHAR(100) NOT NULL | Nome do solicitante (usuário logado) |
-| `unidade` | VARCHAR(100) | Nome da unidade/filial (texto) |
-| `data_necessidade` | DATE | Data de entrega CD (quando precisa receber) |
-| `observacoes` | TEXT | Observações gerais da solicitação |
-| `status` | ENUM | Status atual: `em_digitacao`, `finalizado`, `cancelada`, `pendente`, `aprovada`, `rejeitada`, `em_andamento`, `concluida` |
-| `valor_total` | DECIMAL(15,2) | Valor total calculado automaticamente via TRIGGER |
-| `criado_por` | INT | ID do usuário que criou (FK para `usuarios`) |
-| `criado_em` | TIMESTAMP | Data/hora de criação |
-| `atualizado_em` | TIMESTAMP | Data/hora de última atualização |
-| `data_documento` | DATE NOT NULL | Data do documento (data atual) |
-| `motivo` | VARCHAR(255) NOT NULL | Motivo: "Compra Emergencial" ou "Compra Programada" |
-| `filial_id` | INT | ID da filial solicitante (FK para `filiais`) |
-| `data_entrega_cd` | DATE | Data de entrega no CD (mesmo que data_necessidade) |
-| `semana_abastecimento` | VARCHAR(20) | Semana de abastecimento calculada (ex: "01/11/2024 a 07/11/2024") |
+| `id` | INT AUTO_INCREMENT | ID único da forma de pagamento |
+| `nome` | VARCHAR(100) NOT NULL | Nome da forma de pagamento (ex: "Boleto Bancário", "PIX") |
+| `descricao` | TEXT | Descrição detalhada da forma de pagamento (opcional) |
+| `prazo_padrao` | VARCHAR(50) | Prazo padrão associado (ex: "30 dias", "À vista") - opcional |
+| `ativo` | TINYINT(1) DEFAULT 1 | 1 = Ativo (disponível para uso), 0 = Inativo |
+| `criado_em` | TIMESTAMP | Data/hora de criação do registro |
+| `atualizado_em` | TIMESTAMP | Data/hora da última atualização (auto-atualizado) |
+| `criado_por` | INT | ID do usuário que criou o registro |
 
 **Índices:**
-- `idx_numero_solicitacao` (numero_solicitacao)
-- `idx_status` (status)
-- `idx_solicitante` (solicitante)
-- `idx_data_necessidade` (data_necessidade)
-- `idx_criado_em` (criado_em)
-- `idx_filial_id` (filial_id)
-- `idx_data_entrega_cd` (data_entrega_cd)
+- `idx_ativo` (ativo) - Para filtrar apenas formas ativas
+- `idx_criado_por` (criado_por) - Para rastreabilidade
 
-**Foreign Keys:**
-- `criado_por` → `usuarios(id)` ON DELETE SET NULL
-- `filial_id` → `filiais(id)` ON DELETE SET NULL
+**Constraints:**
+- `nome` NOT NULL - Nome é obrigatório
+- `ativo` DEFAULT 1 - Por padrão, formas são criadas ativas
 
 ---
 
-### **Tabela 2: `solicitacao_compras_itens`**
-Tabela de itens (produtos) da solicitação.
+## 📊 DADOS PRÉ-CADASTRADOS
 
-| Campo | Tipo | Descrição |
-|-------|------|-----------|
-| `id` | INT AUTO_INCREMENT | ID único do item |
-| `solicitacao_id` | INT NOT NULL | ID da solicitação (FK para `solicitacoes_compras`) |
-| `produto_id` | INT | ID do produto genérico |
-| `codigo_produto` | VARCHAR(10) | Código do produto |
-| `nome_produto` | VARCHAR(200) | Nome do produto |
-| `unidade_medida_id` | INT | ID da unidade de medida (FK para `unidades_medida`) |
-| `unidade_medida` | VARCHAR(50) | Símbolo da unidade (KG, UN, CX, etc.) |
-| `quantidade` | DECIMAL(10,3) NOT NULL | Quantidade solicitada |
-| `observacao` | TEXT | Observação específica do item |
-| `valor_unitario` | DECIMAL(10,2) | Valor unitário estimado (opcional) |
-| `valor_total` | DECIMAL(15,2) | Valor total do item = quantidade × valor_unitario |
-| `criado_em` | TIMESTAMP | Data/hora de criação |
+Ao instalar o módulo, são criadas **7 formas de pagamento padrão**:
 
-**Índices:**
-- `idx_solicitacao_id` (solicitacao_id)
-- `idx_produto_id` (produto_id)
-- `idx_codigo_produto` (codigo_produto)
-
-**Foreign Keys:**
-- `solicitacao_id` → `solicitacoes_compras(id)` ON DELETE CASCADE
-- `unidade_medida_id` → `unidades_medida(id)` ON DELETE SET NULL
-
----
-
-### **TRIGGERS Automáticos:**
-
-#### **1. Atualizar Valor Total da Solicitação (INSERT)**
-```sql
-CREATE TRIGGER atualizar_valor_total_solicitacao
-AFTER INSERT ON solicitacao_compras_itens
-FOR EACH ROW
-BEGIN
-    UPDATE solicitacoes_compras 
-    SET valor_total = (
-        SELECT COALESCE(SUM(valor_total), 0) 
-        FROM solicitacao_compras_itens 
-        WHERE solicitacao_id = NEW.solicitacao_id
-    )
-    WHERE id = NEW.solicitacao_id;
-END
-```
-
-#### **2. Atualizar Valor Total da Solicitação (UPDATE)**
-Mesmo comportamento, dispara após UPDATE em `solicitacao_compras_itens`.
-
-#### **3. Atualizar Valor Total da Solicitação (DELETE)**
-Mesmo comportamento, dispara após DELETE em `solicitacao_compras_itens`.
-
-**Resultado:** O campo `valor_total` em `solicitacoes_compras` é **sempre atualizado automaticamente** quando itens são adicionados, modificados ou removidos.
+| ID | Nome | Descrição | Prazo Padrão | Ativo |
+|----|------|-----------|--------------|-------|
+| 1 | Boleto | Pagamento via boleto bancário | 30 dias | ✅ |
+| 2 | Transferência Bancária | Transferência entre contas | À vista | ✅ |
+| 3 | PIX | Pagamento instantâneo via PIX | À vista | ✅ |
+| 4 | Cheque | Pagamento via cheque | 30 dias | ✅ |
+| 5 | Cartão de Crédito | Pagamento com cartão de crédito | 30 dias | ✅ |
+| 6 | Depósito Bancário | Depósito em conta bancária | À vista | ✅ |
+| 7 | Dinheiro | Pagamento em espécie | À vista | ✅ |
 
 ---
 
 ## 🔗 RELACIONAMENTOS E VÍNCULOS
 
-### **Diagrama de Relacionamento:**
+### **Integração com Pedidos de Compras:**
 
 ```
-filiais (1) ----< (N) solicitacoes_compras
-                         ↓ (1)
-                         |
-                    (N) solicitacao_compras_itens ----< (1) produto_generico
-                         |                                    ↓
-                         |                              unidades_medida
-                         ↓
-                  pedido_compras_itens (vínculo através de solicitacao_item_id)
-                         ↓
-                  pedidos_compras
+formas_pagamento (N) → pedidos_compras.forma_pagamento (texto)
 ```
 
-### **Explicação dos Vínculos:**
+**Importante:** O vínculo é **por nome (texto)**, não por ID (FK).
 
-1. **Solicitação ↔ Filial:**
-   - Cada solicitação pertence a **uma filial**
-   - Uma filial pode ter **várias solicitações**
+**Motivo:** Permite que o pedido mantenha o histórico mesmo se a forma for excluída.
 
-2. **Solicitação ↔ Itens:**
-   - Uma solicitação tem **vários itens** (produtos)
-   - Cada item pertence a **uma solicitação** (CASCADE DELETE)
-
-3. **Item ↔ Produto Genérico:**
-   - Cada item referencia um **produto genérico**
-   - Armazena cópia dos dados (código, nome) para histórico
-
-4. **Item ↔ Unidade de Medida:**
-   - Cada item tem uma **unidade de medida**
-   - Armazena tanto ID quanto símbolo
-
-5. **Solicitação → Pedido de Compras (Vínculo Indireto):**
-   - `solicitacao_compras_itens.id` ← `pedido_compras_itens.solicitacao_item_id`
-   - Um item de solicitação pode ser atendido por **múltiplos pedidos** (parcialmente)
-   - O sistema rastreia **quantidade utilizada** e **saldo disponível**
-
----
-
-## 📊 SISTEMA DE STATUS
-
-### **Status da Solicitação (Calculado Automaticamente):**
-
-| Status | Descrição | Quando Ocorre |
-|--------|-----------|---------------|
-| `em_digitacao` | Em Digitação | Solicitação sendo criada (não usado no sistema atual) |
-| `aberto` | Aberto | Nenhum pedido vinculado aos itens |
-| `parcial` | Parcial | Alguns itens atendidos, mas não todos |
-| `finalizado` | Finalizado | Todos os itens 100% atendidos por pedidos |
-| `cancelada` | Cancelada | Solicitação cancelada manualmente |
-
-### **Lógica de Cálculo de Status:**
-
-```php
-function recalcularStatusSolicitacao($solicitacao_id) {
-    // Buscar todos os itens com quantidades atendidas
-    $itens = buscarItensComQuantidadesAtendidas($solicitacao_id);
-    
-    $totalSolicitado = 0;
-    $totalAtendido = 0;
-    $todosAtendidos = true;
-    $algumAtendido = false;
-    
-    foreach ($itens as $item) {
-        $solicitado = $item['quantidade_solicitada'];
-        $atendido = $item['quantidade_atendida']; // Soma dos pedidos
-        
-        $totalSolicitado += $solicitado;
-        $totalAtendido += $atendido;
-        
-        if ($atendido > 0) $algumAtendido = true;
-        if ($atendido < $solicitado) $todosAtendidos = false;
-    }
-    
-    // Determinar status
-    if ($totalAtendido == 0) {
-        $status = 'aberto';
-    } elseif ($todosAtendidos || $totalAtendido >= $totalSolicitado) {
-        $status = 'finalizado';
-    } else {
-        $status = 'parcial';
-    }
-    
-    // Atualizar status no banco
-    UPDATE solicitacoes_compras SET status = $status WHERE id = $solicitacao_id;
-}
+**Exemplo:**
+```sql
+-- Pedido de Compras
+pedidos_compras:
+  numero_pedido: PC000001
+  forma_pagamento: "Boleto Bancário"  ← Texto, não FK
+  prazo_pagamento: "30 dias"
 ```
 
-**Importante:** O status é recalculado automaticamente:
-- Ao listar solicitações (`index.php`)
-- Ao visualizar uma solicitação (`visualizar.php`)
-- Ao adicionar/remover itens de pedidos
+### **Verificação de Uso:**
+
+Antes de excluir uma forma de pagamento, o sistema verifica:
+```sql
+SELECT COUNT(*) as total 
+FROM pedidos_compras 
+WHERE forma_pagamento = 'Boleto Bancário'
+```
+
+Se `total > 0` → **Não permite excluir** (está em uso)
 
 ---
 
@@ -216,16 +84,12 @@ function recalcularStatusSolicitacao($solicitacao_id) {
 
 ### **Arquivos Principais:**
 
-1. **`index.php`** - Listagem com filtros e paginação (READ)
-2. **`cadastrar.php`** - Cadastro de solicitação (CREATE)
-3. **`editar.php`** - Edição de solicitação (UPDATE)
-4. **`visualizar.php`** - Visualização e impressão (READ)
-5. **`excluir.php`** - Exclusão de solicitação (DELETE)
-
-### **APIs e Utilitários:**
-
-6. **`recalcular_status_solicitacao.php`** - Função para recalcular status
-7. **`buscar_semana_abastecimento.php`** - API para buscar semana de abastecimento
+1. **`index.php`** - Listagem com filtros (READ)
+2. **`cadastrar.php`** - Cadastro de forma de pagamento (CREATE)
+3. **`editar.php`** - Edição de forma de pagamento (UPDATE)
+4. **`visualizar.php`** - Visualização de detalhes (READ)
+5. **`excluir.php`** - Exclusão com validação (DELETE)
+6. **`instalar_tabela.php`** - Script de instalação
 
 ---
 
@@ -234,642 +98,444 @@ function recalcularStatusSolicitacao($solicitacao_id) {
 ### **1. VISUALIZAR / LISTAR (`index.php`)**
 
 #### **O que faz:**
-Lista todas as solicitações de compras com filtros avançados e paginação.
+Lista todas as formas de pagamento cadastradas com filtros de busca e status.
 
 #### **Filtros Disponíveis:**
-- **Busca Geral** (text): Número, Descrição, Solicitante, Unidade
-- **Status** (select): Todos, Em Digitação, Aberto, Parcial, Finalizado, Cancelada, etc.
-- **Solicitante** (select): Filtro por nome do solicitante
-- **Unidade** (select): Filtro por filial
-- **Data Início** (date): Filtro por data de criação inicial
-- **Data Fim** (date): Filtro por data de criação final
+- **Busca** (text): Busca por nome ou descrição
+- **Status** (select): 
+  - Todos
+  - Ativos
+  - Inativos
 
 #### **Consulta SQL:**
 ```sql
-SELECT sc.*,
-       sc.motivo as descricao,
-       DATE_FORMAT(sc.criado_em, '%d/%m/%Y %H:%i') as data_formatada,
-       DATE_FORMAT(sc.data_necessidade, '%d/%m/%Y') as data_necessidade_formatada,
-       DATE_FORMAT(sc.data_entrega_cd, '%d/%m/%Y') as data_entrega_formatada
-FROM solicitacoes_compras sc 
+SELECT * FROM formas_pagamento 
 WHERE [filtros dinâmicos]
-ORDER BY sc.criado_em DESC, sc.id DESC
-LIMIT ? OFFSET ?
+ORDER BY nome ASC
 ```
 
-**Antes de listar:** Sistema recalcula automaticamente o status de todas as solicitações visíveis.
+**Construção de Filtros:**
+```php
+$where = [];
+$params = [];
+
+if ($filtro_status !== '') {
+    $where[] = "ativo = ?";
+    $params[] = $filtro_status;  // 0 ou 1
+}
+
+if ($filtro_busca) {
+    $where[] = "(nome LIKE ? OR descricao LIKE ?)";
+    $params[] = "%$filtro_busca%";
+    $params[] = "%$filtro_busca%";
+}
+
+$where_sql = !empty($where) ? 'WHERE ' . implode(' AND ', $where) : '';
+```
 
 #### **Tabela de Listagem:**
 
-| Número | Descrição | Solicitante | Unidade | Data Solicitação | Data Necessidade | Status | Valor Total | Ações |
-|--------|-----------|-------------|---------|------------------|------------------|--------|-------------|-------|
-| SC000001 | Compra Programada | João Silva | Filial A | 03/11/2024 10:30 | 10/11/2024 | ABERTO | R$ 1.500,00 | 👁️ ✏️ 🖨️ 🗑️ |
+| # | Nome | Descrição | Status | Ações |
+|---|------|-----------|--------|-------|
+| 1 | Boleto Bancário | Pagamento via boleto bancário | ✅ **Ativo** | 👁️ ✏️ 🗑️ |
+| 2 | PIX | Pagamento instantâneo via PIX | ✅ **Ativo** | 👁️ ✏️ 🗑️ |
+| 3 | Dinheiro | Pagamento em espécie | ❌ **Inativo** | 👁️ ✏️ 🗑️ |
 
-#### **Ações por Solicitação:**
-- 👁️ **Visualizar** → `visualizar.php?id={id}`
-- ✏️ **Editar** → `editar.php?id={id}` (apenas se status permitir)
-- 🖨️ **Imprimir** → Abre `visualizar.php` em popup e dispara `window.print()`
-- 🗑️ **Excluir** → Somente se status = "aberto" (sem vínculos)
+**Badges de Status:**
+```html
+<!-- Ativo -->
+<span class="status-badge status-active">
+    <i class="fas fa-check-circle"></i> Ativo
+</span>
 
-#### **Funcionalidade de Exclusão:**
-```php
-// Via GET
-if (isset($_GET['excluir'])) {
-    // Verificar status
-    $solicitacao = fetchOne("SELECT status FROM solicitacoes_compras WHERE id = ?", [$id]);
-    
-    if ($solicitacao['status'] === 'aberto') {
-        // Excluir itens primeiro (CASCADE faz isso automaticamente)
-        executeQuery("DELETE FROM solicitacao_compras_itens WHERE solicitacao_id = ?", [$id]);
-        executeQuery("DELETE FROM solicitacoes_compras WHERE id = ?", [$id]);
-        $sucesso = "Solicitação excluída!";
-    } else {
-        $erro = "Não é possível excluir. Status: {$status}";
-    }
-}
+<!-- Inativo -->
+<span class="status-badge status-inactive">
+    <i class="fas fa-times-circle"></i> Inativo
+</span>
 ```
 
-**Paginação:**
-- Configurável: 10, 25, 50, 100 itens por página
-- Navegação com botões: ‹ 1 ... 5 6 **7** 8 9 ... 15 ›
+#### **Ações por Registro:**
+- 👁️ **Visualizar** → `visualizar.php?id={id}`
+- ✏️ **Editar** → `editar.php?id={id}`
+- 🗑️ **Excluir** → `excluir.php?id={id}` com confirmação
+
+#### **Botão de Ação Principal:**
+- ➕ **Nova Forma de Pagamento** → `cadastrar.php`
+
+#### **Empty State:**
+Se não houver registros:
+```
+💳 (ícone grande)
+Nenhuma forma de pagamento cadastrada.
+[➕ Cadastrar Primeira Forma de Pagamento]
+```
 
 ---
 
 ### **2. CADASTRAR (`cadastrar.php`)**
 
 #### **O que faz:**
-Cria uma nova solicitação de compras com seus itens.
+Cria uma nova forma de pagamento no sistema.
 
-#### **Seções do Formulário:**
+#### **Campos do Formulário:**
 
-#### **A) Cabeçalho da Solicitação**
+1. **Nome da Forma de Pagamento** (text, obrigatório)
+   - Placeholder: "Ex: Boleto Bancário, PIX, Cartão de Crédito"
+   - Validação: Não pode estar vazio
 
-**Campos:**
-- **Filial** (select, obrigatório)
-  - Dropdown com todas as filiais cadastradas
-  - Formato: "Nome da Filial (Código)"
+2. **Descrição** (textarea, opcional)
+   - Placeholder: "Descreva os detalhes desta forma de pagamento"
+   - Múltiplas linhas
 
-- **Data de Entrega CD** (date, obrigatório)
-  - Data quando os produtos devem chegar no Centro de Distribuição
-  - Ao preencher, dispara AJAX para calcular semana de abastecimento
-
-- **Semana de Abastecimento** (text, readonly)
-  - Calculada automaticamente via API
-  - Formato: "01/11/2024 a 07/11/2024"
-  - Busca do banco se já existe para a mesma data, senão calcula
-
-- **Solicitante** (text, readonly)
-  - Preenchido automaticamente com usuário logado
-  - Não pode ser alterado
-
-- **Justificativa** (select, obrigatório)
-  - "Compra Emergencial"
-  - "Compra Programada"
-
-- **Observações Gerais** (textarea, opcional)
-  - Campo livre para informações adicionais
-
-- **Data do Documento** (date, readonly)
-  - Data atual automaticamente
-  - Não pode ser alterada
-
-- **Status** (hidden)
-  - Sempre começa como `em_digitacao`
-  - Ao salvar, muda para `aberto`
-
-#### **B) Produtos da Solicitação**
-
-**Tabela dinâmica com colunas:**
-
-| Nome Genérico | Unidade | Quantidade | Observação | Ações |
-|---------------|---------|------------|------------|-------|
-| *Select com produtos* | *Select com unidades* | *Input numérico* | *Input texto* | 🗑️ Remover |
-
-**Funcionalidades:**
-- **Botão "Adicionar Produto"**: Adiciona nova linha na tabela
-- **Select de Produtos**: Lista todos os produtos genéricos ativos
-- **Auto-preenchimento de Unidade**: Ao selecionar produto, unidade é preenchida automaticamente
-- **Validação de Duplicidade**: Não permite adicionar o mesmo produto duas vezes
-- **Indicação Visual**: Produtos já adicionados aparecem desabilitados e riscados nos selects
-
-**JavaScript - Adicionar Produto:**
-```javascript
-function adicionarProduto() {
-    const row = `
-        <tr id="product-row-${counter}">
-            <td>
-                <select name="produtos[${counter}][codigo]" 
-                        onchange="selecionarProduto(${counter})" required>
-                    <option value="">Selecione...</option>
-                    ${produtos.map(p => 
-                        `<option value="${p.codigo_produto}" 
-                                 data-unidade="${p.unidade_id}">
-                            ${p.nome}
-                        </option>`
-                    )}
-                </select>
-            </td>
-            <td>
-                <select name="produtos[${counter}][unidade]" required>
-                    ${unidades.map(u => 
-                        `<option value="${u.id}">${u.simbolo}</option>`
-                    )}
-                </select>
-            </td>
-            <td><input type="number" name="produtos[${counter}][quantidade]" 
-                       step="0.01" required></td>
-            <td><input type="text" name="produtos[${counter}][observacao]"></td>
-            <td><button onclick="removerProduto(${counter})">🗑️</button></td>
-        </tr>
-    `;
-    tbody.innerHTML += row;
-    counter++;
-}
-```
-
-**JavaScript - Preenchimento Automático de Unidade:**
-```javascript
-function selecionarProduto(index) {
-    const produtoSelect = row.querySelector('select[name*="[codigo]"]');
-    const unidadeSelect = row.querySelector('select[name*="[unidade]"]');
-    
-    const selectedOption = produtoSelect.options[produtoSelect.selectedIndex];
-    const unidadeId = selectedOption.getAttribute('data-unidade');
-    
-    if (unidadeId) {
-        unidadeSelect.value = unidadeId; // Auto-preenche
-    }
-}
-```
+3. **Forma de pagamento ativa** (checkbox)
+   - Marcado por padrão
+   - Se desmarcado: forma fica inativa (não aparece em selects)
 
 #### **Processamento do Formulário (POST):**
 
 ```php
-// 1. Gerar número automático (SC000001, SC000002...)
-$ultima = fetchOne("SELECT numero_solicitacao FROM solicitacoes_compras 
-                    WHERE numero_solicitacao LIKE 'SC%' 
-                    ORDER BY id DESC LIMIT 1");
+// 1. Receber dados
+$nome = trim($_POST['nome'] ?? '');
+$descricao = trim($_POST['descricao'] ?? '');
+$ativo = isset($_POST['ativo']) ? 1 : 0;
 
-if ($ultima) {
-    $numero = intval(substr($ultima['numero_solicitacao'], 2));
-    $proximo = 'SC' . str_pad($numero + 1, 6, '0', STR_PAD_LEFT);
-} else {
-    $proximo = 'SC000001';
+// 2. Validações
+if (empty($nome)) {
+    throw new Exception("O nome da forma de pagamento é obrigatório.");
 }
 
-// 2. Buscar nome da filial
-$filial = fetchOne("SELECT nome FROM filiais WHERE id = ?", [$filial_id]);
+// 3. Inserir no banco
+$id = insert("
+    INSERT INTO formas_pagamento (nome, descricao, ativo, criado_por)
+    VALUES (?, ?, ?, ?)
+", [$nome, $descricao, $ativo, $usuario_id]);
 
-// 3. Inserir solicitação
-INSERT INTO solicitacoes_compras (
-    numero_solicitacao, descricao, solicitante, unidade,
-    data_necessidade, status, criado_por,
-    data_documento, motivo, observacoes,
-    filial_id, data_entrega_cd, semana_abastecimento
-) VALUES (
-    'SC000001', 'Compra Programada', 'João Silva', 'Filial A',
-    '2024-11-10', 'aberto', 1,
-    '2024-11-03', 'Compra Programada', 'Obs...',
-    5, '2024-11-10', '04/11/2024 a 10/11/2024'
-);
-
-// 4. Inserir itens (loop por $_POST['produtos'])
-foreach ($_POST['produtos'] as $produto) {
-    // Buscar dados completos do produto
-    $produto_dados = fetchOne("SELECT id, nome, codigo, unidade_medida_id 
-                               FROM produto_generico WHERE codigo = ?", 
-                               [$produto['codigo']]);
-    
-    // Buscar símbolo da unidade
-    $unidade_dados = fetchOne("SELECT simbolo FROM unidades_medida WHERE id = ?", 
-                               [$produto['unidade']]);
-    
-    // Inserir item
-    INSERT INTO solicitacao_compras_itens (
-        solicitacao_id, produto_id, codigo_produto, nome_produto,
-        unidade_medida_id, unidade_medida, quantidade, observacao
-    ) VALUES (
-        $solicitacao_id, $produto_dados['id'], $produto_dados['codigo'],
-        $produto_dados['nome'], $produto['unidade'], $unidade_dados['simbolo'],
-        $produto['quantidade'], $produto['observacao']
-    );
-    
-    // TRIGGER automático atualiza valor_total em solicitacoes_compras
-}
+// 4. Redirecionar para visualização
+header("Location: visualizar.php?id=$id");
 ```
 
 **Validações:**
-- Filial obrigatória
-- Data de Entrega CD obrigatória
-- Justificativa obrigatória
-- Data do Documento obrigatória
-- Deve ter pelo menos 1 produto
+- Nome não pode estar vazio
+- Descrição é opcional
+- Status padrão: Ativo (1)
 
-**Botões de Ação:**
-- 💾 **Salvar Solicitação** → Salva e vai para `index.php`
-- ✏️ **Salvar e Continuar Editando** → Salva e vai para `editar.php?id={id}`
-- 🚫 **Cancelar Solicitação** → Muda status para `cancelada` e salva
-- ⬅️ **Voltar** → Cancela e volta para `index.php`
+**Após Salvar:**
+Redireciona para `visualizar.php?id={id_criado}` mostrando o registro recém-criado.
 
 ---
 
 ### **3. EDITAR (`editar.php`)**
 
 #### **O que faz:**
-Permite editar uma solicitação existente.
+Permite editar uma forma de pagamento existente.
 
-**Parâmetros:** `?id={id_da_solicitacao}`
-
-#### **Regra de Bloqueio de Edição:**
-```php
-$pode_editar = ($status === 'aberto');
-
-if (!$pode_editar && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    $_SESSION['erro_msg'] = "Esta solicitação não pode ser editada. 
-                             Status: {$status}. 
-                             Apenas solicitações 'abertas' podem ser alteradas.";
-    header('Location: visualizar.php?id=' . $id);
-    exit;
-}
-```
-
-**Estados de Bloqueio:**
-- **ABERTO** → ✅ Pode editar
-- **PARCIAL** → ❌ Bloqueado (já tem pedidos vinculados)
-- **FINALIZADO** → ❌ Bloqueado (totalmente atendido)
-- **CANCELADA** → ❌ Bloqueado
-
-**Interface Bloqueada:**
-Se status ≠ "aberto", o formulário inteiro fica com:
-```html
-<form style="pointer-events: none; opacity: 0.6;">
-```
-E mostra alerta: "Solicitação Bloqueada para Edição"
+**Parâmetros:** `?id={id_da_forma}`
 
 #### **Carregamento de Dados:**
 ```php
-// 1. Buscar solicitação
-$solicitacao = fetchOne("SELECT * FROM solicitacoes_compras WHERE id = ?", [$id]);
+// Buscar forma de pagamento
+$forma = fetchOne("SELECT * FROM formas_pagamento WHERE id = ?", [$id]);
 
-// 2. Buscar itens existentes
-$itens_existentes = fetchAll("
-    SELECT * FROM solicitacao_compras_itens 
-    WHERE solicitacao_id = ? 
-    ORDER BY id
-", [$id]);
-
-// 3. Renderizar formulário com dados pré-preenchidos
-foreach ($itens_existentes as $idx => $item) {
-    // Criar linha de produto com valores do banco
+if (!$forma) {
+    $erro = "Forma de pagamento não encontrada.";
+    // Bloqueia exibição do formulário
 }
+```
+
+#### **Campos do Formulário:**
+Mesmos campos do cadastro, mas **pré-preenchidos**:
+
+```html
+<input type="text" name="nome" value="<?php echo htmlspecialchars($forma['nome']); ?>" required>
+
+<textarea name="descricao"><?php echo htmlspecialchars($forma['descricao'] ?? ''); ?></textarea>
+
+<input type="checkbox" name="ativo" <?php echo $forma['ativo'] == 1 ? 'checked' : ''; ?>>
 ```
 
 #### **Processamento da Edição (POST):**
+
 ```php
-// 1. Atualizar cabeçalho
-UPDATE solicitacoes_compras SET
-    descricao = ?, solicitante = ?, unidade = ?, data_necessidade = ?,
-    status = ?, data_documento = ?, motivo = ?, observacoes = ?,
-    filial_id = ?, data_entrega_cd = ?, semana_abastecimento = ?
-WHERE id = ?
+// 1. Receber dados
+$nome = trim($_POST['nome'] ?? '');
+$descricao = trim($_POST['descricao'] ?? '');
+$ativo = isset($_POST['ativo']) ? 1 : 0;
 
-// 2. DELETAR todos os itens antigos
-DELETE FROM solicitacao_compras_itens WHERE solicitacao_id = ?
-
-// 3. INSERIR novos itens (baseado no formulário)
-foreach ($_POST['produtos'] as $produto) {
-    INSERT INTO solicitacao_compras_itens (...)
+// 2. Validações
+if (empty($nome)) {
+    throw new Exception("O nome é obrigatório.");
 }
 
-// 4. TRIGGERS recalculam valor_total automaticamente
+// 3. Atualizar no banco
+executeQuery("
+    UPDATE formas_pagamento 
+    SET nome = ?, descricao = ?, ativo = ?
+    WHERE id = ?
+", [$nome, $descricao, $ativo, $id]);
+
+$sucesso = "Forma de pagamento atualizada com sucesso!";
+
+// 4. Recarregar dados para mostrar valores atualizados
+$forma = fetchOne("SELECT * FROM formas_pagamento WHERE id = ?", [$id]);
 ```
 
-**Observação:** A abordagem é **DELETE + INSERT**, não UPDATE individual dos itens.
+**Observações:**
+- **Não redireciona** após salvar (fica na mesma página mostrando mensagem de sucesso)
+- Dados são recarregados para refletir mudanças
+- Campo `atualizado_em` é atualizado automaticamente pelo banco
+
+**Botões de Ação:**
+- 💾 **Salvar Alterações** → Salva e recarrega página
+- ❌ **Cancelar** → Volta para `visualizar.php?id={id}`
 
 ---
 
 ### **4. VISUALIZAR (`visualizar.php`)**
 
 #### **O que faz:**
-Exibe a solicitação completa em modo visualização/impressão.
+Exibe os detalhes completos de uma forma de pagamento em modo visualização.
 
-**Parâmetros:** `?id={id_da_solicitacao}`
+**Parâmetros:** `?id={id_da_forma}`
 
-#### **Recalcular Status Antes de Exibir:**
-```php
-require_once 'recalcular_status_solicitacao.php';
-recalcularStatusSolicitacao($solicitacao_id);
-```
-
-#### **Consulta SQL Completa:**
+#### **Consulta SQL:**
 ```sql
--- Cabeçalho com dados da filial
-SELECT sc.*,
-       f.nome as filial_nome,
-       f.codigo as filial_codigo,
-       DATE_FORMAT(sc.criado_em, '%d/%m/%Y %H:%i') as data_criacao,
-       DATE_FORMAT(sc.data_entrega_cd, '%d/%m/%Y') as data_entrega_formatada
-FROM solicitacoes_compras sc
-LEFT JOIN filiais f ON sc.filial_id = f.id
-WHERE sc.id = ?
-
--- Itens com informações de vínculo com pedidos
-SELECT sci.*,
-       um.simbolo as unidade_simbolo,
-       um.nome as unidade_nome,
-       -- Quantidade atendida por pedidos
-       COALESCE(SUM(pci.quantidade_pedido), 0) as quantidade_utilizada,
-       -- Saldo restante
-       (sci.quantidade - COALESCE(SUM(pci.quantidade_pedido), 0)) as saldo_disponivel,
-       -- Lista de pedidos vinculados
-       GROUP_CONCAT(DISTINCT CONCAT(pc.numero_pedido, ' (', pci.quantidade_pedido, ')') 
-                    SEPARATOR ', ') as pedidos_vinculados
-FROM solicitacao_compras_itens sci
-LEFT JOIN unidades_medida um ON sci.unidade_medida_id = um.id
-LEFT JOIN pedido_compras_itens pci ON pci.solicitacao_item_id = sci.id
-LEFT JOIN pedidos_compras pc ON pci.pedido_id = pc.id
-WHERE sci.solicitacao_id = ?
-GROUP BY sci.id
-ORDER BY sci.id
+SELECT * FROM formas_pagamento WHERE id = ?
 ```
 
 #### **Seções Exibidas:**
 
-**1. Cards de Informação:**
-- **Informações da Solicitação:**
-  - Número (SC000001)
-  - Data de Criação
-  - Data Entrega CD
-  - Status (badge colorido)
+**1. Informações Principais:**
+- **ID**: Número do registro
+- **Nome**: Nome da forma de pagamento (em negrito)
+- **Status**: Badge colorido (Ativo/Inativo)
+- **Descrição**: Texto completo (ou "Sem descrição" se vazio)
 
-- **Filial:**
-  - Nome
-  - Código (se existir)
+**2. Informações do Sistema:**
+- **Criado em**: Data/hora formatada (DD/MM/YYYY HH:MM)
+- **Atualizado em**: Data/hora da última modificação (se foi alterado)
 
-- **Justificativa:**
-  - Texto do motivo
+**Layout:**
+```
+┌─────────────────────────────────────────┐
+│ 💳 Informações Principais               │
+├─────────────────────────────────────────┤
+│ #  ID: 1                                │
+│ 💳 Nome: Boleto Bancário                │
+│ ✅ Status: ✓ Ativo                      │
+│ 📄 Descrição: Pagamento via boleto...   │
+└─────────────────────────────────────────┘
 
-- **Observações Gerais:**
-  - Texto livre (se preenchido)
-
-**2. Tabela de Produtos:**
-
-| Código | Produto | Unidade | Qtd. Solicitada | Qtd. Utilizada | Saldo Disponível | Status | Pedidos Vinculados |
-|--------|---------|---------|-----------------|----------------|------------------|--------|--------------------|
-| 001234 | Produto A | KG | 100,00 | 50,00 | 50,00 | PARCIAL | PC000001 (50) |
-| 005678 | Produto B | UN | 200,00 | 200,00 | 0,00 | FINALIZADO | PC000001 (100), PC000002 (100) |
-| 009012 | Produto C | CX | 50,00 | 0,00 | 50,00 | ABERTO | Nenhum |
-
-**Cálculos por Item:**
-```php
-$quantidade_solicitada = 100;
-$quantidade_utilizada = 50; // Soma de todos os pedidos
-$saldo_disponivel = 100 - 50 = 50;
-
-// Status do item
-if ($quantidade_utilizada == 0) {
-    $status = 'aberto';
-} elseif ($saldo_disponivel <= 0) {
-    $status = 'finalizado';
-} else {
-    $status = 'parcial';
-}
+┌─────────────────────────────────────────┐
+│ 🕐 Informações do Sistema               │
+├─────────────────────────────────────────┤
+│ 📅 Criado em: 03/11/2024 10:30         │
+│ ✏️ Atualizado em: 05/11/2024 14:22     │
+└─────────────────────────────────────────┘
 ```
 
 #### **Botões de Ação:**
-- ✏️ **Editar** → Vai para `editar.php` (se permitido)
-- 🗑️ **Excluir** → Vai para `excluir.php` (se permitido)
-- 🖨️ **Imprimir** → Dispara `window.print()` com CSS otimizado
-- ⬅️ **Voltar** → Retorna para `index.php`
-
-**CSS para Impressão:**
-- Oculta sidebar, botões, header
-- Reduz fonte para 7-9px
-- Otimiza para papel A4
-- Mantém cores dos status
-- Ajusta largura das colunas
+- ✏️ **Editar** → `editar.php?id={id}`
+- 🗑️ **Excluir** → `excluir.php?id={id}` com confirmação
+- ⬅️ **Voltar** → `index.php`
 
 ---
 
-### **5. EXCLUIR (`excluir.php` ou via `index.php?excluir=`)**
+### **5. EXCLUIR (`excluir.php`)**
 
-#### **Regras de Exclusão:**
+#### **O que faz:**
+Página de confirmação para excluir uma forma de pagamento.
+
+**Parâmetros:** `?id={id_da_forma}`
+
+#### **Verificação de Uso (ANTES de Excluir):**
+
 ```php
-// Apenas pode excluir se:
-$pode_excluir = ($status === 'aberto');
+// Verificar se está em uso em pedidos de compras
+$em_uso = fetchOne("
+    SELECT COUNT(*) as total 
+    FROM pedidos_compras 
+    WHERE forma_pagamento = ?
+", [$forma['nome']]);
 
-// Se status = 'parcial' ou 'finalizado' → TEM VÍNCULOS COM PEDIDOS
-if (!$pode_excluir) {
-    $erro = "Não é possível excluir. Esta solicitação está vinculada a pedidos de compras.";
+if ($em_uso && $em_uso['total'] > 0) {
+    $erro = "Não é possível excluir esta forma de pagamento pois ela está sendo utilizada em {$em_uso['total']} pedido(s).";
+    // Bloqueia exclusão
 }
 ```
 
-**Processo:**
-1. Verificar status
-2. Se `aberto`:
-   - DELETE itens (CASCADE automático)
-   - DELETE solicitação
-3. Se outro status:
-   - Mostrar mensagem de erro
+**Regra de Negócio:**
+- ✅ Pode excluir: Se não estiver vinculada a nenhum pedido
+- ❌ Não pode excluir: Se estiver em uso em qualquer pedido
 
----
+**Alternativa:** Em vez de excluir, pode **desativar** (editar e desmarcar "Ativo").
 
-## 🔌 API E INTEGRAÇÕES
+#### **Tela de Confirmação:**
 
-### **API: `buscar_semana_abastecimento.php`**
+```
+⚠️ Atenção! Esta ação não pode ser desfeita. 
+   Tem certeza que deseja excluir esta forma de pagamento?
 
-**Endpoint:** `POST buscar_semana_abastecimento.php`
+┌─────────────────────────────────────────┐
+│ # ID: 5                                 │
+│ 💳 Nome: Cartão de Crédito              │
+│ 📅 Prazo Padrão: 30 dias                │
+│ ✅ Status: Ativo                        │
+└─────────────────────────────────────────┘
 
-**Parâmetros:**
-- `data_entrega` (POST) - Data de entrega CD
-
-**O que faz:**
-1. Busca se já existe semana cadastrada para esta data:
-```sql
-SELECT semana_abastecimento 
-FROM solicitacoes_compras 
-WHERE data_entrega_cd = ? 
-  AND semana_abastecimento IS NOT NULL
-LIMIT 1
+[🗑️ Confirmar Exclusão]  [❌ Cancelar]
 ```
 
-2. Se não encontrou, calcula baseado na data:
+#### **Processamento da Exclusão (POST):**
+
 ```php
-$timestamp = strtotime($data_entrega);
-$inicio_semana = date('d/m/Y', strtotime('monday this week', $timestamp));
-$fim_semana = date('d/m/Y', strtotime('sunday this week', $timestamp));
-$semana = "{$inicio_semana} a {$fim_semana}";
-```
+// Método: POST (não GET para segurança)
 
-**Resposta JSON:**
-```json
-{
-  "sucesso": true,
-  "semana_abastecimento": "04/11/2024 a 10/11/2024",
-  "data_entrega": "2024-11-10"
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    try {
+        // Verificar uso
+        $em_uso = fetchOne("SELECT COUNT(*) as total FROM pedidos_compras WHERE forma_pagamento = ?", [$forma['nome']]);
+        
+        if ($em_uso['total'] > 0) {
+            throw new Exception("Está em uso em {$em_uso['total']} pedido(s).");
+        }
+        
+        // Excluir
+        executeQuery("DELETE FROM formas_pagamento WHERE id = ?", [$id]);
+        
+        $_SESSION['sucesso_msg'] = "Forma de pagamento excluída com sucesso!";
+        header('Location: index.php');
+        exit;
+        
+    } catch (Exception $e) {
+        $erro = "Erro ao excluir: " . $e->getMessage();
+    }
 }
 ```
 
----
-
-## 🔄 INTEGRAÇÃO COM PEDIDOS DE COMPRAS
-
-### **Como Funciona o Vínculo:**
-
-**1. Criação de Pedido a partir de Solicitação:**
-
-Quando um usuário cria um **Pedido de Compras**, ele seleciona uma **Solicitação de Compras** e seus itens.
-
-**Fluxo:**
-```
-Solicitação SC000001 (3 produtos)
-  └─ Item 1: Produto A - 100 KG (solicitacao_compras_itens.id = 1)
-  └─ Item 2: Produto B - 200 UN (solicitacao_compras_itens.id = 2)
-  └─ Item 3: Produto C - 50 CX (solicitacao_compras_itens.id = 3)
-
-Pedido PC000001 (vinculado à SC000001)
-  └─ Item do Pedido 1: Produto A - 50 KG (solicitacao_item_id = 1)
-  └─ Item do Pedido 2: Produto B - 100 UN (solicitacao_item_id = 2)
-
-Pedido PC000002 (vinculado à SC000001)
-  └─ Item do Pedido 1: Produto A - 50 KG (solicitacao_item_id = 1)
-  └─ Item do Pedido 2: Produto B - 100 UN (solicitacao_item_id = 2)
-  └─ Item do Pedido 3: Produto C - 50 CX (solicitacao_item_id = 3)
-
-Resultado após PC000002:
-  - Item 1 (Produto A): 50 + 50 = 100 KG → 100% atendido → FINALIZADO
-  - Item 2 (Produto B): 100 + 100 = 200 UN → 100% atendido → FINALIZADO
-  - Item 3 (Produto C): 50 CX → 100% atendido → FINALIZADO
-  
-  → Solicitação SC000001: Status = FINALIZADO
-```
-
-**2. Rastreamento de Saldo:**
-
-```sql
--- Calcular quanto foi usado de cada item da solicitação
-SELECT 
-    sci.id,
-    sci.quantidade as quantidade_solicitada,
-    COALESCE(SUM(pci.quantidade_pedido), 0) as quantidade_utilizada,
-    (sci.quantidade - COALESCE(SUM(pci.quantidade_pedido), 0)) as saldo_disponivel
-FROM solicitacao_compras_itens sci
-LEFT JOIN pedido_compras_itens pci ON pci.solicitacao_item_id = sci.id
-WHERE sci.solicitacao_id = ?
-GROUP BY sci.id
-```
-
-**Exemplo de Cálculo:**
-```
-Item: Produto A - 100 KG solicitado
-
-Pedidos vinculados:
-  - PC000001: 30 KG (pci.solicitacao_item_id = item.id)
-  - PC000002: 50 KG (pci.solicitacao_item_id = item.id)
-
-quantidade_utilizada = SUM(30 + 50) = 80 KG
-saldo_disponivel = 100 - 80 = 20 KG
-status_item = 'parcial'
-```
+**Botões:**
+- 🗑️ **Confirmar Exclusão** (botão vermelho) → Submit do formulário POST
+- ❌ **Cancelar** → Volta para `visualizar.php?id={id}`
 
 ---
 
 ## 📊 REGRAS DE NEGÓCIO
 
-### **1. Geração de Número Automático:**
-- Formato: `SC` + 6 dígitos (SC000001, SC000002...)
-- Sequencial baseado no último número cadastrado
-- UNIQUE constraint garante não duplicação
+### **1. Nome Obrigatório:**
+- Campo `nome` não pode estar vazio
+- É o identificador usado nos pedidos
 
-### **2. Status Automático:**
-Sistema **recalcula automaticamente** baseado em vínculos:
+### **2. Status Ativo/Inativo:**
+- **Ativo (1)**: Aparece nos selects de pedidos de compras
+- **Inativo (0)**: Não aparece, mas mantém histórico
 
-| Situação | Status |
-|----------|--------|
-| Nenhum item vinculado a pedidos | `aberto` |
-| Alguns itens parcialmente atendidos | `parcial` |
-| Todos os itens 100% atendidos | `finalizado` |
-| Cancelada manualmente | `cancelada` |
+**Query em Pedidos de Compras:**
+```sql
+SELECT id, nome, prazo_padrao 
+FROM formas_pagamento 
+WHERE ativo = 1  ← Apenas ativos
+ORDER BY nome
+```
 
-### **3. Regra de Edição:**
-- Apenas solicitações com status **`aberto`** podem ser editadas
-- Se tiver qualquer pedido vinculado → Status muda para `parcial` → Bloqueio de edição
+### **3. Exclusão com Validação:**
+- Verifica se está em uso em `pedidos_compras`
+- Se estiver em uso → **Bloqueia exclusão**
+- Sugestão: Desativar em vez de excluir
 
-### **4. Regra de Exclusão:**
-- Apenas solicitações com status **`aberto`** podem ser excluídas
-- Se tiver pedidos vinculados → Não pode excluir
+### **4. Prazo Padrão (Opcional):**
+Campo `prazo_padrao` é opcional e informativo. Pode ser usado futuramente para auto-preenchimento.
 
-### **5. Validação de Produtos Duplicados:**
-- Não permite adicionar o mesmo produto duas vezes na mesma solicitação
-- Validação via JavaScript no frontend
-- Produtos já adicionados ficam desabilitados nos selects
-
-### **6. Cálculo de Semana de Abastecimento:**
-- Busca do banco se já existe para a mesma data
-- Senão, calcula: "Segunda da semana DD/MM/YYYY a Domingo DD/MM/YYYY"
-
-### **7. Trigger de Valor Total:**
-- Campo `valor_total` em `solicitacoes_compras` é **sempre calculado automaticamente**
-- Soma de todos os `valor_total` dos itens
-- Atualiza em INSERT, UPDATE, DELETE de itens
+### **5. Histórico Preservado:**
+Como o vínculo é por **texto** (não FK), mesmo que a forma seja excluída, os pedidos antigos mantêm o histórico.
 
 ---
 
-## 📊 ESTRUTURA SQL PARA CRIAR AS TABELAS
+## 🔄 INTEGRAÇÃO COM PEDIDOS DE COMPRAS
+
+### **Como é Usado:**
+
+**No cadastro/edição de Pedido de Compras:**
+
+```html
+<!-- Campo: Forma de Pagamento -->
+<select name="forma_pagamento">
+    <option value="">Selecione...</option>
+    <?php foreach ($formas_pagamento as $forma): ?>
+        <option value="<?php echo htmlspecialchars($forma['nome']); ?>">
+            <?php echo htmlspecialchars($forma['nome']); ?>
+        </option>
+    <?php endforeach; ?>
+</select>
+```
+
+**Query para buscar formas ativas:**
+```sql
+SELECT id, nome, prazo_padrao 
+FROM formas_pagamento 
+WHERE ativo = 1 
+ORDER BY nome
+```
+
+**Salvamento no Pedido:**
+```sql
+INSERT INTO pedidos_compras (
+    ...,
+    forma_pagamento,  -- Armazena o NOME (texto)
+    prazo_pagamento,
+    ...
+) VALUES (
+    ...,
+    'Boleto Bancário',  -- Texto
+    '30 dias',
+    ...
+)
+```
+
+### **Fluxo de Uso:**
+
+```
+1. Usuário acessa: Pedidos de Compras → Novo Pedido
+
+2. Campo "Forma de Pagamento":
+   - Dropdown com formas ativas
+   - Se não houver formas, permite digitação manual
+   - Link: "Cadastrar nova forma" (abre em nova aba)
+
+3. Usuário seleciona: "Boleto Bancário"
+   
+4. Sistema salva no pedido: forma_pagamento = "Boleto Bancário"
+
+5. Se futuramente "Boleto Bancário" for excluído:
+   - Pedidos antigos ainda mostram "Boleto Bancário"
+   - Novos pedidos não terão essa opção
+```
+
+---
+
+## 📊 ESTRUTURA SQL PARA CRIAR A TABELA
 
 ```sql
--- Tabela Principal
-CREATE TABLE solicitacoes_compras (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    numero_solicitacao VARCHAR(20) NOT NULL UNIQUE,
-    descricao TEXT,
-    solicitante VARCHAR(100) NOT NULL,
-    unidade VARCHAR(100),
-    data_necessidade DATE,
-    observacoes TEXT,
-    status ENUM('em_digitacao', 'finalizado', 'cancelada', 'pendente', 
-                'aprovada', 'rejeitada', 'em_andamento', 'concluida') DEFAULT 'em_digitacao',
-    valor_total DECIMAL(15,2) DEFAULT 0.00,
-    criado_por INT,
-    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    atualizado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    data_documento DATE NOT NULL,
-    motivo VARCHAR(255) NOT NULL,
-    filial_id INT,
-    data_entrega_cd DATE,
-    semana_abastecimento VARCHAR(20),
-    
-    INDEX idx_numero_solicitacao (numero_solicitacao),
-    INDEX idx_status (status),
-    INDEX idx_filial_id (filial_id),
-    
-    FOREIGN KEY (criado_por) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (filial_id) REFERENCES filiais(id) ON DELETE SET NULL
-);
+CREATE TABLE IF NOT EXISTS `formas_pagamento` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `nome` VARCHAR(100) NOT NULL,
+  `descricao` TEXT NULL,
+  `prazo_padrao` VARCHAR(50) NULL COMMENT 'Prazo padrão (ex: 30 dias, À vista)',
+  `ativo` TINYINT(1) DEFAULT 1,
+  `criado_em` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `atualizado_em` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `criado_por` INT NULL,
+  INDEX `idx_ativo` (`ativo`),
+  INDEX `idx_criado_por` (`criado_por`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Tabela de Itens
-CREATE TABLE solicitacao_compras_itens (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    solicitacao_id INT NOT NULL,
-    produto_id INT,
-    codigo_produto VARCHAR(10),
-    nome_produto VARCHAR(200),
-    unidade_medida_id INT,
-    unidade_medida VARCHAR(50),
-    quantidade DECIMAL(10,3) NOT NULL DEFAULT 1,
-    observacao TEXT,
-    valor_unitario DECIMAL(10,2) DEFAULT 0.00,
-    valor_total DECIMAL(15,2) DEFAULT 0.00,
-    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    
-    INDEX idx_solicitacao_id (solicitacao_id),
-    INDEX idx_produto_id (produto_id),
-    
-    FOREIGN KEY (solicitacao_id) REFERENCES solicitacoes_compras(id) ON DELETE CASCADE,
-    FOREIGN KEY (unidade_medida_id) REFERENCES unidades_medida(id) ON DELETE SET NULL
-);
-
--- Triggers (ver seção anterior)
+-- Dados Iniciais
+INSERT INTO `formas_pagamento` (`nome`, `descricao`, `prazo_padrao`, `ativo`) VALUES
+('Boleto', 'Pagamento via boleto bancário', '30 dias', 1),
+('Transferência Bancária', 'Transferência entre contas', 'À vista', 1),
+('PIX', 'Pagamento instantâneo via PIX', 'À vista', 1),
+('Cheque', 'Pagamento via cheque', '30 dias', 1),
+('Cartão de Crédito', 'Pagamento com cartão de crédito', '30 dias', 1),
+('Depósito Bancário', 'Depósito em conta bancária', 'À vista', 1),
+('Dinheiro', 'Pagamento em espécie', 'À vista', 1);
 ```
 
 ---
@@ -878,126 +544,394 @@ CREATE TABLE solicitacao_compras_itens (
 
 | Funcionalidade | Arquivo | Método | Descrição |
 |---------------|---------|--------|-----------|
-| **Visualizar Lista** | `index.php` | GET | Lista todas as solicitações com filtros e paginação |
-| **Criar Solicitação** | `cadastrar.php` | POST | Cria nova solicitação com itens |
-| **Editar Solicitação** | `editar.php` | POST | Edita solicitação (apenas se status=aberto) |
-| **Visualizar Detalhes** | `visualizar.php` | GET | Mostra detalhes completos + vínculos com pedidos |
-| **Excluir Solicitação** | `index.php` ou `excluir.php` | GET | Exclui solicitação (apenas se status=aberto) |
-| **Buscar Semana** | `buscar_semana_abastecimento.php` | POST | API: Retorna semana de abastecimento |
-| **Recalcular Status** | `recalcular_status_solicitacao.php` | Função | Recalcula status baseado em vínculos |
+| **Visualizar Lista** | `index.php` | GET | Lista todas as formas com filtros |
+| **Criar Forma** | `cadastrar.php` | POST | Cria nova forma de pagamento |
+| **Editar Forma** | `editar.php` | POST | Edita forma existente |
+| **Visualizar Detalhes** | `visualizar.php` | GET | Mostra detalhes completos |
+| **Excluir Forma** | `excluir.php` | POST | Exclui (se não estiver em uso) |
 
 ---
 
-## 🔄 INTEGRAÇÕES COM OUTROS MÓDULOS
+## 🔄 INTEGRAÇÕES
 
-### **1. Filiais:**
+### **1. Pedidos de Compras:**
 ```
-filiais (1) ----< (N) solicitacoes_compras
+formas_pagamento (N) → pedidos_compras.forma_pagamento (texto)
 ```
-- Cada solicitação pertence a uma filial
-- Campo `filial_id` + `unidade` (nome copiado para histórico)
+- Vínculo por **nome** (texto)
+- Usado no dropdown ao criar/editar pedidos
+- Permite digitação manual se não houver formas cadastradas
 
-### **2. Produto Genérico:**
+### **2. Usuários:**
 ```
-produto_generico (1) ----< (N) solicitacao_compras_itens
+usuarios (1) ----< (N) formas_pagamento.criado_por
 ```
-- Cada item referencia um produto genérico
-- Dados são **copiados** (código, nome) para histórico
+- Rastreia quem criou cada forma
+- Para auditoria
 
-### **3. Unidades de Medida:**
-```
-unidades_medida (1) ----< (N) solicitacao_compras_itens
-```
-- Cada item tem uma unidade de medida
-- Armazena tanto `unidade_medida_id` quanto `unidade_medida` (símbolo)
+---
 
-### **4. Usuários:**
-```
-usuarios (1) ----< (N) solicitacoes_compras
-```
-- Cada solicitação tem um criador (`criado_por`)
-- Nome do solicitante é copiado para `solicitante`
+## 📋 CASOS DE USO PRÁTICOS
 
-### **5. Pedidos de Compras (VÍNCULO PRINCIPAL):**
+### **Caso 1: Cadastrar Nova Forma**
 ```
-solicitacoes_compras (1) ----< (N) pedidos_compras
-       ↓
-solicitacao_compras_itens (1) ----< (N) pedido_compras_itens
-                                         (via solicitacao_item_id)
+Cenário: Empresa passou a aceitar Pix Parcelado
+
+Ação:
+1. Acessar: Formas de Pagamento → Nova Forma
+2. Preencher:
+   - Nome: "PIX Parcelado"
+   - Descrição: "Pagamento via PIX com parcelamento em até 3x"
+   - Prazo: "30 dias"
+   - Ativo: ✓
+3. Salvar
+
+Resultado:
+- Disponível imediatamente em Pedidos de Compras
+- Aparece no dropdown de formas
 ```
 
-**Fluxo de Vínculo:**
-1. Solicitação SC000001 é criada com 3 produtos
-2. Usuário cria Pedido PC000001 vinculado à SC000001
-3. Ao adicionar itens ao pedido, informa `solicitacao_item_id`
-4. Sistema rastreia quanto de cada item foi atendido
-5. Recalcula status automaticamente:
-   - Se nenhum item atendido → `aberto`
-   - Se alguns atendidos → `parcial`
-   - Se todos atendidos → `finalizado`
+### **Caso 2: Desativar Forma Obsoleta**
+```
+Cenário: Empresa não aceita mais cheques
 
-**Tabela de Vínculo:**
-```sql
--- Em pedido_compras_itens
-solicitacao_item_id INT -- FK para solicitacao_compras_itens(id)
-quantidade_solicitada DECIMAL(10,3) -- Quantidade original da SC
-quantidade_pedido DECIMAL(10,3) -- Quantidade neste pedido específico
+Ação:
+1. Acessar: Formas de Pagamento → Editar "Cheque"
+2. Desmarcar: "Forma de pagamento ativa"
+3. Salvar
+
+Resultado:
+- Não aparece mais em novos pedidos
+- Pedidos antigos com cheque mantêm o histórico
+- Pode reativar futuramente se necessário
+```
+
+### **Caso 3: Tentar Excluir Forma em Uso**
+```
+Cenário: Tentar excluir "Boleto" que está em 25 pedidos
+
+Ação:
+1. Acessar: Formas de Pagamento → Excluir "Boleto"
+2. Clicar em "Confirmar Exclusão"
+
+Resultado:
+- ❌ ERRO: "Não é possível excluir esta forma de pagamento 
+           pois ela está sendo utilizada em 25 pedido(s)."
+- Exclusão bloqueada
+- Sugestão: Desativar em vez de excluir
+```
+
+### **Caso 4: Buscar Forma Específica**
+```
+Cenário: Precisa encontrar "PIX" rapidamente em uma lista de 20 formas
+
+Ação:
+1. Acessar: Formas de Pagamento
+2. Filtro "Buscar": digitar "pix"
+3. Clicar em "Filtrar"
+
+Resultado:
+- Lista mostra apenas formas com "pix" no nome ou descrição
+- Filtragem case-insensitive via LIKE
+```
+
+---
+
+## 🎨 OBSERVAÇÕES SOBRE A INTERFACE
+
+### **Características:**
+- Layout com **Sidebar** de navegação
+- Cards com bordas arredondadas
+- **Badges coloridos** para status:
+  - Verde (#10B981): Ativo
+  - Cinza (#6B7280): Inativo
+- Ícones Font Awesome 6.0
+- Tema Windows 11 consistente
+
+### **Cores do Módulo:**
+- **Cor principal**: Verde (#10B981) - Representa pagamento/dinheiro
+- **Ícone**: 💳 `fa-credit-card`
+
+### **Responsividade:**
+- Adaptado para desktop, tablet e mobile
+- Sidebar colapsa em telas pequenas
+- Tabelas com scroll horizontal
+
+---
+
+## 🔐 SEGURANÇA E VALIDAÇÕES
+
+### **Segurança:**
+- ✅ Verificação de login obrigatória
+- ✅ Verificação de timeout de sessão
+- ✅ Prepared Statements (PDO) - Proteção contra SQL Injection
+- ✅ `htmlspecialchars()` - Proteção contra XSS
+- ✅ Exclusão via POST (não GET) - Proteção contra CSRF
+
+### **Validações:**
+
+**Cadastro/Edição:**
+```php
+if (empty($nome)) {
+    throw new Exception("O nome da forma de pagamento é obrigatório.");
+}
+
+// Nome é o único campo obrigatório
+// Descrição e prazo são opcionais
+```
+
+**Exclusão:**
+```php
+// Verifica se está em uso
+$em_uso = fetchOne("SELECT COUNT(*) FROM pedidos_compras WHERE forma_pagamento = ?", [$nome]);
+
+if ($em_uso['total'] > 0) {
+    throw new Exception("Está em uso em {$em_uso['total']} pedido(s).");
+}
+
+// Só exclui se uso = 0
 ```
 
 ---
 
 ## 📊 EXEMPLO COMPLETO DE FLUXO
 
-### **Passo 1: Criar Solicitação**
-```
-SC000001 - Filial: Curitiba
-  Item 1: Arroz Branco - 500 KG
-  Item 2: Feijão Preto - 300 KG
-  Item 3: Óleo de Soja - 100 UN
+### **Fluxo 1: Cadastro Completo**
 
-Status: ABERTO (nenhum pedido vinculado)
 ```
+1. Usuário acessa:
+   http://localhost:8080/nexflow/modulos/suprimentos/formas_pagamento/
 
-### **Passo 2: Criar Primeiro Pedido**
-```
-PC000001 - Fornecedor: Distribuidora ABC
-  (vinculado a SC000001)
-  
-  Item 1: Arroz Branco - 200 KG (de 500) - solicitacao_item_id = 1
-  Item 2: Feijão Preto - 150 KG (de 300) - solicitacao_item_id = 2
+2. Clica em: "Nova Forma de Pagamento"
 
-Status da SC000001: PARCIAL
-  - Arroz: 200/500 = 40% atendido
-  - Feijão: 150/300 = 50% atendido
-  - Óleo: 0/100 = 0% atendido
-```
+3. Preenche formulário:
+   - Nome: "Transferência Bancária Internacional"
+   - Descrição: "Transferência para conta no exterior via Swift"
+   - Prazo Padrão: "À vista"
+   - Ativo: ✓ (marcado)
 
-### **Passo 3: Criar Segundo Pedido**
-```
-PC000002 - Fornecedor: Distribuidora XYZ
-  (vinculado a SC000001)
-  
-  Item 1: Arroz Branco - 300 KG (restante) - solicitacao_item_id = 1
-  Item 2: Feijão Preto - 150 KG (restante) - solicitacao_item_id = 2
-  Item 3: Óleo de Soja - 100 UN (total) - solicitacao_item_id = 3
+4. Clica em: "Salvar Forma de Pagamento"
 
-Status da SC000001: FINALIZADO
-  - Arroz: 200 + 300 = 500/500 = 100% ✅
-  - Feijão: 150 + 150 = 300/300 = 100% ✅
-  - Óleo: 100/100 = 100% ✅
+5. Sistema:
+   - Insere no banco:
+     INSERT INTO formas_pagamento (nome, descricao, prazo_padrao, ativo, criado_por)
+     VALUES ('Transferência Bancária Internacional', '...', 'À vista', 1, 1)
+   
+   - Retorna ID: 8
+   
+   - Redireciona para: visualizar.php?id=8
+
+6. Página de visualização mostra:
+   ✅ "Transferência Bancária Internacional" cadastrado com sucesso!
+   
+   [✏️ Editar] [🗑️ Excluir] [⬅️ Voltar]
 ```
 
-### **Passo 4: Visualização na Solicitação**
-```
-Tabela de Produtos da SC000001:
+### **Fluxo 2: Edição**
 
-| Produto | Qtd. Sol. | Qtd. Util. | Saldo | Status | Pedidos |
-|---------|-----------|------------|-------|--------|---------|
-| Arroz   | 500       | 500        | 0     | FINAL. | PC000001 (200), PC000002 (300) |
-| Feijão  | 300       | 300        | 0     | FINAL. | PC000001 (150), PC000002 (150) |
-| Óleo    | 100       | 100        | 0     | FINAL. | PC000002 (100) |
+```
+1. Usuário na listagem clica em ✏️ em "PIX"
+
+2. Sistema carrega: editar.php?id=3
+
+3. Formulário pré-preenchido:
+   - Nome: "PIX"
+   - Descrição: "Pagamento instantâneo via PIX"
+   - Ativo: ✓
+
+4. Usuário altera descrição para:
+   "Pagamento instantâneo via PIX - Disponível 24/7"
+
+5. Clica em: "Salvar Alterações"
+
+6. Sistema:
+   - UPDATE formas_pagamento SET descricao = '...', atualizado_em = NOW() WHERE id = 3
+   
+   - Recarrega mesma página mostrando:
+     ✅ "Forma de pagamento atualizada com sucesso!"
+   
+   - Campos mostram valores atualizados
+```
+
+### **Fluxo 3: Tentativa de Exclusão (Bloqueada)**
+
+```
+1. Usuário clica em 🗑️ em "Boleto"
+
+2. Sistema carrega: excluir.php?id=1
+
+3. Mostra tela de confirmação:
+   ⚠️ Atenção! Esta ação não pode ser desfeita...
+   
+   Dados:
+   - Nome: "Boleto"
+   - Status: Ativo
+
+4. Usuário clica em: "Confirmar Exclusão"
+
+5. Sistema verifica:
+   SELECT COUNT(*) FROM pedidos_compras WHERE forma_pagamento = 'Boleto'
+   → Resultado: 25 pedidos
+
+6. Sistema bloqueia:
+   ❌ ERRO: "Não é possível excluir esta forma de pagamento pois 
+            ela está sendo utilizada em 25 pedido(s)."
+   
+   [⬅️ Voltar]
+
+Alternativa sugerida:
+   "Para desabilitar esta forma sem excluí-la, 
+    edite o registro e desmarque 'Ativo'."
+```
+
+### **Fluxo 4: Uso em Pedido de Compras**
+
+```
+1. Usuário cria Pedido PC000010
+
+2. Campo "Forma de Pagamento":
+   <select name="forma_pagamento">
+     <option value="">Selecione...</option>
+     <option value="Boleto">Boleto</option>
+     <option value="PIX">PIX</option>
+     <option value="Transferência Bancária">Transferência Bancária</option>
+     <!-- Apenas formas com ativo=1 -->
+   </select>
+
+3. Usuário seleciona: "PIX"
+
+4. Sistema salva:
+   pedidos_compras:
+     numero_pedido: PC000010
+     forma_pagamento: "PIX"  ← Texto, não ID
+
+5. Visualização do Pedido mostra:
+   💳 Forma de Pagamento: PIX
+   📅 Prazo: À vista
 ```
 
 ---
 
-**Essa é a estrutura completa do módulo de Solicitação de Compras!** 🚀
+## 🎯 DIFERENÇAS EM RELAÇÃO A OUTROS MÓDULOS
+
+### **Simplicidade:**
+Este é um módulo **auxiliar/paramétrico** simples:
+- Apenas 3 campos principais (nome, descrição, ativo)
+- Sem relacionamentos complexos
+- Sem triggers complicados
+- Sem cálculos automáticos
+
+### **Sem Paginação:**
+- Quantidade de formas é limitada (10-20 normalmente)
+- Não necessita paginação
+- Lista todas de uma vez
+
+### **Vínculo por Texto:**
+- Diferente de FK tradicional
+- Permite flexibilidade
+- Mantém histórico mesmo após exclusão
+
+---
+
+## 💡 BOAS PRÁTICAS E RECOMENDAÇÕES
+
+### **1. Não Excluir, Desativar:**
+```
+❌ Evitar: Excluir formas antigas
+✅ Preferir: Desativar marcando ativo=0
+```
+
+**Motivo:** Preserva integridade referencial e histórico.
+
+### **2. Nomes Padronizados:**
+```
+✅ Bom: "Boleto Bancário", "PIX", "Transferência Bancária"
+❌ Ruim: "boleto", "pix!!!", "transf"
+```
+
+**Motivo:** Profissionalismo e consistência nos relatórios.
+
+### **3. Descrição Clara:**
+```
+✅ Bom: "Pagamento via boleto bancário com vencimento em 30 dias"
+❌ Ruim: "Boleto" (sem descrição)
+```
+
+**Motivo:** Facilita compreensão para novos usuários.
+
+---
+
+## 📊 ESTRUTURA SQL COMPLETA
+
+```sql
+-- Tabela
+CREATE TABLE `formas_pagamento` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `nome` VARCHAR(100) NOT NULL,
+  `descricao` TEXT NULL,
+  `prazo_padrao` VARCHAR(50) NULL COMMENT 'Ex: 30 dias, À vista',
+  `ativo` TINYINT(1) DEFAULT 1,
+  `criado_em` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `atualizado_em` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `criado_por` INT NULL,
+  INDEX `idx_ativo` (`ativo`),
+  INDEX `idx_criado_por` (`criado_por`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Dados Padrão
+INSERT INTO `formas_pagamento` (`nome`, `descricao`, `prazo_padrao`, `ativo`) VALUES
+('Boleto', 'Pagamento via boleto bancário', '30 dias', 1),
+('Transferência Bancária', 'Transferência entre contas', 'À vista', 1),
+('PIX', 'Pagamento instantâneo via PIX', 'À vista', 1),
+('Cheque', 'Pagamento via cheque', '30 dias', 1),
+('Cartão de Crédito', 'Pagamento com cartão de crédito', '30 dias', 1),
+('Depósito Bancário', 'Depósito em conta bancária', 'À vista', 1),
+('Dinheiro', 'Pagamento em espécie', 'À vista', 1);
+```
+
+---
+
+## 🔍 QUERIES PRINCIPAIS
+
+### **1. Listar Formas Ativas (Para Pedidos):**
+```sql
+SELECT id, nome, prazo_padrao 
+FROM formas_pagamento 
+WHERE ativo = 1 
+ORDER BY nome ASC
+```
+
+### **2. Verificar se Está em Uso:**
+```sql
+SELECT COUNT(*) as total 
+FROM pedidos_compras 
+WHERE forma_pagamento = 'Boleto Bancário'
+```
+
+### **3. Buscar com Filtros:**
+```sql
+SELECT * FROM formas_pagamento 
+WHERE ativo = 1 
+  AND (nome LIKE '%pix%' OR descricao LIKE '%pix%')
+ORDER BY nome ASC
+```
+
+### **4. Histórico de Uso (Para Auditoria):**
+```sql
+-- Quantos pedidos usam cada forma
+SELECT 
+    fp.nome,
+    COUNT(pc.id) as total_pedidos,
+    SUM(pc.valor_total) as valor_total_pedidos
+FROM formas_pagamento fp
+LEFT JOIN pedidos_compras pc ON pc.forma_pagamento = fp.nome
+GROUP BY fp.id, fp.nome
+ORDER BY total_pedidos DESC
+```
+
+
+**Uso Principal:** Padronizar formas de pagamento usadas em **Pedidos de Compras**.
+
+---
+
+**Essa é a estrutura completa do módulo de Formas de Pagamento!** 🚀
