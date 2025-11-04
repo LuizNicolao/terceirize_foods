@@ -380,6 +380,9 @@ class PedidosComprasCRUDController {
       );
     }
 
+    // Salvar solicitacao_compras_id antes de excluir para atualizar status depois
+    const solicitacaoId = pedido.solicitacao_compras_id;
+
     // Excluir itens do pedido primeiro (garantir exclusão mesmo se CASCADE não estiver configurado)
     await executeQuery(
       'DELETE FROM pedido_compras_itens WHERE pedido_id = ?',
@@ -391,6 +394,11 @@ class PedidosComprasCRUDController {
       'DELETE FROM pedidos_compras WHERE id = ?',
       [id]
     );
+
+    // Atualizar status da solicitação se houver
+    if (solicitacaoId) {
+      await PedidosComprasHelpers.atualizarStatusSolicitacao(solicitacaoId);
+    }
 
     return successResponse(res, null, 'Pedido de compras excluído com sucesso', STATUS_CODES.OK);
   });
