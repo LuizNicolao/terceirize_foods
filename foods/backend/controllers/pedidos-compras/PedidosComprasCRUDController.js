@@ -73,6 +73,13 @@ class PedidosComprasCRUDController {
       filial_entrega_id
     });
 
+    // Log para debug
+    console.log('[PedidosComprasCRUD] Dados das filiais:', {
+      filial_cobranca_id,
+      cobranca_endereco: filiaisData.cobranca?.endereco,
+      cobranca_cnpj: filiaisData.cobranca?.cnpj
+    });
+
     // Buscar nomes de forma_pagamento e prazo_pagamento
     const { formaPagamentoNome, prazoPagamentoNome } = await PedidosComprasHelpers.buscarFormasPrazos(
       forma_pagamento_id,
@@ -83,6 +90,16 @@ class PedidosComprasCRUDController {
 
     // Gerar número do pedido
     const numero_pedido = await PedidosComprasHelpers.gerarNumeroPedido();
+
+    // Preparar valores para inserção
+    const enderecoCobranca = filiaisData.cobranca?.endereco || null;
+    const cnpjCobranca = filiaisData.cobranca?.cnpj || null;
+
+    console.log('[PedidosComprasCRUD] Valores que serão salvos:', {
+      filial_cobranca_id: filial_cobranca_id || null,
+      endereco_cobranca: enderecoCobranca,
+      cnpj_cobranca: cnpjCobranca
+    });
 
     // Inserir pedido
     const result = await executeQuery(
@@ -109,10 +126,10 @@ class PedidosComprasCRUDController {
         filial_cobranca_id || null,
         filial_entrega_id || solData.filial_id,
         filiaisData.faturamento?.endereco || null,
-        filiaisData.cobranca?.endereco || null,
+        enderecoCobranca,
         filiaisData.entrega?.endereco || null,
         filiaisData.faturamento?.cnpj || null,
-        filiaisData.cobranca?.cnpj || null,
+        cnpjCobranca,
         filiaisData.entrega?.cnpj || null,
         solData.data_entrega_cd,
         solData.semana_abastecimento || null,
