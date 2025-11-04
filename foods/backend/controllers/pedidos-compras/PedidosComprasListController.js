@@ -217,8 +217,8 @@ class PedidosComprasListController {
       `SELECT 
         sci.*,
         pg.nome as produto_nome,
-        pg.codigo_produto,
-        um.simbolo as unidade_simbolo,
+        pg.codigo as codigo_produto,
+        um.sigla as unidade_simbolo,
         um.nome as unidade_nome
       FROM solicitacao_compras_itens sci
       LEFT JOIN produto_generico pg ON sci.produto_id = pg.id
