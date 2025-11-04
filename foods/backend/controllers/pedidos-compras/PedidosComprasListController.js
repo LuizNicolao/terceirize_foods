@@ -89,6 +89,41 @@ class PedidosComprasListController {
     const totalResult = await executeQuery(countQuery, countParams);
     const totalItems = totalResult[0].total;
 
+    // Calcular estatísticas
+    let statsQuery = `
+      SELECT 
+        COUNT(*) as total,
+        SUM(CASE WHEN p.status = 'em_digitacao' THEN 1 ELSE 0 END) as em_digitacao,
+        SUM(CASE WHEN p.status = 'aprovado' THEN 1 ELSE 0 END) as aprovado,
+        SUM(CASE WHEN p.status = 'cancelado' THEN 1 ELSE 0 END) as cancelado
+      FROM pedidos_compras p
+      LEFT JOIN solicitacoes_compras s ON p.solicitacao_compras_id = s.id
+      WHERE 1=1
+    `;
+    const statsParams = [];
+    
+    // Aplicar mesmos filtros da query principal
+    if (search) {
+      statsQuery += ' AND (p.numero_pedido LIKE ? OR p.fornecedor_nome LIKE ? OR p.filial_nome LIKE ? OR s.numero_solicitacao LIKE ?)';
+      statsParams.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
+    }
+    
+    if (status && status !== '') {
+      statsQuery += ' AND p.status = ?';
+      statsParams.push(status);
+    }
+
+    // Executar query de estatísticas
+    let statistics = { total: 0, em_digitacao: 0, aprovado: 0, cancelado: 0 };
+    try {
+      const statsResult = await executeQuery(statsQuery, statsParams);
+      if (statsResult && statsResult[0]) {
+        statistics = statsResult[0];
+      }
+    } catch (error) {
+      console.error('Erro ao buscar estatísticas:', error);
+    }
+
     // Gerar metadados de paginação
     const queryParams = { ...req.query };
     delete queryParams.page;
@@ -106,6 +141,7 @@ class PedidosComprasListController {
     // Retornar resposta no formato esperado pelo frontend
     return successResponse(res, pedidos, 'Pedidos de compras listados com sucesso', STATUS_CODES.OK, {
       ...meta,
+      statistics,
       actions,
       _links: res.addListLinks(pedidos, meta.pagination, queryParams)._links
     });
