@@ -74,28 +74,43 @@ const solicitacoesComprasValidations = {
       .isArray({ min: 1 })
       .withMessage('A solicitação deve ter pelo menos um item'),
     body('itens.*.produto_id')
+      .notEmpty()
+      .withMessage('Produto é obrigatório para cada item')
       .custom((value) => {
-        const num = parseInt(value);
+        if (value === null || value === undefined || value === '') {
+          throw new Error('Produto é obrigatório para cada item');
+        }
+        const num = typeof value === 'string' ? parseInt(value, 10) : value;
         if (isNaN(num) || num < 1) {
-          throw new Error('Cada item deve ter um produto_id válido');
+          throw new Error('Produto deve ter um ID válido');
         }
         return true;
       })
       .toInt(),
     body('itens.*.quantidade')
+      .notEmpty()
+      .withMessage('Quantidade é obrigatória para cada item')
       .custom((value) => {
-        const num = parseFloat(value);
+        if (value === null || value === undefined || value === '') {
+          throw new Error('Quantidade é obrigatória para cada item');
+        }
+        const num = typeof value === 'string' ? parseFloat(value) : value;
         if (isNaN(num) || num <= 0) {
-          throw new Error('Cada item deve ter uma quantidade maior que zero');
+          throw new Error('Quantidade deve ser maior que zero');
         }
         return true;
       })
       .toFloat(),
     body('itens.*.unidade_medida_id')
+      .notEmpty()
+      .withMessage('Unidade é obrigatória para cada item')
       .custom((value) => {
-        const num = parseInt(value);
+        if (value === null || value === undefined || value === '') {
+          throw new Error('Unidade é obrigatória para cada item');
+        }
+        const num = typeof value === 'string' ? parseInt(value, 10) : value;
         if (isNaN(num) || num < 1) {
-          throw new Error('Cada item deve ter uma unidade_medida_id válida');
+          throw new Error('Unidade deve ter um ID válido');
         }
         return true;
       })
@@ -147,28 +162,43 @@ const solicitacoesComprasValidations = {
       .isArray({ min: 1 })
       .withMessage('A solicitação deve ter pelo menos um item'),
     body('itens.*.produto_id')
+      .notEmpty()
+      .withMessage('Produto é obrigatório para cada item')
       .custom((value) => {
-        const num = parseInt(value);
+        if (value === null || value === undefined || value === '') {
+          throw new Error('Produto é obrigatório para cada item');
+        }
+        const num = typeof value === 'string' ? parseInt(value, 10) : value;
         if (isNaN(num) || num < 1) {
-          throw new Error('Cada item deve ter um produto_id válido');
+          throw new Error('Produto deve ter um ID válido');
         }
         return true;
       })
       .toInt(),
     body('itens.*.quantidade')
+      .notEmpty()
+      .withMessage('Quantidade é obrigatória para cada item')
       .custom((value) => {
-        const num = parseFloat(value);
+        if (value === null || value === undefined || value === '') {
+          throw new Error('Quantidade é obrigatória para cada item');
+        }
+        const num = typeof value === 'string' ? parseFloat(value) : value;
         if (isNaN(num) || num <= 0) {
-          throw new Error('Cada item deve ter uma quantidade maior que zero');
+          throw new Error('Quantidade deve ser maior que zero');
         }
         return true;
       })
       .toFloat(),
     body('itens.*.unidade_medida_id')
+      .notEmpty()
+      .withMessage('Unidade é obrigatória para cada item')
       .custom((value) => {
-        const num = parseInt(value);
+        if (value === null || value === undefined || value === '') {
+          throw new Error('Unidade é obrigatória para cada item');
+        }
+        const num = typeof value === 'string' ? parseInt(value, 10) : value;
         if (isNaN(num) || num < 1) {
-          throw new Error('Cada item deve ter uma unidade_medida_id válida');
+          throw new Error('Unidade deve ter um ID válido');
         }
         return true;
       })
