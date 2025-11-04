@@ -466,18 +466,39 @@ const PedidosComprasModal = ({
     }
   };
 
-  const carregarItensSolicitacao = async (id) => {
+  const carregarItensSolicitacao = async (id, pedidoExistente = null) => {
     setLoadingItens(true);
     try {
       const response = await PedidosComprasService.buscarItensSolicitacao(id);
       if (response.success && response.data) {
         const { solicitacao, itens } = response.data;
         setSolicitacaoSelecionada(solicitacao);
-        setItensDisponiveis(itens.map(item => ({ ...item, selected: false, quantidade_pedido: 0, valor_unitario: 0 })));
-        setItensSelecionados([]);
         
-        // Carregar dados da filial e pré-selecionar entrega e faturamento
-        if (solicitacao.filial_id) {
+        // Se não há pedido existente (criando novo), resetar itens
+        if (!pedidoExistente) {
+          setItensDisponiveis(itens.map(item => ({ ...item, selected: false, quantidade_pedido: 0, valor_unitario: 0 })));
+          setItensSelecionados([]);
+        } else {
+          // Se há pedido existente, manter os itens selecionados e apenas atualizar disponíveis
+          const itensDisponiveisNovos = itens.map(item => {
+            // Verificar se este item já está no pedido
+            const itemNoPedido = pedidoExistente.itens?.find(pi => pi.solicitacao_item_id === item.id);
+            if (itemNoPedido) {
+              return {
+                ...item,
+                selected: true,
+                quantidade_pedido: itemNoPedido.quantidade_pedido || item.quantidade || 0,
+                valor_unitario: itemNoPedido.valor_unitario || 0
+              };
+            }
+            return { ...item, selected: false, quantidade_pedido: 0, valor_unitario: 0 };
+          });
+          setItensDisponiveis(itensDisponiveisNovos);
+          setItensSelecionados(itensDisponiveisNovos.filter(item => item.selected));
+        }
+        
+        // Carregar dados da filial e pré-selecionar entrega e faturamento (apenas se não há pedido existente)
+        if (!pedidoExistente && solicitacao.filial_id) {
           carregarDadosFilial(solicitacao.filial_id);
           // Pré-selecionar filial de entrega com a filial da solicitação
           setValue('filial_entrega_id', solicitacao.filial_id);
