@@ -377,7 +377,9 @@ const PedidosComprasModal = ({
     try {
       const response = await PedidosComprasService.buscarDadosFilial(id);
       if (response.success && response.data) {
-        if (tipo === 'cobranca') {
+        if (tipo === 'faturamento') {
+          setDadosFilialFaturamento(response.data);
+        } else if (tipo === 'cobranca') {
           setDadosFilialCobranca(response.data);
         } else if (tipo === 'entrega') {
           setDadosFilialEntrega(response.data);
