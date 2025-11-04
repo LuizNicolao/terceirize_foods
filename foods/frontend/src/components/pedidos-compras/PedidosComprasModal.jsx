@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { FaTimes, FaSave, FaEye, FaEdit, FaPlus } from 'react-icons/fa';
-import { Button, Modal, SearchableSelect } from '../ui';
+import { Button, Modal } from '../ui';
 import PedidosComprasService from '../../services/pedidosComprasService';
 import FormasPagamentoService from '../../services/formasPagamentoService';
 import PrazosPagamentoService from '../../services/prazosPagamentoService';
 import FornecedoresService from '../../services/fornecedores';
 import PedidosComprasItensTable from './PedidosComprasItensTable';
 import PedidosComprasFiliaisSelect from './PedidosComprasFiliaisSelect';
+import PedidosComprasDadosSolicitacao from './PedidosComprasDadosSolicitacao';
+import PedidosComprasFornecedorSection from './PedidosComprasFornecedorSection';
+import PedidosComprasPagamentoSection from './PedidosComprasPagamentoSection';
+import PedidosComprasSolicitacaoSelect from './PedidosComprasSolicitacaoSelect';
 import FiliaisService from '../../services/filiais';
 import toast from 'react-hot-toast';
 
@@ -54,6 +58,18 @@ const PedidosComprasModal = ({
       // Não carregar todos os fornecedores inicialmente, apenas quando buscar
     }
   }, [isOpen]);
+
+  // Buscar IDs de forma e prazo quando os dados estiverem carregados e houver pedido
+  useEffect(() => {
+    if (pedidoCompras && isOpen && formasPagamento.length > 0 && prazosPagamento.length > 0) {
+      if (pedidoCompras.forma_pagamento) {
+        buscarIdFormaPagamentoPorNome(pedidoCompras.forma_pagamento);
+      }
+      if (pedidoCompras.prazo_pagamento) {
+        buscarIdPrazoPagamentoPorNome(pedidoCompras.prazo_pagamento);
+      }
+    }
+  }, [pedidoCompras, isOpen, formasPagamento, prazosPagamento]);
 
   // Carregar itens quando solicitação for selecionada
   useEffect(() => {
@@ -146,6 +162,14 @@ const PedidosComprasModal = ({
         setValue('filial_entrega_id', pedidoCompras.filial_entrega_id);
         carregarDadosFilialEspecifica(pedidoCompras.filial_entrega_id, 'entrega');
       }
+
+      // Buscar IDs de forma e prazo de pagamento baseados nos nomes salvos
+      if (pedidoCompras.forma_pagamento) {
+        buscarIdFormaPagamentoPorNome(pedidoCompras.forma_pagamento);
+      }
+      if (pedidoCompras.prazo_pagamento) {
+        buscarIdPrazoPagamentoPorNome(pedidoCompras.prazo_pagamento);
+      }
     } else if (!pedidoCompras && isOpen) {
       reset();
       setItensDisponiveis([]);
@@ -169,6 +193,54 @@ const PedidosComprasModal = ({
       }
     } catch (error) {
       console.error('Erro ao carregar formas de pagamento:', error);
+    }
+  };
+
+  const buscarIdFormaPagamentoPorNome = async (nome) => {
+    if (!nome || !formasPagamento.length) return;
+    
+    const forma = formasPagamento.find(fp => 
+      fp.nome && fp.nome.toLowerCase().trim() === nome.toLowerCase().trim()
+    );
+    
+    if (forma) {
+      setValue('forma_pagamento_id', forma.id);
+    } else {
+      // Se não encontrar, tentar buscar novamente
+      await carregarFormasPagamento();
+      // Aguardar um pouco e tentar novamente
+      setTimeout(() => {
+        const formaEncontrada = formasPagamento.find(fp => 
+          fp.nome && fp.nome.toLowerCase().trim() === nome.toLowerCase().trim()
+        );
+        if (formaEncontrada) {
+          setValue('forma_pagamento_id', formaEncontrada.id);
+        }
+      }, 500);
+    }
+  };
+
+  const buscarIdPrazoPagamentoPorNome = async (nome) => {
+    if (!nome || !prazosPagamento.length) return;
+    
+    const prazo = prazosPagamento.find(pp => 
+      pp.nome && pp.nome.toLowerCase().trim() === nome.toLowerCase().trim()
+    );
+    
+    if (prazo) {
+      setValue('prazo_pagamento_id', prazo.id);
+    } else {
+      // Se não encontrar, tentar buscar novamente
+      await carregarPrazosPagamento();
+      // Aguardar um pouco e tentar novamente
+      setTimeout(() => {
+        const prazoEncontrado = prazosPagamento.find(pp => 
+          pp.nome && pp.nome.toLowerCase().trim() === nome.toLowerCase().trim()
+        );
+        if (prazoEncontrado) {
+          setValue('prazo_pagamento_id', prazoEncontrado.id);
+        }
+      }, 500);
     }
   };
 
@@ -414,51 +486,19 @@ const PedidosComprasModal = ({
         {/* Form */}
         <form onSubmit={handleSubmit(handleFormSubmit)} className="p-6 space-y-6">
           {/* Solicitação de Compras */}
-          {!pedidoCompras && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Solicitação de Compras <span className="text-red-500">*</span>
-              </label>
-              <SearchableSelect
-                options={solicitacoesDisponiveis.map(s => ({
-                  value: s.id.toString(),
-                  label: `${s.numero_solicitacao || 'SC'} - ${s.filial_nome || 'Filial'} - Entrega: ${s.data_entrega_cd || ''}`
-                }))}
-                value={watch('solicitacao_compras_id')?.toString() || ''}
-                onChange={(value) => {
-                  setValue('solicitacao_compras_id', parseInt(value));
-                }}
-                disabled={isViewMode}
-                placeholder="Selecione uma solicitação"
-                error={errors.solicitacao_compras_id?.message}
-              />
-            </div>
-          )}
+          <PedidosComprasSolicitacaoSelect
+            solicitacoesDisponiveis={solicitacoesDisponiveis}
+            watch={watch}
+            setValue={setValue}
+            errors={errors}
+            isViewMode={isViewMode}
+            pedidoCompras={pedidoCompras}
+          />
 
           {/* Dados da Solicitação (readonly) */}
-          {solicitacaoSelecionada && (
-            <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Dados da Solicitação</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                <div>
-                  <span className="text-gray-600 font-medium">Número da Solicitação:</span>
-                  <p className="text-gray-900 mt-1">{solicitacaoSelecionada.numero_solicitacao || '-'}</p>
-                </div>
-                <div>
-                  <span className="text-gray-600 font-medium">Data de Entrega CD:</span>
-                  <p className="text-gray-900 mt-1">
-                    {solicitacaoSelecionada.data_entrega_cd 
-                      ? new Date(solicitacaoSelecionada.data_entrega_cd).toLocaleDateString('pt-BR')
-                      : '-'}
-                  </p>
-                </div>
-                <div>
-                  <span className="text-gray-600 font-medium">Justificativa:</span>
-                  <p className="text-gray-900 mt-1">{solicitacaoSelecionada.motivo || '-'}</p>
-                </div>
-              </div>
-            </div>
-          )}
+          <PedidosComprasDadosSolicitacao
+            solicitacaoSelecionada={solicitacaoSelecionada}
+          />
 
           {/* Dados das Filiais */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -492,106 +532,27 @@ const PedidosComprasModal = ({
           </div>
 
           {/* Informações do Fornecedor */}
-          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Fornecedor</h3>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Fornecedor
-                </label>
-                <SearchableSelect
-                  options={fornecedores.map(f => ({
-                    value: f.id.toString(),
-                    label: `${f.razao_social || f.nome || 'Fornecedor'} ${f.cnpj ? `- ${f.cnpj}` : ''}`
-                  }))}
-                  value={watch('fornecedor_id')?.toString() || ''}
-                  onChange={(value) => {
-                    setValue('fornecedor_id', value ? parseInt(value) : null);
-                    if (!value) {
-                      // Limpar campos ao deselecionar
-                      setValue('fornecedor_nome', '');
-                      setValue('fornecedor_cnpj', '');
-                      setFornecedorSearchTerm('');
-                      setFornecedores([]);
-                    }
-                  }}
-                  onSearchChange={(searchTerm) => {
-                    setFornecedorSearchTerm(searchTerm);
-                  }}
-                  disabled={isViewMode}
-                  loading={loadingFornecedores}
-                  placeholder="Digite para buscar fornecedor (mín. 2 caracteres)"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Nome do Fornecedor <span className="text-red-500">*</span>
-                </label>
-                <input
-                  {...register('fornecedor_nome', {
-                    required: 'O nome do fornecedor é obrigatório'
-                  })}
-                  disabled={true}
-                  readOnly
-                  placeholder="Preenchido automaticamente"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 cursor-not-allowed"
-                />
-                {errors.fornecedor_nome && (
-                  <p className="mt-1 text-sm text-red-600">{errors.fornecedor_nome.message}</p>
-                )}
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  CNPJ do Fornecedor
-                </label>
-                <input
-                  {...register('fornecedor_cnpj')}
-                  disabled={true}
-                  readOnly
-                  placeholder="Preenchido automaticamente"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 cursor-not-allowed"
-                />
-              </div>
-            </div>
-          </div>
+          <PedidosComprasFornecedorSection
+            register={register}
+            errors={errors}
+            watch={watch}
+            setValue={setValue}
+            fornecedores={fornecedores}
+            loadingFornecedores={loadingFornecedores}
+            fornecedorSearchTerm={fornecedorSearchTerm}
+            setFornecedorSearchTerm={setFornecedorSearchTerm}
+            setFornecedores={setFornecedores}
+            isViewMode={isViewMode}
+          />
 
           {/* Forma e Prazo de Pagamento */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Forma de Pagamento
-              </label>
-              <SearchableSelect
-                options={formasPagamento.map(fp => ({
-                  value: fp.id.toString(),
-                  label: fp.nome
-                }))}
-                value={watch('forma_pagamento_id')?.toString() || ''}
-                onChange={(value) => {
-                  setValue('forma_pagamento_id', value ? parseInt(value) : null);
-                }}
-                disabled={isViewMode}
-                placeholder="Selecione uma forma de pagamento"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Prazo de Pagamento
-              </label>
-              <SearchableSelect
-                options={prazosPagamento.map(pp => ({
-                  value: pp.id.toString(),
-                  label: pp.nome
-                }))}
-                value={watch('prazo_pagamento_id')?.toString() || ''}
-                onChange={(value) => {
-                  setValue('prazo_pagamento_id', value ? parseInt(value) : null);
-                }}
-                disabled={isViewMode}
-                placeholder="Selecione um prazo de pagamento"
-              />
-            </div>
-          </div>
+          <PedidosComprasPagamentoSection
+            watch={watch}
+            setValue={setValue}
+            formasPagamento={formasPagamento}
+            prazosPagamento={prazosPagamento}
+            isViewMode={isViewMode}
+          />
 
           {/* Itens do Pedido */}
           <div>
