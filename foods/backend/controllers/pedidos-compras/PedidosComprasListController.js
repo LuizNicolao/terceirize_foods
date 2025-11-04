@@ -238,7 +238,7 @@ class PedidosComprasListController {
             pc.numero_pedido,
             pc.id as pedido_id
           FROM pedido_compras_itens pci
-          INNER JOIN pedido_compras pc ON pci.pedido_id = pc.id
+          INNER JOIN pedidos_compras pc ON pci.pedido_id = pc.id
           WHERE pci.solicitacao_item_id = ?`,
           [item.id]
         );
