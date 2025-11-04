@@ -10,6 +10,8 @@ import FormasPagamentoService from '../services/formasPagamentoService';
 import PrazosPagamentoService from '../services/prazosPagamentoService';
 import FornecedoresService from '../services/fornecedores';
 import FiliaisService from '../services/filiais';
+import produtoGenericoService from '../services/produtoGenerico';
+import api from '../services/api';
 
 export const usePedidosComprasModal = ({ pedidoCompras, isOpen, solicitacoesDisponiveis = [] }) => {
   const { register, handleSubmit, reset, formState: { errors }, setValue, watch } = useForm();
@@ -27,6 +29,8 @@ export const usePedidosComprasModal = ({ pedidoCompras, isOpen, solicitacoesDisp
   const [fornecedores, setFornecedores] = useState([]);
   const [filiais, setFiliais] = useState([]);
   const [filialMatriz, setFilialMatriz] = useState(null);
+  const [produtosGenericos, setProdutosGenericos] = useState([]);
+  const [unidadesMedida, setUnidadesMedida] = useState([]);
   const [dadosFilialFaturamento, setDadosFilialFaturamento] = useState(null);
   const [dadosFilialCobranca, setDadosFilialCobranca] = useState(null);
   const [dadosFilialEntrega, setDadosFilialEntrega] = useState(null);
@@ -109,7 +113,7 @@ export const usePedidosComprasModal = ({ pedidoCompras, isOpen, solicitacoesDisp
     } finally {
       setLoadingFiliais(false);
     }
-  }, [pedidoCompras, setValue, watch]);
+  }, [pedidoCompras, setValue, watch, carregarDadosFilialEspecifica]);
 
   const buscarIdFormaPagamentoPorNome = useCallback(async (nome) => {
     if (!nome) return;
@@ -322,12 +326,32 @@ export const usePedidosComprasModal = ({ pedidoCompras, isOpen, solicitacoesDisp
   // Handlers
   const handleItemChange = useCallback((index, updatedItem) => {
     const newItens = [...itensDisponiveis];
+    
+    // Se mudou produto genérico, buscar informações
+    if (updatedItem.produto_id && updatedItem.isNewProduct) {
+      const produto = produtosGenericos.find(p => p.id === parseInt(updatedItem.produto_id));
+      if (produto) {
+        updatedItem.produto_nome = produto.nome;
+        updatedItem.codigo_produto = produto.codigo || produto.codigo_produto || '';
+        updatedItem.unidade_medida_id = produto.unidade_medida_id || '';
+        
+        // Buscar unidade
+        if (produto.unidade_medida_id) {
+          const unidade = unidadesMedida.find(u => u.id === produto.unidade_medida_id);
+          if (unidade) {
+            updatedItem.unidade_simbolo = unidade.sigla || unidade.simbolo || '';
+            updatedItem.unidade_medida = unidade.nome || unidade.sigla || unidade.simbolo || '';
+          }
+        }
+      }
+    }
+    
     newItens[index] = updatedItem;
     setItensDisponiveis(newItens);
     
     const selected = newItens.filter(item => item.selected && parseFloat(item.quantidade_pedido || 0) > 0);
     setItensSelecionados(selected);
-  }, [itensDisponiveis]);
+  }, [itensDisponiveis, produtosGenericos, unidadesMedida]);
 
   const handleRemoveItem = useCallback((index) => {
     const newItens = [...itensDisponiveis];
@@ -362,7 +386,7 @@ export const usePedidosComprasModal = ({ pedidoCompras, isOpen, solicitacoesDisp
     }
   }, []);
 
-  // Adicionar item ao pedido
+  // Adicionar item ao pedido (da lista de disponíveis)
   const handleAdicionarItem = useCallback((novoItem) => {
     // Adicionar ao array de itens disponíveis
     const novosItensDisponiveis = [...itensDisponiveis, novoItem];
@@ -380,14 +404,40 @@ export const usePedidosComprasModal = ({ pedidoCompras, isOpen, solicitacoesDisp
     toast.success('Item adicionado ao pedido!');
   }, [itensDisponiveis, itensSelecionados]);
 
+  // Adicionar nova linha vazia para produto genérico
+  const handleAddNewItem = useCallback(() => {
+    const novoItem = {
+      id: `new-${Date.now()}`, // ID temporário
+      produto_id: '',
+      produto_nome: '',
+      codigo_produto: '',
+      unidade_medida_id: '',
+      unidade_simbolo: '',
+      unidade_medida: '',
+      quantidade_solicitada: 0,
+      quantidade_utilizada: 0,
+      saldo_disponivel: 0, // Permitir adicionar qualquer quantidade quando for produto novo
+      quantidade_pedido: 0,
+      valor_unitario: 0,
+      selected: true,
+      isNewProduct: true // Flag para identificar que é um produto novo
+    };
+    
+    const novosItensDisponiveis = [...itensDisponiveis, novoItem];
+    setItensDisponiveis(novosItensDisponiveis);
+    setItensSelecionados(novosItensDisponiveis.filter(item => item.selected && parseFloat(item.quantidade_pedido || 0) > 0));
+  }, [itensDisponiveis]);
+
   // Efeitos
   useEffect(() => {
     if (isOpen) {
       carregarFormasPagamento();
       carregarPrazosPagamento();
       carregarFiliais();
+      carregarProdutosGenericos();
+      carregarUnidadesMedida();
     }
-  }, [isOpen, carregarFormasPagamento, carregarPrazosPagamento, carregarFiliais]);
+  }, [isOpen, carregarFormasPagamento, carregarPrazosPagamento, carregarFiliais, carregarProdutosGenericos, carregarUnidadesMedida]);
 
   useEffect(() => {
     if (pedidoCompras && isOpen && formasPagamento.length > 0 && prazosPagamento.length > 0) {
@@ -636,6 +686,11 @@ export const usePedidosComprasModal = ({ pedidoCompras, isOpen, solicitacoesDisp
     handleItemChange,
     handleRemoveItem,
     handleAdicionarItem,
+    handleAddNewItem,
+    
+    // Dados auxiliares
+    produtosGenericos,
+    unidadesMedida,
     
     // Itens disponíveis para adicionar (apenas durante edição)
     itensDisponiveisParaAdicionar,

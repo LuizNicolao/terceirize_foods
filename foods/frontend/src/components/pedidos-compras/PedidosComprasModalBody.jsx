@@ -38,6 +38,10 @@ const PedidosComprasModalBody = ({
   handleItemChange,
   handleRemoveItem,
   handleAdicionarItem,
+  handleAddNewItem,
+  
+  // Dados auxiliares
+  produtosGenericos,
   
   // Itens disponíveis para adicionar
   itensDisponiveisParaAdicionar,
@@ -129,14 +133,7 @@ const PedidosComprasModalBody = ({
           </h3>
           {!isViewMode && (
             <Button 
-              onClick={() => {
-                // Se há itens disponíveis, mostrar a seção ou abrir modal
-                // Por enquanto, vamos apenas garantir que a seção de itens disponíveis esteja visível
-                const itensDisponiveisSection = document.getElementById('itens-disponiveis-section');
-                if (itensDisponiveisSection) {
-                  itensDisponiveisSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-              }} 
+              onClick={handleAddNewItem}
               size="sm" 
               variant="ghost" 
               type="button"
@@ -157,6 +154,7 @@ const PedidosComprasModalBody = ({
             onRemoveItem={handleRemoveItem}
             viewMode={isViewMode}
             errors={errors}
+            produtosGenericos={produtosGenericos}
           />
         )}
       </div>

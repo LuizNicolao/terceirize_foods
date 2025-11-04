@@ -41,6 +41,8 @@ const PedidosComprasModal = ({
     handleItemChange,
     handleRemoveItem,
     handleAdicionarItem,
+    handleAddNewItem,
+    produtosGenericos,
     itensDisponiveisParaAdicionar,
     loadingItensDisponiveis
   } = usePedidosComprasModal({ pedidoCompras, isOpen, solicitacoesDisponiveis });
@@ -135,6 +137,8 @@ const PedidosComprasModal = ({
           handleItemChange={handleItemChange}
           handleRemoveItem={handleRemoveItem}
           handleAdicionarItem={handleAdicionarItem}
+          handleAddNewItem={handleAddNewItem}
+          produtosGenericos={produtosGenericos}
           itensDisponiveisParaAdicionar={itensDisponiveisParaAdicionar}
           loadingItensDisponiveis={loadingItensDisponiveis}
           pedidoCompras={pedidoCompras}

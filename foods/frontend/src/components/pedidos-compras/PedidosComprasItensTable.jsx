@@ -1,13 +1,14 @@
 import React from 'react';
 import { FaTrash } from 'react-icons/fa';
-import { Button, Input } from '../ui';
+import { Button, Input, SearchableSelect } from '../ui';
 
 const PedidosComprasItensTable = ({
   itens,
   onItemChange,
   onRemoveItem,
   viewMode = false,
-  errors = {}
+  errors = {},
+  produtosGenericos = []
 }) => {
   if (!itens || itens.length === 0) {
     return (
@@ -95,45 +96,80 @@ const PedidosComprasItensTable = ({
                   </td>
                 )}
                 <td className="px-4 py-3 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">
-                    {item.produto_nome || item.nome_produto || 'Produto não informado'}
-                  </div>
-                  {item.codigo_produto && (
-                    <div className="text-xs text-gray-500">
-                      Código: {item.codigo_produto}
-                    </div>
+                  {item.isNewProduct && !viewMode ? (
+                    <SearchableSelect
+                      value={item.produto_id || ''}
+                      onChange={(value) => {
+                        onItemChange(index, { ...item, produto_id: value });
+                      }}
+                      options={produtosGenericos
+                        .filter(p => p.status === 1 || p.status === 'ativo')
+                        .map(p => ({
+                          value: p.id,
+                          label: `${p.codigo || p.codigo_produto || ''} - ${p.nome}`
+                        }))}
+                      placeholder="Selecione um produto genérico..."
+                      className="w-full min-w-[300px]"
+                    />
+                  ) : (
+                    <>
+                      <div className="text-sm text-gray-900">
+                        {item.produto_nome || item.nome_produto || 'Produto não informado'}
+                      </div>
+                      {item.codigo_produto && (
+                        <div className="text-xs text-gray-500">
+                          Código: {item.codigo_produto}
+                        </div>
+                      )}
+                    </>
                   )}
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap">
-                  <span className="text-sm text-gray-900">
-                    {item.unidade_simbolo || item.unidade_medida || '-'}
-                  </span>
+                  {item.isNewProduct && !item.produto_id && !viewMode ? (
+                    <span className="text-sm text-gray-400 italic">Selecione um produto...</span>
+                  ) : (
+                    <span className="text-sm text-gray-900">
+                      {item.unidade_simbolo || item.unidade_medida || '-'}
+                    </span>
+                  )}
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap">
-                  <span className="text-sm text-gray-900">
-                    {parseFloat(item.quantidade_solicitada || item.quantidade || 0).toLocaleString('pt-BR', {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2
-                    })}
-                  </span>
+                  {item.isNewProduct ? (
+                    <span className="text-sm text-gray-400">-</span>
+                  ) : (
+                    <span className="text-sm text-gray-900">
+                      {parseFloat(item.quantidade_solicitada || item.quantidade || 0).toLocaleString('pt-BR', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                      })}
+                    </span>
+                  )}
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap">
-                  <span className="text-sm text-gray-900">
-                    {parseFloat(item.quantidade_utilizada || 0).toLocaleString('pt-BR', {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2
-                    })}
-                  </span>
+                  {item.isNewProduct ? (
+                    <span className="text-sm text-gray-400">-</span>
+                  ) : (
+                    <span className="text-sm text-gray-900">
+                      {parseFloat(item.quantidade_utilizada || 0).toLocaleString('pt-BR', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                      })}
+                    </span>
+                  )}
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap">
-                  <span className={`text-sm font-medium ${
-                    saldoDisponivel > 0 ? 'text-green-600' : 'text-red-600'
-                  }`}>
-                    {saldoDisponivel.toLocaleString('pt-BR', {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2
-                    })}
-                  </span>
+                  {item.isNewProduct ? (
+                    <span className="text-sm text-gray-400">-</span>
+                  ) : (
+                    <span className={`text-sm font-medium ${
+                      saldoDisponivel > 0 ? 'text-green-600' : 'text-red-600'
+                    }`}>
+                      {saldoDisponivel.toLocaleString('pt-BR', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                      })}
+                    </span>
+                  )}
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap">
                   {viewMode ? (
@@ -148,7 +184,7 @@ const PedidosComprasItensTable = ({
                       type="number"
                       step="0.01"
                       min="0"
-                      max={saldoDisponivel}
+                      max={item.isNewProduct ? undefined : saldoDisponivel}
                       value={quantidadePedido || ''}
                       onChange={(e) => {
                         const newValue = parseFloat(e.target.value) || 0;
@@ -158,7 +194,7 @@ const PedidosComprasItensTable = ({
                           selected: newValue > 0 || isSelected
                         });
                       }}
-                      disabled={!isSelected || saldoDisponivel <= 0}
+                      disabled={!isSelected || (!item.isNewProduct && saldoDisponivel <= 0)}
                       className={`w-24 ${isSaldoInsuficiente ? 'border-red-500' : ''}`}
                       error={isSaldoInsuficiente ? 'Quantidade excede saldo disponível' : errors[`itens.${index}.quantidade_pedido`]}
                     />
