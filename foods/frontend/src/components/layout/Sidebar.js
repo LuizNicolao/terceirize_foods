@@ -109,6 +109,7 @@ const menuGroups = [
       { path: '/foods/solicitacoes-compras', icon: FaShoppingCart, label: 'Solicitações de Compras', screen: 'solicitacoes_compras' },
       { path: '/foods/formas-pagamento', icon: FaCreditCard, label: 'Formas de Pagamento', screen: 'formas_pagamento' },
       { path: '/foods/prazos-pagamento', icon: FaCalendarAltPayment, label: 'Prazos de Pagamento', screen: 'prazos_pagamento' },
+      { path: '/foods/pedidos-compras', icon: FaFileInvoice, label: 'Pedidos de Compras', screen: 'pedidos_compras' },
       { path: '/foods/calendario', icon: FaCalendarAlt, label: 'Calendário', screen: 'calendario' },
     ]
   },

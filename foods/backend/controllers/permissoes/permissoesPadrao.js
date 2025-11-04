@@ -41,6 +41,7 @@ const PERMISSOES_PADRAO = {
       calendario: { visualizar: true, criar: true, editar: true, excluir: false },
       formas_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
       prazos_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
+      pedidos_compras: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
       
     },
@@ -79,6 +80,7 @@ const PERMISSOES_PADRAO = {
       calendario: { visualizar: true, criar: true, editar: true, excluir: false },
       formas_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
       prazos_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
+      pedidos_compras: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -115,6 +117,7 @@ const PERMISSOES_PADRAO = {
       solicitacoes_compras: { visualizar: true, criar: true, editar: true, excluir: true },
       calendario: { visualizar: true, criar: true, editar: true, excluir: true },
       formas_pagamento: { visualizar: true, criar: true, editar: true, excluir: true },
+      pedidos_compras: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: true, criar: true, editar: true, excluir: true }
     }
   },
@@ -153,6 +156,7 @@ const PERMISSOES_PADRAO = {
       solicitacoes_compras: { visualizar: true, criar: true, editar: true, excluir: true },
       calendario: { visualizar: true, criar: true, editar: true, excluir: true },
       formas_pagamento: { visualizar: true, criar: true, editar: true, excluir: true },
+      pedidos_compras: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -190,6 +194,7 @@ const PERMISSOES_PADRAO = {
       calendario: { visualizar: true, criar: true, editar: true, excluir: false },
       formas_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
       prazos_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
+      pedidos_compras: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -227,6 +232,7 @@ const PERMISSOES_PADRAO = {
       calendario: { visualizar: true, criar: true, editar: true, excluir: false },
       formas_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
       prazos_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
+      pedidos_compras: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -266,6 +272,7 @@ const PERMISSOES_PADRAO = {
       calendario: { visualizar: true, criar: true, editar: true, excluir: false },
       formas_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
       prazos_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
+      pedidos_compras: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -303,6 +310,7 @@ const PERMISSOES_PADRAO = {
       calendario: { visualizar: true, criar: true, editar: true, excluir: false },
       formas_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
       prazos_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
+      pedidos_compras: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -340,6 +348,7 @@ const PERMISSOES_PADRAO = {
       calendario: { visualizar: true, criar: true, editar: true, excluir: false },
       formas_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
       prazos_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
+      pedidos_compras: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -379,6 +388,7 @@ const PERMISSOES_PADRAO = {
       calendario: { visualizar: true, criar: true, editar: true, excluir: false },
       formas_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
       prazos_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
+      pedidos_compras: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -416,6 +426,7 @@ const PERMISSOES_PADRAO = {
       calendario: { visualizar: true, criar: true, editar: true, excluir: false },
       formas_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
       prazos_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
+      pedidos_compras: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -453,6 +464,7 @@ const PERMISSOES_PADRAO = {
       calendario: { visualizar: true, criar: true, editar: true, excluir: false },
       formas_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
       prazos_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
+      pedidos_compras: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -492,6 +504,7 @@ const PERMISSOES_PADRAO = {
       calendario: { visualizar: true, criar: true, editar: true, excluir: false },
       formas_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
       prazos_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
+      pedidos_compras: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -529,6 +542,7 @@ const PERMISSOES_PADRAO = {
       calendario: { visualizar: true, criar: true, editar: true, excluir: false },
       formas_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
       prazos_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
+      pedidos_compras: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -566,6 +580,7 @@ const PERMISSOES_PADRAO = {
       calendario: { visualizar: true, criar: true, editar: true, excluir: false },
       formas_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
       prazos_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
+      pedidos_compras: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -605,6 +620,7 @@ const PERMISSOES_PADRAO = {
       calendario: { visualizar: true, criar: true, editar: true, excluir: false },
       formas_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
       prazos_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
+      pedidos_compras: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -642,6 +658,7 @@ const PERMISSOES_PADRAO = {
       calendario: { visualizar: true, criar: true, editar: true, excluir: false },
       formas_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
       prazos_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
+      pedidos_compras: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -679,6 +696,7 @@ const PERMISSOES_PADRAO = {
       calendario: { visualizar: true, criar: true, editar: true, excluir: false },
       formas_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
       prazos_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
+      pedidos_compras: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   }
@@ -721,7 +739,8 @@ const TODAS_TELAS = [
   'solicitacoes_compras',
   'calendario',
   'formas_pagamento',
-  'prazos_pagamento'
+  'prazos_pagamento',
+  'pedidos_compras'
 ];
 
 // Tipos de acesso disponíveis
@@ -778,7 +797,8 @@ const TELAS_COM_DESCRICOES = [
   { nome: 'solicitacoes_compras', descricao: 'Gerenciamento de Solicitações de Compras' },
   { nome: 'calendario', descricao: 'Gerenciamento de Calendário' },
   { nome: 'formas_pagamento', descricao: 'Gerenciamento de Formas de Pagamento' },
-  { nome: 'prazos_pagamento', descricao: 'Gerenciamento de Prazos de Pagamento' }
+  { nome: 'prazos_pagamento', descricao: 'Gerenciamento de Prazos de Pagamento' },
+  { nome: 'pedidos_compras', descricao: 'Gerenciamento de Pedidos de Compras' }
 ];
 
 module.exports = {
