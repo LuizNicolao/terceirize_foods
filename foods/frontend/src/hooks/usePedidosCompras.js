@@ -101,9 +101,6 @@ export const usePedidosCompras = () => {
   /**
    * Visualizar pedido (busca dados completos com itens)
    */
-  /**
-   * Visualizar pedido (busca dados completos com itens)
-   */
   const handleViewPedidoCompras = useCallback(async (item) => {
     try {
       baseEntity.setLoading(true);
