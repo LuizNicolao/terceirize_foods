@@ -28,7 +28,7 @@ const FormasPagamento = () => {
     showDeleteConfirmModal,
     formaPagamentoToDelete,
     searchTerm,
-    ativoFilter,
+    statusFilter,
     currentPage,
     totalPages,
     totalItems,
@@ -115,11 +115,8 @@ const FormasPagamento = () => {
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         onKeyPress={handleKeyPress}
-        statusFilter={ativoFilter === '1' ? 'ativo' : ativoFilter === '0' ? 'inativo' : 'todos'}
-        onStatusFilterChange={(value) => {
-          const ativoValue = value === 'ativo' ? '1' : value === 'inativo' ? '0' : 'todos';
-          setAtivoFilter(ativoValue);
-        }}
+        statusFilter={statusFilter}
+        onStatusFilterChange={setStatusFilter}
         onClear={handleClearFilters}
         placeholder="Buscar por nome ou descrição..."
       />

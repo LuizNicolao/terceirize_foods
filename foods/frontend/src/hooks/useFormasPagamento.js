@@ -12,15 +12,10 @@ export const useFormasPagamento = () => {
   // Hook base para funcionalidades CRUD
   const baseEntity = useBaseEntity('formas-pagamento', FormasPagamentoService, {
     initialItemsPerPage: 20,
-    initialFilters: { 
-      ativoFilter: 'todos'
-    },
+    initialFilters: {},
     enableStats: true,
     enableDelete: true
   });
-
-  // Estados locais
-  const [loading, setLoading] = useState(false);
 
   /**
    * Carrega dados com filtros
@@ -30,18 +25,18 @@ export const useFormasPagamento = () => {
       page: baseEntity.currentPage,
       limit: baseEntity.itemsPerPage,
       search: baseEntity.searchTerm || undefined,
-      ativo: baseEntity.filters?.ativoFilter === 'todos' ? undefined : baseEntity.filters?.ativoFilter
+      ativo: baseEntity.statusFilter === 'ativo' ? 1 : baseEntity.statusFilter === 'inativo' ? 0 : undefined
     };
 
     await baseEntity.loadData(params);
-  }, [baseEntity.currentPage, baseEntity.itemsPerPage, baseEntity.searchTerm, baseEntity.filters?.ativoFilter, baseEntity.loadData]);
+  }, [baseEntity.currentPage, baseEntity.itemsPerPage, baseEntity.searchTerm, baseEntity.statusFilter, baseEntity.loadData]);
 
   /**
    * Carregar dados quando filtros mudarem
    */
   useEffect(() => {
     loadDataWithFilters();
-  }, [baseEntity.currentPage, baseEntity.itemsPerPage, baseEntity.searchTerm, baseEntity.filters?.ativoFilter]);
+  }, [baseEntity.currentPage, baseEntity.itemsPerPage, baseEntity.searchTerm, baseEntity.statusFilter]);
 
   /**
    * Submissão customizada
@@ -51,20 +46,12 @@ export const useFormasPagamento = () => {
   }, [baseEntity]);
 
   /**
-   * Handlers de filtros
-   */
-  const setAtivoFilter = useCallback((value) => {
-    baseEntity.updateFilter('ativoFilter', value);
-    baseEntity.handlePageChange(1);
-  }, [baseEntity]);
-
-  /**
    * Limpar filtros
    */
   const handleClearFilters = useCallback(() => {
     baseEntity.clearFilters();
     baseEntity.setSearchTerm('');
-    baseEntity.updateFilter('ativoFilter', 'todos');
+    baseEntity.setStatusFilter('todos');
     baseEntity.handlePageChange(1);
   }, [baseEntity]);
 
@@ -90,7 +77,7 @@ export const useFormasPagamento = () => {
     showDeleteConfirmModal: baseEntity.showDeleteConfirmModal,
     formaPagamentoToDelete: baseEntity.itemToDelete,
     searchTerm: baseEntity.searchTerm,
-    ativoFilter: baseEntity.filters?.ativoFilter || 'todos',
+    statusFilter: baseEntity.statusFilter,
     currentPage: baseEntity.currentPage,
     totalPages: baseEntity.totalPages,
     totalItems: baseEntity.totalItems,
@@ -112,7 +99,7 @@ export const useFormasPagamento = () => {
     handleClearFilters,
     setSearchTerm: baseEntity.setSearchTerm,
     handleKeyPress: baseEntity.handleKeyPress,
-    setAtivoFilter,
+    setStatusFilter: baseEntity.setStatusFilter,
     getStatusBadge
   };
 };
