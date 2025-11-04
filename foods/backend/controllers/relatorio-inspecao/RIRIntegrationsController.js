@@ -34,7 +34,7 @@ class RIRIntegrationsController {
         pg.nome as nome_produto,
         pg.codigo as codigo_produto,
         pg.grupo_id,
-        um.simbolo as unidade_medida,
+        um.sigla as unidade_medida,
         g.nome as grupo_nome,
         n.id as nqa_id,
         n.codigo as nqa_codigo,
@@ -58,7 +58,7 @@ class RIRIntegrationsController {
         pc.numero_pedido,
         f.razao_social as fornecedor,
         f.cnpj as cnpj_fornecedor
-      FROM pedido_compras pc
+      FROM pedidos_compras pc
       LEFT JOIN fornecedores f ON pc.fornecedor_id = f.id
       WHERE pc.id = ?`,
       [id]
@@ -182,13 +182,13 @@ class RIRIntegrationsController {
       `SELECT 
         pc.id,
         pc.numero_pedido,
-        pc.data_pedido,
+        pc.criado_em as data_pedido,
         f.razao_social as fornecedor,
         f.cnpj
-      FROM pedido_compras pc
+      FROM pedidos_compras pc
       INNER JOIN fornecedores f ON pc.fornecedor_id = f.id
       WHERE pc.status = 'aprovado'
-      ORDER BY pc.data_pedido DESC, pc.numero_pedido DESC
+      ORDER BY pc.criado_em DESC, pc.numero_pedido DESC
       LIMIT 100`
     );
 
