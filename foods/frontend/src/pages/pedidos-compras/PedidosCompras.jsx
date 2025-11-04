@@ -193,6 +193,14 @@ const PedidosCompras = () => {
         onAprovarLote={handleAprovarLote}
         onReabrirLote={handleReabrirLote}
         loadingBatch={loadingBatch}
+        canEditByStatus={(item) => {
+          // Apenas pedidos em digitação ou cancelados podem ser editados
+          return ['em_digitacao', 'cancelado'].includes(item.status);
+        }}
+        canDeleteByStatus={(item) => {
+          // Apenas pedidos em digitação ou cancelados podem ser excluídos
+          return ['em_digitacao', 'cancelado'].includes(item.status);
+        }}
       />
 
       {/* Paginação - sempre mostrar para permitir mudança de itens por página */}

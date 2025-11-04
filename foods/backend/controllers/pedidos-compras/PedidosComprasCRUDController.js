@@ -186,8 +186,30 @@ class PedidosComprasCRUDController {
     const pedidoExistente = pedidos[0];
 
     // Validar se pode editar (apenas em_digitacao ou cancelado)
-    if (!['em_digitacao', 'cancelado'].includes(pedidoExistente.status) && status === 'em_digitacao') {
-      return errorResponse(res, 'Não é possível reabrir um pedido que já foi processado', STATUS_CODES.CONFLICT);
+    const statusPermitemEdicao = ['em_digitacao', 'cancelado'];
+    if (!statusPermitemEdicao.includes(pedidoExistente.status)) {
+      return errorResponse(
+        res, 
+        `Não é possível editar um pedido com status "${pedidoExistente.status}". Apenas pedidos em digitação ou cancelados podem ser editados.`, 
+        STATUS_CODES.CONFLICT
+      );
+    }
+
+    // Validar transição de status: não permite voltar para em_digitacao se já foi processado
+    if (status && status !== pedidoExistente.status) {
+      // Se está tentando mudar para em_digitacao e não está em em_digitacao ou cancelado
+      if (status === 'em_digitacao' && !statusPermitemEdicao.includes(pedidoExistente.status)) {
+        return errorResponse(res, 'Não é possível reabrir um pedido que já foi processado', STATUS_CODES.CONFLICT);
+      }
+      
+      // Não permite mudar status de pedidos que já foram usados em RIR/NF
+      if (['parcial', 'finalizado'].includes(pedidoExistente.status)) {
+        return errorResponse(
+          res, 
+          'Não é possível alterar o status de um pedido que já foi usado em Relatórios de Inspeção ou Notas Fiscais', 
+          STATUS_CODES.CONFLICT
+        );
+      }
     }
 
     // Validar campos obrigatórios

@@ -16,7 +16,9 @@ const PedidosComprasTable = ({
   onSelectItem,
   onAprovarLote,
   onReabrirLote,
-  loadingBatch = false
+  loadingBatch = false,
+  canEditByStatus = () => true,
+  canDeleteByStatus = () => true
 }) => {
   if (!pedidosCompras || pedidosCompras.length === 0) {
     return (
@@ -189,8 +191,8 @@ const PedidosComprasTable = ({
                       <div className="flex justify-end">
                         <ActionButtons
                           canView={canView}
-                          canEdit={canEdit}
-                          canDelete={canDelete}
+                          canEdit={canEdit && canEditByStatus(pedido)}
+                          canDelete={canDelete && canDeleteByStatus(pedido)}
                           onView={onView}
                           onEdit={onEdit}
                           onDelete={onDelete}
@@ -257,8 +259,8 @@ const PedidosComprasTable = ({
               <div className="mt-4 pt-4 border-t border-gray-200">
                 <ActionButtons
                   canView={canView}
-                  canEdit={canEdit}
-                  canDelete={canDelete}
+                  canEdit={canEdit && canEditByStatus(pedido)}
+                  canDelete={canDelete && canDeleteByStatus(pedido)}
                   onView={onView}
                   onEdit={onEdit}
                   onDelete={onDelete}
