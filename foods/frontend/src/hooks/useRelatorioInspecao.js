@@ -34,6 +34,12 @@ export const useRelatorioInspecao = () => {
    * pois o useBaseEntity já gerencia isso internamente
    */
   const loadDataWithFilters = useCallback(async () => {
+    console.log('[useRelatorioInspecao] loadDataWithFilters chamado', {
+      status_geral: customFilters.filters.status_geral,
+      currentPage: baseEntity.currentPage,
+      itemsPerPage: baseEntity.itemsPerPage
+    });
+    
     const params = {
       status_geral: customFilters.filters.status_geral || undefined
       };
@@ -46,14 +52,19 @@ export const useRelatorioInspecao = () => {
       });
 
     await baseEntity.loadData(params);
-  }, [baseEntity.loadData, customFilters.filters.status_geral]);
+  }, [customFilters.filters.status_geral, baseEntity.currentPage, baseEntity.itemsPerPage, baseEntity.loadData]);
 
   // Carregar dados quando filtros ou paginação mudam
   // Não inclui baseEntity.searchTerm nas dependências porque o useBaseEntity
   // já gerencia a busca com debounce internamente
   useEffect(() => {
+    console.log('[useRelatorioInspecao] useEffect disparado', {
+      currentPage: baseEntity.currentPage,
+      itemsPerPage: baseEntity.itemsPerPage,
+      status_geral: customFilters.filters.status_geral
+    });
     loadDataWithFilters();
-  }, [baseEntity.currentPage, baseEntity.itemsPerPage, customFilters.filters.status_geral, loadDataWithFilters]);
+  }, [baseEntity.currentPage, baseEntity.itemsPerPage, customFilters.filters.status_geral]);
 
   /**
    * Buscar RIR por ID (mantido para compatibilidade)

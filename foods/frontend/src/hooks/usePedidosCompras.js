@@ -29,12 +29,18 @@ export const usePedidosCompras = () => {
    * pois o useBaseEntity já gerencia isso internamente
    */
   const loadDataWithFilters = useCallback(async () => {
+    console.log('[usePedidosCompras] loadDataWithFilters chamado', {
+      statusFilter,
+      currentPage: baseEntity.currentPage,
+      itemsPerPage: baseEntity.itemsPerPage
+    });
+    
     const params = {
       status: statusFilter || undefined
     };
 
     await baseEntity.loadData(params);
-  }, [statusFilter, baseEntity.loadData]);
+  }, [statusFilter, baseEntity.currentPage, baseEntity.itemsPerPage, baseEntity.loadData]);
 
   /**
    * Carregar solicitações disponíveis
@@ -56,8 +62,14 @@ export const usePedidosCompras = () => {
    * já gerencia a busca com debounce internamente
    */
   useEffect(() => {
+    console.log('[usePedidosCompras] useEffect disparado', {
+      currentPage: baseEntity.currentPage,
+      itemsPerPage: baseEntity.itemsPerPage,
+      statusFilter,
+      loadDataWithFiltersRef: loadDataWithFilters
+    });
     loadDataWithFilters();
-  }, [baseEntity.currentPage, baseEntity.itemsPerPage, statusFilter, loadDataWithFilters]);
+  }, [baseEntity.currentPage, baseEntity.itemsPerPage, statusFilter]);
 
   /**
    * Carregar solicitações disponíveis ao montar
