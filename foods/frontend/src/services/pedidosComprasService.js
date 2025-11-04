@@ -16,8 +16,25 @@ class PedidosComprasService {
   static async buscarPorId(id) {
     try {
       const response = await api.get(`/pedidos-compras/${id}`);
-      return response.data;
+      
+      // Extrair dados da estrutura HATEOAS
+      let pedido = null;
+      
+      if (response.data.data) {
+        pedido = response.data.data;
+      } else if (response.data) {
+        pedido = response.data;
+      }
+      
+      console.log('📦 [SERVICE] Resposta completa da API:', response.data);
+      console.log('📦 [SERVICE] Pedido extraído:', pedido);
+      
+      return {
+        success: true,
+        data: pedido
+      };
     } catch (error) {
+      console.error('❌ [SERVICE] Erro ao buscar pedido:', error);
       return {
         success: false,
         error: error.response?.data?.error || 'Erro ao buscar pedido de compras'

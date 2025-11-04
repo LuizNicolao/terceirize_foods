@@ -516,7 +516,8 @@ export const usePedidosComprasModal = ({ pedidoCompras, isOpen, solicitacoesDisp
 
   useEffect(() => {
     if (pedidoCompras && isOpen) {
-      console.log('🔵 [PEDIDO COMPRAS] Dados recebidos do pedido:', {
+      console.log('🔵 [PEDIDO COMPRAS] Dados recebidos do pedido (OBJETO COMPLETO):', pedidoCompras);
+      console.log('🔵 [PEDIDO COMPRAS] Dados recebidos do pedido (RESUMO):', {
         id: pedidoCompras.id,
         numero_pedido: pedidoCompras.numero_pedido,
         solicitacao_compras_id: pedidoCompras.solicitacao_compras_id,
@@ -532,7 +533,8 @@ export const usePedidosComprasModal = ({ pedidoCompras, isOpen, solicitacoesDisp
         prazo_pagamento: pedidoCompras.prazo_pagamento,
         observacoes: pedidoCompras.observacoes,
         itens_count: pedidoCompras.itens?.length || 0,
-        itens: pedidoCompras.itens
+        itens: pedidoCompras.itens,
+        todas_chaves: Object.keys(pedidoCompras)
       });
 
       const carregarDados = async () => {

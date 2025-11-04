@@ -98,6 +98,56 @@ export const usePedidosCompras = () => {
     return statusMap[status] || { text: status, color: 'gray' };
   }, []);
 
+  /**
+   * Visualizar pedido (busca dados completos com itens)
+   */
+  const handleViewPedidoCompras = useCallback(async (item) => {
+    try {
+      baseEntity.setLoading(true);
+      console.log('🔵 [HOOK] Buscando dados completos do pedido ID:', item.id);
+      const response = await PedidosComprasService.buscarPorId(item.id);
+      console.log('📦 [HOOK] Resposta do service:', response);
+      
+      if (response.success && response.data) {
+        console.log('✅ [HOOK] Dados completos recebidos:', response.data);
+        baseEntity.handleView(response.data);
+      } else {
+        console.log('❌ [HOOK] Erro ao buscar pedido:', response.error);
+        toast.error(response.error || 'Erro ao buscar pedido de compras');
+      }
+    } catch (error) {
+      console.error('❌ [HOOK] Erro ao buscar pedido:', error);
+      toast.error('Erro ao carregar dados do pedido');
+    } finally {
+      baseEntity.setLoading(false);
+    }
+  }, [baseEntity]);
+
+  /**
+   * Editar pedido (busca dados completos com itens)
+   */
+  const handleEditPedidoCompras = useCallback(async (item) => {
+    try {
+      baseEntity.setLoading(true);
+      console.log('🔵 [HOOK] Buscando dados completos do pedido ID:', item.id);
+      const response = await PedidosComprasService.buscarPorId(item.id);
+      console.log('📦 [HOOK] Resposta do service:', response);
+      
+      if (response.success && response.data) {
+        console.log('✅ [HOOK] Dados completos recebidos:', response.data);
+        baseEntity.handleEdit(response.data);
+      } else {
+        console.log('❌ [HOOK] Erro ao buscar pedido:', response.error);
+        toast.error(response.error || 'Erro ao buscar pedido de compras');
+      }
+    } catch (error) {
+      console.error('❌ [HOOK] Erro ao buscar pedido:', error);
+      toast.error('Erro ao carregar dados do pedido');
+    } finally {
+      baseEntity.setLoading(false);
+    }
+  }, [baseEntity]);
+
   return {
     // Estados do baseEntity
     pedidosCompras: baseEntity.items,
@@ -123,8 +173,8 @@ export const usePedidosCompras = () => {
     handleConfirmDelete: baseEntity.handleConfirmDelete,
     handleCloseDeleteModal: baseEntity.handleCloseDeleteModal,
     handleAddPedidoCompras: baseEntity.handleAdd,
-    handleViewPedidoCompras: baseEntity.handleView,
-    handleEditPedidoCompras: baseEntity.handleEdit,
+    handleViewPedidoCompras,
+    handleEditPedidoCompras,
     handleCloseModal: baseEntity.handleCloseModal,
     handleCloseValidationModal: baseEntity.handleCloseValidationModal,
     handlePageChange: baseEntity.handlePageChange,
