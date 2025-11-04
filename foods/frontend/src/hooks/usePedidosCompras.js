@@ -101,22 +101,21 @@ export const usePedidosCompras = () => {
   /**
    * Visualizar pedido (busca dados completos com itens)
    */
+  /**
+   * Visualizar pedido (busca dados completos com itens)
+   */
   const handleViewPedidoCompras = useCallback(async (item) => {
     try {
       baseEntity.setLoading(true);
-      console.log('🔵 [HOOK] Buscando dados completos do pedido ID:', item.id);
       const response = await PedidosComprasService.buscarPorId(item.id);
-      console.log('📦 [HOOK] Resposta do service:', response);
       
       if (response.success && response.data) {
-        console.log('✅ [HOOK] Dados completos recebidos:', response.data);
         baseEntity.handleView(response.data);
       } else {
-        console.log('❌ [HOOK] Erro ao buscar pedido:', response.error);
         toast.error(response.error || 'Erro ao buscar pedido de compras');
       }
     } catch (error) {
-      console.error('❌ [HOOK] Erro ao buscar pedido:', error);
+      console.error('Erro ao buscar pedido:', error);
       toast.error('Erro ao carregar dados do pedido');
     } finally {
       baseEntity.setLoading(false);
@@ -129,19 +128,15 @@ export const usePedidosCompras = () => {
   const handleEditPedidoCompras = useCallback(async (item) => {
     try {
       baseEntity.setLoading(true);
-      console.log('🔵 [HOOK] Buscando dados completos do pedido ID:', item.id);
       const response = await PedidosComprasService.buscarPorId(item.id);
-      console.log('📦 [HOOK] Resposta do service:', response);
       
       if (response.success && response.data) {
-        console.log('✅ [HOOK] Dados completos recebidos:', response.data);
         baseEntity.handleEdit(response.data);
       } else {
-        console.log('❌ [HOOK] Erro ao buscar pedido:', response.error);
         toast.error(response.error || 'Erro ao buscar pedido de compras');
       }
     } catch (error) {
-      console.error('❌ [HOOK] Erro ao buscar pedido:', error);
+      console.error('Erro ao buscar pedido:', error);
       toast.error('Erro ao carregar dados do pedido');
     } finally {
       baseEntity.setLoading(false);

@@ -26,15 +26,12 @@ class PedidosComprasService {
         pedido = response.data;
       }
       
-      console.log('📦 [SERVICE] Resposta completa da API:', response.data);
-      console.log('📦 [SERVICE] Pedido extraído:', pedido);
-      
       return {
         success: true,
         data: pedido
       };
     } catch (error) {
-      console.error('❌ [SERVICE] Erro ao buscar pedido:', error);
+      console.error('Erro ao buscar pedido:', error);
       return {
         success: false,
         error: error.response?.data?.error || 'Erro ao buscar pedido de compras'
