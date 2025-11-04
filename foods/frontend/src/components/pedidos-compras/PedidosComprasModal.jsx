@@ -61,15 +61,20 @@ const PedidosComprasModal = ({
 
   // Buscar IDs de forma e prazo quando os dados estiverem carregados e houver pedido
   useEffect(() => {
-    if (pedidoCompras && isOpen && formasPagamento.length > 0 && prazosPagamento.length > 0) {
-      if (pedidoCompras.forma_pagamento) {
-        buscarIdFormaPagamentoPorNome(pedidoCompras.forma_pagamento);
-      }
-      if (pedidoCompras.prazo_pagamento) {
-        buscarIdPrazoPagamentoPorNome(pedidoCompras.prazo_pagamento);
-      }
+    if (pedidoCompras && isOpen) {
+      // Aguardar um pouco para garantir que formas e prazos foram carregados
+      const timeoutId = setTimeout(() => {
+        if (pedidoCompras.forma_pagamento) {
+          buscarIdFormaPagamentoPorNome(pedidoCompras.forma_pagamento);
+        }
+        if (pedidoCompras.prazo_pagamento) {
+          buscarIdPrazoPagamentoPorNome(pedidoCompras.prazo_pagamento);
+        }
+      }, 500);
+
+      return () => clearTimeout(timeoutId);
     }
-  }, [pedidoCompras, isOpen, formasPagamento, prazosPagamento]);
+  }, [pedidoCompras, isOpen, formasPagamento.length, prazosPagamento.length]);
 
   // Carregar itens quando solicitação for selecionada
   useEffect(() => {
@@ -177,6 +182,7 @@ const PedidosComprasModal = ({
         buscarIdPrazoPagamentoPorNome(pedidoCompras.prazo_pagamento);
       }
     } else if (!pedidoCompras && isOpen) {
+      // Limpar todos os campos quando criar novo pedido
       reset();
       setItensDisponiveis([]);
       setItensSelecionados([]);
@@ -187,8 +193,30 @@ const PedidosComprasModal = ({
       setSolicitacaoSelecionada(null);
       setFornecedores([]);
       setFornecedorSearchTerm('');
+      setValue('forma_pagamento_id', '');
+      setValue('prazo_pagamento_id', '');
+      setValue('fornecedor_id', '');
+      setValue('filial_cobranca_id', '');
+      setValue('filial_entrega_id', '');
     }
   }, [pedidoCompras, isOpen, setValue, reset]);
+
+  // Limpar dados quando modal fechar
+  useEffect(() => {
+    if (!isOpen) {
+      reset();
+      setItensDisponiveis([]);
+      setItensSelecionados([]);
+      setDadosFilial(null);
+      setDadosFilialFaturamento(null);
+      setDadosFilialCobranca(null);
+      setDadosFilialEntrega(null);
+      setSolicitacaoSelecionada(null);
+      setFornecedores([]);
+      setFornecedorSearchTerm('');
+      setFilialMatriz(null);
+    }
+  }, [isOpen, reset]);
 
   const carregarFormasPagamento = async () => {
     try {
@@ -203,51 +231,65 @@ const PedidosComprasModal = ({
   };
 
   const buscarIdFormaPagamentoPorNome = async (nome) => {
-    if (!nome || !formasPagamento.length) return;
+    if (!nome) return;
     
-    const forma = formasPagamento.find(fp => 
-      fp.nome && fp.nome.toLowerCase().trim() === nome.toLowerCase().trim()
-    );
-    
-    if (forma) {
-      setValue('forma_pagamento_id', forma.id);
-    } else {
-      // Se não encontrar, tentar buscar novamente
+    // Buscar formas se ainda não foram carregadas
+    if (formasPagamento.length === 0) {
       await carregarFormasPagamento();
-      // Aguardar um pouco e tentar novamente
-      setTimeout(() => {
-        const formaEncontrada = formasPagamento.find(fp => 
+    }
+    
+    // Aguardar um pouco para garantir que o estado foi atualizado e buscar novamente
+    const buscarForma = async () => {
+      const response = await FormasPagamentoService.buscarAtivas();
+      if (response.success && response.data) {
+        const items = Array.isArray(response.data) ? response.data : response.data.items || [];
+        const forma = items.find(fp => 
           fp.nome && fp.nome.toLowerCase().trim() === nome.toLowerCase().trim()
         );
-        if (formaEncontrada) {
-          setValue('forma_pagamento_id', formaEncontrada.id);
+        if (forma) {
+          setValue('forma_pagamento_id', forma.id);
         }
-      }, 500);
-    }
+      }
+    };
+    
+    // Tentar buscar imediatamente
+    await buscarForma();
+    
+    // Se não encontrou, aguardar um pouco e tentar novamente
+    setTimeout(async () => {
+      await buscarForma();
+    }, 500);
   };
 
   const buscarIdPrazoPagamentoPorNome = async (nome) => {
-    if (!nome || !prazosPagamento.length) return;
+    if (!nome) return;
     
-    const prazo = prazosPagamento.find(pp => 
-      pp.nome && pp.nome.toLowerCase().trim() === nome.toLowerCase().trim()
-    );
-    
-    if (prazo) {
-      setValue('prazo_pagamento_id', prazo.id);
-    } else {
-      // Se não encontrar, tentar buscar novamente
+    // Buscar prazos se ainda não foram carregados
+    if (prazosPagamento.length === 0) {
       await carregarPrazosPagamento();
-      // Aguardar um pouco e tentar novamente
-      setTimeout(() => {
-        const prazoEncontrado = prazosPagamento.find(pp => 
+    }
+    
+    // Aguardar um pouco para garantir que o estado foi atualizado e buscar novamente
+    const buscarPrazo = async () => {
+      const response = await PrazosPagamentoService.buscarAtivos();
+      if (response.success && response.data) {
+        const items = Array.isArray(response.data) ? response.data : response.data.items || [];
+        const prazo = items.find(pp => 
           pp.nome && pp.nome.toLowerCase().trim() === nome.toLowerCase().trim()
         );
-        if (prazoEncontrado) {
-          setValue('prazo_pagamento_id', prazoEncontrado.id);
+        if (prazo) {
+          setValue('prazo_pagamento_id', prazo.id);
         }
-      }, 500);
-    }
+      }
+    };
+    
+    // Tentar buscar imediatamente
+    await buscarPrazo();
+    
+    // Se não encontrou, aguardar um pouco e tentar novamente
+    setTimeout(async () => {
+      await buscarPrazo();
+    }, 500);
   };
 
   const carregarPrazosPagamento = async () => {
