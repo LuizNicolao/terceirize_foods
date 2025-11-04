@@ -63,20 +63,26 @@ const solicitacoesComprasValidations = {
       .isIn(['Compra Emergencial', 'Compra Programada'])
       .withMessage('Motivo deve ser "Compra Emergencial" ou "Compra Programada"'),
     body('observacoes')
+      .optional({ nullable: true, checkFalsy: true })
       .custom((value, { req }) => {
         // Se motivo for "Compra Emergencial", observações são obrigatórias
         if (req.body.motivo && req.body.motivo === 'Compra Emergencial') {
-          if (!value || value.trim() === '') {
+          if (value === null || value === undefined || value === '' || (typeof value === 'string' && value.trim() === '')) {
             throw new Error('Observações são obrigatórias para Compra Emergencial');
           }
         }
+        // Se o valor existir e não for vazio, validar formato
+        if (value !== null && value !== undefined && value !== '') {
+          if (typeof value !== 'string') {
+            throw new Error('Observações devem ser um texto válido');
+          }
+          const trimmed = value.trim();
+          if (trimmed.length > 1000) {
+            throw new Error('Observações devem ter no máximo 1000 caracteres');
+          }
+        }
         return true;
-      })
-      .optional()
-      .isString()
-      .trim()
-      .isLength({ max: 1000 })
-      .withMessage('Observações devem ter no máximo 1000 caracteres'),
+      }),
     body('itens')
       .isArray({ min: 1 })
       .withMessage('A solicitação deve ter pelo menos um item'),
@@ -129,11 +135,20 @@ const solicitacoesComprasValidations = {
         return typeof value === 'string' ? parseInt(value, 10) : Number(value);
       }),
     body('itens.*.observacao')
-      .optional()
-      .isString()
-      .trim()
-      .isLength({ max: 500 })
-      .withMessage('Observação do item deve ter no máximo 500 caracteres'),
+      .optional({ nullable: true, checkFalsy: true })
+      .custom((value) => {
+        // Se o valor existir, deve ser uma string válida
+        if (value !== null && value !== undefined && value !== '') {
+          if (typeof value !== 'string') {
+            throw new Error('Observação do item deve ser um texto');
+          }
+          const trimmed = value.trim();
+          if (trimmed.length > 500) {
+            throw new Error('Observação do item deve ter no máximo 500 caracteres');
+          }
+        }
+        return true;
+      }),
     handleValidationErrors
   ],
 
@@ -164,20 +179,26 @@ const solicitacoesComprasValidations = {
       .isIn(['Compra Emergencial', 'Compra Programada'])
       .withMessage('Motivo deve ser "Compra Emergencial" ou "Compra Programada"'),
     body('observacoes')
+      .optional({ nullable: true, checkFalsy: true })
       .custom((value, { req }) => {
         // Se motivo for "Compra Emergencial", observações são obrigatórias
         if (req.body.motivo && req.body.motivo === 'Compra Emergencial') {
-          if (!value || value.trim() === '') {
+          if (value === null || value === undefined || value === '' || (typeof value === 'string' && value.trim() === '')) {
             throw new Error('Observações são obrigatórias para Compra Emergencial');
           }
         }
+        // Se o valor existir e não for vazio, validar formato
+        if (value !== null && value !== undefined && value !== '') {
+          if (typeof value !== 'string') {
+            throw new Error('Observações devem ser um texto válido');
+          }
+          const trimmed = value.trim();
+          if (trimmed.length > 1000) {
+            throw new Error('Observações devem ter no máximo 1000 caracteres');
+          }
+        }
         return true;
-      })
-      .optional()
-      .isString()
-      .trim()
-      .isLength({ max: 1000 })
-      .withMessage('Observações devem ter no máximo 1000 caracteres'),
+      }),
     body('itens')
       .isArray({ min: 1 })
       .withMessage('A solicitação deve ter pelo menos um item'),
@@ -230,11 +251,20 @@ const solicitacoesComprasValidations = {
         return typeof value === 'string' ? parseInt(value, 10) : Number(value);
       }),
     body('itens.*.observacao')
-      .optional()
-      .isString()
-      .trim()
-      .isLength({ max: 500 })
-      .withMessage('Observação do item deve ter no máximo 500 caracteres'),
+      .optional({ nullable: true, checkFalsy: true })
+      .custom((value) => {
+        // Se o valor existir, deve ser uma string válida
+        if (value !== null && value !== undefined && value !== '') {
+          if (typeof value !== 'string') {
+            throw new Error('Observação do item deve ser um texto');
+          }
+          const trimmed = value.trim();
+          if (trimmed.length > 500) {
+            throw new Error('Observação do item deve ter no máximo 500 caracteres');
+          }
+        }
+        return true;
+      }),
     handleValidationErrors
   ]
 };

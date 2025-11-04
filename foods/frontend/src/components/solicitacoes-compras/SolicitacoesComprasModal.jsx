@@ -220,7 +220,7 @@ const SolicitacoesComprasModal = ({
         produto_id: produtoId,
         quantidade: quantidade,
         unidade_medida_id: unidadeMedidaId,
-        observacao: item.observacao || null // Observação do produto é opcional
+        observacao: item.observacao && item.observacao.trim() !== '' ? item.observacao.trim() : null // Observação do produto é opcional
       });
     }
 
@@ -228,7 +228,7 @@ const SolicitacoesComprasModal = ({
       filial_id: filialId,
       data_entrega_cd: data.data_entrega_cd,
       motivo: data.motivo,
-      observacoes: data.observacoes || null,
+      observacoes: data.observacoes && data.observacoes.trim() !== '' ? data.observacoes.trim() : null,
       itens: itensFormatados
     };
 
