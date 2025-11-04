@@ -44,16 +44,18 @@ const solicitacoesComprasValidations = {
       .notEmpty()
       .withMessage('Filial é obrigatória')
       .custom((value) => {
-        if (value === null || value === undefined || value === '') {
+        if (value === null || value === undefined || value === '' || value === 0) {
           throw new Error('Filial é obrigatória');
         }
-        const num = typeof value === 'string' ? parseInt(value, 10) : value;
+        const num = typeof value === 'string' ? parseInt(value, 10) : Number(value);
         if (isNaN(num) || num < 1) {
           throw new Error('Filial deve ser um ID válido');
         }
         return true;
       })
-      .toInt(),
+      .customSanitizer((value) => {
+        return typeof value === 'string' ? parseInt(value, 10) : Number(value);
+      }),
     body('data_entrega_cd')
       .isISO8601()
       .withMessage('Data de entrega CD deve ser uma data válida (formato ISO)'),
@@ -82,44 +84,50 @@ const solicitacoesComprasValidations = {
       .notEmpty()
       .withMessage('Produto é obrigatório para cada item')
       .custom((value) => {
-        if (value === null || value === undefined || value === '') {
+        if (value === null || value === undefined || value === '' || value === 0) {
           throw new Error('Produto é obrigatório para cada item');
         }
-        const num = typeof value === 'string' ? parseInt(value, 10) : value;
+        const num = typeof value === 'string' ? parseInt(value, 10) : Number(value);
         if (isNaN(num) || num < 1) {
           throw new Error('Produto deve ter um ID válido');
         }
         return true;
       })
-      .toInt(),
+      .customSanitizer((value) => {
+        return typeof value === 'string' ? parseInt(value, 10) : Number(value);
+      }),
     body('itens.*.quantidade')
       .notEmpty()
       .withMessage('Quantidade é obrigatória para cada item')
       .custom((value) => {
-        if (value === null || value === undefined || value === '') {
+        if (value === null || value === undefined || value === '' || value === 0) {
           throw new Error('Quantidade é obrigatória para cada item');
         }
-        const num = typeof value === 'string' ? parseFloat(value) : value;
+        const num = typeof value === 'string' ? parseFloat(value) : Number(value);
         if (isNaN(num) || num <= 0) {
           throw new Error('Quantidade deve ser maior que zero');
         }
         return true;
       })
-      .toFloat(),
+      .customSanitizer((value) => {
+        return typeof value === 'string' ? parseFloat(value) : Number(value);
+      }),
     body('itens.*.unidade_medida_id')
       .notEmpty()
       .withMessage('Unidade é obrigatória para cada item')
       .custom((value) => {
-        if (value === null || value === undefined || value === '') {
+        if (value === null || value === undefined || value === '' || value === 0) {
           throw new Error('Unidade é obrigatória para cada item');
         }
-        const num = typeof value === 'string' ? parseInt(value, 10) : value;
+        const num = typeof value === 'string' ? parseInt(value, 10) : Number(value);
         if (isNaN(num) || num < 1) {
           throw new Error('Unidade deve ter um ID válido');
         }
         return true;
       })
-      .toInt(),
+      .customSanitizer((value) => {
+        return typeof value === 'string' ? parseInt(value, 10) : Number(value);
+      }),
     body('itens.*.observacao')
       .optional()
       .isString()
@@ -137,16 +145,18 @@ const solicitacoesComprasValidations = {
       .notEmpty()
       .withMessage('Filial é obrigatória')
       .custom((value) => {
-        if (value === null || value === undefined || value === '') {
+        if (value === null || value === undefined || value === '' || value === 0) {
           throw new Error('Filial é obrigatória');
         }
-        const num = typeof value === 'string' ? parseInt(value, 10) : value;
+        const num = typeof value === 'string' ? parseInt(value, 10) : Number(value);
         if (isNaN(num) || num < 1) {
           throw new Error('Filial deve ser um ID válido');
         }
         return true;
       })
-      .toInt(),
+      .customSanitizer((value) => {
+        return typeof value === 'string' ? parseInt(value, 10) : Number(value);
+      }),
     body('data_entrega_cd')
       .isISO8601()
       .withMessage('Data de entrega CD deve ser uma data válida (formato ISO)'),
@@ -175,44 +185,50 @@ const solicitacoesComprasValidations = {
       .notEmpty()
       .withMessage('Produto é obrigatório para cada item')
       .custom((value) => {
-        if (value === null || value === undefined || value === '') {
+        if (value === null || value === undefined || value === '' || value === 0) {
           throw new Error('Produto é obrigatório para cada item');
         }
-        const num = typeof value === 'string' ? parseInt(value, 10) : value;
+        const num = typeof value === 'string' ? parseInt(value, 10) : Number(value);
         if (isNaN(num) || num < 1) {
           throw new Error('Produto deve ter um ID válido');
         }
         return true;
       })
-      .toInt(),
+      .customSanitizer((value) => {
+        return typeof value === 'string' ? parseInt(value, 10) : Number(value);
+      }),
     body('itens.*.quantidade')
       .notEmpty()
       .withMessage('Quantidade é obrigatória para cada item')
       .custom((value) => {
-        if (value === null || value === undefined || value === '') {
+        if (value === null || value === undefined || value === '' || value === 0) {
           throw new Error('Quantidade é obrigatória para cada item');
         }
-        const num = typeof value === 'string' ? parseFloat(value) : value;
+        const num = typeof value === 'string' ? parseFloat(value) : Number(value);
         if (isNaN(num) || num <= 0) {
           throw new Error('Quantidade deve ser maior que zero');
         }
         return true;
       })
-      .toFloat(),
+      .customSanitizer((value) => {
+        return typeof value === 'string' ? parseFloat(value) : Number(value);
+      }),
     body('itens.*.unidade_medida_id')
       .notEmpty()
       .withMessage('Unidade é obrigatória para cada item')
       .custom((value) => {
-        if (value === null || value === undefined || value === '') {
+        if (value === null || value === undefined || value === '' || value === 0) {
           throw new Error('Unidade é obrigatória para cada item');
         }
-        const num = typeof value === 'string' ? parseInt(value, 10) : value;
+        const num = typeof value === 'string' ? parseInt(value, 10) : Number(value);
         if (isNaN(num) || num < 1) {
           throw new Error('Unidade deve ter um ID válido');
         }
         return true;
       })
-      .toInt(),
+      .customSanitizer((value) => {
+        return typeof value === 'string' ? parseInt(value, 10) : Number(value);
+      }),
     body('itens.*.observacao')
       .optional()
       .isString()

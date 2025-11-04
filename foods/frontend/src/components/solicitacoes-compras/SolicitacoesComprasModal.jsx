@@ -189,17 +189,47 @@ const SolicitacoesComprasModal = ({
     }
 
     // Preparar dados para envio
+    const filialId = parseInt(data.filial_id);
+    if (isNaN(filialId) || filialId < 1) {
+      toast.error('Filial inválida');
+      return;
+    }
+
+    // Validar e mapear itens
+    const itensFormatados = [];
+    for (let i = 0; i < itens.length; i++) {
+      const item = itens[i];
+      const produtoId = parseInt(item.produto_id);
+      const quantidade = parseFloat(item.quantidade);
+      const unidadeMedidaId = parseInt(item.unidade_medida_id);
+
+      if (isNaN(produtoId) || produtoId < 1) {
+        toast.error(`Item ${i + 1}: Produto inválido`);
+        return;
+      }
+      if (isNaN(quantidade) || quantidade <= 0) {
+        toast.error(`Item ${i + 1}: Quantidade inválida`);
+        return;
+      }
+      if (isNaN(unidadeMedidaId) || unidadeMedidaId < 1) {
+        toast.error(`Item ${i + 1}: Unidade inválida`);
+        return;
+      }
+
+      itensFormatados.push({
+        produto_id: produtoId,
+        quantidade: quantidade,
+        unidade_medida_id: unidadeMedidaId,
+        observacao: item.observacao || null // Observação do produto é opcional
+      });
+    }
+
     const formData = {
-      filial_id: parseInt(data.filial_id),
+      filial_id: filialId,
       data_entrega_cd: data.data_entrega_cd,
       motivo: data.motivo,
       observacoes: data.observacoes || null,
-      itens: itens.map(item => ({
-        produto_id: parseInt(item.produto_id),
-        quantidade: parseFloat(item.quantidade),
-        unidade_medida_id: parseInt(item.unidade_medida_id),
-        observacao: item.observacao || null // Observação do produto é opcional
-      }))
+      itens: itensFormatados
     };
 
     onSubmit(formData);
