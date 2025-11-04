@@ -307,7 +307,7 @@ const RelatorioInspecaoModal = ({ isOpen, onClose, onSubmit, rir, viewMode, grup
                   required: 'Fornecedor é obrigatório'
                 })}
                 error={errors.fornecedor?.message}
-                disabled={isViewMode}
+                disabled={true}
                 placeholder="Razão Social do fornecedor"
               />
 
@@ -316,7 +316,7 @@ const RelatorioInspecaoModal = ({ isOpen, onClose, onSubmit, rir, viewMode, grup
                 label="CNPJ Fornecedor"
                 {...register('cnpj_fornecedor')}
                 error={errors.cnpj_fornecedor?.message}
-                disabled={isViewMode}
+                disabled={true}
                 placeholder="00.000.000/0000-00"
               />
 
