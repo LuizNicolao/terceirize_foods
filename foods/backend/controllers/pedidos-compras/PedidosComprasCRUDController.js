@@ -490,7 +490,13 @@ class PedidosComprasCRUDController {
       );
     }
 
-    // Excluir pedido (itens serão deletados automaticamente via CASCADE)
+    // Excluir itens do pedido primeiro (garantir exclusão mesmo se CASCADE não estiver configurado)
+    await executeQuery(
+      'DELETE FROM pedido_compras_itens WHERE pedido_id = ?',
+      [id]
+    );
+
+    // Excluir pedido
     await executeQuery(
       'DELETE FROM pedidos_compras WHERE id = ?',
       [id]
@@ -505,8 +511,36 @@ class PedidosComprasCRUDController {
   static async buscarPedidoCompleto(pedidoId) {
     const pedidos = await executeQuery(
       `SELECT 
-        p.*,
-        s.numero_solicitacao,
+        p.id,
+        p.numero_pedido,
+        p.solicitacao_compras_id,
+        p.fornecedor_id,
+        p.fornecedor_nome,
+        p.fornecedor_cnpj,
+        p.filial_id,
+        p.filial_nome,
+        p.filial_faturamento_id,
+        p.filial_cobranca_id,
+        p.filial_entrega_id,
+        p.endereco_faturamento,
+        p.endereco_cobranca,
+        p.endereco_entrega,
+        p.cnpj_faturamento,
+        p.cnpj_cobranca,
+        p.cnpj_entrega,
+        p.data_entrega_cd,
+        p.semana_abastecimento,
+        p.valor_total,
+        p.status,
+        p.observacoes,
+        p.forma_pagamento,
+        p.prazo_pagamento,
+        p.justificativa,
+        p.numero_solicitacao,
+        p.criado_por,
+        p.criado_em,
+        p.atualizado_em,
+        s.numero_solicitacao as solicitacao_numero,
         s.justificativa as solicitacao_justificativa,
         u.nome as criado_por_nome,
         DATE_FORMAT(p.criado_em, '%d/%m/%Y %H:%i') as data_criacao,
@@ -525,14 +559,30 @@ class PedidosComprasCRUDController {
 
     const pedido = pedidos[0];
 
-    // Buscar itens
+    // Buscar itens com todos os campos
     const itens = await executeQuery(
       `SELECT 
-        pci.*,
+        pci.id,
+        pci.pedido_id,
+        pci.solicitacao_item_id,
+        pci.produto_generico_id,
+        pci.codigo_produto,
+        pci.nome_produto,
+        pci.unidade_medida_id,
+        pci.unidade_medida,
+        pci.quantidade_solicitada,
+        pci.quantidade_pedido,
+        pci.valor_unitario,
+        pci.valor_total,
+        pci.observacao,
+        pci.criado_em,
         pg.nome as produto_generico_nome,
-        pg.codigo as produto_generico_codigo
+        pg.codigo as produto_generico_codigo,
+        um.sigla as unidade_sigla,
+        um.nome as unidade_nome
       FROM pedido_compras_itens pci
       LEFT JOIN produto_generico pg ON pci.produto_generico_id = pg.id
+      LEFT JOIN unidades_medida um ON pci.unidade_medida_id = um.id
       WHERE pci.pedido_id = ?
       ORDER BY pci.id`,
       [pedidoId]
