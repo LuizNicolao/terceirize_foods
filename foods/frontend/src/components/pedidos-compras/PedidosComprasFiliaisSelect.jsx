@@ -22,7 +22,7 @@ const PedidosComprasFiliaisSelect = ({
     }
   };
 
-  const isReadonly = false; // Todas as filiais podem ser selecionadas
+  const isReadonly = tipo === 'faturamento'; // Faturamento é readonly (mostra apenas o nome da filial)
 
   return (
     <div className="bg-gray-50 rounded-lg border border-gray-200 p-4">
@@ -49,6 +49,21 @@ const PedidosComprasFiliaisSelect = ({
             placeholder="Selecione uma filial"
             error={error}
           />
+        </div>
+      )}
+
+      {/* Nome da Filial (readonly para faturamento) */}
+      {isReadonly && filialSelecionada && (
+        <div className="mb-3">
+          <label className="block text-xs font-medium text-gray-600 mb-1">
+            Filial
+          </label>
+          <div className="text-sm text-gray-900 font-medium bg-gray-50 px-3 py-2 rounded-lg border border-gray-200">
+            {(() => {
+              const filial = filiais.find(f => f.id?.toString() === filialSelecionada?.toString());
+              return filial ? `${filial.filial || filial.nome || 'Filial'} ${filial.codigo_filial ? `(${filial.codigo_filial})` : ''}` : '-';
+            })()}
+          </div>
         </div>
       )}
 
