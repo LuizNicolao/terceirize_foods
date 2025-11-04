@@ -133,11 +133,18 @@ const SolicitacoesComprasTable = ({
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <ActionButtons
-                        onView={canView && onView ? () => onView(solicitacao.id) : null}
-                        onEdit={canEdit && onEdit && solicitacao.status === 'em_digitacao' ? () => onEdit(solicitacao.id) : null}
-                        onDelete={canDelete && onDelete && solicitacao.status === 'em_digitacao' ? () => onDelete(solicitacao) : null}
-                      />
+                      <div className="flex justify-end">
+                        <ActionButtons
+                          canView={canView}
+                          canEdit={canEdit && solicitacao.status === 'em_digitacao'}
+                          canDelete={canDelete && solicitacao.status === 'em_digitacao'}
+                          onView={onView ? () => onView(solicitacao.id) : null}
+                          onEdit={onEdit && solicitacao.status === 'em_digitacao' ? () => onEdit(solicitacao.id) : null}
+                          onDelete={onDelete && solicitacao.status === 'em_digitacao' ? () => onDelete(solicitacao) : null}
+                          item={solicitacao}
+                          size="xs"
+                        />
+                      </div>
                     </td>
                   </tr>
                 );
@@ -184,34 +191,17 @@ const SolicitacoesComprasTable = ({
                 </div>
               </div>
 
-              <div className="mt-4 flex justify-end gap-2">
-                {canView && onView && (
-                  <button
-                    onClick={() => onView(solicitacao.id)}
-                    className="text-blue-600 hover:text-blue-900 p-2 rounded transition-colors"
-                    title="Visualizar"
-                  >
-                    <FaEye className="w-4 h-4" />
-                  </button>
-                )}
-                {canEdit && onEdit && solicitacao.status === 'em_digitacao' && (
-                  <button
-                    onClick={() => onEdit(solicitacao.id)}
-                    className="text-yellow-600 hover:text-yellow-900 p-2 rounded transition-colors"
-                    title="Editar"
-                  >
-                    <FaEdit className="w-4 h-4" />
-                  </button>
-                )}
-                {canDelete && onDelete && solicitacao.status === 'em_digitacao' && (
-                  <button
-                    onClick={() => onDelete(solicitacao)}
-                    className="text-red-600 hover:text-red-900 p-2 rounded transition-colors"
-                    title="Excluir"
-                  >
-                    <FaTrash className="w-4 h-4" />
-                  </button>
-                )}
+              <div className="mt-4">
+                <ActionButtons
+                  canView={canView}
+                  canEdit={canEdit && solicitacao.status === 'em_digitacao'}
+                  canDelete={canDelete && solicitacao.status === 'em_digitacao'}
+                  onView={onView ? () => onView(solicitacao.id) : null}
+                  onEdit={onEdit && solicitacao.status === 'em_digitacao' ? () => onEdit(solicitacao.id) : null}
+                  onDelete={onDelete && solicitacao.status === 'em_digitacao' ? () => onDelete(solicitacao) : null}
+                  item={solicitacao}
+                  size="sm"
+                />
               </div>
             </div>
           );
