@@ -34,6 +34,10 @@ export const useSolicitacoesCompras = () => {
   // Estados locais
   const [loading, setLoading] = useState(false);
   
+  // Estados de seleção em lote
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [loadingPrint, setLoadingPrint] = useState(false);
+  
   // Dados auxiliares
   const [filiais, setFiliais] = useState([]);
   const [produtosGenericos, setProdutosGenericos] = useState([]);
@@ -233,6 +237,54 @@ export const useSolicitacoesCompras = () => {
     return statusMap[status] || { label: status || 'Desconhecido', color: 'bg-gray-100 text-gray-800' };
   }, []);
 
+  /**
+   * Seleção de itens
+   */
+  const handleSelectAll = useCallback((checked) => {
+    if (checked) {
+      setSelectedIds(baseEntity.items.map(item => item.id));
+    } else {
+      setSelectedIds([]);
+    }
+  }, [baseEntity.items]);
+
+  const handleSelectItem = useCallback((id, checked) => {
+    if (checked) {
+      setSelectedIds(prev => [...prev, id]);
+    } else {
+      setSelectedIds(prev => prev.filter(itemId => itemId !== id));
+    }
+  }, []);
+
+  /**
+   * Imprimir solicitações selecionadas
+   */
+  const handleImprimirLote = useCallback(async () => {
+    if (selectedIds.length === 0) return;
+    
+    setLoadingPrint(true);
+    try {
+      // Gerar PDF para cada solicitação selecionada
+      for (const id of selectedIds) {
+        const response = await SolicitacoesComprasService.gerarPDF(id);
+        if (response) {
+          // Abrir PDF em nova aba
+          const blob = new Blob([response], { type: 'application/pdf' });
+          const url = window.URL.createObjectURL(blob);
+          window.open(url, '_blank');
+          window.URL.revokeObjectURL(url);
+        }
+      }
+      toast.success(`${selectedIds.length} solicitação(ões) impressa(s) com sucesso!`);
+      setSelectedIds([]);
+    } catch (error) {
+      console.error('Erro ao imprimir solicitações:', error);
+      toast.error('Erro ao gerar PDF das solicitações');
+    } finally {
+      setLoadingPrint(false);
+    }
+  }, [selectedIds]);
+
   return {
     // Estados principais
     solicitacoes: baseEntity.items,
@@ -311,7 +363,14 @@ export const useSolicitacoesCompras = () => {
     getProdutoName,
     getUnidadeMedidaName,
     getUnidadeMedidaSimbolo,
-    getStatusLabel
+    getStatusLabel,
+    
+    // Seleção e ações em lote
+    selectedIds,
+    handleSelectAll,
+    handleSelectItem,
+    handleImprimirLote,
+    loadingPrint
   };
 };
 

@@ -239,6 +239,18 @@ class SolicitacoesComprasService {
       };
     }
   }
+
+  async gerarPDF(id) {
+    try {
+      const response = await api.get(`/solicitacoes-compras/${id}/pdf`, {
+        responseType: 'blob'
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao gerar PDF:', error);
+      throw error;
+    }
+  }
 }
 
 export default new SolicitacoesComprasService();

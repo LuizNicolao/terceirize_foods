@@ -7,6 +7,7 @@ const SolicitacoesComprasListController = require('./SolicitacoesComprasListCont
 const SolicitacoesComprasCRUDController = require('./SolicitacoesComprasCRUDController');
 const SolicitacoesComprasStatusController = require('./SolicitacoesComprasStatusController');
 const SolicitacoesComprasIntegrationsController = require('./SolicitacoesComprasIntegrationsController');
+const SolicitacoesComprasPDFController = require('./SolicitacoesComprasPDFController');
 
 module.exports = {
   // Métodos de Listagem
@@ -23,6 +24,9 @@ module.exports = {
   recalcularTodosStatus: SolicitacoesComprasStatusController.recalcularTodosStatus,
   
   // Métodos de Integração
-  buscarSemanaAbastecimento: SolicitacoesComprasIntegrationsController.buscarSemanaAbastecimento
+  buscarSemanaAbastecimento: SolicitacoesComprasIntegrationsController.buscarSemanaAbastecimento,
+  
+  // Métodos de PDF
+  gerarPDF: SolicitacoesComprasPDFController.gerarPDF
 };
 

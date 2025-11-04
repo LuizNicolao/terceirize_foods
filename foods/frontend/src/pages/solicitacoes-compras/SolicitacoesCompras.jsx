@@ -59,7 +59,12 @@ const SolicitacoesCompras = () => {
     setDataInicioFilter,
     setDataFimFilter,
     getFilialName,
-    getStatusLabel
+    getStatusLabel,
+    selectedIds,
+    handleSelectAll,
+    handleSelectItem,
+    handleImprimirLote,
+    loadingPrint
   } = useSolicitacoesCompras();
 
   const {
@@ -187,6 +192,11 @@ const SolicitacoesCompras = () => {
         canDelete={canDelete('solicitacoes_compras')}
         getFilialName={getFilialName}
         getStatusLabel={getStatusLabel}
+        selectedIds={selectedIds}
+        onSelectAll={handleSelectAll}
+        onSelectItem={handleSelectItem}
+        onImprimirLote={handleImprimirLote}
+        loadingPrint={loadingPrint}
       />
 
       {/* Paginação - sempre mostrar para permitir mudança de itens por página */}

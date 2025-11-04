@@ -33,6 +33,13 @@ router.get('/',
   SolicitacoesComprasController.listarSolicitacoes
 );
 
+// GET /api/solicitacoes-compras/:id/pdf - Gerar PDF da solicitação (deve vir antes de /:id)
+router.get('/:id/pdf',
+  checkPermission('visualizar'),
+  commonValidations.id,
+  SolicitacoesComprasController.gerarPDF
+);
+
 // GET /api/solicitacoes-compras/:id - Buscar solicitação por ID
 router.get('/:id',
   checkPermission('visualizar'),
