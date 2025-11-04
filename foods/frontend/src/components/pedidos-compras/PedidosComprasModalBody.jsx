@@ -5,6 +5,7 @@ import PedidosComprasDadosSolicitacao from './PedidosComprasDadosSolicitacao';
 import PedidosComprasFornecedorSection from './PedidosComprasFornecedorSection';
 import PedidosComprasPagamentoSection from './PedidosComprasPagamentoSection';
 import PedidosComprasSolicitacaoSelect from './PedidosComprasSolicitacaoSelect';
+import PedidosComprasItensDisponiveis from './PedidosComprasItensDisponiveis';
 
 const PedidosComprasModalBody = ({
   // Form
@@ -34,6 +35,11 @@ const PedidosComprasModalBody = ({
   // Handlers
   handleItemChange,
   handleRemoveItem,
+  handleAdicionarItem,
+  
+  // Itens disponíveis para adicionar
+  itensDisponiveisParaAdicionar,
+  loadingItensDisponiveis,
   
   // Props
   pedidoCompras,
@@ -174,6 +180,23 @@ const PedidosComprasModalBody = ({
           />
         )}
       </div>
+
+      {/* Itens Disponíveis para Adicionar (apenas durante edição) */}
+      {pedidoCompras && !isViewMode && solicitacaoSelecionada && (
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Produtos Disponíveis da Solicitação
+          </h3>
+          <p className="text-sm text-gray-600 mb-4">
+            Produtos da solicitação que ainda não foram adicionados a este pedido.
+          </p>
+          <PedidosComprasItensDisponiveis
+            itens={itensDisponiveisParaAdicionar}
+            onAdicionarItem={handleAdicionarItem}
+            loading={loadingItensDisponiveis}
+          />
+        </div>
+      )}
 
       {/* Observações */}
       <div>

@@ -13,6 +13,7 @@ module.exports = {
   buscarPedidoComprasPorId: PedidosComprasListController.buscarPedidoComprasPorId,
   buscarSolicitacoesDisponiveis: PedidosComprasListController.buscarSolicitacoesDisponiveis,
   buscarItensSolicitacao: PedidosComprasListController.buscarItensSolicitacao,
+  buscarItensDisponiveis: PedidosComprasListController.buscarItensDisponiveis,
   buscarDadosFilial: PedidosComprasListController.buscarDadosFilial,
   
   // Métodos CRUD

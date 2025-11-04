@@ -39,7 +39,10 @@ const PedidosComprasModal = ({
     setFornecedorSearchTerm,
     setFornecedores,
     handleItemChange,
-    handleRemoveItem
+    handleRemoveItem,
+    handleAdicionarItem,
+    itensDisponiveisParaAdicionar,
+    loadingItensDisponiveis
   } = usePedidosComprasModal({ pedidoCompras, isOpen, solicitacoesDisponiveis });
 
   const handleFormSubmit = async (data) => {
@@ -73,7 +76,11 @@ const PedidosComprasModal = ({
         filial_cobranca_id: data.filial_cobranca_id || null,
         filial_entrega_id: data.filial_entrega_id || null,
         itens: pedidoCompras 
-          ? (pedidoCompras.itens || [])
+          ? itensSelecionados.map(item => ({
+              solicitacao_item_id: item.id,
+              quantidade_pedido: parseFloat(item.quantidade_pedido || 0),
+              valor_unitario: parseFloat(item.valor_unitario || 0)
+            }))
           : itensSelecionados.map(item => ({
               solicitacao_item_id: item.id,
               quantidade_pedido: parseFloat(item.quantidade_pedido || 0),
@@ -127,6 +134,9 @@ const PedidosComprasModal = ({
           setFornecedores={setFornecedores}
           handleItemChange={handleItemChange}
           handleRemoveItem={handleRemoveItem}
+          handleAdicionarItem={handleAdicionarItem}
+          itensDisponiveisParaAdicionar={itensDisponiveisParaAdicionar}
+          loadingItensDisponiveis={loadingItensDisponiveis}
           pedidoCompras={pedidoCompras}
           isViewMode={isViewMode}
           solicitacoesDisponiveis={solicitacoesDisponiveis}

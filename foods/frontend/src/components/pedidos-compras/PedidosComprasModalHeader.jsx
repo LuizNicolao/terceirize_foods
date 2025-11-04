@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaTimes, FaEye, FaEdit, FaPlus } from 'react-icons/fa';
+import { FaTimes, FaEye, FaEdit, FaPlus, FaPrint } from 'react-icons/fa';
 import { Button } from '../ui';
 
 const PedidosComprasModalHeader = ({ 
@@ -8,6 +8,10 @@ const PedidosComprasModalHeader = ({
   saving, 
   onClose 
 }) => {
+  const handlePrint = () => {
+    window.print();
+  };
+
   return (
     <div className="flex justify-between items-center p-6 border-b border-gray-200 bg-gradient-to-r from-green-50 to-blue-50">
       <div className="flex items-center gap-3">
@@ -37,15 +41,28 @@ const PedidosComprasModalHeader = ({
           </p>
         </div>
       </div>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={onClose}
-        className="p-2"
-        disabled={saving}
-      >
-        <FaTimes className="w-5 h-5" />
-      </Button>
+      <div className="flex items-center gap-2">
+        {isViewMode && pedidoCompras && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handlePrint}
+            className="flex items-center gap-2"
+          >
+            <FaPrint className="w-4 h-4" />
+            <span className="hidden sm:inline">Imprimir</span>
+          </Button>
+        )}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onClose}
+          className="p-2"
+          disabled={saving}
+        >
+          <FaTimes className="w-5 h-5" />
+        </Button>
+      </div>
     </div>
   );
 };

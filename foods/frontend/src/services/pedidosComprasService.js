@@ -170,6 +170,32 @@ class PedidosComprasService {
       };
     }
   }
+
+  static async buscarItensDisponiveis(solicitacaoId, pedidoId) {
+    try {
+      const response = await api.get(`/pedidos-compras/itens-disponiveis/${solicitacaoId}/${pedidoId}`);
+      
+      // Extrair dados da estrutura HATEOAS
+      let itens = [];
+      
+      if (response.data.data) {
+        itens = response.data.data;
+      } else if (response.data) {
+        itens = response.data;
+      }
+      
+      return {
+        success: true,
+        data: itens
+      };
+    } catch (error) {
+      console.error('Erro ao buscar itens disponíveis:', error);
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Erro ao buscar itens disponíveis'
+      };
+    }
+  }
 }
 
 export default PedidosComprasService;

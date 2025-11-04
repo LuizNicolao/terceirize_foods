@@ -19,6 +19,8 @@ export const usePedidosComprasModal = ({ pedidoCompras, isOpen, solicitacoesDisp
   const [solicitacaoSelecionada, setSolicitacaoSelecionada] = useState(null);
   const [itensDisponiveis, setItensDisponiveis] = useState([]);
   const [itensSelecionados, setItensSelecionados] = useState([]);
+  const [itensDisponiveisParaAdicionar, setItensDisponiveisParaAdicionar] = useState([]);
+  const [loadingItensDisponiveis, setLoadingItensDisponiveis] = useState(false);
   const [dadosFilial, setDadosFilial] = useState(null);
   const [formasPagamento, setFormasPagamento] = useState([]);
   const [prazosPagamento, setPrazosPagamento] = useState([]);
@@ -334,6 +336,50 @@ export const usePedidosComprasModal = ({ pedidoCompras, isOpen, solicitacoesDisp
     setItensSelecionados(newItens.filter(item => item.selected && parseFloat(item.quantidade_pedido || 0) > 0));
   }, [itensDisponiveis]);
 
+  // Carregar itens disponíveis para adicionar (apenas durante edição)
+  const carregarItensDisponiveisParaAdicionar = useCallback(async (solicitacaoId, pedidoId) => {
+    if (!solicitacaoId || !pedidoId) {
+      setItensDisponiveisParaAdicionar([]);
+      return;
+    }
+
+    setLoadingItensDisponiveis(true);
+    try {
+      const response = await PedidosComprasService.buscarItensDisponiveis(solicitacaoId, pedidoId);
+      
+      if (response.success && response.data) {
+        setItensDisponiveisParaAdicionar(response.data);
+      } else {
+        setItensDisponiveisParaAdicionar([]);
+        toast.error(response.error || 'Erro ao carregar itens disponíveis');
+      }
+    } catch (error) {
+      console.error('Erro ao carregar itens disponíveis:', error);
+      setItensDisponiveisParaAdicionar([]);
+      toast.error('Erro ao carregar itens disponíveis');
+    } finally {
+      setLoadingItensDisponiveis(false);
+    }
+  }, []);
+
+  // Adicionar item ao pedido
+  const handleAdicionarItem = useCallback((novoItem) => {
+    // Adicionar ao array de itens disponíveis
+    const novosItensDisponiveis = [...itensDisponiveis, novoItem];
+    setItensDisponiveis(novosItensDisponiveis);
+    
+    // Adicionar aos itens selecionados
+    const novosItensSelecionados = [...itensSelecionados, novoItem];
+    setItensSelecionados(novosItensSelecionados);
+    
+    // Remover dos itens disponíveis para adicionar
+    setItensDisponiveisParaAdicionar(prev => 
+      prev.filter(item => item.id !== novoItem.id)
+    );
+    
+    toast.success('Item adicionado ao pedido!');
+  }, [itensDisponiveis, itensSelecionados]);
+
   // Efeitos
   useEffect(() => {
     if (isOpen) {
@@ -478,6 +524,8 @@ export const usePedidosComprasModal = ({ pedidoCompras, isOpen, solicitacoesDisp
         // Carregar itens - sempre tentar carregar da solicitação primeiro
         if (pedidoCompras.solicitacao_compras_id) {
           await carregarItensSolicitacao(pedidoCompras.solicitacao_compras_id, pedidoCompras);
+          // Carregar itens disponíveis para adicionar (apenas durante edição)
+          await carregarItensDisponiveisParaAdicionar(pedidoCompras.solicitacao_compras_id, pedidoCompras.id);
         } else if (pedidoCompras.itens && Array.isArray(pedidoCompras.itens) && pedidoCompras.itens.length > 0) {
           // Se não tem solicitação mas tem itens, usar itens diretamente
           const itensComSelected = pedidoCompras.itens.map(item => ({
@@ -515,6 +563,7 @@ export const usePedidosComprasModal = ({ pedidoCompras, isOpen, solicitacoesDisp
       reset();
       setItensDisponiveis([]);
       setItensSelecionados([]);
+      setItensDisponiveisParaAdicionar([]);
       setDadosFilial(null);
       setDadosFilialFaturamento(null);
       setDadosFilialCobranca(null);
@@ -529,13 +578,14 @@ export const usePedidosComprasModal = ({ pedidoCompras, isOpen, solicitacoesDisp
       setValue('filial_cobranca_id', '');
       setValue('filial_entrega_id', '');
     }
-  }, [pedidoCompras, isOpen, setValue, reset, buscarFornecedorPorId, carregarItensSolicitacao, carregarDadosFilialEspecifica, buscarIdFormaPagamentoPorNome, buscarIdPrazoPagamentoPorNome, formasPagamento.length, prazosPagamento.length, carregarFormasPagamento, carregarPrazosPagamento]);
+  }, [pedidoCompras, isOpen, setValue, reset, buscarFornecedorPorId, carregarItensSolicitacao, carregarDadosFilialEspecifica, buscarIdFormaPagamentoPorNome, buscarIdPrazoPagamentoPorNome, formasPagamento.length, prazosPagamento.length, carregarFormasPagamento, carregarPrazosPagamento, carregarItensDisponiveisParaAdicionar]);
 
   useEffect(() => {
     if (!isOpen) {
       reset();
       setItensDisponiveis([]);
       setItensSelecionados([]);
+      setItensDisponiveisParaAdicionar([]);
       setDadosFilial(null);
       setDadosFilialFaturamento(null);
       setDadosFilialCobranca(null);
@@ -585,6 +635,11 @@ export const usePedidosComprasModal = ({ pedidoCompras, isOpen, solicitacoesDisp
     // Handlers
     handleItemChange,
     handleRemoveItem,
+    handleAdicionarItem,
+    
+    // Itens disponíveis para adicionar (apenas durante edição)
+    itensDisponiveisParaAdicionar,
+    loadingItensDisponiveis,
     
     // Valores observados
     solicitacaoId,

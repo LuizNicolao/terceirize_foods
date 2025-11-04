@@ -271,6 +271,65 @@ class PedidosComprasListController {
   });
 
   /**
+   * Buscar itens disponíveis da solicitação que ainda não foram adicionados ao pedido
+   * Endpoint: GET /api/pedidos-compras/itens-disponiveis/:solicitacao_id/:pedido_id
+   */
+  static buscarItensDisponiveis = asyncHandler(async (req, res) => {
+    const { solicitacao_id, pedido_id } = req.params;
+
+    // Buscar itens da solicitação que ainda não foram adicionados ao pedido
+    const itens = await executeQuery(
+      `SELECT 
+        sci.*,
+        pg.nome as produto_nome,
+        pg.codigo as codigo_produto,
+        um.sigla as unidade_simbolo,
+        um.nome as unidade_nome
+      FROM solicitacao_compras_itens sci
+      LEFT JOIN produto_generico pg ON sci.produto_id = pg.id
+      LEFT JOIN unidades_medida um ON sci.unidade_medida_id = um.id
+      WHERE sci.solicitacao_id = ?
+        AND sci.id NOT IN (
+          SELECT solicitacao_item_id 
+          FROM pedido_compras_itens 
+          WHERE pedido_id = ? AND solicitacao_item_id IS NOT NULL
+        )
+      ORDER BY sci.id`,
+      [solicitacao_id, pedido_id]
+    );
+
+    // Calcular saldo disponível para cada item
+    const itensComSaldo = await Promise.all(
+      itens.map(async (item) => {
+        // Buscar quantidades já utilizadas em pedidos
+        const vinculos = await executeQuery(
+          `SELECT 
+            pci.quantidade_pedido,
+            pc.numero_pedido,
+            pc.id as pedido_id
+          FROM pedido_compras_itens pci
+          INNER JOIN pedidos_compras pc ON pci.pedido_id = pc.id
+          WHERE pci.solicitacao_item_id = ?`,
+          [item.id]
+        );
+
+        const quantidade_utilizada = vinculos.reduce((sum, v) => sum + parseFloat(v.quantidade_pedido || 0), 0);
+        const quantidade_solicitada = parseFloat(item.quantidade || 0);
+        const saldo_disponivel = quantidade_solicitada - quantidade_utilizada;
+
+        return {
+          ...item,
+          quantidade_solicitada,
+          quantidade_utilizada,
+          saldo_disponivel: Math.max(0, saldo_disponivel)
+        };
+      })
+    );
+
+    return successResponse(res, itensComSaldo, 'Itens disponíveis encontrados com sucesso', STATUS_CODES.OK);
+  });
+
+  /**
    * Buscar itens da solicitação com saldo disponível
    * Endpoint: GET /api/pedidos-compras/itens-solicitacao/:id
    */

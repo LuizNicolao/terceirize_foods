@@ -46,6 +46,13 @@ router.get('/itens-solicitacao/:id',
   PedidosComprasController.buscarItensSolicitacao
 );
 
+// GET /api/pedidos-compras/itens-disponiveis/:solicitacao_id/:pedido_id - Buscar itens disponíveis que ainda não foram adicionados ao pedido
+router.get('/itens-disponiveis/:solicitacao_id/:pedido_id',
+  checkScreenPermission('pedidos-compras', 'visualizar'),
+  commonValidations.id,
+  PedidosComprasController.buscarItensDisponiveis
+);
+
 // GET /api/pedidos-compras/dados-filial/:id - Buscar dados completos da filial
 router.get('/dados-filial/:id',
   checkScreenPermission('pedidos-compras', 'visualizar'),
