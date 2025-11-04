@@ -67,7 +67,7 @@ const PedidosComprasFiliaisSelect = ({
             <span className="text-gray-600 font-medium">Endereço:</span>
             <p className="text-gray-900 mt-1">
               {dadosFilial.endereco_completo || 
-               `${dadosFilial.logradouro || ''} ${dadosFilial.numero || ''} ${dadosFilial.complemento || ''} ${dadosFilial.bairro || ''} ${dadosFilial.cidade || ''} ${dadosFilial.uf || ''} ${dadosFilial.cep ? `CEP: ${dadosFilial.cep}` : ''}`.trim() || '-'}
+               `${dadosFilial.logradouro || ''} ${dadosFilial.numero || ''} ${dadosFilial.bairro || ''} ${dadosFilial.cidade || ''} ${dadosFilial.estado || ''} ${dadosFilial.cep ? `CEP: ${dadosFilial.cep}` : ''}`.trim() || '-'}
             </p>
           </div>
           {dadosFilial.codigo_filial && (

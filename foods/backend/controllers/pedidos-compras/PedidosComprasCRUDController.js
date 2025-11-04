@@ -89,7 +89,7 @@ class PedidosComprasCRUDController {
       if (filialId) {
         const filial = await executeQuery(
           `SELECT id, filial, codigo_filial, cnpj, razao_social, 
-                  logradouro, numero, complemento, bairro, cidade, uf, cep
+                  logradouro, numero, bairro, cidade, estado, cep
            FROM filiais WHERE id = ?`,
           [filialId]
         );
@@ -100,7 +100,7 @@ class PedidosComprasCRUDController {
             nome: f.filial,
             cnpj: f.cnpj,
             razao_social: f.razao_social,
-            endereco: `${f.logradouro || ''}, ${f.numero || ''}${f.complemento ? ' - ' + f.complemento : ''}${f.bairro ? ' - ' + f.bairro : ''}${f.cidade ? ' - ' + f.cidade : ''}${f.uf ? '/' + f.uf : ''}${f.cep ? ' - CEP: ' + f.cep : ''}`.trim()
+            endereco: `${f.logradouro || ''}, ${f.numero || ''}${f.bairro ? ' - ' + f.bairro : ''}${f.cidade ? ' - ' + f.cidade : ''}${f.estado ? '/' + f.estado : ''}${f.cep ? ' - CEP: ' + f.cep : ''}`.trim()
           };
         }
       }
@@ -283,7 +283,7 @@ class PedidosComprasCRUDController {
         if (filialId) {
           const filial = await executeQuery(
             `SELECT id, filial, codigo_filial, cnpj, razao_social, 
-                    logradouro, numero, complemento, bairro, cidade, uf, cep
+                    logradouro, numero, bairro, cidade, estado, cep
              FROM filiais WHERE id = ?`,
             [filialId]
           );
@@ -294,7 +294,7 @@ class PedidosComprasCRUDController {
               nome: f.filial,
               cnpj: f.cnpj,
               razao_social: f.razao_social,
-              endereco: `${f.logradouro || ''}, ${f.numero || ''}${f.complemento ? ' - ' + f.complemento : ''}${f.bairro ? ' - ' + f.bairro : ''}${f.cidade ? ' - ' + f.cidade : ''}${f.uf ? '/' + f.uf : ''}${f.cep ? ' - CEP: ' + f.cep : ''}`.trim()
+              endereco: `${f.logradouro || ''}, ${f.numero || ''}${f.bairro ? ' - ' + f.bairro : ''}${f.cidade ? ' - ' + f.cidade : ''}${f.estado ? '/' + f.estado : ''}${f.cep ? ' - CEP: ' + f.cep : ''}`.trim()
             };
           }
         }

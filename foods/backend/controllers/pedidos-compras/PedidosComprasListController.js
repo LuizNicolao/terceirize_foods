@@ -287,12 +287,13 @@ class PedidosComprasListController {
         razao_social,
         logradouro,
         numero,
-        complemento,
         bairro,
         cidade,
-        uf,
+        estado,
         cep,
-        is_matriz
+        supervisao,
+        coordenacao,
+        status
       FROM filiais
       WHERE id = ?`,
       [id]
@@ -306,10 +307,9 @@ class PedidosComprasListController {
     const endereco = [
       filial.logradouro || '',
       filial.numero || '',
-      filial.complemento ? `- ${filial.complemento}` : '',
       filial.bairro ? `- ${filial.bairro}` : '',
       filial.cidade ? `- ${filial.cidade}` : '',
-      filial.uf ? `/${filial.uf}` : '',
+      filial.estado ? `/${filial.estado}` : '',
       filial.cep ? `- CEP: ${filial.cep}` : ''
     ].filter(Boolean).join(' ').replace(/\s+/g, ' ').trim();
 

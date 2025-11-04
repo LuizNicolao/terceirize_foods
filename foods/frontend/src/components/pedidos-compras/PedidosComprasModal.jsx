@@ -192,19 +192,13 @@ const PedidosComprasModal = ({
         const items = Array.isArray(response.data) ? response.data : response.data.items || [];
         setFiliais(items);
         
-        // Buscar filial matriz
-        const matriz = items.find(f => f.is_matriz === 1 || f.is_matriz === true);
-        if (matriz) {
-          setFilialMatriz(matriz);
-          // Pré-selecionar matriz para cobrança se não houver valor
+        // Usar primeira filial como padrão para cobrança (substituindo lógica de matriz)
+        if (items.length > 0) {
+          const primeiraFilial = items[0];
+          setFilialMatriz(primeiraFilial);
+          // Pré-selecionar primeira filial para cobrança se não houver valor
           if (!pedidoCompras && !watch('filial_cobranca_id')) {
-            setValue('filial_cobranca_id', matriz.id);
-          }
-        } else if (items.length > 0) {
-          // Se não houver matriz, usar primeira filial
-          setFilialMatriz(items[0]);
-          if (!pedidoCompras && !watch('filial_cobranca_id')) {
-            setValue('filial_cobranca_id', items[0].id);
+            setValue('filial_cobranca_id', primeiraFilial.id);
           }
         }
       }
