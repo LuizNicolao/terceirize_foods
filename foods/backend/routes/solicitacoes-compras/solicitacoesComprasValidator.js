@@ -45,8 +45,7 @@ const solicitacoesComprasValidations = {
       .withMessage('Filial é obrigatória e deve ser um ID válido'),
     body('data_entrega_cd')
       .isISO8601()
-      .withMessage('Data de entrega CD deve ser uma data válida (formato ISO)')
-      .toDate(),
+      .withMessage('Data de entrega CD deve ser uma data válida (formato ISO)'),
     body('motivo')
       .isIn(['Compra Emergencial', 'Compra Programada'])
       .withMessage('Motivo deve ser "Compra Emergencial" ou "Compra Programada"'),
@@ -95,8 +94,7 @@ const solicitacoesComprasValidations = {
       .withMessage('Filial é obrigatória e deve ser um ID válido'),
     body('data_entrega_cd')
       .isISO8601()
-      .withMessage('Data de entrega CD deve ser uma data válida (formato ISO)')
-      .toDate(),
+      .withMessage('Data de entrega CD deve ser uma data válida (formato ISO)'),
     body('motivo')
       .isIn(['Compra Emergencial', 'Compra Programada'])
       .withMessage('Motivo deve ser "Compra Emergencial" ou "Compra Programada"'),
