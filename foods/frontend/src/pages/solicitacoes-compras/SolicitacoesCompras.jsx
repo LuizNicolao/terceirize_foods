@@ -161,38 +161,14 @@ const SolicitacoesCompras = () => {
                 { value: 'finalizado', label: 'Finalizado' },
                 { value: 'cancelada', label: 'Cancelada' }
               ]
-            },
-            {
-              label: 'Filial',
-              value: filialFilter || '',
-              onChange: setFilialFilter,
-              options: [
-                { value: '', label: 'Todas as filiais' },
-                ...filiais.map(filial => ({
-                  value: filial.id.toString(),
-                  label: `${filial.filial || filial.nome || 'Filial'} ${filial.codigo_filial ? `(${filial.codigo_filial})` : ''}`
-                }))
-              ]
-            },
-            {
-              label: 'Data Início',
-              value: dataInicioFilter || '',
-              onChange: setDataInicioFilter,
-              type: 'date'
-            },
-            {
-              label: 'Data Fim',
-              value: dataFimFilter || '',
-              onChange: setDataFimFilter,
-              type: 'date'
             }
           ]}
           placeholder="Buscar por número, descrição, solicitante ou unidade..."
         />
       </div>
 
-      {/* Export Buttons */}
-      <div className="mb-6 flex justify-end">
+      {/* Ações de Exportação */}
+      <div className="mb-4">
         <ExportButtons
           onExportXLSX={handleExportXLSX}
           onExportPDF={handleExportPDF}

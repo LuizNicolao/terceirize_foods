@@ -114,7 +114,6 @@ const RelatorioInspecao = () => {
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
           onKeyPress={handleKeyPress}
-          onClear={handleClearFilters}
           additionalFilters={[
             {
               label: 'Status',
@@ -126,26 +125,14 @@ const RelatorioInspecao = () => {
                 { value: 'REPROVADO', label: 'Reprovado' },
                 { value: 'PARCIAL', label: 'Parcial' }
               ]
-            },
-            {
-              label: 'Data Início',
-              value: dataInicioFilter || '',
-              onChange: setDataInicioFilter,
-              type: 'date'
-            },
-            {
-              label: 'Data Fim',
-              value: dataFimFilter || '',
-              onChange: setDataFimFilter,
-              type: 'date'
             }
           ]}
           placeholder="Buscar por NF ou Fornecedor..."
         />
       </div>
 
-      {/* Export Buttons */}
-      <div className="mb-6 flex justify-end">
+      {/* Ações de Exportação */}
+      <div className="mb-4">
         <ExportButtons
           onExportXLSX={() => {}}
           onExportPDF={() => {}}
