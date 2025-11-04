@@ -176,7 +176,11 @@ export const useBaseEntity = (entityName, service, options = {}) => {
       const response = await service.excluir(itemToDelete.id);
 
       if (response.success) {
-        toast.success(`${entityName} excluído com sucesso!`);
+        // Usar mensagem do response se disponível, senão usar mensagem padrão amigável
+        const friendlyName = entityName === 'pedidos-compras' ? 'Pedido de compras' : 
+                            entityName === 'solicitacoes-compras' ? 'Solicitação de compras' :
+                            entityName;
+        toast.success(response.message || `${friendlyName} excluído com sucesso!`);
         setShowDeleteConfirmModal(false);
         setItemToDelete(null);
         loadData();
