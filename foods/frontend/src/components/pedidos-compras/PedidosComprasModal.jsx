@@ -155,55 +155,107 @@ const PedidosComprasModal = ({
   // Carregar dados quando modal abrir com pedido existente
   useEffect(() => {
     if (pedidoCompras && isOpen) {
-      // Preencher formulário
-      Object.keys(pedidoCompras).forEach(key => {
-        if (pedidoCompras[key] !== null && pedidoCompras[key] !== undefined && key !== 'itens') {
-          setValue(key, pedidoCompras[key]);
-        }
-      });
+      // Preencher formulário com todos os campos
+      if (pedidoCompras.solicitacao_compras_id) {
+        setValue('solicitacao_compras_id', pedidoCompras.solicitacao_compras_id);
+      }
+      if (pedidoCompras.fornecedor_id) {
+        setValue('fornecedor_id', pedidoCompras.fornecedor_id);
+      }
+      if (pedidoCompras.fornecedor_nome) {
+        setValue('fornecedor_nome', pedidoCompras.fornecedor_nome);
+      }
+      if (pedidoCompras.fornecedor_cnpj) {
+        setValue('fornecedor_cnpj', pedidoCompras.fornecedor_cnpj);
+      }
+      if (pedidoCompras.filial_faturamento_id) {
+        setValue('filial_faturamento_id', pedidoCompras.filial_faturamento_id);
+      }
+      if (pedidoCompras.filial_cobranca_id) {
+        setValue('filial_cobranca_id', pedidoCompras.filial_cobranca_id);
+      }
+      if (pedidoCompras.filial_entrega_id) {
+        setValue('filial_entrega_id', pedidoCompras.filial_entrega_id);
+      }
+      if (pedidoCompras.observacoes) {
+        setValue('observacoes', pedidoCompras.observacoes);
+      }
       
       // Carregar fornecedor se existir (para exibir no dropdown)
       if (pedidoCompras.fornecedor_id) {
         buscarFornecedorPorId(pedidoCompras.fornecedor_id);
       }
       
-      // Carregar itens se existirem
-      if (pedidoCompras.itens && Array.isArray(pedidoCompras.itens)) {
+      // Carregar solicitação se existir
+      if (pedidoCompras.solicitacao_compras_id) {
+        carregarItensSolicitacao(pedidoCompras.solicitacao_compras_id).then(() => {
+          // Depois de carregar a solicitação, carregar os itens do pedido
+          if (pedidoCompras.itens && Array.isArray(pedidoCompras.itens) && pedidoCompras.itens.length > 0) {
+            const itensComSelected = pedidoCompras.itens.map(item => ({
+              ...item,
+              selected: true,
+              quantidade_pedido: item.quantidade_pedido || item.quantidade || 0,
+              valor_unitario: item.valor_unitario || 0
+            }));
+            setItensSelecionados(itensComSelected);
+            // Mesclar com itens disponíveis da solicitação
+            setItensDisponiveis(prev => {
+              const itensMap = new Map(prev.map(i => [i.id, i]));
+              itensComSelected.forEach(item => {
+                if (item.solicitacao_item_id) {
+                  itensMap.set(item.solicitacao_item_id, item);
+                }
+              });
+              return Array.from(itensMap.values());
+            });
+          }
+        });
+      } else if (pedidoCompras.itens && Array.isArray(pedidoCompras.itens) && pedidoCompras.itens.length > 0) {
+        // Se não tem solicitação mas tem itens, apenas exibir os itens
         const itensComSelected = pedidoCompras.itens.map(item => ({
           ...item,
           selected: true,
-          quantidade_pedido: item.quantidade_pedido || item.quantidade || 0
+          quantidade_pedido: item.quantidade_pedido || item.quantidade || 0,
+          valor_unitario: item.valor_unitario || 0
         }));
         setItensSelecionados(itensComSelected);
         setItensDisponiveis(itensComSelected);
       }
 
-        // Carregar dados das filiais se houver
+      // Carregar dados das filiais se houver
       if (pedidoCompras.filial_id) {
         carregarDadosFilial(pedidoCompras.filial_id);
       }
+      
       // Carregar filial de faturamento se houver (ou usar filial_id como fallback)
       if (pedidoCompras.filial_faturamento_id) {
         carregarDadosFilialEspecifica(pedidoCompras.filial_faturamento_id, 'faturamento');
       } else if (pedidoCompras.filial_id) {
         carregarDadosFilialEspecifica(pedidoCompras.filial_id, 'faturamento');
       }
+      
+      // Carregar filial de cobrança
       if (pedidoCompras.filial_cobranca_id) {
-        setValue('filial_cobranca_id', pedidoCompras.filial_cobranca_id);
         carregarDadosFilialEspecifica(pedidoCompras.filial_cobranca_id, 'cobranca');
       }
+      
+      // Carregar filial de entrega
       if (pedidoCompras.filial_entrega_id) {
-        setValue('filial_entrega_id', pedidoCompras.filial_entrega_id);
         carregarDadosFilialEspecifica(pedidoCompras.filial_entrega_id, 'entrega');
       }
 
       // Buscar IDs de forma e prazo de pagamento baseados nos nomes salvos
-      if (pedidoCompras.forma_pagamento) {
-        buscarIdFormaPagamentoPorNome(pedidoCompras.forma_pagamento);
-      }
-      if (pedidoCompras.prazo_pagamento) {
-        buscarIdPrazoPagamentoPorNome(pedidoCompras.prazo_pagamento);
-      }
+      // Aguardar um pouco para garantir que as listas foram carregadas
+      const timeoutId = setTimeout(() => {
+        if (pedidoCompras.forma_pagamento) {
+          buscarIdFormaPagamentoPorNome(pedidoCompras.forma_pagamento);
+        }
+        if (pedidoCompras.prazo_pagamento) {
+          buscarIdPrazoPagamentoPorNome(pedidoCompras.prazo_pagamento);
+        }
+      }, 500);
+
+      return () => clearTimeout(timeoutId);
     } else if (!pedidoCompras && isOpen) {
       // Limpar todos os campos quando criar novo pedido
       reset();
