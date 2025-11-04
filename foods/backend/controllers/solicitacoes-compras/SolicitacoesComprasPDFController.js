@@ -26,7 +26,7 @@ class SolicitacoesComprasPDFController {
         sc.criado_em,
         sc.unidade,
         f.filial as filial_nome,
-        f.codigo as filial_codigo,
+        f.codigo_filial as filial_codigo,
         u.nome as usuario_nome
       FROM solicitacoes_compras sc
       LEFT JOIN filiais f ON sc.filial_id = f.id

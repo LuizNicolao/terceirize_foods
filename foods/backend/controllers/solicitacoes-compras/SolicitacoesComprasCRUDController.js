@@ -300,7 +300,7 @@ class SolicitacoesComprasCRUDController {
 
     // Verificar se filial existe
     const [filial] = await executeQuery(
-      'SELECT filial, nome FROM filiais WHERE id = ?',
+      'SELECT filial FROM filiais WHERE id = ?',
       [filial_id]
     );
 
@@ -312,7 +312,7 @@ class SolicitacoesComprasCRUDController {
     const semana_abastecimento = await this.buscarSemanaAbastecimento(data_entrega_cd);
     
     // Garantir que todos os valores sejam null ao invés de undefined
-    const unidade = filial.nome || filial.filial || null;
+    const unidade = filial.filial || null;
 
     // Atualizar solicitação
     await executeQuery(
