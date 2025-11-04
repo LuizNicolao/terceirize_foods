@@ -62,7 +62,14 @@ const SolicitacoesComprasModal = ({
       
       // Carregar itens se existirem
       if (solicitacao.itens && Array.isArray(solicitacao.itens)) {
-        setItens(solicitacao.itens);
+        // Processar itens para garantir que unidade seja exibida como texto
+        const itensProcessados = solicitacao.itens.map(item => ({
+          ...item,
+          unidade_simbolo: item.unidade_simbolo || item.unidade_medida || '',
+          unidade_medida: item.unidade_medida || item.unidade_simbolo || item.unidade_nome || '',
+          unidade_texto: item.unidade_simbolo || item.unidade_medida || item.unidade_nome || ''
+        }));
+        setItens(itensProcessados);
         const produtosIds = solicitacao.itens.map(item => item.produto_id).filter(Boolean);
         setProdutosAdicionados(new Set(produtosIds));
       }
@@ -116,9 +123,22 @@ const SolicitacoesComprasModal = ({
         // Buscar símbolo da unidade
         const unidade = unidadesMedida.find(u => u.id === produto.unidade_medida_id);
         if (unidade) {
-          updated[index].unidade_simbolo = unidade.simbolo || unidade.sigla;
-          updated[index].unidade_medida = unidade.nome || unidade.simbolo || unidade.sigla;
+          updated[index].unidade_simbolo = unidade.sigla || unidade.simbolo || '';
+          updated[index].unidade_medida = unidade.nome || unidade.sigla || unidade.simbolo || '';
+          // Garantir que o texto da unidade seja exibido
+          updated[index].unidade_texto = unidade.sigla || unidade.simbolo || unidade.nome || '';
+        } else {
+          // Limpar se não encontrar unidade
+          updated[index].unidade_simbolo = '';
+          updated[index].unidade_medida = '';
+          updated[index].unidade_texto = '';
         }
+      } else {
+        // Limpar se produto não encontrado
+        updated[index].unidade_simbolo = '';
+        updated[index].unidade_medida = '';
+        updated[index].unidade_texto = '';
+        updated[index].unidade_medida_id = '';
       }
       
       // Verificar duplicidade
@@ -446,10 +466,11 @@ const SolicitacoesComprasModal = ({
                           <td className="px-4 py-3">
                             <Input
                               type="text"
-                              value={item.unidade_simbolo || item.unidade_medida || '-'}
+                              value={item.unidade_simbolo || item.unidade_medida || item.unidade_texto || '-'}
                               disabled={true}
                               className="bg-gray-50 cursor-not-allowed"
                               readOnly
+                              placeholder="Selecione um produto..."
                             />
                           </td>
                           <td className="px-4 py-3">
