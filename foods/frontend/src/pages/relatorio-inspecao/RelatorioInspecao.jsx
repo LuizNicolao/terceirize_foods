@@ -164,19 +164,17 @@ const RelatorioInspecao = () => {
           getStatusBadge={getStatusBadge}
         />
 
-        {/* Paginação */}
-        {totalPages > 1 && (
-          <div className="p-4 border-t border-gray-200">
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              totalItems={totalItems}
-              itemsPerPage={itemsPerPage}
-              onPageChange={handlePageChange}
-              onItemsPerPageChange={handleItemsPerPageChange}
-            />
-          </div>
-        )}
+        {/* Paginação - sempre mostrar para permitir mudança de itens por página */}
+        <div className="p-4 border-t border-gray-200">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            itemsPerPage={itemsPerPage}
+            onPageChange={handlePageChange}
+            onItemsPerPageChange={handleItemsPerPageChange}
+          />
+        </div>
       </div>
 
       {/* Modal */}
