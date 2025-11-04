@@ -238,8 +238,6 @@ class SolicitacoesComprasCRUDController {
       );
     }
 
-    // Trigger já atualiza valor_total automaticamente
-
     // Buscar solicitação criada
     const [solicitacao] = await executeQuery(
       `SELECT 

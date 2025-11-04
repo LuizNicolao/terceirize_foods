@@ -74,7 +74,6 @@ class SolicitacoesComprasListController {
         sc.semana_abastecimento,
         sc.observacoes,
         sc.status,
-        sc.valor_total,
         sc.data_documento,
         sc.motivo,
         sc.filial_id,
@@ -110,8 +109,7 @@ class SolicitacoesComprasListController {
         SUM(CASE WHEN sc.status = 'aberto' THEN 1 ELSE 0 END) as abertos,
         SUM(CASE WHEN sc.status = 'parcial' THEN 1 ELSE 0 END) as parciais,
         SUM(CASE WHEN sc.status = 'finalizado' THEN 1 ELSE 0 END) as finalizados,
-        SUM(CASE WHEN sc.status = 'cancelada' THEN 1 ELSE 0 END) as canceladas,
-        COALESCE(SUM(sc.valor_total), 0) as valor_total_geral
+        SUM(CASE WHEN sc.status = 'cancelada' THEN 1 ELSE 0 END) as canceladas
       FROM solicitacoes_compras sc
       WHERE 1=1
     `;
@@ -148,7 +146,7 @@ class SolicitacoesComprasListController {
     }
 
     // Executar query de estatísticas
-    let statistics = { total: 0, abertos: 0, parciais: 0, finalizados: 0, canceladas: 0, valor_total_geral: 0 };
+    let statistics = { total: 0, abertos: 0, parciais: 0, finalizados: 0, canceladas: 0 };
     try {
       const statsResult = await executeQuery(statsQuery, statsParams);
       if (statsResult && statsResult[0]) {
