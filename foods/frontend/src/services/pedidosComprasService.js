@@ -37,6 +37,30 @@ class PedidosComprasService {
     }
   }
 
+  static async buscarItensSolicitacao(solicitacaoId) {
+    try {
+      const response = await api.get(`/pedidos-compras/itens-solicitacao/${solicitacaoId}`);
+      return response.data;
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Erro ao buscar itens da solicitação'
+      };
+    }
+  }
+
+  static async buscarDadosFilial(filialId) {
+    try {
+      const response = await api.get(`/pedidos-compras/dados-filial/${filialId}`);
+      return response.data;
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Erro ao buscar dados da filial'
+      };
+    }
+  }
+
   static async criar(dados) {
     try {
       const response = await api.post('/pedidos-compras', dados);

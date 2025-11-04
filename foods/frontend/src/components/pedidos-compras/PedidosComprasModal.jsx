@@ -1,8 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { FaTimes, FaSave, FaEye, FaEdit, FaPlus } from 'react-icons/fa';
-import { Button, Input, Modal, SearchableSelect } from '../ui';
+import { Button, Modal, SearchableSelect } from '../ui';
 import PedidosComprasService from '../../services/pedidosComprasService';
+import FormasPagamentoService from '../../services/formasPagamentoService';
+import PrazosPagamentoService from '../../services/prazosPagamentoService';
+import FornecedoresService from '../../services/fornecedores';
+import PedidosComprasItensTable from './PedidosComprasItensTable';
+import PedidosComprasDadosFilial from './PedidosComprasDadosFilial';
 import toast from 'react-hot-toast';
 
 const PedidosComprasModal = ({
@@ -17,35 +22,194 @@ const PedidosComprasModal = ({
   const { register, handleSubmit, reset, formState: { errors }, setValue, watch } = useForm();
   const [saving, setSaving] = useState(false);
   const [solicitacaoSelecionada, setSolicitacaoSelecionada] = useState(null);
+  const [itensDisponiveis, setItensDisponiveis] = useState([]);
+  const [itensSelecionados, setItensSelecionados] = useState([]);
+  const [dadosFilial, setDadosFilial] = useState(null);
+  const [formasPagamento, setFormasPagamento] = useState([]);
+  const [prazosPagamento, setPrazosPagamento] = useState([]);
+  const [fornecedores, setFornecedores] = useState([]);
+  const [loadingItens, setLoadingItens] = useState(false);
+  const [loadingDadosFilial, setLoadingDadosFilial] = useState(false);
 
+  const solicitacaoId = watch('solicitacao_compras_id');
+  const fornecedorId = watch('fornecedor_id');
+
+  // Carregar dados auxiliares quando modal abrir
+  useEffect(() => {
+    if (isOpen) {
+      carregarFormasPagamento();
+      carregarPrazosPagamento();
+      carregarFornecedores();
+    }
+  }, [isOpen]);
+
+  // Carregar itens quando solicitação for selecionada
+  useEffect(() => {
+    if (solicitacaoId && !pedidoCompras && isOpen) {
+      carregarItensSolicitacao(solicitacaoId);
+    }
+  }, [solicitacaoId, pedidoCompras, isOpen]);
+
+  // Auto-preenchimento de fornecedor
+  useEffect(() => {
+    if (fornecedorId && fornecedores.length > 0) {
+      const fornecedor = fornecedores.find(f => f.id.toString() === fornecedorId.toString());
+      if (fornecedor) {
+        setValue('fornecedor_nome', fornecedor.razao_social || fornecedor.nome);
+        setValue('fornecedor_cnpj', fornecedor.cnpj);
+      }
+    }
+  }, [fornecedorId, fornecedores, setValue]);
+
+  // Carregar dados quando modal abrir com pedido existente
   useEffect(() => {
     if (pedidoCompras && isOpen) {
-      // Preencher formulário com dados do pedido
+      // Preencher formulário
       Object.keys(pedidoCompras).forEach(key => {
         if (pedidoCompras[key] !== null && pedidoCompras[key] !== undefined && key !== 'itens') {
           setValue(key, pedidoCompras[key]);
         }
       });
-      setSolicitacaoSelecionada(pedidoCompras);
+      
+      // Carregar itens se existirem
+      if (pedidoCompras.itens && Array.isArray(pedidoCompras.itens)) {
+        const itensComSelected = pedidoCompras.itens.map(item => ({
+          ...item,
+          selected: true,
+          quantidade_pedido: item.quantidade_pedido || item.quantidade || 0
+        }));
+        setItensSelecionados(itensComSelected);
+        setItensDisponiveis(itensComSelected);
+      }
+
+      // Carregar dados da filial se houver
+      if (pedidoCompras.filial_id) {
+        carregarDadosFilial(pedidoCompras.filial_id);
+      }
     } else if (!pedidoCompras && isOpen) {
-      // Resetar formulário para novo pedido
       reset();
+      setItensDisponiveis([]);
+      setItensSelecionados([]);
+      setDadosFilial(null);
+      setSolicitacaoSelecionada(null);
     }
   }, [pedidoCompras, isOpen, setValue, reset]);
 
+  const carregarFormasPagamento = async () => {
+    try {
+      const response = await FormasPagamentoService.buscarAtivas();
+      if (response.success && response.data) {
+        const items = Array.isArray(response.data) ? response.data : response.data.items || [];
+        setFormasPagamento(items);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar formas de pagamento:', error);
+    }
+  };
+
+  const carregarPrazosPagamento = async () => {
+    try {
+      const response = await PrazosPagamentoService.buscarAtivos();
+      if (response.success && response.data) {
+        const items = Array.isArray(response.data) ? response.data : response.data.items || [];
+        setPrazosPagamento(items);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar prazos de pagamento:', error);
+    }
+  };
+
+  const carregarFornecedores = async () => {
+    try {
+      const response = await FornecedoresService.buscarAtivos();
+      if (response.success && response.data) {
+        const items = Array.isArray(response.data) ? response.data : response.data.items || [];
+        setFornecedores(items);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar fornecedores:', error);
+    }
+  };
+
+  const carregarItensSolicitacao = async (id) => {
+    setLoadingItens(true);
+    try {
+      const response = await PedidosComprasService.buscarItensSolicitacao(id);
+      if (response.success && response.data) {
+        const { solicitacao, itens } = response.data;
+        setSolicitacaoSelecionada(solicitacao);
+        setItensDisponiveis(itens.map(item => ({ ...item, selected: false, quantidade_pedido: 0 })));
+        setItensSelecionados([]);
+        
+        // Carregar dados da filial
+        if (solicitacao.filial_id) {
+          carregarDadosFilial(solicitacao.filial_id);
+        }
+      } else {
+        toast.error(response.error || 'Erro ao carregar itens da solicitação');
+      }
+    } catch (error) {
+      console.error('Erro ao carregar itens:', error);
+      toast.error('Erro ao carregar itens da solicitação');
+    } finally {
+      setLoadingItens(false);
+    }
+  };
+
+  const carregarDadosFilial = async (id) => {
+    setLoadingDadosFilial(true);
+    try {
+      const response = await PedidosComprasService.buscarDadosFilial(id);
+      if (response.success && response.data) {
+        setDadosFilial(response.data);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar dados da filial:', error);
+    } finally {
+      setLoadingDadosFilial(false);
+    }
+  };
+
+  const handleItemChange = (index, updatedItem) => {
+    const newItens = [...itensDisponiveis];
+    newItens[index] = updatedItem;
+    setItensDisponiveis(newItens);
+    
+    // Atualizar itens selecionados
+    const selected = newItens.filter(item => item.selected && parseFloat(item.quantidade_pedido || 0) > 0);
+    setItensSelecionados(selected);
+  };
+
+  const handleRemoveItem = (index) => {
+    const newItens = [...itensDisponiveis];
+    newItens[index] = { ...newItens[index], selected: false, quantidade_pedido: 0 };
+    setItensDisponiveis(newItens);
+    setItensSelecionados(newItens.filter(item => item.selected && parseFloat(item.quantidade_pedido || 0) > 0));
+  };
+
   const handleFormSubmit = async (data) => {
+    // Validar se há itens selecionados
+    if (!pedidoCompras && itensSelecionados.length === 0) {
+      toast.error('Selecione pelo menos um item para criar o pedido');
+      return;
+    }
+
     setSaving(true);
     try {
       const formData = {
-        solicitacao_compras_id: data.solicitacao_compras_id,
+        solicitacao_compras_id: data.solicitacao_compras_id || pedidoCompras?.solicitacao_compras_id,
+        fornecedor_id: data.fornecedor_id || null,
         fornecedor_nome: data.fornecedor_nome?.trim(),
         fornecedor_cnpj: data.fornecedor_cnpj || null,
-        forma_pagamento: data.forma_pagamento || null,
-        prazo_pagamento: data.prazo_pagamento || null,
+        forma_pagamento_id: data.forma_pagamento_id || null,
+        prazo_pagamento_id: data.prazo_pagamento_id || null,
         observacoes: data.observacoes || null,
-        // Para itens, seria necessário uma lógica mais complexa
-        // Por enquanto, mantemos apenas os dados básicos
-        itens: pedidoCompras?.itens || []
+        itens: pedidoCompras 
+          ? (pedidoCompras.itens || [])
+          : itensSelecionados.map(item => ({
+              solicitacao_item_id: item.id,
+              quantidade_pedido: parseFloat(item.quantidade_pedido || 0)
+            }))
       };
 
       await onSubmit(formData);
@@ -60,9 +224,10 @@ const PedidosComprasModal = ({
   if (!isOpen) return null;
 
   const isViewMode = viewMode === true;
+  const itensParaExibir = pedidoCompras ? itensSelecionados : itensDisponiveis;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="xl">
+    <Modal isOpen={isOpen} onClose={onClose} size="6xl">
       <div className="bg-white rounded-lg shadow-xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex justify-between items-center p-6 border-b border-gray-200 bg-gradient-to-r from-green-50 to-blue-50">
@@ -110,10 +275,6 @@ const PedidosComprasModal = ({
                 value={watch('solicitacao_compras_id')?.toString() || ''}
                 onChange={(value) => {
                   setValue('solicitacao_compras_id', parseInt(value));
-                  const sol = solicitacoesDisponiveis.find(s => s.id.toString() === value);
-                  if (sol) {
-                    setSolicitacaoSelecionada(sol);
-                  }
                 }}
                 disabled={isViewMode}
                 placeholder="Selecione uma solicitação"
@@ -122,58 +283,122 @@ const PedidosComprasModal = ({
             </div>
           )}
 
-          {/* Fornecedor */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Nome do Fornecedor <span className="text-red-500">*</span>
-            </label>
-            <Input
-              {...register('fornecedor_nome', {
-                required: 'O nome do fornecedor é obrigatório'
-              })}
-              disabled={isViewMode}
-              placeholder="Digite o nome do fornecedor"
-              error={errors.fornecedor_nome?.message}
-            />
+          {/* Dados da Filial */}
+          {dadosFilial && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <PedidosComprasDadosFilial dadosFilial={dadosFilial} tipo="faturamento" viewMode={isViewMode} />
+              <PedidosComprasDadosFilial dadosFilial={dadosFilial} tipo="cobranca" viewMode={isViewMode} />
+              <PedidosComprasDadosFilial dadosFilial={dadosFilial} tipo="entrega" viewMode={isViewMode} />
+            </div>
+          )}
+
+          {/* Informações do Fornecedor */}
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Fornecedor</h3>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Fornecedor
+                </label>
+                <SearchableSelect
+                  options={fornecedores.map(f => ({
+                    value: f.id.toString(),
+                    label: `${f.razao_social || f.nome || 'Fornecedor'} ${f.cnpj ? `- ${f.cnpj}` : ''}`
+                  }))}
+                  value={watch('fornecedor_id')?.toString() || ''}
+                  onChange={(value) => {
+                    setValue('fornecedor_id', value ? parseInt(value) : null);
+                  }}
+                  disabled={isViewMode}
+                  placeholder="Selecione um fornecedor"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Nome do Fornecedor <span className="text-red-500">*</span>
+                </label>
+                <input
+                  {...register('fornecedor_nome', {
+                    required: 'O nome do fornecedor é obrigatório'
+                  })}
+                  disabled={isViewMode}
+                  placeholder="Digite o nome do fornecedor"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 disabled:bg-gray-50 disabled:cursor-not-allowed"
+                />
+                {errors.fornecedor_nome && (
+                  <p className="mt-1 text-sm text-red-600">{errors.fornecedor_nome.message}</p>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  CNPJ do Fornecedor
+                </label>
+                <input
+                  {...register('fornecedor_cnpj')}
+                  disabled={isViewMode}
+                  placeholder="00.000.000/0000-00"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 disabled:bg-gray-50 disabled:cursor-not-allowed"
+                />
+              </div>
+            </div>
           </div>
 
-          {/* CNPJ */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              CNPJ do Fornecedor
-            </label>
-            <Input
-              {...register('fornecedor_cnpj')}
-              disabled={isViewMode}
-              placeholder="00.000.000/0000-00"
-              error={errors.fornecedor_cnpj?.message}
-            />
+          {/* Forma e Prazo de Pagamento */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Forma de Pagamento
+              </label>
+              <SearchableSelect
+                options={formasPagamento.map(fp => ({
+                  value: fp.id.toString(),
+                  label: fp.nome
+                }))}
+                value={watch('forma_pagamento_id')?.toString() || ''}
+                onChange={(value) => {
+                  setValue('forma_pagamento_id', value ? parseInt(value) : null);
+                }}
+                disabled={isViewMode}
+                placeholder="Selecione uma forma de pagamento"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Prazo de Pagamento
+              </label>
+              <SearchableSelect
+                options={prazosPagamento.map(pp => ({
+                  value: pp.id.toString(),
+                  label: pp.nome
+                }))}
+                value={watch('prazo_pagamento_id')?.toString() || ''}
+                onChange={(value) => {
+                  setValue('prazo_pagamento_id', value ? parseInt(value) : null);
+                }}
+                disabled={isViewMode}
+                placeholder="Selecione um prazo de pagamento"
+              />
+            </div>
           </div>
 
-          {/* Forma de Pagamento */}
+          {/* Itens do Pedido */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Forma de Pagamento
-            </label>
-            <Input
-              {...register('forma_pagamento')}
-              disabled={isViewMode}
-              placeholder="Ex: Boleto, PIX, etc."
-              error={errors.forma_pagamento?.message}
-            />
-          </div>
-
-          {/* Prazo de Pagamento */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Prazo de Pagamento
-            </label>
-            <Input
-              {...register('prazo_pagamento')}
-              disabled={isViewMode}
-              placeholder="Ex: 30 dias, 3x (30/60/90)"
-              error={errors.prazo_pagamento?.message}
-            />
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Itens do Pedido {!isViewMode && itensSelecionados.length > 0 && `(${itensSelecionados.length} selecionado(s))`}
+            </h3>
+            {loadingItens ? (
+              <div className="p-8 text-center text-gray-500">
+                <p>Carregando itens da solicitação...</p>
+              </div>
+            ) : (
+              <PedidosComprasItensTable
+                itens={itensParaExibir}
+                onItemChange={handleItemChange}
+                onRemoveItem={handleRemoveItem}
+                viewMode={isViewMode}
+                errors={errors}
+              />
+            )}
           </div>
 
           {/* Observações */}
@@ -189,20 +414,6 @@ const PedidosComprasModal = ({
               placeholder="Digite observações sobre o pedido"
             />
           </div>
-
-          {/* Nota: Itens do pedido seriam adicionados em uma versão mais completa */}
-          {pedidoCompras?.itens && pedidoCompras.itens.length > 0 && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Itens do Pedido ({pedidoCompras.itens.length})
-              </label>
-              <div className="bg-gray-50 rounded-md p-4">
-                <p className="text-sm text-gray-600">
-                  {pedidoCompras.itens.length} item(ns) cadastrado(s). A edição de itens será implementada em uma versão futura.
-                </p>
-              </div>
-            </div>
-          )}
 
           {/* Footer */}
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
@@ -234,4 +445,3 @@ const PedidosComprasModal = ({
 };
 
 export default PedidosComprasModal;
-

@@ -39,6 +39,20 @@ router.get('/solicitacoes-disponiveis',
   PedidosComprasController.buscarSolicitacoesDisponiveis
 );
 
+// GET /api/pedidos-compras/itens-solicitacao/:id - Buscar itens da solicitação com saldo disponível
+router.get('/itens-solicitacao/:id',
+  checkScreenPermission('pedidos-compras', 'visualizar'),
+  commonValidations.id,
+  PedidosComprasController.buscarItensSolicitacao
+);
+
+// GET /api/pedidos-compras/dados-filial/:id - Buscar dados completos da filial
+router.get('/dados-filial/:id',
+  checkScreenPermission('pedidos-compras', 'visualizar'),
+  commonValidations.id,
+  PedidosComprasController.buscarDadosFilial
+);
+
 // ===== ROTAS DE EXPORTAÇÃO (DEVEM VIR ANTES DE /:id) =====
 
 // GET /api/pedidos-compras/export/xlsx - Exportar para XLSX

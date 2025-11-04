@@ -190,6 +190,136 @@ class PedidosComprasListController {
   });
 
   /**
+   * Buscar itens da solicitação com saldo disponível
+   * Endpoint: GET /api/pedidos-compras/itens-solicitacao/:id
+   */
+  static buscarItensSolicitacao = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    // Buscar dados da solicitação
+    const [solicitacao] = await executeQuery(
+      `SELECT 
+        s.*,
+        f.filial as filial_nome,
+        f.codigo_filial as filial_codigo
+      FROM solicitacoes_compras s
+      LEFT JOIN filiais f ON s.filial_id = f.id
+      WHERE s.id = ?`,
+      [id]
+    );
+
+    if (!solicitacao) {
+      return notFoundResponse(res, 'Solicitação de compras não encontrada');
+    }
+
+    // Buscar itens da solicitação
+    const itens = await executeQuery(
+      `SELECT 
+        sci.*,
+        pg.nome as produto_nome,
+        pg.codigo_produto,
+        um.simbolo as unidade_simbolo,
+        um.nome as unidade_nome
+      FROM solicitacao_compras_itens sci
+      LEFT JOIN produto_generico pg ON sci.produto_id = pg.id
+      LEFT JOIN unidades_medida um ON sci.unidade_medida_id = um.id
+      WHERE sci.solicitacao_id = ?
+      ORDER BY sci.id`,
+      [id]
+    );
+
+    // Calcular saldo disponível para cada item
+    const itensComSaldo = await Promise.all(
+      itens.map(async (item) => {
+        // Buscar quantidades já utilizadas em pedidos
+        const vinculos = await executeQuery(
+          `SELECT 
+            pci.quantidade_pedido,
+            pc.numero_pedido,
+            pc.id as pedido_id
+          FROM pedido_compras_itens pci
+          INNER JOIN pedido_compras pc ON pci.pedido_id = pc.id
+          WHERE pci.solicitacao_item_id = ?`,
+          [item.id]
+        );
+
+        const quantidade_utilizada = vinculos.reduce((sum, v) => sum + parseFloat(v.quantidade_pedido || 0), 0);
+        const quantidade_solicitada = parseFloat(item.quantidade || 0);
+        const saldo_disponivel = quantidade_solicitada - quantidade_utilizada;
+
+        return {
+          ...item,
+          quantidade_solicitada,
+          quantidade_utilizada,
+          saldo_disponivel: Math.max(0, saldo_disponivel) // Garantir que não seja negativo
+        };
+      })
+    );
+
+    return successResponse(res, {
+      solicitacao: {
+        id: solicitacao.id,
+        numero_solicitacao: solicitacao.numero_solicitacao,
+        filial_id: solicitacao.filial_id,
+        filial_nome: solicitacao.filial_nome,
+        filial_codigo: solicitacao.filial_codigo,
+        data_entrega_cd: solicitacao.data_entrega_cd,
+        semana_abastecimento: solicitacao.semana_abastecimento,
+        motivo: solicitacao.motivo
+      },
+      itens: itensComSaldo
+    }, 'Itens da solicitação encontrados com sucesso', STATUS_CODES.OK);
+  });
+
+  /**
+   * Buscar dados completos da filial (para faturamento, cobrança, entrega)
+   * Endpoint: GET /api/pedidos-compras/dados-filial/:id
+   */
+  static buscarDadosFilial = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    const [filial] = await executeQuery(
+      `SELECT 
+        id,
+        filial,
+        codigo_filial,
+        cnpj,
+        razao_social,
+        logradouro,
+        numero,
+        complemento,
+        bairro,
+        cidade,
+        uf,
+        cep,
+        is_matriz
+      FROM filiais
+      WHERE id = ?`,
+      [id]
+    );
+
+    if (!filial) {
+      return notFoundResponse(res, 'Filial não encontrada');
+    }
+
+    // Montar endereço completo
+    const endereco = [
+      filial.logradouro || '',
+      filial.numero || '',
+      filial.complemento ? `- ${filial.complemento}` : '',
+      filial.bairro ? `- ${filial.bairro}` : '',
+      filial.cidade ? `- ${filial.cidade}` : '',
+      filial.uf ? `/${filial.uf}` : '',
+      filial.cep ? `- CEP: ${filial.cep}` : ''
+    ].filter(Boolean).join(' ').replace(/\s+/g, ' ').trim();
+
+    return successResponse(res, {
+      ...filial,
+      endereco_completo: endereco
+    }, 'Dados da filial encontrados com sucesso', STATUS_CODES.OK);
+  });
+
+  /**
    * Obter permissões do usuário (helper)
    */
   static getUserPermissions(user) {
