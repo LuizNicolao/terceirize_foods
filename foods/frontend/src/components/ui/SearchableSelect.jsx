@@ -77,9 +77,12 @@ const SearchableSelect = ({
       }
     } else {
       setSelectedOption(null);
-      setSearchTerm('');
+      // Só resetar searchTerm se o dropdown estiver fechado (usuário não está digitando)
+      if (!isOpen) {
+        setSearchTerm('');
+      }
     }
-  }, [value, options]);
+  }, [value, options, isOpen]);
 
   // Calcular posição do dropdown quando abrir
   useEffect(() => {
