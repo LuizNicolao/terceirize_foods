@@ -110,21 +110,43 @@ export const usePedidosComprasModal = ({ pedidoCompras, isOpen, solicitacoesDisp
   }, [pedidoCompras, setValue, watch]);
 
   const buscarIdFormaPagamentoPorNome = useCallback(async (nome) => {
-    if (!nome) return;
+    if (!nome) {
+      console.log('⚠️ [FORMA PAGAMENTO] Nome não fornecido');
+      return;
+    }
+    
+    console.log('🔵 [FORMA PAGAMENTO] Buscando ID por nome:', nome);
+    console.log('📦 [FORMA PAGAMENTO] Formas disponíveis:', formasPagamento.length);
     
     if (formasPagamento.length === 0) {
+      console.log('⚠️ [FORMA PAGAMENTO] Carregando formas...');
       await carregarFormasPagamento();
     }
     
     const buscarForma = async () => {
+      console.log('🔵 [FORMA PAGAMENTO] Buscando na API...');
       const response = await FormasPagamentoService.buscarAtivas();
+      console.log('📦 [FORMA PAGAMENTO] Resposta da API:', response);
+      
       if (response.success && response.data) {
         const items = Array.isArray(response.data) ? response.data : response.data.items || [];
-        const forma = items.find(fp => 
-          fp.nome && fp.nome.toLowerCase().trim() === nome.toLowerCase().trim()
-        );
+        console.log('📦 [FORMA PAGAMENTO] Itens encontrados:', items.length);
+        console.log('📦 [FORMA PAGAMENTO] Itens:', items.map(i => ({ id: i.id, nome: i.nome })));
+        
+        const forma = items.find(fp => {
+          const match = fp.nome && fp.nome.toLowerCase().trim() === nome.toLowerCase().trim();
+          if (match) {
+            console.log('✅ [FORMA PAGAMENTO] Match encontrado:', fp);
+          }
+          return match;
+        });
+        
         if (forma) {
+          console.log('✅ [FORMA PAGAMENTO] Forma encontrada, setando ID:', forma.id);
           setValue('forma_pagamento_id', forma.id);
+        } else {
+          console.log('❌ [FORMA PAGAMENTO] Forma não encontrada para:', nome);
+          console.log('📦 [FORMA PAGAMENTO] Nomes disponíveis:', items.map(i => i.nome));
         }
       }
     };
@@ -136,21 +158,43 @@ export const usePedidosComprasModal = ({ pedidoCompras, isOpen, solicitacoesDisp
   }, [formasPagamento.length, carregarFormasPagamento, setValue]);
 
   const buscarIdPrazoPagamentoPorNome = useCallback(async (nome) => {
-    if (!nome) return;
+    if (!nome) {
+      console.log('⚠️ [PRAZO PAGAMENTO] Nome não fornecido');
+      return;
+    }
+    
+    console.log('🔵 [PRAZO PAGAMENTO] Buscando ID por nome:', nome);
+    console.log('📦 [PRAZO PAGAMENTO] Prazos disponíveis:', prazosPagamento.length);
     
     if (prazosPagamento.length === 0) {
+      console.log('⚠️ [PRAZO PAGAMENTO] Carregando prazos...');
       await carregarPrazosPagamento();
     }
     
     const buscarPrazo = async () => {
+      console.log('🔵 [PRAZO PAGAMENTO] Buscando na API...');
       const response = await PrazosPagamentoService.buscarAtivos();
+      console.log('📦 [PRAZO PAGAMENTO] Resposta da API:', response);
+      
       if (response.success && response.data) {
         const items = Array.isArray(response.data) ? response.data : response.data.items || [];
-        const prazo = items.find(pp => 
-          pp.nome && pp.nome.toLowerCase().trim() === nome.toLowerCase().trim()
-        );
+        console.log('📦 [PRAZO PAGAMENTO] Itens encontrados:', items.length);
+        console.log('📦 [PRAZO PAGAMENTO] Itens:', items.map(i => ({ id: i.id, nome: i.nome })));
+        
+        const prazo = items.find(pp => {
+          const match = pp.nome && pp.nome.toLowerCase().trim() === nome.toLowerCase().trim();
+          if (match) {
+            console.log('✅ [PRAZO PAGAMENTO] Match encontrado:', pp);
+          }
+          return match;
+        });
+        
         if (prazo) {
+          console.log('✅ [PRAZO PAGAMENTO] Prazo encontrado, setando ID:', prazo.id);
           setValue('prazo_pagamento_id', prazo.id);
+        } else {
+          console.log('❌ [PRAZO PAGAMENTO] Prazo não encontrado para:', nome);
+          console.log('📦 [PRAZO PAGAMENTO] Nomes disponíveis:', items.map(i => i.nome));
         }
       }
     };
@@ -221,8 +265,11 @@ export const usePedidosComprasModal = ({ pedidoCompras, isOpen, solicitacoesDisp
 
   const carregarDadosFilialEspecifica = useCallback(async (id, tipo) => {
     try {
+      console.log(`🔵 [FILIAL ${tipo.toUpperCase()}] Buscando dados da filial ID:`, id);
       const response = await PedidosComprasService.buscarDadosFilial(id);
+      console.log(`📦 [FILIAL ${tipo.toUpperCase()}] Resposta da API:`, response);
       if (response.success && response.data) {
+        console.log(`✅ [FILIAL ${tipo.toUpperCase()}] Dados recebidos:`, response.data);
         if (tipo === 'faturamento') {
           setDadosFilialFaturamento(response.data);
         } else if (tipo === 'cobranca') {
@@ -230,33 +277,75 @@ export const usePedidosComprasModal = ({ pedidoCompras, isOpen, solicitacoesDisp
         } else if (tipo === 'entrega') {
           setDadosFilialEntrega(response.data);
         }
+        return response.data;
+      } else {
+        console.log(`❌ [FILIAL ${tipo.toUpperCase()}] Resposta sem sucesso:`, response);
       }
     } catch (error) {
-      console.error(`Erro ao carregar dados da filial ${tipo}:`, error);
+      console.error(`❌ [FILIAL ${tipo.toUpperCase()}] Erro ao carregar dados:`, error);
     }
+    return null;
   }, []);
 
   const carregarItensSolicitacao = useCallback(async (id, pedidoExistente = null) => {
+    console.log('🔵 [ITENS SOLICITACAO] Iniciando carregamento...');
+    console.log('📦 [ITENS SOLICITACAO] ID da solicitação:', id);
+    console.log('📦 [ITENS SOLICITACAO] Pedido existente:', pedidoExistente ? 'SIM' : 'NÃO');
+    if (pedidoExistente) {
+      console.log('📦 [ITENS PEDIDO] Itens do pedido existente:', pedidoExistente.itens);
+    }
+    
     setLoadingItens(true);
     try {
       const response = await PedidosComprasService.buscarItensSolicitacao(id);
+      console.log('📦 [ITENS SOLICITACAO] Resposta da API:', response);
+      
       if (response.success && response.data) {
         const { solicitacao, itens } = response.data;
+        console.log('✅ [ITENS SOLICITACAO] Solicitação recebida:', solicitacao);
+        console.log('✅ [ITENS SOLICITACAO] Itens da solicitação recebidos:', itens);
+        console.log('📦 [ITENS SOLICITACAO] Quantidade de itens:', itens.length);
+        
         setSolicitacaoSelecionada(solicitacao);
         
         if (!pedidoExistente) {
+          console.log('✅ [ITENS] Novo pedido - resetando itens');
           setItensDisponiveis(itens.map(item => ({ ...item, selected: false, quantidade_pedido: 0, valor_unitario: 0 })));
           setItensSelecionados([]);
         } else {
+          console.log('✅ [ITENS] Pedido existente - mapeando itens...');
+          console.log('📦 [ITENS] Itens do pedido para mapear:', pedidoExistente.itens);
+          
           // Quando há pedido existente, mapear itens do pedido com itens da solicitação
           const itensDisponiveisNovos = itens.map(item => {
+            console.log('🔍 [ITENS] Mapeando item da solicitação:', {
+              id: item.id,
+              produto_id: item.produto_id,
+              nome: item.nome
+            });
+            
             // Procurar item no pedido por solicitacao_item_id ou id
-            const itemNoPedido = pedidoExistente.itens?.find(pi => 
-              pi.solicitacao_item_id === item.id || 
-              pi.id === item.id ||
-              (pi.produto_generico_id && pi.produto_generico_id === item.produto_id)
-            );
+            const itemNoPedido = pedidoExistente.itens?.find(pi => {
+              const match1 = pi.solicitacao_item_id === item.id;
+              const match2 = pi.id === item.id;
+              const match3 = pi.produto_generico_id && pi.produto_generico_id === item.produto_id;
+              
+              if (match1 || match2 || match3) {
+                console.log('✅ [ITENS] Match encontrado:', {
+                  solicitacao_item_id: pi.solicitacao_item_id,
+                  pedido_item_id: pi.id,
+                  produto_generico_id: pi.produto_generico_id,
+                  match1,
+                  match2,
+                  match3
+                });
+              }
+              
+              return match1 || match2 || match3;
+            });
+            
             if (itemNoPedido) {
+              console.log('✅ [ITENS] Item mapeado encontrado:', itemNoPedido);
               return {
                 ...item,
                 id: item.id, // Garantir que o id da solicitação seja mantido
@@ -265,21 +354,32 @@ export const usePedidosComprasModal = ({ pedidoCompras, isOpen, solicitacoesDisp
                 valor_unitario: itemNoPedido.valor_unitario || 0
               };
             }
+            console.log('⚠️ [ITENS] Item não encontrado no pedido');
             return { ...item, selected: false, quantidade_pedido: 0, valor_unitario: 0 };
           });
           
+          console.log('📦 [ITENS] Itens mapeados:', itensDisponiveisNovos);
+          const itensSelecionadosCount = itensDisponiveisNovos.filter(i => i.selected).length;
+          console.log('📦 [ITENS] Itens selecionados após mapeamento:', itensSelecionadosCount);
+          
           // Se não encontrou itens mapeados, usar diretamente os itens do pedido
-          if (pedidoExistente.itens && pedidoExistente.itens.length > 0 && itensDisponiveisNovos.filter(i => i.selected).length === 0) {
-            const itensDoPedido = pedidoExistente.itens.map(itemPedido => ({
-              ...itemPedido,
-              id: itemPedido.solicitacao_item_id || itemPedido.id,
-              selected: true,
-              quantidade_pedido: itemPedido.quantidade_pedido || itemPedido.quantidade || 0,
-              valor_unitario: itemPedido.valor_unitario || 0
-            }));
+          if (pedidoExistente.itens && pedidoExistente.itens.length > 0 && itensSelecionadosCount === 0) {
+            console.log('⚠️ [ITENS] Nenhum item mapeado encontrado, usando itens do pedido diretamente');
+            const itensDoPedido = pedidoExistente.itens.map(itemPedido => {
+              console.log('📦 [ITENS] Item do pedido:', itemPedido);
+              return {
+                ...itemPedido,
+                id: itemPedido.solicitacao_item_id || itemPedido.id,
+                selected: true,
+                quantidade_pedido: itemPedido.quantidade_pedido || itemPedido.quantidade || 0,
+                valor_unitario: itemPedido.valor_unitario || 0
+              };
+            });
+            console.log('📦 [ITENS] Itens do pedido mapeados:', itensDoPedido);
             setItensDisponiveis(itensDoPedido);
             setItensSelecionados(itensDoPedido);
           } else {
+            console.log('✅ [ITENS] Usando itens mapeados da solicitação');
             setItensDisponiveis(itensDisponiveisNovos);
             setItensSelecionados(itensDisponiveisNovos.filter(item => item.selected));
           }
@@ -295,14 +395,16 @@ export const usePedidosComprasModal = ({ pedidoCompras, isOpen, solicitacoesDisp
           }
         }
       } else {
+        console.log('❌ [ITENS SOLICITACAO] Erro na resposta:', response.error);
         toast.error(response.error || 'Erro ao carregar itens da solicitação');
       }
     } catch (error) {
-      console.error('Erro ao carregar itens:', error);
+      console.error('❌ [ITENS SOLICITACAO] Erro ao carregar itens:', error);
       toast.error('Erro ao carregar itens da solicitação');
     } finally {
       setLoadingItens(false);
       carregandoItensRef.current = false;
+      console.log('✅ [ITENS SOLICITACAO] Carregamento finalizado');
     }
   }, [setValue, watch, carregarDadosFilial, carregarDadosFilialEspecifica]);
 
@@ -414,57 +516,109 @@ export const usePedidosComprasModal = ({ pedidoCompras, isOpen, solicitacoesDisp
 
   useEffect(() => {
     if (pedidoCompras && isOpen) {
+      console.log('🔵 [PEDIDO COMPRAS] Dados recebidos do pedido:', {
+        id: pedidoCompras.id,
+        numero_pedido: pedidoCompras.numero_pedido,
+        solicitacao_compras_id: pedidoCompras.solicitacao_compras_id,
+        fornecedor_id: pedidoCompras.fornecedor_id,
+        fornecedor_nome: pedidoCompras.fornecedor_nome,
+        fornecedor_cnpj: pedidoCompras.fornecedor_cnpj,
+        filial_id: pedidoCompras.filial_id,
+        filial_nome: pedidoCompras.filial_nome,
+        filial_faturamento_id: pedidoCompras.filial_faturamento_id,
+        filial_cobranca_id: pedidoCompras.filial_cobranca_id,
+        filial_entrega_id: pedidoCompras.filial_entrega_id,
+        forma_pagamento: pedidoCompras.forma_pagamento,
+        prazo_pagamento: pedidoCompras.prazo_pagamento,
+        observacoes: pedidoCompras.observacoes,
+        itens_count: pedidoCompras.itens?.length || 0,
+        itens: pedidoCompras.itens
+      });
+
       const carregarDados = async () => {
+        console.log('🔵 [CARREGAMENTO] Iniciando carregamento de dados...');
+        
         // Preencher formulário
         if (pedidoCompras.solicitacao_compras_id) {
+          console.log('✅ [SET VALUE] solicitacao_compras_id:', pedidoCompras.solicitacao_compras_id);
           setValue('solicitacao_compras_id', pedidoCompras.solicitacao_compras_id);
         }
         if (pedidoCompras.fornecedor_id) {
+          console.log('✅ [SET VALUE] fornecedor_id:', pedidoCompras.fornecedor_id);
           setValue('fornecedor_id', pedidoCompras.fornecedor_id);
         }
         if (pedidoCompras.fornecedor_nome) {
+          console.log('✅ [SET VALUE] fornecedor_nome:', pedidoCompras.fornecedor_nome);
           setValue('fornecedor_nome', pedidoCompras.fornecedor_nome);
         }
         if (pedidoCompras.fornecedor_cnpj) {
+          console.log('✅ [SET VALUE] fornecedor_cnpj:', pedidoCompras.fornecedor_cnpj);
           setValue('fornecedor_cnpj', pedidoCompras.fornecedor_cnpj);
         }
         if (pedidoCompras.filial_faturamento_id) {
+          console.log('✅ [SET VALUE] filial_faturamento_id:', pedidoCompras.filial_faturamento_id);
           setValue('filial_faturamento_id', pedidoCompras.filial_faturamento_id);
         }
         if (pedidoCompras.filial_cobranca_id) {
+          console.log('✅ [SET VALUE] filial_cobranca_id:', pedidoCompras.filial_cobranca_id);
           setValue('filial_cobranca_id', pedidoCompras.filial_cobranca_id);
         }
         if (pedidoCompras.filial_entrega_id) {
+          console.log('✅ [SET VALUE] filial_entrega_id:', pedidoCompras.filial_entrega_id);
           setValue('filial_entrega_id', pedidoCompras.filial_entrega_id);
         }
         if (pedidoCompras.observacoes) {
+          console.log('✅ [SET VALUE] observacoes:', pedidoCompras.observacoes);
           setValue('observacoes', pedidoCompras.observacoes);
         }
         
         // Carregar fornecedor
         if (pedidoCompras.fornecedor_id) {
+          console.log('🔵 [FORNECEDOR] Buscando fornecedor por ID:', pedidoCompras.fornecedor_id);
           buscarFornecedorPorId(pedidoCompras.fornecedor_id);
+        } else {
+          console.log('⚠️ [FORNECEDOR] Nenhum fornecedor_id encontrado');
         }
         
         // Carregar filiais
+        console.log('🔵 [FILIAIS] Carregando dados das filiais...');
         if (pedidoCompras.filial_faturamento_id) {
-          await carregarDadosFilialEspecifica(pedidoCompras.filial_faturamento_id, 'faturamento');
+          console.log('✅ [FILIAL FATURAMENTO] ID:', pedidoCompras.filial_faturamento_id);
+          const dadosFaturamento = await carregarDadosFilialEspecifica(pedidoCompras.filial_faturamento_id, 'faturamento');
+          console.log('📦 [FILIAL FATURAMENTO] Dados carregados:', dadosFaturamento);
         } else if (pedidoCompras.filial_id) {
+          console.log('⚠️ [FILIAL FATURAMENTO] Usando filial_id como fallback:', pedidoCompras.filial_id);
           await carregarDadosFilialEspecifica(pedidoCompras.filial_id, 'faturamento');
+        } else {
+          console.log('❌ [FILIAL FATURAMENTO] Nenhum ID encontrado');
         }
         
         if (pedidoCompras.filial_cobranca_id) {
-          await carregarDadosFilialEspecifica(pedidoCompras.filial_cobranca_id, 'cobranca');
+          console.log('✅ [FILIAL COBRANCA] ID:', pedidoCompras.filial_cobranca_id);
+          const dadosCobranca = await carregarDadosFilialEspecifica(pedidoCompras.filial_cobranca_id, 'cobranca');
+          console.log('📦 [FILIAL COBRANCA] Dados carregados:', dadosCobranca);
+        } else {
+          console.log('❌ [FILIAL COBRANCA] Nenhum ID encontrado');
         }
         
         if (pedidoCompras.filial_entrega_id) {
-          await carregarDadosFilialEspecifica(pedidoCompras.filial_entrega_id, 'entrega');
+          console.log('✅ [FILIAL ENTREGA] ID:', pedidoCompras.filial_entrega_id);
+          const dadosEntrega = await carregarDadosFilialEspecifica(pedidoCompras.filial_entrega_id, 'entrega');
+          console.log('📦 [FILIAL ENTREGA] Dados carregados:', dadosEntrega);
+        } else {
+          console.log('❌ [FILIAL ENTREGA] Nenhum ID encontrado');
         }
         
         // Carregar itens - sempre tentar carregar da solicitação primeiro
+        console.log('🔵 [ITENS] Verificando itens do pedido...');
+        console.log('📦 [ITENS PEDIDO] Itens recebidos:', pedidoCompras.itens);
+        
         if (pedidoCompras.solicitacao_compras_id) {
+          console.log('✅ [ITENS] Carregando itens da solicitação:', pedidoCompras.solicitacao_compras_id);
           await carregarItensSolicitacao(pedidoCompras.solicitacao_compras_id, pedidoCompras);
         } else if (pedidoCompras.itens && Array.isArray(pedidoCompras.itens) && pedidoCompras.itens.length > 0) {
+          console.log('✅ [ITENS] Usando itens diretamente do pedido (sem solicitação)');
+          console.log('📦 [ITENS] Itens antes do mapeamento:', pedidoCompras.itens);
           // Se não tem solicitação mas tem itens, usar itens diretamente
           const itensComSelected = pedidoCompras.itens.map(item => ({
             ...item,
@@ -473,27 +627,47 @@ export const usePedidosComprasModal = ({ pedidoCompras, isOpen, solicitacoesDisp
             quantidade_pedido: item.quantidade_pedido || item.quantidade || 0,
             valor_unitario: item.valor_unitario || 0
           }));
+          console.log('📦 [ITENS] Itens após mapeamento:', itensComSelected);
           setItensSelecionados(itensComSelected);
           setItensDisponiveis(itensComSelected);
+        } else {
+          console.log('❌ [ITENS] Nenhum item encontrado no pedido');
         }
 
         // Aguardar carregamento de formas e prazos antes de buscar IDs
+        console.log('🔵 [PAGAMENTO] Verificando formas e prazos...');
+        console.log('📦 [PAGAMENTO] Formas disponíveis:', formasPagamento.length);
+        console.log('📦 [PAGAMENTO] Prazos disponíveis:', prazosPagamento.length);
+        console.log('📦 [PAGAMENTO] Forma do pedido:', pedidoCompras.forma_pagamento);
+        console.log('📦 [PAGAMENTO] Prazo do pedido:', pedidoCompras.prazo_pagamento);
+        
         if (formasPagamento.length === 0) {
+          console.log('⚠️ [PAGAMENTO] Carregando formas de pagamento...');
           await carregarFormasPagamento();
         }
         if (prazosPagamento.length === 0) {
+          console.log('⚠️ [PAGAMENTO] Carregando prazos de pagamento...');
           await carregarPrazosPagamento();
         }
         
         // Aguardar um pouco e buscar IDs
         setTimeout(() => {
+          console.log('🔵 [PAGAMENTO] Buscando IDs por nome...');
           if (pedidoCompras.forma_pagamento) {
+            console.log('✅ [PAGAMENTO] Buscando forma:', pedidoCompras.forma_pagamento);
             buscarIdFormaPagamentoPorNome(pedidoCompras.forma_pagamento);
+          } else {
+            console.log('❌ [PAGAMENTO] Nenhuma forma_pagamento encontrada');
           }
           if (pedidoCompras.prazo_pagamento) {
+            console.log('✅ [PAGAMENTO] Buscando prazo:', pedidoCompras.prazo_pagamento);
             buscarIdPrazoPagamentoPorNome(pedidoCompras.prazo_pagamento);
+          } else {
+            console.log('❌ [PAGAMENTO] Nenhum prazo_pagamento encontrado');
           }
         }, 300);
+        
+        console.log('✅ [CARREGAMENTO] Carregamento de dados concluído');
       };
 
       carregarDados();
