@@ -151,10 +151,10 @@ const SolicitacoesCompras = () => {
         additionalFilters={[
           {
             label: 'Status',
-            value: statusFilter || 'todos',
+            value: statusFilter || '',
             onChange: setStatusFilter,
             options: [
-              { value: 'todos', label: 'Todos os status' },
+              { value: '', label: 'Todos os status' },
               { value: 'aberto', label: 'Aberto' },
               { value: 'parcial', label: 'Parcial' },
               { value: 'finalizado', label: 'Finalizado' },
@@ -163,10 +163,10 @@ const SolicitacoesCompras = () => {
           },
           {
             label: 'Filial',
-            value: filialFilter || 'todos',
+            value: filialFilter || '',
             onChange: setFilialFilter,
             options: [
-              { value: 'todos', label: 'Todas as filiais' },
+              { value: '', label: 'Todas as filiais' },
               ...filiais.map(filial => ({
                 value: filial.id.toString(),
                 label: `${filial.filial || filial.nome || 'Filial'} ${filial.codigo_filial ? `(${filial.codigo_filial})` : ''}`

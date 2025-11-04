@@ -113,6 +113,7 @@ const RelatorioInspecao = () => {
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         onKeyPress={handleKeyPress}
+        onClear={handleClearFilters}
         additionalFilters={[
           {
             label: 'Status',
