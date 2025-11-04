@@ -209,7 +209,7 @@ class SolicitacoesComprasCRUDController {
 
       // Buscar símbolo da unidade
       const [unidade] = await executeQuery(
-        'SELECT simbolo FROM unidades_medida WHERE id = ?',
+        'SELECT sigla FROM unidades_medida WHERE id = ?',
         [unidade_medida_id]
       );
 
@@ -231,7 +231,7 @@ class SolicitacoesComprasCRUDController {
           produto.codigo,
           produto.nome,
           unidade_medida_id,
-          unidade ? unidade.simbolo : null,
+          unidade ? unidade.sigla : null,
           quantidade,
           observacao || null
         ]
@@ -357,7 +357,7 @@ class SolicitacoesComprasCRUDController {
 
       // Buscar símbolo da unidade
       const [unidade] = await executeQuery(
-        'SELECT simbolo FROM unidades_medida WHERE id = ?',
+        'SELECT sigla FROM unidades_medida WHERE id = ?',
         [unidade_medida_id]
       );
 
@@ -379,7 +379,7 @@ class SolicitacoesComprasCRUDController {
           produto.codigo,
           produto.nome,
           unidade_medida_id,
-          unidade ? unidade.simbolo : null,
+          unidade ? unidade.sigla : null,
           quantidade,
           observacao || null
         ]
