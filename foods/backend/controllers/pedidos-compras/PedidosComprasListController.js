@@ -265,7 +265,8 @@ class PedidosComprasListController {
         filial_codigo: solicitacao.filial_codigo,
         data_entrega_cd: solicitacao.data_entrega_cd,
         semana_abastecimento: solicitacao.semana_abastecimento,
-        motivo: solicitacao.motivo
+        justificativa: solicitacao.justificativa,
+        motivo: solicitacao.justificativa
       },
       itens: itensComSaldo
     }, 'Itens da solicitação encontrados com sucesso', STATUS_CODES.OK);

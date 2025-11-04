@@ -21,7 +21,7 @@ const PedidosComprasDadosSolicitacao = ({ solicitacaoSelecionada }) => {
         </div>
         <div>
           <span className="text-gray-600 font-medium">Justificativa:</span>
-          <p className="text-gray-900 mt-1">{solicitacaoSelecionada.motivo || '-'}</p>
+          <p className="text-gray-900 mt-1">{solicitacaoSelecionada.justificativa || solicitacaoSelecionada.motivo || '-'}</p>
         </div>
       </div>
     </div>

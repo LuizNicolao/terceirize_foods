@@ -110,7 +110,7 @@ class SolicitacoesComprasCRUDController {
     const {
       filial_id,
       data_entrega_cd,
-      motivo,
+      justificativa,
       observacoes,
       itens
     } = req.body;
@@ -118,8 +118,8 @@ class SolicitacoesComprasCRUDController {
     const usuario_id = req.user.id;
 
     // Validar campos obrigatórios
-    if (!filial_id || !data_entrega_cd || !motivo) {
-      return errorResponse(res, 'Campos obrigatórios: filial_id, data_entrega_cd, motivo', STATUS_CODES.BAD_REQUEST);
+    if (!filial_id || !data_entrega_cd || !justificativa) {
+      return errorResponse(res, 'Campos obrigatórios: filial_id, data_entrega_cd, justificativa', STATUS_CODES.BAD_REQUEST);
     }
 
     if (!itens || !Array.isArray(itens) || itens.length === 0) {
@@ -154,7 +154,6 @@ class SolicitacoesComprasCRUDController {
     const result = await executeQuery(
       `INSERT INTO solicitacoes_compras (
         numero_solicitacao,
-        descricao,
         usuario_id,
         usuario_nome,
         unidade,
@@ -164,14 +163,13 @@ class SolicitacoesComprasCRUDController {
         observacoes,
         status,
         data_documento,
-        motivo,
+        justificativa,
         filial_id,
         criado_por,
         criado_em
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'aberto', CURDATE(), ?, ?, ?, NOW())`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'aberto', CURDATE(), ?, ?, ?, NOW())`,
       [
         numero_solicitacao,
-        motivo, // descricao = motivo
         usuario_id,
         usuario_nome,
         filial.filial || filial.nome,
@@ -179,7 +177,7 @@ class SolicitacoesComprasCRUDController {
         data_entrega_cd,
         semana_abastecimento,
         observacoes || null,
-        motivo,
+        justificativa,
         filial_id,
         usuario_id
       ]
@@ -261,7 +259,7 @@ class SolicitacoesComprasCRUDController {
     const {
       filial_id,
       data_entrega_cd,
-      motivo,
+      justificativa,
       observacoes,
       itens
     } = req.body;
@@ -282,8 +280,8 @@ class SolicitacoesComprasCRUDController {
     }
 
     // Validar campos obrigatórios
-    if (!filial_id || !data_entrega_cd || !motivo) {
-      return errorResponse(res, 'Campos obrigatórios: filial_id, data_entrega_cd, motivo', STATUS_CODES.BAD_REQUEST);
+    if (!filial_id || !data_entrega_cd || !justificativa) {
+      return errorResponse(res, 'Campos obrigatórios: filial_id, data_entrega_cd, justificativa', STATUS_CODES.BAD_REQUEST);
     }
 
     if (!itens || !Array.isArray(itens) || itens.length === 0) {
@@ -306,24 +304,22 @@ class SolicitacoesComprasCRUDController {
     // Atualizar solicitação
     await executeQuery(
       `UPDATE solicitacoes_compras SET
-        descricao = ?,
         unidade = ?,
         data_necessidade = ?,
         data_entrega_cd = ?,
         semana_abastecimento = ?,
         observacoes = ?,
-        motivo = ?,
+        justificativa = ?,
         filial_id = ?,
         atualizado_em = NOW()
       WHERE id = ?`,
       [
-        motivo,
         filial.nome,
         data_entrega_cd,
         data_entrega_cd,
         semana_abastecimento,
         observacoes || null,
-        motivo,
+        justificativa,
         filial_id,
         id
       ]

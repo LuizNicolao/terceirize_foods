@@ -143,7 +143,7 @@ class PedidosComprasCRUDController {
         solData.semana_abastecimento || null,
         forma_pagamento || null,
         prazo_pagamento || null,
-        solData.motivo || null,
+        solData.justificativa || null,
         solData.numero_solicitacao || null,
         'em_digitacao',
         observacoes || null,

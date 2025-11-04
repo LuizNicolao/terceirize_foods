@@ -432,7 +432,7 @@ const validationConfigs = {
   // Configuração para Solicitações de Compras
   'solicitacoes-compras': {
     categories: {
-      basicInfo: ['filial_id', 'data_entrega_cd', 'motivo', 'observacoes'],
+      basicInfo: ['filial_id', 'data_entrega_cd', 'justificativa', 'observacoes'],
       items: ['itens', 'itens.*.produto_id', 'itens.*.quantidade', 'itens.*.unidade_medida_id', 'itens.*.observacao']
     },
     categoryNames: {

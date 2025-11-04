@@ -25,7 +25,7 @@ class SolicitacoesComprasListController {
 
     // Aplicar filtros
     if (search) {
-      whereClause += ' AND (sc.numero_solicitacao LIKE ? OR sc.descricao LIKE ? OR sc.usuario_nome LIKE ? OR sc.unidade LIKE ?)';
+      whereClause += ' AND (sc.numero_solicitacao LIKE ? OR sc.usuario_nome LIKE ? OR sc.unidade LIKE ? OR sc.justificativa LIKE ?)';
       params.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
     }
 
@@ -64,7 +64,6 @@ class SolicitacoesComprasListController {
       SELECT 
         sc.id,
         sc.numero_solicitacao,
-        sc.descricao,
         sc.usuario_id,
         sc.usuario_nome,
         sc.usuario_nome as solicitante,
@@ -75,7 +74,8 @@ class SolicitacoesComprasListController {
         sc.observacoes,
         sc.status,
         sc.data_documento,
-        sc.motivo,
+        sc.justificativa,
+        sc.justificativa as motivo,
         sc.filial_id,
         sc.criado_em,
         sc.atualizado_em,
@@ -117,7 +117,7 @@ class SolicitacoesComprasListController {
     
     // Aplicar mesmos filtros da query principal
     if (search) {
-      statsQuery += ' AND (sc.numero_solicitacao LIKE ? OR sc.descricao LIKE ? OR sc.usuario_nome LIKE ? OR sc.unidade LIKE ?)';
+      statsQuery += ' AND (sc.numero_solicitacao LIKE ? OR sc.usuario_nome LIKE ? OR sc.unidade LIKE ? OR sc.justificativa LIKE ?)';
       statsParams.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
     }
     if (status) {

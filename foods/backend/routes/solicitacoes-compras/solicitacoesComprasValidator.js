@@ -59,14 +59,14 @@ const solicitacoesComprasValidations = {
     body('data_entrega_cd')
       .isISO8601()
       .withMessage('Data de entrega CD deve ser uma data válida (formato ISO)'),
-    body('motivo')
+    body('justificativa')
       .isIn(['Compra Emergencial', 'Compra Programada'])
-      .withMessage('Motivo deve ser "Compra Emergencial" ou "Compra Programada"'),
+      .withMessage('Justificativa deve ser "Compra Emergencial" ou "Compra Programada"'),
     body('observacoes')
       .optional({ nullable: true, checkFalsy: true })
       .custom((value, { req }) => {
-        // Se motivo for "Compra Emergencial", observações são obrigatórias
-        if (req.body.motivo && req.body.motivo === 'Compra Emergencial') {
+        // Se justificativa for "Compra Emergencial", observações são obrigatórias
+        if (req.body.justificativa && req.body.justificativa === 'Compra Emergencial') {
           if (value === null || value === undefined || value === '' || (typeof value === 'string' && value.trim() === '')) {
             throw new Error('Observações são obrigatórias para Compra Emergencial');
           }
@@ -175,14 +175,14 @@ const solicitacoesComprasValidations = {
     body('data_entrega_cd')
       .isISO8601()
       .withMessage('Data de entrega CD deve ser uma data válida (formato ISO)'),
-    body('motivo')
+    body('justificativa')
       .isIn(['Compra Emergencial', 'Compra Programada'])
-      .withMessage('Motivo deve ser "Compra Emergencial" ou "Compra Programada"'),
+      .withMessage('Justificativa deve ser "Compra Emergencial" ou "Compra Programada"'),
     body('observacoes')
       .optional({ nullable: true, checkFalsy: true })
       .custom((value, { req }) => {
-        // Se motivo for "Compra Emergencial", observações são obrigatórias
-        if (req.body.motivo && req.body.motivo === 'Compra Emergencial') {
+        // Se justificativa for "Compra Emergencial", observações são obrigatórias
+        if (req.body.justificativa && req.body.justificativa === 'Compra Emergencial') {
           if (value === null || value === undefined || value === '' || (typeof value === 'string' && value.trim() === '')) {
             throw new Error('Observações são obrigatórias para Compra Emergencial');
           }

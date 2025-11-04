@@ -26,7 +26,7 @@ const SolicitacoesComprasModal = ({
 
   // Observar data de entrega para buscar semana
   const dataEntrega = watch('data_entrega_cd');
-  const motivo = watch('motivo');
+  const justificativa = watch('justificativa');
 
   // Buscar semana de abastecimento quando data mudar
   useEffect(() => {
@@ -56,9 +56,18 @@ const SolicitacoesComprasModal = ({
       // Preencher formulário com dados da solicitação
       Object.keys(solicitacao).forEach(key => {
         if (solicitacao[key] !== null && solicitacao[key] !== undefined && key !== 'itens') {
-          setValue(key, solicitacao[key]);
+          // Mapear motivo para justificativa se necessário (compatibilidade)
+          if (key === 'motivo' && !solicitacao.justificativa) {
+            setValue('justificativa', solicitacao[key]);
+          } else if (key !== 'motivo') {
+            setValue(key, solicitacao[key]);
+          }
         }
       });
+      // Garantir que justificativa seja preenchida mesmo se vier apenas motivo
+      if (solicitacao.justificativa || solicitacao.motivo) {
+        setValue('justificativa', solicitacao.justificativa || solicitacao.motivo);
+      }
       
       // Carregar itens se existirem
       if (solicitacao.itens && Array.isArray(solicitacao.itens)) {
@@ -172,7 +181,7 @@ const SolicitacoesComprasModal = ({
       return;
     }
 
-    if (!data.motivo) {
+    if (!data.justificativa) {
       toast.error('Justificativa é obrigatória');
       return;
     }
@@ -200,8 +209,8 @@ const SolicitacoesComprasModal = ({
       }
     }
 
-    // Validar observações se motivo for "Compra Emergencial"
-    if (data.motivo && data.motivo === 'Compra Emergencial') {
+    // Validar observações se justificativa for "Compra Emergencial"
+    if (data.justificativa && data.justificativa === 'Compra Emergencial') {
       if (!data.observacoes || data.observacoes.trim() === '') {
         toast.error('Observações são obrigatórias para Compra Emergencial');
         return;
@@ -247,7 +256,7 @@ const SolicitacoesComprasModal = ({
     const formData = {
       filial_id: filialId,
       data_entrega_cd: data.data_entrega_cd,
-      motivo: data.motivo,
+      justificativa: data.justificativa,
       observacoes: data.observacoes && data.observacoes.trim() !== '' ? data.observacoes.trim() : null,
       itens: itensFormatados
     };
@@ -336,10 +345,10 @@ const SolicitacoesComprasModal = ({
               <Input
                 label="Justificativa *"
                 type="select"
-                {...register('motivo', {
+                {...register('justificativa', {
                   required: 'Justificativa é obrigatória'
                 })}
-                error={errors.motivo?.message}
+                error={errors.justificativa?.message}
                 disabled={viewMode}
               >
                 <option value="">Selecione uma justificativa</option>
@@ -379,17 +388,17 @@ const SolicitacoesComprasModal = ({
             {/* Observações Gerais */}
             <div className="mt-4">
               <Input
-                label={`Observações Gerais${motivo && motivo === 'Compra Emergencial' ? ' *' : ''}`}
+                label={`Observações Gerais${justificativa && justificativa === 'Compra Emergencial' ? ' *' : ''}`}
                 type="textarea"
                 rows={3}
                 {...register('observacoes', {
-                  required: motivo && motivo === 'Compra Emergencial' 
+                  required: justificativa && justificativa === 'Compra Emergencial' 
                     ? 'Observações são obrigatórias para Compra Emergencial' 
                     : false
                 })}
                 error={errors.observacoes?.message}
                 disabled={viewMode}
-                placeholder={motivo && motivo === 'Compra Emergencial' 
+                placeholder={justificativa && justificativa === 'Compra Emergencial' 
                   ? 'Digite as observações da solicitação (obrigatório para Compra Emergencial)...' 
                   : 'Digite as observações (opcional para Compra Programada)...'}
               />
