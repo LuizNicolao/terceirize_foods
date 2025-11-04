@@ -464,14 +464,11 @@ const SolicitacoesComprasModal = ({
                             )}
                           </td>
                           <td className="px-4 py-3">
-                            <Input
-                              type="text"
-                              value={item.unidade_simbolo || item.unidade_medida || item.unidade_texto || '-'}
-                              disabled={true}
-                              className="bg-gray-50 cursor-not-allowed"
-                              readOnly
-                              placeholder="Selecione um produto..."
-                            />
+                            <div className="text-sm text-gray-900 font-medium">
+                              {item.unidade_simbolo || item.unidade_medida || item.unidade_texto || (
+                                <span className="text-gray-400 italic">Selecione um produto...</span>
+                              )}
+                            </div>
                           </td>
                           <td className="px-4 py-3">
                             {viewMode ? (
