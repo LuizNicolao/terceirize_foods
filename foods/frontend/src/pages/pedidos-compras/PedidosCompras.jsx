@@ -172,30 +172,26 @@ const PedidosCompras = () => {
       </div>
 
       {/* Tabela */}
-      <div className="bg-white rounded-lg shadow-sm border">
-        <PedidosComprasTable
-          pedidosCompras={pedidosCompras}
-          onView={handleViewPedidoCompras}
-          onEdit={handleEditPedidoCompras}
-          onDelete={handleDeletePedidoCompras}
-          canView={canView('pedidos_compras')}
-          canEdit={canEdit('pedidos_compras')}
-          canDelete={canDelete('pedidos_compras')}
-          getStatusBadge={getStatusBadge}
-        />
+      <PedidosComprasTable
+        pedidosCompras={pedidosCompras}
+        onView={handleViewPedidoCompras}
+        onEdit={handleEditPedidoCompras}
+        onDelete={handleDeletePedidoCompras}
+        canView={canView('pedidos_compras')}
+        canEdit={canEdit('pedidos_compras')}
+        canDelete={canDelete('pedidos_compras')}
+        getStatusBadge={getStatusBadge}
+      />
 
-        {/* Paginação - sempre mostrar para permitir mudança de itens por página */}
-        <div className="p-4 border-t border-gray-200">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalItems={totalItems}
-            itemsPerPage={itemsPerPage}
-            onPageChange={handlePageChange}
-            onItemsPerPageChange={handleItemsPerPageChange}
-          />
-        </div>
-      </div>
+      {/* Paginação - sempre mostrar para permitir mudança de itens por página */}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+        totalItems={totalItems}
+        itemsPerPage={itemsPerPage}
+        onItemsPerPageChange={handleItemsPerPageChange}
+      />
 
       {/* Modal */}
       <PedidosComprasModal

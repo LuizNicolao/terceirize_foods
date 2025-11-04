@@ -152,30 +152,26 @@ const RelatorioInspecao = () => {
       </div>
 
       {/* Tabela */}
-      <div className="bg-white rounded-lg shadow-sm border">
-        <RelatorioInspecaoTable
-          rirs={rirs}
-          onView={canView('relatorio_inspecao') ? handleViewRIR : null}
-          onEdit={canEdit('relatorio_inspecao') ? handleEditRIR : null}
-          onDelete={canDelete('relatorio_inspecao') ? handleDeleteRIR : null}
-          canView={canView('relatorio_inspecao')}
-          canEdit={canEdit('relatorio_inspecao')}
-          canDelete={canDelete('relatorio_inspecao')}
-          getStatusBadge={getStatusBadge}
-        />
+      <RelatorioInspecaoTable
+        rirs={rirs}
+        onView={canView('relatorio_inspecao') ? handleViewRIR : null}
+        onEdit={canEdit('relatorio_inspecao') ? handleEditRIR : null}
+        onDelete={canDelete('relatorio_inspecao') ? handleDeleteRIR : null}
+        canView={canView('relatorio_inspecao')}
+        canEdit={canEdit('relatorio_inspecao')}
+        canDelete={canDelete('relatorio_inspecao')}
+        getStatusBadge={getStatusBadge}
+      />
 
-        {/* Paginação - sempre mostrar para permitir mudança de itens por página */}
-        <div className="p-4 border-t border-gray-200">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalItems={totalItems}
-            itemsPerPage={itemsPerPage}
-            onPageChange={handlePageChange}
-            onItemsPerPageChange={handleItemsPerPageChange}
-          />
-        </div>
-      </div>
+      {/* Paginação - sempre mostrar para permitir mudança de itens por página */}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+        totalItems={totalItems}
+        itemsPerPage={itemsPerPage}
+        onItemsPerPageChange={handleItemsPerPageChange}
+      />
 
       {/* Modal */}
       <RelatorioInspecaoModal

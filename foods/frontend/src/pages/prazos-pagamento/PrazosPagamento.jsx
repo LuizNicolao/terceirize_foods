@@ -150,32 +150,28 @@ const PrazosPagamento = () => {
       </div>
 
       {/* Tabela */}
-      <div className="bg-white rounded-lg shadow-sm border">
-        <PrazosPagamentoTable
-          prazosPagamento={prazosPagamento}
-          onView={handleViewPrazoPagamento}
-          onEdit={handleEditPrazoPagamento}
-          onDelete={handleDeletePrazoPagamento}
-          canView={canView('prazos_pagamento')}
-          canEdit={canEdit('prazos_pagamento')}
-          canDelete={canDelete('prazos_pagamento')}
-          getStatusBadge={getStatusBadge}
-          calcularVencimentos={calcularVencimentos}
-          formatarParcelas={formatarParcelas}
-        />
+      <PrazosPagamentoTable
+        prazosPagamento={prazosPagamento}
+        onView={handleViewPrazoPagamento}
+        onEdit={handleEditPrazoPagamento}
+        onDelete={handleDeletePrazoPagamento}
+        canView={canView('prazos_pagamento')}
+        canEdit={canEdit('prazos_pagamento')}
+        canDelete={canDelete('prazos_pagamento')}
+        getStatusBadge={getStatusBadge}
+        calcularVencimentos={calcularVencimentos}
+        formatarParcelas={formatarParcelas}
+      />
 
-        {/* Paginação - sempre mostrar para permitir mudança de itens por página */}
-        <div className="p-4 border-t border-gray-200">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalItems={totalItems}
-            itemsPerPage={itemsPerPage}
-            onPageChange={handlePageChange}
-            onItemsPerPageChange={handleItemsPerPageChange}
-          />
-        </div>
-      </div>
+      {/* Paginação - sempre mostrar para permitir mudança de itens por página */}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+        totalItems={totalItems}
+        itemsPerPage={itemsPerPage}
+        onItemsPerPageChange={handleItemsPerPageChange}
+      />
 
       {/* Modal de Prazo de Pagamento */}
       <PrazosPagamentoModal

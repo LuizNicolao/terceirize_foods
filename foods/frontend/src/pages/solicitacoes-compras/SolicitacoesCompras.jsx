@@ -199,31 +199,27 @@ const SolicitacoesCompras = () => {
       </div>
 
       {/* Tabela */}
-      <div className="bg-white rounded-lg shadow-sm border">
-        <SolicitacoesComprasTable
-          solicitacoes={solicitacoes}
-          onView={canView('solicitacoes_compras') ? handleViewSolicitacao : null}
-          onEdit={canEdit('solicitacoes_compras') ? handleEditSolicitacao : null}
-          onDelete={canDelete('solicitacoes_compras') ? handleDeleteSolicitacao : null}
-          canView={canView('solicitacoes_compras')}
-          canEdit={canEdit('solicitacoes_compras')}
-          canDelete={canDelete('solicitacoes_compras')}
-          getFilialName={getFilialName}
-          getStatusLabel={getStatusLabel}
-        />
+      <SolicitacoesComprasTable
+        solicitacoes={solicitacoes}
+        onView={canView('solicitacoes_compras') ? handleViewSolicitacao : null}
+        onEdit={canEdit('solicitacoes_compras') ? handleEditSolicitacao : null}
+        onDelete={canDelete('solicitacoes_compras') ? handleDeleteSolicitacao : null}
+        canView={canView('solicitacoes_compras')}
+        canEdit={canEdit('solicitacoes_compras')}
+        canDelete={canDelete('solicitacoes_compras')}
+        getFilialName={getFilialName}
+        getStatusLabel={getStatusLabel}
+      />
 
-        {/* Paginação - sempre mostrar para permitir mudança de itens por página */}
-        <div className="p-4 border-t border-gray-200">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalItems={totalItems}
-            itemsPerPage={itemsPerPage}
-            onPageChange={handlePageChange}
-            onItemsPerPageChange={handleItemsPerPageChange}
-          />
-        </div>
-      </div>
+      {/* Paginação - sempre mostrar para permitir mudança de itens por página */}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+        totalItems={totalItems}
+        itemsPerPage={itemsPerPage}
+        onItemsPerPageChange={handleItemsPerPageChange}
+      />
 
       {/* Modal */}
       <SolicitacoesComprasModal
