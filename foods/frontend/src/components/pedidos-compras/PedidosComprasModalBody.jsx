@@ -50,12 +50,13 @@ const PedidosComprasModalBody = ({
   // Props
   pedidoCompras,
   isViewMode,
-  solicitacoesDisponiveis
+  solicitacoesDisponiveis,
+  footer
 }) => {
   const itensParaExibir = pedidoCompras ? itensSelecionados : itensDisponiveis;
 
   return (
-    <form id="pedidos-compras-form" onSubmit={handleSubmit} className="p-6 space-y-6">
+    <form onSubmit={handleSubmit} className="p-6 space-y-6">
       {/* Solicitação de Compras */}
       <PedidosComprasSolicitacaoSelect
         solicitacoesDisponiveis={solicitacoesDisponiveis}
@@ -232,6 +233,9 @@ const PedidosComprasModalBody = ({
           </div>
         )}
       </div>
+
+      {/* Footer dentro do formulário */}
+      {footer}
     </form>
   );
 };
