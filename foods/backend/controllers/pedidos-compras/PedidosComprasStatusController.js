@@ -5,13 +5,14 @@
 
 const { executeQuery } = require('../../config/database');
 const { successResponse, errorResponse, STATUS_CODES } = require('../../middleware/responseHandler');
+const { asyncHandler } = require('../../middleware/responseHandler');
 
 class PedidosComprasStatusController {
   /**
    * POST /api/pedidos-compras/acoes-em-lote/aprovar
    * Aprova múltiplos pedidos (apenas em_digitacao)
    */
-  static async aprovarPedidosEmLote(req, res) {
+  static aprovarPedidosEmLote = asyncHandler(async (req, res) => {
     try {
       const { ids } = req.body;
 
@@ -61,13 +62,13 @@ class PedidosComprasStatusController {
       console.error('Erro ao aprovar pedidos em lote:', error);
       return errorResponse(res, 'Erro ao aprovar pedidos', STATUS_CODES.INTERNAL_SERVER_ERROR);
     }
-  }
+  });
 
   /**
    * POST /api/pedidos-compras/acoes-em-lote/reabrir
    * Reabre múltiplos pedidos (apenas aprovado)
    */
-  static async reabrirPedidosEmLote(req, res) {
+  static reabrirPedidosEmLote = asyncHandler(async (req, res) => {
     try {
       const { ids } = req.body;
 
@@ -119,7 +120,7 @@ class PedidosComprasStatusController {
       console.error('Erro ao reabrir pedidos em lote:', error);
       return errorResponse(res, 'Erro ao reabrir pedidos', STATUS_CODES.INTERNAL_SERVER_ERROR);
     }
-  }
+  });
 }
 
 module.exports = PedidosComprasStatusController;
