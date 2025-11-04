@@ -1,5 +1,5 @@
 import React from 'react';
-import { ActionButtons, EmptyState } from '../ui';
+import { ActionButtons, EmptyState, Button } from '../ui';
 import { FaCheck, FaUndo } from 'react-icons/fa';
 
 const PedidosComprasTable = ({
@@ -43,29 +43,39 @@ const PedidosComprasTable = ({
     <>
       {/* Barra de Ações em Lote */}
       {selectedIds.length > 0 && (
-        <div className="mb-4 bg-green-50 border border-green-200 rounded-lg p-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-green-900">
-              {selectedIds.length} pedido(s) selecionado(s)
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={onAprovarLote}
-              disabled={loadingBatch}
-              className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm font-medium"
-            >
-              <FaCheck className="w-4 h-4" />
-              Aprovar Pedidos
-            </button>
-            <button
-              onClick={onReabrirLote}
-              disabled={loadingBatch}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm font-medium"
-            >
-              <FaUndo className="w-4 h-4" />
-              Reabrir Pedidos
-            </button>
+        <div className="mb-4 bg-white border border-gray-200 rounded-lg shadow-sm p-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-gray-700">
+                {selectedIds.length} pedido(s) selecionado(s)
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={onAprovarLote}
+                disabled={loadingBatch}
+                loading={loadingBatch}
+                variant="success"
+                size="sm"
+                className="flex items-center gap-2"
+              >
+                <FaCheck className="w-4 h-4" />
+                <span className="hidden sm:inline">Aprovar Pedidos</span>
+                <span className="sm:hidden">Aprovar</span>
+              </Button>
+              <Button
+                onClick={onReabrirLote}
+                disabled={loadingBatch}
+                loading={loadingBatch}
+                variant="info"
+                size="sm"
+                className="flex items-center gap-2"
+              >
+                <FaUndo className="w-4 h-4" />
+                <span className="hidden sm:inline">Reabrir Pedidos</span>
+                <span className="sm:hidden">Reabrir</span>
+              </Button>
+            </div>
           </div>
         </div>
       )}
