@@ -110,19 +110,76 @@ class SolicitacoesComprasPDFController {
     res.setHeader('Content-Disposition', `inline; filename=solicitacao_${solicitacao.numero_solicitacao}.pdf`);
     doc.pipe(res);
 
-    // Cabeçalho
-    doc.fontSize(20).font('Helvetica-Bold').text('Visualizar Solicitação de Compra', { align: 'center' });
-    doc.moveDown(0.5);
-    doc.fontSize(14).font('Helvetica').text('Informações da Solicitação', { align: 'center' });
-    doc.moveDown(1);
+    // Função auxiliar para desenhar caixa com borda
+    const drawBox = (x, y, width, height, padding = 10) => {
+      doc.rect(x, y, width, height).stroke();
+      return { x: x + padding, y: y + padding, width: width - (padding * 2), height: height - (padding * 2) };
+    };
 
-    // Informações principais (duas colunas)
-    const infoY = doc.y;
-    doc.fontSize(10).font('Helvetica-Bold');
-    doc.text('Número:', 50, infoY);
-    doc.font('Helvetica');
-    doc.text(solicitacao.numero_solicitacao || '-', 120, infoY);
+    // Função auxiliar para desenhar badge de status
+    const drawStatusBadge = (x, y, status) => {
+      const statusText = status?.toUpperCase() || '-';
+      const statusWidth = doc.widthOfString(statusText, { font: 'Helvetica-Bold', fontSize: 9 }) + 10;
+      const statusHeight = 15;
+      
+      // Cor de fundo baseada no status
+      let bgColor = '#E5E7EB'; // cinza padrão
+      let textColor = '#374151'; // cinza escuro
+      
+      if (status === 'parcial') {
+        bgColor = '#FED7AA'; // laranja claro
+        textColor = '#C2410C'; // laranja escuro
+      } else if (status === 'finalizado') {
+        bgColor = '#BBF7D0'; // verde claro
+        textColor = '#166534'; // verde escuro
+      } else if (status === 'aberto') {
+        bgColor = '#DBEAFE'; // azul claro
+        textColor = '#1E40AF'; // azul escuro
+      }
+      
+      // Desenhar retângulo arredondado
+      doc.roundedRect(x, y, statusWidth, statusHeight, 4)
+         .fillColor(bgColor)
+         .fill()
+         .fillColor(textColor);
+      
+      doc.fontSize(9).font('Helvetica-Bold')
+         .text(statusText, x + 5, y + 2, { width: statusWidth - 10, align: 'center' });
+      
+      doc.fillColor('black'); // Resetar cor
+      return { width: statusWidth, height: statusHeight };
+    };
 
+    // Título principal
+    doc.fontSize(24).font('Helvetica-Bold').fillColor('black');
+    const titleY = 50;
+    doc.text('Visualizar Solicitação de Compra', 50, titleY);
+    
+    // Linha embaixo do título
+    const titleWidth = doc.widthOfString('Visualizar Solicitação de Compra', { font: 'Helvetica-Bold', fontSize: 24 });
+    doc.moveTo(50, titleY + 25).lineTo(50 + titleWidth, titleY + 25).stroke();
+    
+    doc.moveDown(2);
+
+    const startY = doc.y;
+    const boxWidth = 240;
+    const boxHeight = 100;
+    const spacing = 20;
+
+    // Caixa: Informações da Solicitação (esquerda)
+    const infoBox = drawBox(50, startY, boxWidth, boxHeight);
+    doc.fontSize(12).font('Helvetica-Bold').fillColor('black');
+    doc.text('Informações da Solicitação', infoBox.x, infoBox.y);
+    
+    let infoContentY = infoBox.y + 20;
+    doc.fontSize(10);
+    
+    // Número
+    doc.font('Helvetica-Bold').text('Número:', infoBox.x, infoContentY);
+    doc.font('Helvetica').text(solicitacao.numero_solicitacao || '-', infoBox.x + 60, infoContentY);
+    infoContentY += 15;
+    
+    // Data de Criação
     const dataCriacao = solicitacao.criado_em 
       ? new Date(solicitacao.criado_em).toLocaleString('pt-BR', { 
           day: '2-digit', 
@@ -132,46 +189,53 @@ class SolicitacoesComprasPDFController {
           minute: '2-digit'
         })
       : '-';
+    doc.font('Helvetica-Bold').text('Data de Criação:', infoBox.x, infoContentY);
+    doc.font('Helvetica').text(dataCriacao, infoBox.x + 100, infoContentY);
+    infoContentY += 15;
     
-    doc.font('Helvetica-Bold');
-    doc.text('Data de Criação:', 300, infoY);
-    doc.font('Helvetica');
-    doc.text(dataCriacao, 420, infoY);
-
+    // Data Entrega CD
     const dataEntrega = solicitacao.data_entrega_cd
       ? new Date(solicitacao.data_entrega_cd).toLocaleDateString('pt-BR')
       : '-';
+    doc.font('Helvetica-Bold').text('Data Entrega CD:', infoBox.x, infoContentY);
+    doc.font('Helvetica').text(dataEntrega, infoBox.x + 110, infoContentY);
+    infoContentY += 15;
     
-    doc.font('Helvetica-Bold');
-    doc.text('Data Entrega CD:', 50, infoY + 20);
-    doc.font('Helvetica');
-    doc.text(dataEntrega, 150, infoY + 20);
+    // Status com badge
+    doc.font('Helvetica-Bold').text('Status:', infoBox.x, infoContentY);
+    const statusLabel = solicitacao.status?.toLowerCase() || '';
+    drawStatusBadge(infoBox.x + 50, infoContentY - 2, statusLabel);
 
-    const statusLabel = solicitacao.status?.toUpperCase() || '-';
-    doc.font('Helvetica-Bold');
-    doc.text('Status:', 300, infoY + 20);
-    doc.font('Helvetica');
-    doc.text(statusLabel, 350, infoY + 20);
+    // Caixa: Filial (direita)
+    const filialBox = drawBox(50 + boxWidth + spacing, startY, boxWidth, boxHeight);
+    doc.fontSize(12).font('Helvetica-Bold').fillColor('black');
+    doc.text('Filial', filialBox.x, filialBox.y);
+    
+    let filialContentY = filialBox.y + 20;
+    doc.fontSize(10);
+    
+    // Nome
+    doc.font('Helvetica-Bold').text('Nome:', filialBox.x, filialContentY);
+    doc.font('Helvetica').text(solicitacao.filial_nome || solicitacao.unidade || '-', filialBox.x + 50, filialContentY);
+    filialContentY += 15;
+    
+    // Código
+    doc.font('Helvetica-Bold').text('Código:', filialBox.x, filialContentY);
+    doc.font('Helvetica').text(solicitacao.filial_codigo || '-', filialBox.x + 50, filialContentY);
 
-    doc.moveDown(2);
-
-    // Seção: Filial
-    doc.fontSize(12).font('Helvetica-Bold').text('Filial', 50, doc.y);
-    doc.moveDown(0.5);
+    // Caixa: Justificativa (abaixo das informações)
+    const justificativaBox = drawBox(50, startY + boxHeight + spacing, boxWidth * 2 + spacing, 60);
+    doc.fontSize(12).font('Helvetica-Bold').fillColor('black');
+    doc.text('Justificativa', justificativaBox.x, justificativaBox.y);
+    
     doc.fontSize(10).font('Helvetica');
-    doc.text(`Nome: ${solicitacao.filial_nome || solicitacao.unidade || '-'}`, 50, doc.y);
-    doc.text(`Código: ${solicitacao.filial_codigo || '-'}`, 50, doc.y + 15);
-    doc.moveDown(1.5);
+    doc.text(`Justificativa: ${solicitacao.justificativa || '-'}`, justificativaBox.x, justificativaBox.y + 20);
 
-    // Seção: Justificativa
-    doc.fontSize(12).font('Helvetica-Bold').text('Justificativa', 50, doc.y);
-    doc.moveDown(0.5);
-    doc.fontSize(10).font('Helvetica');
-    doc.text(`Justificativa: ${solicitacao.justificativa || '-'}`, 50, doc.y);
-    doc.moveDown(2);
+    doc.y = startY + boxHeight + spacing + 60 + 20;
 
     // Tabela: Produtos Solicitados
-    doc.fontSize(12).font('Helvetica-Bold').text('Produtos Solicitados', 50, doc.y);
+    doc.fontSize(12).font('Helvetica-Bold').fillColor('black');
+    doc.text(`Produtos Solicitados (${itensComPedidos.length})`, 50, doc.y);
     doc.moveDown(0.5);
 
     const tableTop = doc.y;
@@ -263,13 +327,16 @@ class SolicitacoesComprasPDFController {
       doc.text(parseFloat(item.saldo_disponivel || 0).toFixed(2), x, currentY, { width: colWidths.saldo_disponivel, align: 'right' });
       x += colWidths.saldo_disponivel;
       
-      doc.text(item.status_item || '-', x, currentY);
+      // Status com badge
+      const itemStatus = item.status_item?.toLowerCase() || '';
+      const badgeInfo = drawStatusBadge(x, currentY - 2, itemStatus);
       x += colWidths.status;
       
       // Pedidos vinculados
       const pedidosText = item.pedidos_vinculados.length > 0
         ? item.pedidos_vinculados.map(p => `${p.numero} (${p.quantidade.toFixed(3)})`).join(', ')
         : '-';
+      doc.font('Helvetica').fontSize(8).fillColor('black');
       doc.text(pedidosText, x, currentY, { width: colWidths.pedidos, ellipsis: true });
 
       currentY += 15;
