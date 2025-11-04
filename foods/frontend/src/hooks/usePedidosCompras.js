@@ -78,8 +78,7 @@ export const usePedidosCompras = () => {
       };
       baseEntity.loadData(params);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [statusFilter]); // baseEntity.loadData é estável, não precisa nas dependências
+  }, [statusFilter, isInitialLoad, baseEntity]);
 
   /**
    * Carregar solicitações disponíveis ao montar
