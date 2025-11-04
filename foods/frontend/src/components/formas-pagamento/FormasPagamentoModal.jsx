@@ -58,33 +58,35 @@ const FormasPagamentoModal = ({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="lg">
-      <div className="bg-white rounded-lg shadow-xl">
+      <div className="bg-white rounded-lg shadow-xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex justify-between items-center p-6 border-b border-gray-200 bg-gradient-to-r from-green-50 to-blue-50">
-          <div className="flex items-center space-x-3">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <FaCreditCard className="text-green-600 text-xl" />
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
+              {isViewMode ? <FaEye className="w-5 h-5 text-white" /> : formaPagamento ? <FaEdit className="w-5 h-5 text-white" /> : <FaPlus className="w-5 h-5 text-white" />}
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-gray-800">
-                {isViewMode ? 'Visualizar' : formaPagamento ? 'Editar' : 'Nova'} Forma de Pagamento
+              <h2 className="text-2xl font-bold text-gray-900">
+                {isViewMode ? 'Visualizar Forma de Pagamento' : formaPagamento ? 'Editar Forma de Pagamento' : 'Nova Forma de Pagamento'}
               </h2>
               <p className="text-sm text-gray-600">
                 {isViewMode 
-                  ? 'Visualize os detalhes da forma de pagamento' 
+                  ? 'Visualizando informações da forma de pagamento' 
                   : formaPagamento 
-                    ? 'Atualize as informações da forma de pagamento' 
-                    : 'Preencha os dados para criar uma nova forma de pagamento'}
+                    ? 'Editando informações da forma de pagamento' 
+                    : 'Preencha as informações da nova forma de pagamento'}
               </p>
             </div>
           </div>
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="p-2"
             disabled={saving}
           >
-            <FaTimes className="text-xl" />
-          </button>
+            <FaTimes className="w-5 h-5" />
+          </Button>
         </div>
 
         {/* Form */}
@@ -165,12 +167,13 @@ const FormasPagamentoModal = ({
           </div>
 
           {/* Footer */}
-          <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+          <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
             {isViewMode ? (
               <Button
                 type="button"
                 variant="secondary"
                 onClick={onClose}
+                size="sm"
               >
                 Fechar
               </Button>
@@ -181,6 +184,7 @@ const FormasPagamentoModal = ({
                   variant="secondary"
                   onClick={onClose}
                   disabled={saving}
+                  size="sm"
                 >
                   Cancelar
                 </Button>
@@ -189,6 +193,7 @@ const FormasPagamentoModal = ({
                   variant="primary"
                   disabled={saving || loading}
                   loading={saving}
+                  size="sm"
                 >
                   <FaSave className="mr-2" />
                   {formaPagamento ? 'Atualizar' : 'Criar'}
