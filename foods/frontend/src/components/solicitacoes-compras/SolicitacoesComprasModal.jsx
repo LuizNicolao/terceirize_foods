@@ -78,7 +78,7 @@ const SolicitacoesComprasModal = ({
       setProdutosAdicionados(new Set());
       setSemanaAbastecimento('');
     }
-  }, [solicitacao, isOpen, setValue, reset]);
+  }, [solicitacao, isOpen, setValue, reset, user]);
 
   // Adicionar novo item
   const handleAddItem = () => {
