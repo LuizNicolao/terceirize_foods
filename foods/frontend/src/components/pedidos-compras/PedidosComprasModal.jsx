@@ -77,17 +77,23 @@ const PedidosComprasModal = ({
         filial_faturamento_id: solicitacaoSelecionada?.filial_id || pedidoCompras?.filial_id || null,
         filial_cobranca_id: data.filial_cobranca_id || null,
         filial_entrega_id: data.filial_entrega_id || null,
-        itens: pedidoCompras 
-          ? itensSelecionados.map(item => ({
+        itens: itensSelecionados.map(item => {
+          // Se for produto novo (isNewProduct), usar produto_generico_id ao invés de solicitacao_item_id
+          if (item.isNewProduct && item.produto_id) {
+            return {
+              produto_generico_id: parseInt(item.produto_id),
+              quantidade_pedido: parseFloat(item.quantidade_pedido || 0),
+              valor_unitario: parseFloat(item.valor_unitario || 0),
+              unidade_medida: item.unidade_simbolo || item.unidade_medida || ''
+            };
+          } else {
+            return {
               solicitacao_item_id: item.id,
               quantidade_pedido: parseFloat(item.quantidade_pedido || 0),
               valor_unitario: parseFloat(item.valor_unitario || 0)
-            }))
-          : itensSelecionados.map(item => ({
-              solicitacao_item_id: item.id,
-              quantidade_pedido: parseFloat(item.quantidade_pedido || 0),
-              valor_unitario: parseFloat(item.valor_unitario || 0)
-            }))
+            };
+          }
+        })
       };
 
       await onSubmit(formData);
