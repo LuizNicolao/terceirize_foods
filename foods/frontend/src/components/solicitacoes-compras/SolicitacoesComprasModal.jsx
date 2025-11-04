@@ -156,10 +156,10 @@ const SolicitacoesComprasModal = ({
       }
     }
 
-    // Validar observações se motivo for "Compra Programada"
-    if (data.motivo && data.motivo !== 'Compra Emergencial') {
+    // Validar observações se motivo for "Compra Emergencial"
+    if (data.motivo && data.motivo === 'Compra Emergencial') {
       if (!data.observacoes || data.observacoes.trim() === '') {
-        toast.error('Observações são obrigatórias para Compra Programada');
+        toast.error('Observações são obrigatórias para Compra Emergencial');
         return;
       }
     }
@@ -305,19 +305,19 @@ const SolicitacoesComprasModal = ({
             {/* Observações Gerais */}
             <div className="mt-4">
               <Input
-                label={`Observações Gerais${motivo && motivo !== 'Compra Emergencial' ? ' *' : ''}`}
+                label={`Observações Gerais${motivo && motivo === 'Compra Emergencial' ? ' *' : ''}`}
                 type="textarea"
                 rows={3}
                 {...register('observacoes', {
-                  required: motivo && motivo !== 'Compra Emergencial' 
-                    ? 'Observações são obrigatórias para Compra Programada' 
+                  required: motivo && motivo === 'Compra Emergencial' 
+                    ? 'Observações são obrigatórias para Compra Emergencial' 
                     : false
                 })}
                 error={errors.observacoes?.message}
                 disabled={viewMode}
-                placeholder={motivo && motivo !== 'Compra Emergencial' 
-                  ? 'Digite as observações da solicitação...' 
-                  : 'Digite as observações (opcional para Compra Emergencial)...'}
+                placeholder={motivo && motivo === 'Compra Emergencial' 
+                  ? 'Digite as observações da solicitação (obrigatório para Compra Emergencial)...' 
+                  : 'Digite as observações (opcional para Compra Programada)...'}
               />
             </div>
           </div>
