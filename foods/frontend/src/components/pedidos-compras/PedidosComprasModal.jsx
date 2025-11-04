@@ -1,18 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useForm } from 'react-hook-form';
-import { FaTimes, FaSave, FaEye, FaEdit, FaPlus } from 'react-icons/fa';
-import { Button, Modal } from '../ui';
-import PedidosComprasService from '../../services/pedidosComprasService';
-import FormasPagamentoService from '../../services/formasPagamentoService';
-import PrazosPagamentoService from '../../services/prazosPagamentoService';
-import FornecedoresService from '../../services/fornecedores';
-import PedidosComprasItensTable from './PedidosComprasItensTable';
-import PedidosComprasFiliaisSelect from './PedidosComprasFiliaisSelect';
-import PedidosComprasDadosSolicitacao from './PedidosComprasDadosSolicitacao';
-import PedidosComprasFornecedorSection from './PedidosComprasFornecedorSection';
-import PedidosComprasPagamentoSection from './PedidosComprasPagamentoSection';
-import PedidosComprasSolicitacaoSelect from './PedidosComprasSolicitacaoSelect';
-import FiliaisService from '../../services/filiais';
+import React from 'react';
+import { Modal } from '../ui';
+import { usePedidosComprasModal } from '../../hooks/usePedidosComprasModal';
+import PedidosComprasModalHeader from './PedidosComprasModalHeader';
+import PedidosComprasModalBody from './PedidosComprasModalBody';
+import PedidosComprasModalFooter from './PedidosComprasModalFooter';
 import toast from 'react-hot-toast';
 
 const PedidosComprasModal = ({
@@ -24,551 +15,32 @@ const PedidosComprasModal = ({
   loading,
   solicitacoesDisponiveis = []
 }) => {
-  const { register, handleSubmit, reset, formState: { errors }, setValue, watch } = useForm();
-  const [saving, setSaving] = useState(false);
-  const [solicitacaoSelecionada, setSolicitacaoSelecionada] = useState(null);
-  const [itensDisponiveis, setItensDisponiveis] = useState([]);
-  const [itensSelecionados, setItensSelecionados] = useState([]);
-  const [dadosFilial, setDadosFilial] = useState(null);
-  const [formasPagamento, setFormasPagamento] = useState([]);
-  const [prazosPagamento, setPrazosPagamento] = useState([]);
-  const [fornecedores, setFornecedores] = useState([]);
-  const [filiais, setFiliais] = useState([]);
-  const [filialMatriz, setFilialMatriz] = useState(null);
-  const [dadosFilialFaturamento, setDadosFilialFaturamento] = useState(null);
-  const [dadosFilialCobranca, setDadosFilialCobranca] = useState(null);
-  const [dadosFilialEntrega, setDadosFilialEntrega] = useState(null);
-  const [loadingItens, setLoadingItens] = useState(false);
-  const [loadingDadosFilial, setLoadingDadosFilial] = useState(false);
-  const [loadingFornecedores, setLoadingFornecedores] = useState(false);
-  const [loadingFiliais, setLoadingFiliais] = useState(false);
-  const [fornecedorSearchTerm, setFornecedorSearchTerm] = useState('');
-  const carregandoItensRef = useRef(false);
-  const solicitacaoIdAnteriorRef = useRef(null);
-
-  const solicitacaoId = watch('solicitacao_compras_id');
-  const fornecedorId = watch('fornecedor_id');
-  const filialFaturamentoId = watch('filial_faturamento_id');
-  const filialCobrancaId = watch('filial_cobranca_id');
-  const filialEntregaId = watch('filial_entrega_id');
-
-  // Carregar dados auxiliares quando modal abrir
-  useEffect(() => {
-    if (isOpen) {
-      carregarFormasPagamento();
-      carregarPrazosPagamento();
-      carregarFiliais();
-      // Não carregar todos os fornecedores inicialmente, apenas quando buscar
-    }
-  }, [isOpen]);
-
-  // Buscar IDs de forma e prazo quando os dados estiverem carregados e houver pedido
-  useEffect(() => {
-    if (pedidoCompras && isOpen) {
-      // Aguardar um pouco para garantir que formas e prazos foram carregados
-      const timeoutId = setTimeout(() => {
-        if (pedidoCompras.forma_pagamento) {
-          buscarIdFormaPagamentoPorNome(pedidoCompras.forma_pagamento);
-        }
-        if (pedidoCompras.prazo_pagamento) {
-          buscarIdPrazoPagamentoPorNome(pedidoCompras.prazo_pagamento);
-        }
-      }, 500);
-
-      return () => clearTimeout(timeoutId);
-    }
-  }, [pedidoCompras, isOpen, formasPagamento.length, prazosPagamento.length]);
-
-  // Carregar itens quando solicitação for selecionada
-  useEffect(() => {
-    // Evitar loop infinito: só carregar se mudou o ID da solicitação e não está carregando
-    if (solicitacaoId && 
-        solicitacaoId !== solicitacaoIdAnteriorRef.current && 
-        !pedidoCompras && 
-        isOpen && 
-        !carregandoItensRef.current) {
-      carregandoItensRef.current = true;
-      solicitacaoIdAnteriorRef.current = solicitacaoId;
-      carregarItensSolicitacao(solicitacaoId);
-    } else if (!solicitacaoId) {
-      // Resetar quando não há solicitação selecionada
-      solicitacaoIdAnteriorRef.current = null;
-      carregandoItensRef.current = false;
-    }
-  }, [solicitacaoId, pedidoCompras, isOpen]);
-
-  // Carregar dados da filial de faturamento quando selecionada
-  useEffect(() => {
-    if (filialFaturamentoId && isOpen) {
-      carregarDadosFilialEspecifica(filialFaturamentoId, 'faturamento');
-    } else if (!filialFaturamentoId) {
-      setDadosFilialFaturamento(null);
-    }
-  }, [filialFaturamentoId, isOpen]);
-
-  // Carregar dados da filial de cobrança quando selecionada
-  useEffect(() => {
-    if (filialCobrancaId && isOpen) {
-      carregarDadosFilialEspecifica(filialCobrancaId, 'cobranca');
-    } else if (!filialCobrancaId) {
-      setDadosFilialCobranca(null);
-    }
-  }, [filialCobrancaId, isOpen]);
-
-  // Carregar dados da filial de entrega quando selecionada
-  useEffect(() => {
-    if (filialEntregaId && isOpen) {
-      carregarDadosFilialEspecifica(filialEntregaId, 'entrega');
-    } else if (!filialEntregaId) {
-      setDadosFilialEntrega(null);
-    }
-  }, [filialEntregaId, isOpen]);
-
-  // Auto-preenchimento de fornecedor e limpeza ao deselecionar
-  useEffect(() => {
-    if (fornecedorId && fornecedores.length > 0) {
-      const fornecedor = fornecedores.find(f => f.id.toString() === fornecedorId.toString());
-      if (fornecedor) {
-        setValue('fornecedor_nome', fornecedor.razao_social || fornecedor.nome);
-        setValue('fornecedor_cnpj', fornecedor.cnpj || '');
-      }
-    } else if (!fornecedorId) {
-      // Limpar campos quando deselecionar fornecedor
-      setValue('fornecedor_nome', '');
-      setValue('fornecedor_cnpj', '');
-    }
-  }, [fornecedorId, fornecedores, setValue]);
-
-  // Buscar fornecedores no backend quando digitar
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      if (fornecedorSearchTerm.trim().length >= 2) {
-        buscarFornecedores(fornecedorSearchTerm);
-      } else if (fornecedorSearchTerm.trim().length === 0) {
-        setFornecedores([]);
-      }
-    }, 300); // Debounce de 300ms
-
-    return () => clearTimeout(timeoutId);
-  }, [fornecedorSearchTerm]);
-
-  // Carregar dados quando modal abrir com pedido existente
-  useEffect(() => {
-    if (pedidoCompras && isOpen) {
-      // Preencher formulário com todos os campos
-      if (pedidoCompras.solicitacao_compras_id) {
-        setValue('solicitacao_compras_id', pedidoCompras.solicitacao_compras_id);
-      }
-      if (pedidoCompras.fornecedor_id) {
-        setValue('fornecedor_id', pedidoCompras.fornecedor_id);
-      }
-      if (pedidoCompras.fornecedor_nome) {
-        setValue('fornecedor_nome', pedidoCompras.fornecedor_nome);
-      }
-      if (pedidoCompras.fornecedor_cnpj) {
-        setValue('fornecedor_cnpj', pedidoCompras.fornecedor_cnpj);
-      }
-      if (pedidoCompras.filial_faturamento_id) {
-        setValue('filial_faturamento_id', pedidoCompras.filial_faturamento_id);
-      }
-      if (pedidoCompras.filial_cobranca_id) {
-        setValue('filial_cobranca_id', pedidoCompras.filial_cobranca_id);
-      }
-      if (pedidoCompras.filial_entrega_id) {
-        setValue('filial_entrega_id', pedidoCompras.filial_entrega_id);
-      }
-      if (pedidoCompras.observacoes) {
-        setValue('observacoes', pedidoCompras.observacoes);
-      }
-      
-      // Carregar fornecedor se existir (para exibir no dropdown)
-      if (pedidoCompras.fornecedor_id) {
-        buscarFornecedorPorId(pedidoCompras.fornecedor_id);
-      }
-      
-      // Carregar solicitação se existir
-      if (pedidoCompras.solicitacao_compras_id) {
-        carregarItensSolicitacao(pedidoCompras.solicitacao_compras_id).then(() => {
-          // Depois de carregar a solicitação, carregar os itens do pedido
-          if (pedidoCompras.itens && Array.isArray(pedidoCompras.itens) && pedidoCompras.itens.length > 0) {
-            const itensComSelected = pedidoCompras.itens.map(item => ({
-              ...item,
-              selected: true,
-              quantidade_pedido: item.quantidade_pedido || item.quantidade || 0,
-              valor_unitario: item.valor_unitario || 0
-            }));
-            setItensSelecionados(itensComSelected);
-            // Mesclar com itens disponíveis da solicitação
-            setItensDisponiveis(prev => {
-              const itensMap = new Map(prev.map(i => [i.id, i]));
-              itensComSelected.forEach(item => {
-                if (item.solicitacao_item_id) {
-                  itensMap.set(item.solicitacao_item_id, item);
-                }
-              });
-              return Array.from(itensMap.values());
-            });
-          }
-        });
-      } else if (pedidoCompras.itens && Array.isArray(pedidoCompras.itens) && pedidoCompras.itens.length > 0) {
-        // Se não tem solicitação mas tem itens, apenas exibir os itens
-        const itensComSelected = pedidoCompras.itens.map(item => ({
-          ...item,
-          selected: true,
-          quantidade_pedido: item.quantidade_pedido || item.quantidade || 0,
-          valor_unitario: item.valor_unitario || 0
-        }));
-        setItensSelecionados(itensComSelected);
-        setItensDisponiveis(itensComSelected);
-      }
-
-      // Carregar dados das filiais se houver
-      if (pedidoCompras.filial_id) {
-        carregarDadosFilial(pedidoCompras.filial_id);
-      }
-      
-      // Carregar filial de faturamento se houver (ou usar filial_id como fallback)
-      if (pedidoCompras.filial_faturamento_id) {
-        carregarDadosFilialEspecifica(pedidoCompras.filial_faturamento_id, 'faturamento');
-      } else if (pedidoCompras.filial_id) {
-        carregarDadosFilialEspecifica(pedidoCompras.filial_id, 'faturamento');
-      }
-      
-      // Carregar filial de cobrança
-      if (pedidoCompras.filial_cobranca_id) {
-        carregarDadosFilialEspecifica(pedidoCompras.filial_cobranca_id, 'cobranca');
-      }
-      
-      // Carregar filial de entrega
-      if (pedidoCompras.filial_entrega_id) {
-        carregarDadosFilialEspecifica(pedidoCompras.filial_entrega_id, 'entrega');
-      }
-
-      // Buscar IDs de forma e prazo de pagamento baseados nos nomes salvos
-      // Aguardar um pouco para garantir que as listas foram carregadas
-      const timeoutId = setTimeout(() => {
-        if (pedidoCompras.forma_pagamento) {
-          buscarIdFormaPagamentoPorNome(pedidoCompras.forma_pagamento);
-        }
-        if (pedidoCompras.prazo_pagamento) {
-          buscarIdPrazoPagamentoPorNome(pedidoCompras.prazo_pagamento);
-        }
-      }, 500);
-
-      return () => clearTimeout(timeoutId);
-    } else if (!pedidoCompras && isOpen) {
-      // Limpar todos os campos quando criar novo pedido
-      reset();
-      setItensDisponiveis([]);
-      setItensSelecionados([]);
-      setDadosFilial(null);
-      setDadosFilialFaturamento(null);
-      setDadosFilialCobranca(null);
-      setDadosFilialEntrega(null);
-      setSolicitacaoSelecionada(null);
-      setFornecedores([]);
-      setFornecedorSearchTerm('');
-      setValue('forma_pagamento_id', '');
-      setValue('prazo_pagamento_id', '');
-      setValue('fornecedor_id', '');
-      setValue('filial_faturamento_id', '');
-      setValue('filial_cobranca_id', '');
-      setValue('filial_entrega_id', '');
-    }
-  }, [pedidoCompras, isOpen, setValue, reset]);
-
-  // Limpar dados quando modal fechar
-  useEffect(() => {
-    if (!isOpen) {
-      reset();
-      setItensDisponiveis([]);
-      setItensSelecionados([]);
-      setDadosFilial(null);
-      setDadosFilialFaturamento(null);
-      setDadosFilialCobranca(null);
-      setDadosFilialEntrega(null);
-      setSolicitacaoSelecionada(null);
-      setFornecedores([]);
-      setFornecedorSearchTerm('');
-      setFilialMatriz(null);
-      // Resetar refs para evitar loops
-      carregandoItensRef.current = false;
-      solicitacaoIdAnteriorRef.current = null;
-    }
-  }, [isOpen, reset]);
-
-  const carregarFormasPagamento = async () => {
-    try {
-      const response = await FormasPagamentoService.buscarAtivas();
-      if (response.success && response.data) {
-        const items = Array.isArray(response.data) ? response.data : response.data.items || [];
-        setFormasPagamento(items);
-      }
-    } catch (error) {
-      console.error('Erro ao carregar formas de pagamento:', error);
-    }
-  };
-
-  const buscarIdFormaPagamentoPorNome = async (nome) => {
-    if (!nome) return;
-    
-    // Buscar formas se ainda não foram carregadas
-    if (formasPagamento.length === 0) {
-      await carregarFormasPagamento();
-    }
-    
-    // Aguardar um pouco para garantir que o estado foi atualizado e buscar novamente
-    const buscarForma = async () => {
-      const response = await FormasPagamentoService.buscarAtivas();
-      if (response.success && response.data) {
-        const items = Array.isArray(response.data) ? response.data : response.data.items || [];
-        const forma = items.find(fp => 
-          fp.nome && fp.nome.toLowerCase().trim() === nome.toLowerCase().trim()
-        );
-        if (forma) {
-          setValue('forma_pagamento_id', forma.id);
-        }
-      }
-    };
-    
-    // Tentar buscar imediatamente
-    await buscarForma();
-    
-    // Se não encontrou, aguardar um pouco e tentar novamente
-    setTimeout(async () => {
-      await buscarForma();
-    }, 500);
-  };
-
-  const buscarIdPrazoPagamentoPorNome = async (nome) => {
-    if (!nome) return;
-    
-    // Buscar prazos se ainda não foram carregados
-    if (prazosPagamento.length === 0) {
-      await carregarPrazosPagamento();
-    }
-    
-    // Aguardar um pouco para garantir que o estado foi atualizado e buscar novamente
-    const buscarPrazo = async () => {
-      const response = await PrazosPagamentoService.buscarAtivos();
-      if (response.success && response.data) {
-        const items = Array.isArray(response.data) ? response.data : response.data.items || [];
-        const prazo = items.find(pp => 
-          pp.nome && pp.nome.toLowerCase().trim() === nome.toLowerCase().trim()
-        );
-        if (prazo) {
-          setValue('prazo_pagamento_id', prazo.id);
-        }
-      }
-    };
-    
-    // Tentar buscar imediatamente
-    await buscarPrazo();
-    
-    // Se não encontrou, aguardar um pouco e tentar novamente
-    setTimeout(async () => {
-      await buscarPrazo();
-    }, 500);
-  };
-
-  const carregarPrazosPagamento = async () => {
-    try {
-      const response = await PrazosPagamentoService.buscarAtivos();
-      if (response.success && response.data) {
-        const items = Array.isArray(response.data) ? response.data : response.data.items || [];
-        setPrazosPagamento(items);
-      }
-    } catch (error) {
-      console.error('Erro ao carregar prazos de pagamento:', error);
-    }
-  };
-
-  const carregarFiliais = async () => {
-    setLoadingFiliais(true);
-    try {
-      const response = await FiliaisService.listar({ limit: 1000 });
-      if (response.success && response.data) {
-        const items = Array.isArray(response.data) ? response.data : response.data.items || [];
-        setFiliais(items);
-        
-        // Buscar filial MATRIZ (MTZ) - pode ser por código ou nome
-        const filialMatriz = items.find(filial => 
-          filial.codigo_filial?.toUpperCase() === 'MTZ' ||
-          filial.filial?.toUpperCase().includes('MATRIZ') ||
-          filial.nome?.toUpperCase().includes('MATRIZ')
-        );
-        
-        if (filialMatriz) {
-          setFilialMatriz(filialMatriz);
-          // Pré-selecionar MATRIZ para cobrança se não houver valor e não estiver editando
-          if (!pedidoCompras && !watch('filial_cobranca_id')) {
-            setValue('filial_cobranca_id', filialMatriz.id);
-            // Carregar dados da matriz automaticamente
-            carregarDadosFilialEspecifica(filialMatriz.id, 'cobranca');
-          }
-        } else if (items.length > 0) {
-          // Fallback: usar primeira filial se não encontrar MATRIZ
-          const primeiraFilial = items[0];
-          setFilialMatriz(primeiraFilial);
-          if (!pedidoCompras && !watch('filial_cobranca_id')) {
-            setValue('filial_cobranca_id', primeiraFilial.id);
-            carregarDadosFilialEspecifica(primeiraFilial.id, 'cobranca');
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Erro ao carregar filiais:', error);
-    } finally {
-      setLoadingFiliais(false);
-    }
-  };
-
-  const buscarFornecedores = async (searchTerm) => {
-    if (!searchTerm || searchTerm.trim().length < 2) {
-      setFornecedores([]);
-      return;
-    }
-
-    setLoadingFornecedores(true);
-    try {
-      const response = await FornecedoresService.listar({ 
-        search: searchTerm.trim(),
-        status: 1, // Apenas ativos
-        limit: 50 // Limitar resultados
-      });
-      if (response.success && response.data) {
-        const items = Array.isArray(response.data) ? response.data : response.data.items || [];
-        setFornecedores(items);
-      } else {
-        setFornecedores([]);
-      }
-    } catch (error) {
-      console.error('Erro ao buscar fornecedores:', error);
-      setFornecedores([]);
-    } finally {
-      setLoadingFornecedores(false);
-    }
-  };
-
-  const buscarFornecedorPorId = async (id) => {
-    if (!id) return;
-    
-    setLoadingFornecedores(true);
-    try {
-      const response = await FornecedoresService.buscarPorId(id);
-      if (response.success && response.data) {
-        setFornecedores([response.data]);
-      }
-    } catch (error) {
-      console.error('Erro ao buscar fornecedor:', error);
-    } finally {
-      setLoadingFornecedores(false);
-    }
-  };
-
-  const carregarItensSolicitacao = async (id, pedidoExistente = null) => {
-    setLoadingItens(true);
-    try {
-      const response = await PedidosComprasService.buscarItensSolicitacao(id);
-      if (response.success && response.data) {
-        const { solicitacao, itens } = response.data;
-        setSolicitacaoSelecionada(solicitacao);
-        
-        // Se não há pedido existente (criando novo), resetar itens
-        if (!pedidoExistente) {
-          setItensDisponiveis(itens.map(item => ({ ...item, selected: false, quantidade_pedido: 0, valor_unitario: 0 })));
-          setItensSelecionados([]);
-        } else {
-          // Se há pedido existente, manter os itens selecionados e apenas atualizar disponíveis
-          const itensDisponiveisNovos = itens.map(item => {
-            // Verificar se este item já está no pedido
-            const itemNoPedido = pedidoExistente.itens?.find(pi => pi.solicitacao_item_id === item.id);
-            if (itemNoPedido) {
-              return {
-                ...item,
-                selected: true,
-                quantidade_pedido: itemNoPedido.quantidade_pedido || item.quantidade || 0,
-                valor_unitario: itemNoPedido.valor_unitario || 0
-              };
-            }
-            return { ...item, selected: false, quantidade_pedido: 0, valor_unitario: 0 };
-          });
-          setItensDisponiveis(itensDisponiveisNovos);
-          setItensSelecionados(itensDisponiveisNovos.filter(item => item.selected));
-        }
-        
-        // Carregar dados da filial e pré-selecionar entrega e faturamento (apenas se não há pedido existente)
-        if (!pedidoExistente && solicitacao.filial_id) {
-          carregarDadosFilial(solicitacao.filial_id);
-          // Pré-selecionar filial de entrega com a filial da solicitação
-          setValue('filial_entrega_id', solicitacao.filial_id);
-          carregarDadosFilialEspecifica(solicitacao.filial_id, 'entrega');
-          // Pré-selecionar filial de faturamento com a filial da solicitação
-          if (!watch('filial_faturamento_id')) {
-            setValue('filial_faturamento_id', solicitacao.filial_id);
-            carregarDadosFilialEspecifica(solicitacao.filial_id, 'faturamento');
-          }
-        }
-      } else {
-        toast.error(response.error || 'Erro ao carregar itens da solicitação');
-      }
-    } catch (error) {
-      console.error('Erro ao carregar itens:', error);
-      toast.error('Erro ao carregar itens da solicitação');
-    } finally {
-      setLoadingItens(false);
-      carregandoItensRef.current = false;
-    }
-  };
-
-  const carregarDadosFilial = async (id) => {
-    setLoadingDadosFilial(true);
-    try {
-      const response = await PedidosComprasService.buscarDadosFilial(id);
-      if (response.success && response.data) {
-        setDadosFilial(response.data);
-        setDadosFilialFaturamento(response.data); // Faturamento usa a mesma filial da solicitação
-      }
-    } catch (error) {
-      console.error('Erro ao carregar dados da filial:', error);
-    } finally {
-      setLoadingDadosFilial(false);
-    }
-  };
-
-  const carregarDadosFilialEspecifica = async (id, tipo) => {
-    try {
-      const response = await PedidosComprasService.buscarDadosFilial(id);
-      if (response.success && response.data) {
-        if (tipo === 'faturamento') {
-          setDadosFilialFaturamento(response.data);
-        } else if (tipo === 'cobranca') {
-          setDadosFilialCobranca(response.data);
-        } else if (tipo === 'entrega') {
-          setDadosFilialEntrega(response.data);
-        }
-      }
-    } catch (error) {
-      console.error(`Erro ao carregar dados da filial ${tipo}:`, error);
-    }
-  };
-
-  const handleItemChange = (index, updatedItem) => {
-    const newItens = [...itensDisponiveis];
-    newItens[index] = updatedItem;
-    setItensDisponiveis(newItens);
-    
-    // Atualizar itens selecionados
-    const selected = newItens.filter(item => item.selected && parseFloat(item.quantidade_pedido || 0) > 0);
-    setItensSelecionados(selected);
-  };
-
-  const handleRemoveItem = (index) => {
-    const newItens = [...itensDisponiveis];
-    newItens[index] = { ...newItens[index], selected: false, quantidade_pedido: 0 };
-    setItensDisponiveis(newItens);
-    setItensSelecionados(newItens.filter(item => item.selected && parseFloat(item.quantidade_pedido || 0) > 0));
-  };
+  const {
+    register,
+    handleSubmit,
+    errors,
+    setValue,
+    watch,
+    saving,
+    setSaving,
+    solicitacaoSelecionada,
+    itensDisponiveis,
+    itensSelecionados,
+    dadosFilialFaturamento,
+    dadosFilialCobranca,
+    dadosFilialEntrega,
+    formasPagamento,
+    prazosPagamento,
+    fornecedores,
+    filiais,
+    loadingItens,
+    loadingFornecedores,
+    fornecedorSearchTerm,
+    setFornecedorSearchTerm,
+    setFornecedores,
+    handleItemChange,
+    handleRemoveItem
+  } = usePedidosComprasModal({ pedidoCompras, isOpen, solicitacoesDisponiveis });
 
   const handleFormSubmit = async (data) => {
     // Validar se há itens selecionados
@@ -620,170 +92,52 @@ const PedidosComprasModal = ({
   if (!isOpen) return null;
 
   const isViewMode = viewMode === true;
-  const itensParaExibir = pedidoCompras ? itensSelecionados : itensDisponiveis;
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="full">
       <div className="bg-white rounded-lg shadow-xl max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b border-gray-200 bg-gradient-to-r from-green-50 to-blue-50">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
-              {isViewMode ? <FaEye className="w-5 h-5 text-white" /> : pedidoCompras ? <FaEdit className="w-5 h-5 text-white" /> : <FaPlus className="w-5 h-5 text-white" />}
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900">
-                {isViewMode ? 'Visualizar Pedido de Compras' : pedidoCompras ? 'Editar Pedido de Compras' : 'Novo Pedido de Compras'}
-              </h2>
-              <p className="text-sm text-gray-600">
-                {isViewMode 
-                  ? 'Visualizando informações do pedido de compras' 
-                  : pedidoCompras 
-                    ? 'Editando informações do pedido de compras' 
-                    : 'Preencha as informações do novo pedido de compras'}
-              </p>
-            </div>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onClose}
-            className="p-2"
-            disabled={saving}
-          >
-            <FaTimes className="w-5 h-5" />
-          </Button>
-        </div>
+        <PedidosComprasModalHeader
+          isViewMode={isViewMode}
+          pedidoCompras={pedidoCompras}
+          saving={saving}
+          onClose={onClose}
+        />
 
-        {/* Form */}
-        <form onSubmit={handleSubmit(handleFormSubmit)} className="p-6 space-y-6">
-          {/* Solicitação de Compras */}
-          <PedidosComprasSolicitacaoSelect
-            solicitacoesDisponiveis={solicitacoesDisponiveis}
-            watch={watch}
-            setValue={setValue}
-            errors={errors}
-            isViewMode={isViewMode}
-            pedidoCompras={pedidoCompras}
-          />
+        <PedidosComprasModalBody
+          register={register}
+          handleSubmit={handleSubmit(handleFormSubmit)}
+          errors={errors}
+          setValue={setValue}
+          watch={watch}
+          solicitacaoSelecionada={solicitacaoSelecionada}
+          itensDisponiveis={itensDisponiveis}
+          itensSelecionados={itensSelecionados}
+          dadosFilialFaturamento={dadosFilialFaturamento}
+          dadosFilialCobranca={dadosFilialCobranca}
+          dadosFilialEntrega={dadosFilialEntrega}
+          formasPagamento={formasPagamento}
+          prazosPagamento={prazosPagamento}
+          fornecedores={fornecedores}
+          filiais={filiais}
+          loadingItens={loadingItens}
+          loadingFornecedores={loadingFornecedores}
+          fornecedorSearchTerm={fornecedorSearchTerm}
+          setFornecedorSearchTerm={setFornecedorSearchTerm}
+          setFornecedores={setFornecedores}
+          handleItemChange={handleItemChange}
+          handleRemoveItem={handleRemoveItem}
+          pedidoCompras={pedidoCompras}
+          isViewMode={isViewMode}
+          solicitacoesDisponiveis={solicitacoesDisponiveis}
+        />
 
-          {/* Dados da Solicitação (readonly) */}
-          <PedidosComprasDadosSolicitacao
-            solicitacaoSelecionada={solicitacaoSelecionada}
-          />
-
-          {/* Dados das Filiais */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <PedidosComprasFiliaisSelect
-              tipo="faturamento"
-              filiais={filiais}
-              filialSelecionada={watch('filial_faturamento_id') || solicitacaoSelecionada?.filial_id || null}
-              dadosFilial={dadosFilialFaturamento}
-              viewMode={isViewMode}
-            />
-            <PedidosComprasFiliaisSelect
-              tipo="cobranca"
-              filiais={filiais}
-              filialSelecionada={watch('filial_cobranca_id')}
-              onFilialChange={(id) => setValue('filial_cobranca_id', id)}
-              dadosFilial={dadosFilialCobranca}
-              viewMode={isViewMode}
-              required
-              error={errors.filial_cobranca_id?.message}
-            />
-            <PedidosComprasFiliaisSelect
-              tipo="entrega"
-              filiais={filiais}
-              filialSelecionada={watch('filial_entrega_id') || solicitacaoSelecionada?.filial_id}
-              onFilialChange={(id) => setValue('filial_entrega_id', id)}
-              dadosFilial={dadosFilialEntrega || dadosFilial}
-              viewMode={isViewMode}
-              required
-              error={errors.filial_entrega_id?.message}
-            />
-          </div>
-
-          {/* Informações do Fornecedor */}
-          <PedidosComprasFornecedorSection
-            register={register}
-            errors={errors}
-            watch={watch}
-            setValue={setValue}
-            fornecedores={fornecedores}
-            loadingFornecedores={loadingFornecedores}
-            fornecedorSearchTerm={fornecedorSearchTerm}
-            setFornecedorSearchTerm={setFornecedorSearchTerm}
-            setFornecedores={setFornecedores}
-            isViewMode={isViewMode}
-          />
-
-          {/* Forma e Prazo de Pagamento */}
-          <PedidosComprasPagamentoSection
-            watch={watch}
-            setValue={setValue}
-            formasPagamento={formasPagamento}
-            prazosPagamento={prazosPagamento}
-            isViewMode={isViewMode}
-          />
-
-          {/* Itens do Pedido */}
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Itens do Pedido {!isViewMode && itensSelecionados.length > 0 && `(${itensSelecionados.length} selecionado(s))`}
-            </h3>
-            {loadingItens ? (
-              <div className="p-8 text-center text-gray-500">
-                <p>Carregando itens da solicitação...</p>
-              </div>
-            ) : (
-              <PedidosComprasItensTable
-                itens={itensParaExibir}
-                onItemChange={handleItemChange}
-                onRemoveItem={handleRemoveItem}
-                viewMode={isViewMode}
-                errors={errors}
-              />
-            )}
-          </div>
-
-          {/* Observações */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Observações
-            </label>
-            <textarea
-              {...register('observacoes')}
-              disabled={isViewMode}
-              rows={4}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 disabled:bg-gray-50 disabled:cursor-not-allowed"
-              placeholder="Digite observações sobre o pedido"
-            />
-          </div>
-
-          {/* Footer */}
-          <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-              disabled={saving}
-              size="sm"
-            >
-              {isViewMode ? 'Fechar' : 'Cancelar'}
-            </Button>
-            {!isViewMode && (
-              <Button
-                type="submit"
-                disabled={saving || loading}
-                loading={saving}
-                size="sm"
-              >
-                <FaSave className="mr-2" />
-                {pedidoCompras ? 'Atualizar' : 'Criar'}
-              </Button>
-            )}
-          </div>
-        </form>
+        <PedidosComprasModalFooter
+          isViewMode={isViewMode}
+          pedidoCompras={pedidoCompras}
+          saving={saving}
+          loading={loading}
+          onClose={onClose}
+        />
       </div>
     </Modal>
   );

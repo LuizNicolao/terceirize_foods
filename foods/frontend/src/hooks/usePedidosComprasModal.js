@@ -1,0 +1,549 @@
+/**
+ * Hook customizado para gerenciar estado e lógica do modal de Pedidos de Compras
+ */
+
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { useForm } from 'react-hook-form';
+import toast from 'react-hot-toast';
+import PedidosComprasService from '../services/pedidosComprasService';
+import FormasPagamentoService from '../services/formasPagamentoService';
+import PrazosPagamentoService from '../services/prazosPagamentoService';
+import FornecedoresService from '../services/fornecedores';
+import FiliaisService from '../services/filiais';
+
+export const usePedidosComprasModal = ({ pedidoCompras, isOpen, solicitacoesDisponiveis = [] }) => {
+  const { register, handleSubmit, reset, formState: { errors }, setValue, watch } = useForm();
+  
+  // Estados
+  const [saving, setSaving] = useState(false);
+  const [solicitacaoSelecionada, setSolicitacaoSelecionada] = useState(null);
+  const [itensDisponiveis, setItensDisponiveis] = useState([]);
+  const [itensSelecionados, setItensSelecionados] = useState([]);
+  const [dadosFilial, setDadosFilial] = useState(null);
+  const [formasPagamento, setFormasPagamento] = useState([]);
+  const [prazosPagamento, setPrazosPagamento] = useState([]);
+  const [fornecedores, setFornecedores] = useState([]);
+  const [filiais, setFiliais] = useState([]);
+  const [filialMatriz, setFilialMatriz] = useState(null);
+  const [dadosFilialFaturamento, setDadosFilialFaturamento] = useState(null);
+  const [dadosFilialCobranca, setDadosFilialCobranca] = useState(null);
+  const [dadosFilialEntrega, setDadosFilialEntrega] = useState(null);
+  const [loadingItens, setLoadingItens] = useState(false);
+  const [loadingDadosFilial, setLoadingDadosFilial] = useState(false);
+  const [loadingFornecedores, setLoadingFornecedores] = useState(false);
+  const [loadingFiliais, setLoadingFiliais] = useState(false);
+  const [fornecedorSearchTerm, setFornecedorSearchTerm] = useState('');
+  
+  // Refs para evitar loops infinitos
+  const carregandoItensRef = useRef(false);
+  const solicitacaoIdAnteriorRef = useRef(null);
+
+  // Valores observados do formulário
+  const solicitacaoId = watch('solicitacao_compras_id');
+  const fornecedorId = watch('fornecedor_id');
+  const filialFaturamentoId = watch('filial_faturamento_id');
+  const filialCobrancaId = watch('filial_cobranca_id');
+  const filialEntregaId = watch('filial_entrega_id');
+
+  // Funções de carregamento
+  const carregarFormasPagamento = useCallback(async () => {
+    try {
+      const response = await FormasPagamentoService.buscarAtivas();
+      if (response.success && response.data) {
+        const items = Array.isArray(response.data) ? response.data : response.data.items || [];
+        setFormasPagamento(items);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar formas de pagamento:', error);
+    }
+  }, []);
+
+  const carregarPrazosPagamento = useCallback(async () => {
+    try {
+      const response = await PrazosPagamentoService.buscarAtivos();
+      if (response.success && response.data) {
+        const items = Array.isArray(response.data) ? response.data : response.data.items || [];
+        setPrazosPagamento(items);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar prazos de pagamento:', error);
+    }
+  }, []);
+
+  const carregarFiliais = useCallback(async () => {
+    setLoadingFiliais(true);
+    try {
+      const response = await FiliaisService.listar({ limit: 1000 });
+      if (response.success && response.data) {
+        const items = Array.isArray(response.data) ? response.data : response.data.items || [];
+        setFiliais(items);
+        
+        // Buscar filial MATRIZ (MTZ)
+        const filialMatriz = items.find(filial => 
+          filial.codigo_filial?.toUpperCase() === 'MTZ' ||
+          filial.filial?.toUpperCase().includes('MATRIZ') ||
+          filial.nome?.toUpperCase().includes('MATRIZ')
+        );
+        
+        if (filialMatriz) {
+          setFilialMatriz(filialMatriz);
+          // Pré-selecionar MATRIZ para cobrança se não houver valor e não estiver editando
+          if (!pedidoCompras && !watch('filial_cobranca_id')) {
+            setValue('filial_cobranca_id', filialMatriz.id);
+            carregarDadosFilialEspecifica(filialMatriz.id, 'cobranca');
+          }
+        } else if (items.length > 0) {
+          // Fallback: usar primeira filial se não encontrar MATRIZ
+          const primeiraFilial = items[0];
+          setFilialMatriz(primeiraFilial);
+          if (!pedidoCompras && !watch('filial_cobranca_id')) {
+            setValue('filial_cobranca_id', primeiraFilial.id);
+            carregarDadosFilialEspecifica(primeiraFilial.id, 'cobranca');
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao carregar filiais:', error);
+    } finally {
+      setLoadingFiliais(false);
+    }
+  }, [pedidoCompras, setValue, watch]);
+
+  const buscarIdFormaPagamentoPorNome = useCallback(async (nome) => {
+    if (!nome) return;
+    
+    if (formasPagamento.length === 0) {
+      await carregarFormasPagamento();
+    }
+    
+    const buscarForma = async () => {
+      const response = await FormasPagamentoService.buscarAtivas();
+      if (response.success && response.data) {
+        const items = Array.isArray(response.data) ? response.data : response.data.items || [];
+        const forma = items.find(fp => 
+          fp.nome && fp.nome.toLowerCase().trim() === nome.toLowerCase().trim()
+        );
+        if (forma) {
+          setValue('forma_pagamento_id', forma.id);
+        }
+      }
+    };
+    
+    await buscarForma();
+    setTimeout(async () => {
+      await buscarForma();
+    }, 500);
+  }, [formasPagamento.length, carregarFormasPagamento, setValue]);
+
+  const buscarIdPrazoPagamentoPorNome = useCallback(async (nome) => {
+    if (!nome) return;
+    
+    if (prazosPagamento.length === 0) {
+      await carregarPrazosPagamento();
+    }
+    
+    const buscarPrazo = async () => {
+      const response = await PrazosPagamentoService.buscarAtivos();
+      if (response.success && response.data) {
+        const items = Array.isArray(response.data) ? response.data : response.data.items || [];
+        const prazo = items.find(pp => 
+          pp.nome && pp.nome.toLowerCase().trim() === nome.toLowerCase().trim()
+        );
+        if (prazo) {
+          setValue('prazo_pagamento_id', prazo.id);
+        }
+      }
+    };
+    
+    await buscarPrazo();
+    setTimeout(async () => {
+      await buscarPrazo();
+    }, 500);
+  }, [prazosPagamento.length, carregarPrazosPagamento, setValue]);
+
+  const buscarFornecedores = useCallback(async (searchTerm) => {
+    if (!searchTerm || searchTerm.trim().length < 2) {
+      setFornecedores([]);
+      return;
+    }
+
+    setLoadingFornecedores(true);
+    try {
+      const response = await FornecedoresService.listar({ 
+        search: searchTerm.trim(),
+        status: 1,
+        limit: 50
+      });
+      if (response.success && response.data) {
+        const items = Array.isArray(response.data) ? response.data : response.data.items || [];
+        setFornecedores(items);
+      } else {
+        setFornecedores([]);
+      }
+    } catch (error) {
+      console.error('Erro ao buscar fornecedores:', error);
+      setFornecedores([]);
+    } finally {
+      setLoadingFornecedores(false);
+    }
+  }, []);
+
+  const buscarFornecedorPorId = useCallback(async (id) => {
+    if (!id) return;
+    
+    setLoadingFornecedores(true);
+    try {
+      const response = await FornecedoresService.buscarPorId(id);
+      if (response.success && response.data) {
+        setFornecedores([response.data]);
+      }
+    } catch (error) {
+      console.error('Erro ao buscar fornecedor:', error);
+    } finally {
+      setLoadingFornecedores(false);
+    }
+  }, []);
+
+  const carregarDadosFilial = useCallback(async (id) => {
+    setLoadingDadosFilial(true);
+    try {
+      const response = await PedidosComprasService.buscarDadosFilial(id);
+      if (response.success && response.data) {
+        setDadosFilial(response.data);
+        setDadosFilialFaturamento(response.data);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar dados da filial:', error);
+    } finally {
+      setLoadingDadosFilial(false);
+    }
+  }, []);
+
+  const carregarDadosFilialEspecifica = useCallback(async (id, tipo) => {
+    try {
+      const response = await PedidosComprasService.buscarDadosFilial(id);
+      if (response.success && response.data) {
+        if (tipo === 'faturamento') {
+          setDadosFilialFaturamento(response.data);
+        } else if (tipo === 'cobranca') {
+          setDadosFilialCobranca(response.data);
+        } else if (tipo === 'entrega') {
+          setDadosFilialEntrega(response.data);
+        }
+      }
+    } catch (error) {
+      console.error(`Erro ao carregar dados da filial ${tipo}:`, error);
+    }
+  }, []);
+
+  const carregarItensSolicitacao = useCallback(async (id, pedidoExistente = null) => {
+    setLoadingItens(true);
+    try {
+      const response = await PedidosComprasService.buscarItensSolicitacao(id);
+      if (response.success && response.data) {
+        const { solicitacao, itens } = response.data;
+        setSolicitacaoSelecionada(solicitacao);
+        
+        if (!pedidoExistente) {
+          setItensDisponiveis(itens.map(item => ({ ...item, selected: false, quantidade_pedido: 0, valor_unitario: 0 })));
+          setItensSelecionados([]);
+        } else {
+          const itensDisponiveisNovos = itens.map(item => {
+            const itemNoPedido = pedidoExistente.itens?.find(pi => pi.solicitacao_item_id === item.id);
+            if (itemNoPedido) {
+              return {
+                ...item,
+                selected: true,
+                quantidade_pedido: itemNoPedido.quantidade_pedido || item.quantidade || 0,
+                valor_unitario: itemNoPedido.valor_unitario || 0
+              };
+            }
+            return { ...item, selected: false, quantidade_pedido: 0, valor_unitario: 0 };
+          });
+          setItensDisponiveis(itensDisponiveisNovos);
+          setItensSelecionados(itensDisponiveisNovos.filter(item => item.selected));
+        }
+        
+        if (!pedidoExistente && solicitacao.filial_id) {
+          carregarDadosFilial(solicitacao.filial_id);
+          setValue('filial_entrega_id', solicitacao.filial_id);
+          carregarDadosFilialEspecifica(solicitacao.filial_id, 'entrega');
+          if (!watch('filial_faturamento_id')) {
+            setValue('filial_faturamento_id', solicitacao.filial_id);
+            carregarDadosFilialEspecifica(solicitacao.filial_id, 'faturamento');
+          }
+        }
+      } else {
+        toast.error(response.error || 'Erro ao carregar itens da solicitação');
+      }
+    } catch (error) {
+      console.error('Erro ao carregar itens:', error);
+      toast.error('Erro ao carregar itens da solicitação');
+    } finally {
+      setLoadingItens(false);
+      carregandoItensRef.current = false;
+    }
+  }, [setValue, watch, carregarDadosFilial, carregarDadosFilialEspecifica]);
+
+  // Handlers
+  const handleItemChange = useCallback((index, updatedItem) => {
+    const newItens = [...itensDisponiveis];
+    newItens[index] = updatedItem;
+    setItensDisponiveis(newItens);
+    
+    const selected = newItens.filter(item => item.selected && parseFloat(item.quantidade_pedido || 0) > 0);
+    setItensSelecionados(selected);
+  }, [itensDisponiveis]);
+
+  const handleRemoveItem = useCallback((index) => {
+    const newItens = [...itensDisponiveis];
+    newItens[index] = { ...newItens[index], selected: false, quantidade_pedido: 0 };
+    setItensDisponiveis(newItens);
+    setItensSelecionados(newItens.filter(item => item.selected && parseFloat(item.quantidade_pedido || 0) > 0));
+  }, [itensDisponiveis]);
+
+  // Efeitos
+  useEffect(() => {
+    if (isOpen) {
+      carregarFormasPagamento();
+      carregarPrazosPagamento();
+      carregarFiliais();
+    }
+  }, [isOpen, carregarFormasPagamento, carregarPrazosPagamento, carregarFiliais]);
+
+  useEffect(() => {
+    if (pedidoCompras && isOpen) {
+      const timeoutId = setTimeout(() => {
+        if (pedidoCompras.forma_pagamento) {
+          buscarIdFormaPagamentoPorNome(pedidoCompras.forma_pagamento);
+        }
+        if (pedidoCompras.prazo_pagamento) {
+          buscarIdPrazoPagamentoPorNome(pedidoCompras.prazo_pagamento);
+        }
+      }, 500);
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [pedidoCompras, isOpen, formasPagamento.length, prazosPagamento.length, buscarIdFormaPagamentoPorNome, buscarIdPrazoPagamentoPorNome]);
+
+  useEffect(() => {
+    if (solicitacaoId && 
+        solicitacaoId !== solicitacaoIdAnteriorRef.current && 
+        !pedidoCompras && 
+        isOpen && 
+        !carregandoItensRef.current) {
+      carregandoItensRef.current = true;
+      solicitacaoIdAnteriorRef.current = solicitacaoId;
+      carregarItensSolicitacao(solicitacaoId);
+    } else if (!solicitacaoId) {
+      solicitacaoIdAnteriorRef.current = null;
+      carregandoItensRef.current = false;
+    }
+  }, [solicitacaoId, pedidoCompras, isOpen, carregarItensSolicitacao]);
+
+  useEffect(() => {
+    if (filialFaturamentoId && isOpen) {
+      carregarDadosFilialEspecifica(filialFaturamentoId, 'faturamento');
+    } else if (!filialFaturamentoId) {
+      setDadosFilialFaturamento(null);
+    }
+  }, [filialFaturamentoId, isOpen, carregarDadosFilialEspecifica]);
+
+  useEffect(() => {
+    if (filialCobrancaId && isOpen) {
+      carregarDadosFilialEspecifica(filialCobrancaId, 'cobranca');
+    } else if (!filialCobrancaId) {
+      setDadosFilialCobranca(null);
+    }
+  }, [filialCobrancaId, isOpen, carregarDadosFilialEspecifica]);
+
+  useEffect(() => {
+    if (filialEntregaId && isOpen) {
+      carregarDadosFilialEspecifica(filialEntregaId, 'entrega');
+    } else if (!filialEntregaId) {
+      setDadosFilialEntrega(null);
+    }
+  }, [filialEntregaId, isOpen, carregarDadosFilialEspecifica]);
+
+  useEffect(() => {
+    if (fornecedorId && fornecedores.length > 0) {
+      const fornecedor = fornecedores.find(f => f.id.toString() === fornecedorId.toString());
+      if (fornecedor) {
+        setValue('fornecedor_nome', fornecedor.razao_social || fornecedor.nome);
+        setValue('fornecedor_cnpj', fornecedor.cnpj || '');
+      }
+    } else if (!fornecedorId) {
+      setValue('fornecedor_nome', '');
+      setValue('fornecedor_cnpj', '');
+    }
+  }, [fornecedorId, fornecedores, setValue]);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (fornecedorSearchTerm.trim().length >= 2) {
+        buscarFornecedores(fornecedorSearchTerm);
+      } else if (fornecedorSearchTerm.trim().length === 0) {
+        setFornecedores([]);
+      }
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [fornecedorSearchTerm, buscarFornecedores]);
+
+  useEffect(() => {
+    if (pedidoCompras && isOpen) {
+      // Preencher formulário
+      if (pedidoCompras.solicitacao_compras_id) {
+        setValue('solicitacao_compras_id', pedidoCompras.solicitacao_compras_id);
+      }
+      if (pedidoCompras.fornecedor_id) {
+        setValue('fornecedor_id', pedidoCompras.fornecedor_id);
+      }
+      if (pedidoCompras.fornecedor_nome) {
+        setValue('fornecedor_nome', pedidoCompras.fornecedor_nome);
+      }
+      if (pedidoCompras.fornecedor_cnpj) {
+        setValue('fornecedor_cnpj', pedidoCompras.fornecedor_cnpj);
+      }
+      if (pedidoCompras.filial_faturamento_id) {
+        setValue('filial_faturamento_id', pedidoCompras.filial_faturamento_id);
+      }
+      if (pedidoCompras.filial_cobranca_id) {
+        setValue('filial_cobranca_id', pedidoCompras.filial_cobranca_id);
+      }
+      if (pedidoCompras.filial_entrega_id) {
+        setValue('filial_entrega_id', pedidoCompras.filial_entrega_id);
+      }
+      if (pedidoCompras.observacoes) {
+        setValue('observacoes', pedidoCompras.observacoes);
+      }
+      
+      if (pedidoCompras.fornecedor_id) {
+        buscarFornecedorPorId(pedidoCompras.fornecedor_id);
+      }
+      
+      if (pedidoCompras.solicitacao_compras_id) {
+        carregarItensSolicitacao(pedidoCompras.solicitacao_compras_id, pedidoCompras);
+      } else if (pedidoCompras.itens && Array.isArray(pedidoCompras.itens) && pedidoCompras.itens.length > 0) {
+        const itensComSelected = pedidoCompras.itens.map(item => ({
+          ...item,
+          selected: true,
+          quantidade_pedido: item.quantidade_pedido || item.quantidade || 0,
+          valor_unitario: item.valor_unitario || 0
+        }));
+        setItensSelecionados(itensComSelected);
+        setItensDisponiveis(itensComSelected);
+      }
+
+      if (pedidoCompras.filial_id) {
+        carregarDadosFilial(pedidoCompras.filial_id);
+      }
+      
+      if (pedidoCompras.filial_faturamento_id) {
+        carregarDadosFilialEspecifica(pedidoCompras.filial_faturamento_id, 'faturamento');
+      } else if (pedidoCompras.filial_id) {
+        carregarDadosFilialEspecifica(pedidoCompras.filial_id, 'faturamento');
+      }
+      
+      if (pedidoCompras.filial_cobranca_id) {
+        carregarDadosFilialEspecifica(pedidoCompras.filial_cobranca_id, 'cobranca');
+      }
+      
+      if (pedidoCompras.filial_entrega_id) {
+        carregarDadosFilialEspecifica(pedidoCompras.filial_entrega_id, 'entrega');
+      }
+
+      const timeoutId = setTimeout(() => {
+        if (pedidoCompras.forma_pagamento) {
+          buscarIdFormaPagamentoPorNome(pedidoCompras.forma_pagamento);
+        }
+        if (pedidoCompras.prazo_pagamento) {
+          buscarIdPrazoPagamentoPorNome(pedidoCompras.prazo_pagamento);
+        }
+      }, 500);
+
+      return () => clearTimeout(timeoutId);
+    } else if (!pedidoCompras && isOpen) {
+      reset();
+      setItensDisponiveis([]);
+      setItensSelecionados([]);
+      setDadosFilial(null);
+      setDadosFilialFaturamento(null);
+      setDadosFilialCobranca(null);
+      setDadosFilialEntrega(null);
+      setSolicitacaoSelecionada(null);
+      setFornecedores([]);
+      setFornecedorSearchTerm('');
+      setValue('forma_pagamento_id', '');
+      setValue('prazo_pagamento_id', '');
+      setValue('fornecedor_id', '');
+      setValue('filial_faturamento_id', '');
+      setValue('filial_cobranca_id', '');
+      setValue('filial_entrega_id', '');
+    }
+  }, [pedidoCompras, isOpen, setValue, reset, buscarFornecedorPorId, carregarItensSolicitacao, carregarDadosFilial, carregarDadosFilialEspecifica, buscarIdFormaPagamentoPorNome, buscarIdPrazoPagamentoPorNome]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      reset();
+      setItensDisponiveis([]);
+      setItensSelecionados([]);
+      setDadosFilial(null);
+      setDadosFilialFaturamento(null);
+      setDadosFilialCobranca(null);
+      setDadosFilialEntrega(null);
+      setSolicitacaoSelecionada(null);
+      setFornecedores([]);
+      setFornecedorSearchTerm('');
+      setFilialMatriz(null);
+      carregandoItensRef.current = false;
+      solicitacaoIdAnteriorRef.current = null;
+    }
+  }, [isOpen, reset]);
+
+  return {
+    // Form
+    register,
+    handleSubmit,
+    errors,
+    setValue,
+    watch,
+    reset,
+    
+    // Estados
+    saving,
+    setSaving,
+    solicitacaoSelecionada,
+    itensDisponiveis,
+    itensSelecionados,
+    dadosFilial,
+    formasPagamento,
+    prazosPagamento,
+    fornecedores,
+    filiais,
+    dadosFilialFaturamento,
+    dadosFilialCobranca,
+    dadosFilialEntrega,
+    loadingItens,
+    loadingDadosFilial,
+    loadingFornecedores,
+    loadingFiliais,
+    fornecedorSearchTerm,
+    
+    // Setters
+    setFornecedorSearchTerm,
+    setFornecedores,
+    
+    // Handlers
+    handleItemChange,
+    handleRemoveItem,
+    
+    // Valores observados
+    solicitacaoId,
+    fornecedorId,
+    filialFaturamentoId,
+    filialCobrancaId,
+    filialEntregaId
+  };
+};
+
