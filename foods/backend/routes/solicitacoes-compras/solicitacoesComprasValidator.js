@@ -51,6 +51,15 @@ const solicitacoesComprasValidations = {
       .isIn(['Compra Emergencial', 'Compra Programada'])
       .withMessage('Motivo deve ser "Compra Emergencial" ou "Compra Programada"'),
     body('observacoes')
+      .custom((value, { req }) => {
+        // Se motivo for "Compra Emergencial", observações são obrigatórias
+        if (req.body.motivo && req.body.motivo === 'Compra Emergencial') {
+          if (!value || value.trim() === '') {
+            throw new Error('Observações são obrigatórias para Compra Emergencial');
+          }
+        }
+        return true;
+      })
       .optional()
       .isString()
       .trim()

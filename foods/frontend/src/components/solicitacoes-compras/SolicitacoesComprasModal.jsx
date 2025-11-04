@@ -141,6 +141,22 @@ const SolicitacoesComprasModal = ({
   };
 
   const handleFormSubmit = (data) => {
+    // Validar campos obrigatórios
+    if (!data.filial_id || isNaN(parseInt(data.filial_id))) {
+      toast.error('Filial é obrigatória');
+      return;
+    }
+
+    if (!data.data_entrega_cd) {
+      toast.error('Data de entrega CD é obrigatória');
+      return;
+    }
+
+    if (!data.motivo) {
+      toast.error('Justificativa é obrigatória');
+      return;
+    }
+
     // Validar itens
     if (!itens || itens.length === 0) {
       toast.error('A solicitação deve ter pelo menos um item');
@@ -150,8 +166,16 @@ const SolicitacoesComprasModal = ({
     // Validar cada item (sem validar observacao do produto)
     for (let i = 0; i < itens.length; i++) {
       const item = itens[i];
-      if (!item.produto_id || !item.quantidade || !item.unidade_medida_id) {
-        toast.error(`Item ${i + 1}: Produto, quantidade e unidade são obrigatórios`);
+      if (!item.produto_id || isNaN(parseInt(item.produto_id))) {
+        toast.error(`Item ${i + 1}: Produto é obrigatório`);
+        return;
+      }
+      if (!item.quantidade || isNaN(parseFloat(item.quantidade)) || parseFloat(item.quantidade) <= 0) {
+        toast.error(`Item ${i + 1}: Quantidade deve ser maior que zero`);
+        return;
+      }
+      if (!item.unidade_medida_id || isNaN(parseInt(item.unidade_medida_id))) {
+        toast.error(`Item ${i + 1}: Unidade é obrigatória`);
         return;
       }
     }
