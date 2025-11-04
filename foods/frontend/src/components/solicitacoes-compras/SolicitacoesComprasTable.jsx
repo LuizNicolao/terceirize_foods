@@ -135,8 +135,8 @@ const SolicitacoesComprasTable = ({
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <ActionButtons
                         onView={canView && onView ? () => onView(solicitacao.id) : null}
-                        onEdit={canEdit && onEdit && solicitacao.status === 'aberto' ? () => onEdit(solicitacao.id) : null}
-                        onDelete={canDelete && onDelete && solicitacao.status === 'aberto' ? () => onDelete(solicitacao) : null}
+                        onEdit={canEdit && onEdit && solicitacao.status === 'em_digitacao' ? () => onEdit(solicitacao.id) : null}
+                        onDelete={canDelete && onDelete && solicitacao.status === 'em_digitacao' ? () => onDelete(solicitacao) : null}
                       />
                     </td>
                   </tr>
@@ -194,7 +194,7 @@ const SolicitacoesComprasTable = ({
                     <FaEye className="w-4 h-4" />
                   </button>
                 )}
-                {canEdit && onEdit && solicitacao.status === 'aberto' && (
+                {canEdit && onEdit && solicitacao.status === 'em_digitacao' && (
                   <button
                     onClick={() => onEdit(solicitacao.id)}
                     className="text-yellow-600 hover:text-yellow-900 p-2 rounded transition-colors"
@@ -203,7 +203,7 @@ const SolicitacoesComprasTable = ({
                     <FaEdit className="w-4 h-4" />
                   </button>
                 )}
-                {canDelete && onDelete && solicitacao.status === 'aberto' && (
+                {canDelete && onDelete && solicitacao.status === 'em_digitacao' && (
                   <button
                     onClick={() => onDelete(solicitacao)}
                     className="text-red-600 hover:text-red-900 p-2 rounded transition-colors"
