@@ -39,7 +39,7 @@ const RIRStats = ({ estatisticas }) => {
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-4 sm:mb-6">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
       {statsArray.map((stat, index) => (
         <StatCard
           key={index}

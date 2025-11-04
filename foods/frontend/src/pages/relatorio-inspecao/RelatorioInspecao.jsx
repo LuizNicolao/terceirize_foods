@@ -81,28 +81,27 @@ const RelatorioInspecao = () => {
   }
 
   return (
-    <div className="p-4 sm:p-6">
+    <div className="p-3 sm:p-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Relatórios de Inspeção de Recebimento</h1>
-        
-        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3 sm:gap-4">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Relatórios de Inspeção de Recebimento</h1>
+        <div className="flex gap-2 sm:gap-3">
           <Button
             onClick={handleOpenAuditModal}
             variant="ghost"
             size="sm"
+            className="text-xs"
           >
             <FaQuestionCircle className="mr-1 sm:mr-2" />
             <span className="hidden sm:inline">Auditoria</span>
-            <span className="sm:hidden">Auditoria</span>
           </Button>
-        {canCreate('relatorio_inspecao') && (
-            <Button onClick={handleAddRIR} variant="primary" size="sm">
-            <FaPlus className="mr-1 sm:mr-2" />
-            <span className="hidden sm:inline">Novo Relatório</span>
-            <span className="sm:hidden">Novo</span>
-          </Button>
-        )}
+          {canCreate('relatorio_inspecao') && (
+            <Button onClick={handleAddRIR} size="sm">
+              <FaPlus className="mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Novo Relatório</span>
+              <span className="sm:hidden">Novo</span>
+            </Button>
+          )}
         </div>
       </div>
 
@@ -153,26 +152,32 @@ const RelatorioInspecao = () => {
       </div>
 
       {/* Tabela */}
-      <RelatorioInspecaoTable
-        rirs={rirs}
-        onView={canView('relatorio_inspecao') ? handleViewRIR : null}
-        onEdit={canEdit('relatorio_inspecao') ? handleEditRIR : null}
-        onDelete={canDelete('relatorio_inspecao') ? handleDeleteRIR : null}
-        canView={canView('relatorio_inspecao')}
-        canEdit={canEdit('relatorio_inspecao')}
-        canDelete={canDelete('relatorio_inspecao')}
-        getStatusBadge={getStatusBadge}
-      />
-
-      {/* Paginação */}
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-        onPageChange={handlePageChange}
-          totalItems={totalItems}
-          itemsPerPage={itemsPerPage}
-          onItemsPerPageChange={handleItemsPerPageChange}
+      <div className="bg-white rounded-lg shadow-sm border">
+        <RelatorioInspecaoTable
+          rirs={rirs}
+          onView={canView('relatorio_inspecao') ? handleViewRIR : null}
+          onEdit={canEdit('relatorio_inspecao') ? handleEditRIR : null}
+          onDelete={canDelete('relatorio_inspecao') ? handleDeleteRIR : null}
+          canView={canView('relatorio_inspecao')}
+          canEdit={canEdit('relatorio_inspecao')}
+          canDelete={canDelete('relatorio_inspecao')}
+          getStatusBadge={getStatusBadge}
         />
+
+        {/* Paginação */}
+        {totalPages > 1 && (
+          <div className="p-4 border-t border-gray-200">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              itemsPerPage={itemsPerPage}
+              onPageChange={handlePageChange}
+              onItemsPerPageChange={handleItemsPerPageChange}
+            />
+          </div>
+        )}
+      </div>
 
       {/* Modal */}
       <RelatorioInspecaoModal
@@ -214,11 +219,11 @@ const RelatorioInspecao = () => {
         isOpen={showDeleteConfirmModal}
         onClose={handleCloseDeleteModal}
         onConfirm={handleConfirmDelete}
-        title="Excluir Relatório de Inspeção"
-        message={`Tem certeza que deseja excluir o relatório de inspeção #${rirToDelete?.id?.toString().padStart(4, '0') || ''}?`}
+        title="Confirmar Exclusão"
+        message={`Tem certeza que deseja excluir o relatório de inspeção #${rirToDelete?.id?.toString().padStart(4, '0') || ''}? Esta ação não pode ser desfeita.`}
         confirmText="Excluir"
         cancelText="Cancelar"
-        type="danger"
+        variant="danger"
       />
     </div>
   );
