@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { FaTimes, FaSave, FaEye, FaEdit, FaCreditCard } from 'react-icons/fa';
+import { FaTimes, FaSave, FaEye, FaEdit, FaPlus } from 'react-icons/fa';
 import { Button, Input, Modal } from '../ui';
 
 const FormasPagamentoModal = ({
