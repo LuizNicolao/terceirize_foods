@@ -239,6 +239,9 @@ const PedidosComprasModal = ({
       setFornecedores([]);
       setFornecedorSearchTerm('');
       setFilialMatriz(null);
+      // Resetar refs para evitar loops
+      carregandoItensRef.current = false;
+      solicitacaoIdAnteriorRef.current = null;
     }
   }, [isOpen, reset]);
 
