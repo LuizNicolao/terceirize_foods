@@ -187,8 +187,8 @@ class PedidosComprasCRUDController {
         const [produto] = await executeQuery(
           `SELECT 
             pg.id,
-            pg.codigo as codigo_produto,
-            pg.nome as nome_produto,
+            pg.codigo,
+            pg.nome,
             pg.unidade_medida_id
           FROM produto_generico pg
           WHERE pg.id = ?`,
@@ -227,8 +227,8 @@ class PedidosComprasCRUDController {
             pedidoId,
             null, // solicitacao_item_id é null para produtos novos
             item.produto_generico_id,
-            produto.codigo_produto || null,
-            produto.nome_produto || null,
+            produto.codigo || null,
+            produto.nome || null,
             unidadeMedidaId,
             unidadeMedida,
             0, // quantidade_solicitada é 0 para produtos novos
@@ -474,8 +474,8 @@ class PedidosComprasCRUDController {
           const [produto] = await executeQuery(
             `SELECT 
               pg.id,
-              pg.codigo as codigo_produto,
-              pg.nome as nome_produto,
+              pg.codigo,
+              pg.nome,
               pg.unidade_medida_id
             FROM produto_generico pg
             WHERE pg.id = ?`,
@@ -513,8 +513,8 @@ class PedidosComprasCRUDController {
               id,
               null, // solicitacao_item_id é null para produtos novos
               item.produto_generico_id,
-              produto.codigo_produto || null,
-              produto.nome_produto || null,
+              produto.codigo || null,
+              produto.nome || null,
               unidadeMedidaId,
               unidadeMedida,
               0, // quantidade_solicitada é 0 para produtos novos
