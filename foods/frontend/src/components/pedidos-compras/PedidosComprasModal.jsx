@@ -46,6 +46,7 @@ const PedidosComprasModal = ({
 
   const solicitacaoId = watch('solicitacao_compras_id');
   const fornecedorId = watch('fornecedor_id');
+  const filialFaturamentoId = watch('filial_faturamento_id');
   const filialCobrancaId = watch('filial_cobranca_id');
   const filialEntregaId = watch('filial_entrega_id');
 
@@ -80,8 +81,26 @@ const PedidosComprasModal = ({
   useEffect(() => {
     if (solicitacaoId && !pedidoCompras && isOpen) {
       carregarItensSolicitacao(solicitacaoId);
+      // Pré-selecionar filial de faturamento com a filial da solicitação
+      if (solicitacaoSelecionada?.filial_id && !watch('filial_faturamento_id')) {
+        setValue('filial_faturamento_id', solicitacaoSelecionada.filial_id);
+        carregarDadosFilialEspecifica(solicitacaoSelecionada.filial_id, 'faturamento');
+      }
     }
-  }, [solicitacaoId, pedidoCompras, isOpen]);
+  }, [solicitacaoId, solicitacaoSelecionada, pedidoCompras, isOpen]);
+
+  // Carregar dados da filial de faturamento quando selecionada
+  useEffect(() => {
+    if (filialFaturamentoId && isOpen) {
+      carregarDadosFilialEspecifica(filialFaturamentoId, 'faturamento');
+    } else if (!filialFaturamentoId && solicitacaoSelecionada?.filial_id) {
+      // Se não tiver filial de faturamento selecionada, usar a da solicitação
+      setValue('filial_faturamento_id', solicitacaoSelecionada.filial_id);
+      carregarDadosFilialEspecifica(solicitacaoSelecionada.filial_id, 'faturamento');
+    } else if (!filialFaturamentoId) {
+      setDadosFilialFaturamento(null);
+    }
+  }, [filialFaturamentoId, isOpen, solicitacaoSelecionada]);
 
   // Carregar dados da filial de cobrança quando selecionada
   useEffect(() => {
@@ -196,6 +215,7 @@ const PedidosComprasModal = ({
       setValue('forma_pagamento_id', '');
       setValue('prazo_pagamento_id', '');
       setValue('fornecedor_id', '');
+      setValue('filial_faturamento_id', '');
       setValue('filial_cobranca_id', '');
       setValue('filial_entrega_id', '');
     }

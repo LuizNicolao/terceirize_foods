@@ -22,7 +22,7 @@ const PedidosComprasFiliaisSelect = ({
     }
   };
 
-  const isReadonly = tipo === 'faturamento'; // Faturamento é readonly (copiado da solicitação)
+  const isReadonly = false; // Todas as filiais podem ser selecionadas
 
   return (
     <div className="bg-gray-50 rounded-lg border border-gray-200 p-4">
