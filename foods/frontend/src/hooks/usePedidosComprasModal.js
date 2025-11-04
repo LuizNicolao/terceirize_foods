@@ -446,17 +446,30 @@ export const usePedidosComprasModal = ({ pedidoCompras, isOpen, solicitacoesDisp
       unidade_medida: '',
       quantidade_solicitada: 0,
       quantidade_utilizada: 0,
-      saldo_disponivel: 0, // Permitir adicionar qualquer quantidade quando for produto novo
+      saldo_disponivel: 999999, // Permitir adicionar qualquer quantidade quando for produto novo
       quantidade_pedido: 0,
       valor_unitario: 0,
       selected: true,
       isNewProduct: true // Flag para identificar que é um produto novo
     };
     
-    const novosItensDisponiveis = [...itensDisponiveis, novoItem];
-    setItensDisponiveis(novosItensDisponiveis);
-    setItensSelecionados(novosItensDisponiveis.filter(item => item.selected && parseFloat(item.quantidade_pedido || 0) > 0));
-  }, [itensDisponiveis]);
+    // Se está editando um pedido, adicionar aos itens selecionados (que são os itens exibidos)
+    if (pedidoCompras) {
+      const novosItensSelecionados = [...itensSelecionados, novoItem];
+      setItensSelecionados(novosItensSelecionados);
+      // Também adicionar aos itens disponíveis para manter consistência
+      const novosItensDisponiveis = [...itensDisponiveis, novoItem];
+      setItensDisponiveis(novosItensDisponiveis);
+    } else {
+      // Se está criando novo pedido, adicionar aos itens disponíveis
+      const novosItensDisponiveis = [...itensDisponiveis, novoItem];
+      setItensDisponiveis(novosItensDisponiveis);
+      // Para produtos novos, sempre incluir mesmo com quantidade 0
+      setItensSelecionados(novosItensDisponiveis.filter(item => 
+        item.selected && (item.isNewProduct || parseFloat(item.quantidade_pedido || 0) > 0)
+      ));
+    }
+  }, [itensDisponiveis, itensSelecionados, pedidoCompras]);
 
   // Efeitos
   useEffect(() => {
