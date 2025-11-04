@@ -11,10 +11,8 @@ const FormasPagamentoModal = ({
   viewMode,
   loading
 }) => {
-  const { register, handleSubmit, reset, formState: { errors }, setValue, watch } = useForm();
+  const { register, handleSubmit, reset, formState: { errors }, setValue } = useForm();
   const [saving, setSaving] = useState(false);
-
-  const ativo = watch('ativo');
 
   useEffect(() => {
     if (formaPagamento && isOpen) {
@@ -24,12 +22,12 @@ const FormasPagamentoModal = ({
           setValue(key, formaPagamento[key]);
         }
       });
-      // Garantir que ativo seja boolean
-      setValue('ativo', formaPagamento.ativo === 1 || formaPagamento.ativo === true);
+      // Converter ativo para string para o select
+      setValue('ativo', formaPagamento.ativo === 1 || formaPagamento.ativo === true ? '1' : '0');
     } else if (!formaPagamento && isOpen) {
       // Resetar formulário para nova forma de pagamento
       reset();
-      setValue('ativo', true);
+      setValue('ativo', '1'); // Padrão: Ativo
     }
   }, [formaPagamento, isOpen, setValue, reset]);
 
@@ -41,7 +39,7 @@ const FormasPagamentoModal = ({
         nome: data.nome.trim(),
         descricao: data.descricao || null,
         prazo_padrao: data.prazo_padrao || null,
-        ativo: data.ativo === true || data.ativo === 1 || data.ativo === '1'
+        ativo: data.ativo === '1' || data.ativo === 1 || data.ativo === true
       };
 
       await onSubmit(formData);
@@ -152,18 +150,23 @@ const FormasPagamentoModal = ({
             />
           </div>
 
-          {/* Ativo */}
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="ativo"
-              {...register('ativo')}
-              disabled={isViewMode}
-              className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-            />
-            <label htmlFor="ativo" className="ml-2 block text-sm text-gray-700">
-              Forma de pagamento ativa
+          {/* Status */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Status <span className="text-red-500">*</span>
             </label>
+            <Input
+              type="select"
+              {...register('ativo', {
+                required: 'O status é obrigatório'
+              })}
+              disabled={isViewMode}
+              error={errors.ativo?.message}
+            >
+              <option value="">Selecione o status</option>
+              <option value="1">Ativo</option>
+              <option value="0">Inativo</option>
+            </Input>
           </div>
 
           {/* Footer */}
