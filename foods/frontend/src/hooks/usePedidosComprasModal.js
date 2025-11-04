@@ -76,6 +76,25 @@ export const usePedidosComprasModal = ({ pedidoCompras, isOpen, solicitacoesDisp
     }
   }, []);
 
+  const carregarDadosFilialEspecifica = useCallback(async (id, tipo) => {
+    try {
+      const response = await PedidosComprasService.buscarDadosFilial(id);
+      if (response.success && response.data) {
+        if (tipo === 'faturamento') {
+          setDadosFilialFaturamento(response.data);
+        } else if (tipo === 'cobranca') {
+          setDadosFilialCobranca(response.data);
+        } else if (tipo === 'entrega') {
+          setDadosFilialEntrega(response.data);
+        }
+        return response.data;
+      }
+    } catch (error) {
+      console.error(`Erro ao carregar dados da filial ${tipo}:`, error);
+    }
+    return null;
+  }, []);
+
   const carregarFiliais = useCallback(async () => {
     setLoadingFiliais(true);
     try {
@@ -227,25 +246,6 @@ export const usePedidosComprasModal = ({ pedidoCompras, isOpen, solicitacoesDisp
     } finally {
       setLoadingDadosFilial(false);
     }
-  }, []);
-
-  const carregarDadosFilialEspecifica = useCallback(async (id, tipo) => {
-    try {
-      const response = await PedidosComprasService.buscarDadosFilial(id);
-      if (response.success && response.data) {
-        if (tipo === 'faturamento') {
-          setDadosFilialFaturamento(response.data);
-        } else if (tipo === 'cobranca') {
-          setDadosFilialCobranca(response.data);
-        } else if (tipo === 'entrega') {
-          setDadosFilialEntrega(response.data);
-        }
-        return response.data;
-      }
-    } catch (error) {
-      console.error(`Erro ao carregar dados da filial ${tipo}:`, error);
-    }
-    return null;
   }, []);
 
   const carregarItensSolicitacao = useCallback(async (id, pedidoExistente = null) => {
