@@ -107,8 +107,8 @@ class SolicitacoesComprasListController {
     let statsQuery = `
       SELECT 
         COUNT(*) as total,
-        SUM(CASE WHEN sc.status = 'aberto' THEN 1 ELSE 0 END) as abertos,
-        SUM(CASE WHEN sc.status = 'parcial' THEN 1 ELSE 0 END) as parciais,
+        SUM(CASE WHEN sc.status = 'em_digitacao' THEN 1 ELSE 0 END) as abertos,
+        SUM(CASE WHEN sc.status = 'em_andamento' THEN 1 ELSE 0 END) as parciais,
         SUM(CASE WHEN sc.status = 'finalizado' THEN 1 ELSE 0 END) as finalizados,
         SUM(CASE WHEN sc.status = 'cancelada' THEN 1 ELSE 0 END) as canceladas,
         COALESCE(SUM(sc.valor_total), 0) as valor_total_geral

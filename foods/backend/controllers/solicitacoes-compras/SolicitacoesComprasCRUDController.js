@@ -168,7 +168,7 @@ class SolicitacoesComprasCRUDController {
         filial_id,
         criado_por,
         criado_em
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'aberto', CURDATE(), ?, ?, ?, NOW())`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'em_digitacao', CURDATE(), ?, ?, ?, NOW())`,
       [
         numero_solicitacao,
         motivo, // descricao = motivo
@@ -278,9 +278,9 @@ class SolicitacoesComprasCRUDController {
       return notFoundResponse(res, 'Solicitação de compras não encontrada');
     }
 
-    // Verificar se pode editar (apenas status = 'aberto')
-    if (solicitacao.status !== 'aberto') {
-      return errorResponse(res, `Esta solicitação não pode ser editada. Status: ${solicitacao.status}. Apenas solicitações 'abertas' podem ser alteradas.`, STATUS_CODES.BAD_REQUEST);
+    // Verificar se pode editar (apenas status = 'em_digitacao')
+    if (solicitacao.status !== 'em_digitacao') {
+      return errorResponse(res, `Esta solicitação não pode ser editada. Status: ${solicitacao.status}. Apenas solicitações 'em_digitacao' podem ser alteradas.`, STATUS_CODES.BAD_REQUEST);
     }
 
     // Validar campos obrigatórios
@@ -417,8 +417,8 @@ class SolicitacoesComprasCRUDController {
       return notFoundResponse(res, 'Solicitação de compras não encontrada');
     }
 
-    // Verificar se pode excluir (apenas status = 'aberto')
-    if (solicitacao.status !== 'aberto') {
+    // Verificar se pode excluir (apenas status = 'em_digitacao')
+    if (solicitacao.status !== 'em_digitacao') {
       return errorResponse(res, `Não é possível excluir. Esta solicitação está vinculada a pedidos de compras. Status: ${solicitacao.status}`, STATUS_CODES.BAD_REQUEST);
     }
 
