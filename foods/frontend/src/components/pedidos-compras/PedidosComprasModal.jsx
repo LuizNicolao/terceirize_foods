@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { FaTimes, FaSave, FaEye, FaEdit, FaPlus } from 'react-icons/fa';
 import { Button, Modal } from '../ui';
@@ -43,6 +43,8 @@ const PedidosComprasModal = ({
   const [loadingFornecedores, setLoadingFornecedores] = useState(false);
   const [loadingFiliais, setLoadingFiliais] = useState(false);
   const [fornecedorSearchTerm, setFornecedorSearchTerm] = useState('');
+  const carregandoItensRef = useRef(false);
+  const solicitacaoIdAnteriorRef = useRef(null);
 
   const solicitacaoId = watch('solicitacao_compras_id');
   const fornecedorId = watch('fornecedor_id');
@@ -79,28 +81,30 @@ const PedidosComprasModal = ({
 
   // Carregar itens quando solicitação for selecionada
   useEffect(() => {
-    if (solicitacaoId && !pedidoCompras && isOpen) {
+    // Evitar loop infinito: só carregar se mudou o ID da solicitação e não está carregando
+    if (solicitacaoId && 
+        solicitacaoId !== solicitacaoIdAnteriorRef.current && 
+        !pedidoCompras && 
+        isOpen && 
+        !carregandoItensRef.current) {
+      carregandoItensRef.current = true;
+      solicitacaoIdAnteriorRef.current = solicitacaoId;
       carregarItensSolicitacao(solicitacaoId);
-      // Pré-selecionar filial de faturamento com a filial da solicitação
-      if (solicitacaoSelecionada?.filial_id && !watch('filial_faturamento_id')) {
-        setValue('filial_faturamento_id', solicitacaoSelecionada.filial_id);
-        carregarDadosFilialEspecifica(solicitacaoSelecionada.filial_id, 'faturamento');
-      }
+    } else if (!solicitacaoId) {
+      // Resetar quando não há solicitação selecionada
+      solicitacaoIdAnteriorRef.current = null;
+      carregandoItensRef.current = false;
     }
-  }, [solicitacaoId, solicitacaoSelecionada, pedidoCompras, isOpen]);
+  }, [solicitacaoId, pedidoCompras, isOpen]);
 
   // Carregar dados da filial de faturamento quando selecionada
   useEffect(() => {
     if (filialFaturamentoId && isOpen) {
       carregarDadosFilialEspecifica(filialFaturamentoId, 'faturamento');
-    } else if (!filialFaturamentoId && solicitacaoSelecionada?.filial_id) {
-      // Se não tiver filial de faturamento selecionada, usar a da solicitação
-      setValue('filial_faturamento_id', solicitacaoSelecionada.filial_id);
-      carregarDadosFilialEspecifica(solicitacaoSelecionada.filial_id, 'faturamento');
     } else if (!filialFaturamentoId) {
       setDadosFilialFaturamento(null);
     }
-  }, [filialFaturamentoId, isOpen, solicitacaoSelecionada]);
+  }, [filialFaturamentoId, isOpen]);
 
   // Carregar dados da filial de cobrança quando selecionada
   useEffect(() => {
@@ -417,12 +421,17 @@ const PedidosComprasModal = ({
         setItensDisponiveis(itens.map(item => ({ ...item, selected: false, quantidade_pedido: 0, valor_unitario: 0 })));
         setItensSelecionados([]);
         
-        // Carregar dados da filial e pré-selecionar entrega
+        // Carregar dados da filial e pré-selecionar entrega e faturamento
         if (solicitacao.filial_id) {
           carregarDadosFilial(solicitacao.filial_id);
           // Pré-selecionar filial de entrega com a filial da solicitação
           setValue('filial_entrega_id', solicitacao.filial_id);
           carregarDadosFilialEspecifica(solicitacao.filial_id, 'entrega');
+          // Pré-selecionar filial de faturamento com a filial da solicitação
+          if (!watch('filial_faturamento_id')) {
+            setValue('filial_faturamento_id', solicitacao.filial_id);
+            carregarDadosFilialEspecifica(solicitacao.filial_id, 'faturamento');
+          }
         }
       } else {
         toast.error(response.error || 'Erro ao carregar itens da solicitação');
@@ -432,6 +441,7 @@ const PedidosComprasModal = ({
       toast.error('Erro ao carregar itens da solicitação');
     } finally {
       setLoadingItens(false);
+      carregandoItensRef.current = false;
     }
   };
 
