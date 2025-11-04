@@ -154,6 +154,12 @@ const PedidosComprasModal = ({
       if (pedidoCompras.filial_id) {
         carregarDadosFilial(pedidoCompras.filial_id);
       }
+      // Carregar filial de faturamento se houver (ou usar filial_id como fallback)
+      if (pedidoCompras.filial_faturamento_id) {
+        carregarDadosFilialEspecifica(pedidoCompras.filial_faturamento_id, 'faturamento');
+      } else if (pedidoCompras.filial_id) {
+        carregarDadosFilialEspecifica(pedidoCompras.filial_id, 'faturamento');
+      }
       if (pedidoCompras.filial_cobranca_id) {
         setValue('filial_cobranca_id', pedidoCompras.filial_cobranca_id);
         carregarDadosFilialEspecifica(pedidoCompras.filial_cobranca_id, 'cobranca');
@@ -425,6 +431,7 @@ const PedidosComprasModal = ({
         forma_pagamento_id: data.forma_pagamento_id || null,
         prazo_pagamento_id: data.prazo_pagamento_id || null,
         observacoes: data.observacoes || null,
+        filial_faturamento_id: solicitacaoSelecionada?.filial_id || pedidoCompras?.filial_id || null,
         filial_cobranca_id: data.filial_cobranca_id || null,
         filial_entrega_id: data.filial_entrega_id || null,
         itens: pedidoCompras 
