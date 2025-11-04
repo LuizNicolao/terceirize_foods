@@ -46,14 +46,6 @@ export const useBaseEntity = (entityName, service, options = {}) => {
    * Carrega dados da entidade
    */
   const loadData = useCallback(async (customParams = {}) => {
-    console.log(`[useBaseEntity:${entityName}] loadData chamado`, {
-      customParams,
-      debouncedSearchTerm: debouncedSearch?.debouncedSearchTerm,
-      filtersSearchTerm: filters.searchTerm,
-      currentPage: pagination.currentPage,
-      itemsPerPage: pagination.itemsPerPage
-    });
-    
     setLoading(true);
     try {
       const params = {
@@ -67,7 +59,6 @@ export const useBaseEntity = (entityName, service, options = {}) => {
         ...customParams
       };
 
-      console.log(`[useBaseEntity:${entityName}] Parâmetros finais para API:`, params);
       const response = await service.listar(params);
 
       if (response.success) {
@@ -215,14 +206,6 @@ export const useBaseEntity = (entityName, service, options = {}) => {
    * Monitora também filters.filters para capturar filtros customizados
    */
   useEffect(() => {
-    console.log(`[useBaseEntity:${entityName}] useEffect interno disparado`, {
-      currentPage: pagination.currentPage,
-      itemsPerPage: pagination.itemsPerPage,
-      debouncedSearchTerm: debouncedSearch?.debouncedSearchTerm,
-      filtersSearchTerm: filters.searchTerm,
-      statusFilter: filters.statusFilter,
-      filters: filters.filters
-    });
     loadData();
   }, [pagination.currentPage, pagination.itemsPerPage, debouncedSearch?.debouncedSearchTerm || filters.searchTerm, filters.statusFilter, filters.filters]);
 
