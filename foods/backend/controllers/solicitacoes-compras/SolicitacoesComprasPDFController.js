@@ -45,8 +45,7 @@ class SolicitacoesComprasPDFController {
         sci.id,
         sci.produto_id,
         sci.quantidade,
-        sci.quantidade_utilizada,
-        sci.saldo_disponivel,
+        sci.unidade_medida_id,
         pg.codigo as produto_codigo,
         pg.nome as produto_nome,
         um.sigla as unidade_simbolo,
@@ -59,50 +58,46 @@ class SolicitacoesComprasPDFController {
       [id]
     );
 
-    // Buscar pedidos vinculados para cada item
-    let pedidosVinculados = [];
-    if (itens.length > 0) {
-      pedidosVinculados = await executeQuery(
-        `SELECT 
-          pci.solicitacao_item_id,
-          pc.numero_pedido,
-          pci.quantidade_pedido
-        FROM pedido_compras_itens pci
-        INNER JOIN pedidos_compras pc ON pci.pedido_id = pc.id
-        WHERE pc.status IN ('aprovado', 'parcial', 'finalizado')
-          AND pci.solicitacao_item_id IN (${itens.map(() => '?').join(',')})
-        ORDER BY pc.numero_pedido`,
-        itens.map(item => item.id)
-      );
-    }
+    // Buscar vínculos com pedidos para calcular quantidade_utilizada e saldo_disponivel
+    const itensComPedidos = await Promise.all(
+      itens.map(async (item) => {
+        // Buscar pedidos vinculados a este item
+        const vinculos = await executeQuery(
+          `SELECT 
+            pci.quantidade_pedido,
+            pc.numero_pedido,
+            pc.id as pedido_id
+          FROM pedido_compras_itens pci
+          INNER JOIN pedidos_compras pc ON pci.pedido_id = pc.id
+          WHERE pci.solicitacao_item_id = ?
+            AND pc.status IN ('aprovado', 'parcial', 'finalizado')`,
+          [item.id]
+        );
 
-    // Agrupar pedidos por item
-    const pedidosPorItem = {};
-    pedidosVinculados.forEach(pedido => {
-      if (!pedidosPorItem[pedido.solicitacao_item_id]) {
-        pedidosPorItem[pedido.solicitacao_item_id] = [];
-      }
-      pedidosPorItem[pedido.solicitacao_item_id].push({
-        numero: pedido.numero_pedido,
-        quantidade: parseFloat(pedido.quantidade_pedido || 0)
-      });
-    });
+        // Calcular quantidade utilizada e saldo disponível
+        const quantidade_utilizada = vinculos.reduce((sum, v) => sum + parseFloat(v.quantidade_pedido || 0), 0);
+        const saldo_disponivel = parseFloat(item.quantidade || 0) - quantidade_utilizada;
 
-    // Adicionar pedidos vinculados aos itens
-    const itensComPedidos = itens.map(item => {
-      const pedidos = pedidosPorItem[item.id] || [];
-      const statusItem = parseFloat(item.quantidade_utilizada || 0) === 0 
-        ? 'ABERTO' 
-        : parseFloat(item.quantidade_utilizada || 0) >= parseFloat(item.quantidade || 0)
-        ? 'FINALIZADO'
-        : 'PARCIAL';
-      
-      return {
-        ...item,
-        pedidos_vinculados: pedidos,
-        status_item: statusItem
-      };
-    });
+        // Status do item
+        let statusItem = 'ABERTO';
+        if (quantidade_utilizada > 0 && saldo_disponivel > 0) {
+          statusItem = 'PARCIAL';
+        } else if (saldo_disponivel <= 0 && quantidade_utilizada > 0) {
+          statusItem = 'FINALIZADO';
+        }
+
+        return {
+          ...item,
+          quantidade_utilizada,
+          saldo_disponivel,
+          status_item: statusItem,
+          pedidos_vinculados: vinculos.map(v => ({
+            numero: v.numero_pedido,
+            quantidade: parseFloat(v.quantidade_pedido || 0)
+          }))
+        };
+      })
+    );
 
     // Gerar PDF usando PDFKit
     const PDFDocument = require('pdfkit');
