@@ -109,41 +109,43 @@ const RelatorioInspecao = () => {
       <RIRStats estatisticas={estatisticas} />
 
       {/* Filtros */}
-      <CadastroFilterBar
-        searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
-        onKeyPress={handleKeyPress}
-        onClear={handleClearFilters}
-        additionalFilters={[
-          {
-            label: 'Status',
-            value: statusFilter || '',
-            onChange: setStatusFilter,
-            options: [
-              { value: '', label: 'Todos os status' },
-              { value: 'APROVADO', label: 'Aprovado' },
-              { value: 'REPROVADO', label: 'Reprovado' },
-              { value: 'PARCIAL', label: 'Parcial' }
-            ]
-          },
-          {
-            label: 'Data Início',
-            value: dataInicioFilter || '',
-            onChange: setDataInicioFilter,
-            type: 'date'
-          },
-          {
-            label: 'Data Fim',
-            value: dataFimFilter || '',
-            onChange: setDataFimFilter,
-            type: 'date'
-          }
-        ]}
-        placeholder="Buscar por NF ou Fornecedor..."
-      />
+      <div className="mb-6">
+        <CadastroFilterBar
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          onKeyPress={handleKeyPress}
+          onClear={handleClearFilters}
+          additionalFilters={[
+            {
+              label: 'Status',
+              value: statusFilter || '',
+              onChange: setStatusFilter,
+              options: [
+                { value: '', label: 'Todos os status' },
+                { value: 'APROVADO', label: 'Aprovado' },
+                { value: 'REPROVADO', label: 'Reprovado' },
+                { value: 'PARCIAL', label: 'Parcial' }
+              ]
+            },
+            {
+              label: 'Data Início',
+              value: dataInicioFilter || '',
+              onChange: setDataInicioFilter,
+              type: 'date'
+            },
+            {
+              label: 'Data Fim',
+              value: dataFimFilter || '',
+              onChange: setDataFimFilter,
+              type: 'date'
+            }
+          ]}
+          placeholder="Buscar por NF ou Fornecedor..."
+        />
+      </div>
 
-      {/* Ações de Exportação */}
-      <div className="mb-4">
+      {/* Export Buttons */}
+      <div className="mb-6 flex justify-end">
         <ExportButtons
           onExportXLSX={() => {}}
           onExportPDF={() => {}}

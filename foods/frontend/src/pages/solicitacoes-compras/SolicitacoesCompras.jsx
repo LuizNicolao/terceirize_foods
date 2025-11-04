@@ -144,53 +144,55 @@ const SolicitacoesCompras = () => {
       <SolicitacoesComprasStats estatisticas={estatisticas} />
 
       {/* Filtros */}
-      <CadastroFilterBar
-        searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
-        onKeyPress={handleKeyPress}
-        additionalFilters={[
-          {
-            label: 'Status',
-            value: statusFilter || '',
-            onChange: setStatusFilter,
-            options: [
-              { value: '', label: 'Todos os status' },
-              { value: 'aberto', label: 'Aberto' },
-              { value: 'parcial', label: 'Parcial' },
-              { value: 'finalizado', label: 'Finalizado' },
-              { value: 'cancelada', label: 'Cancelada' }
-            ]
-          },
-          {
-            label: 'Filial',
-            value: filialFilter || '',
-            onChange: setFilialFilter,
-            options: [
-              { value: '', label: 'Todas as filiais' },
-              ...filiais.map(filial => ({
-                value: filial.id.toString(),
-                label: `${filial.filial || filial.nome || 'Filial'} ${filial.codigo_filial ? `(${filial.codigo_filial})` : ''}`
-              }))
-            ]
-          },
-          {
-            label: 'Data Início',
-            value: dataInicioFilter || '',
-            onChange: setDataInicioFilter,
-            type: 'date'
-          },
-          {
-            label: 'Data Fim',
-            value: dataFimFilter || '',
-            onChange: setDataFimFilter,
-            type: 'date'
-          }
-        ]}
-        placeholder="Buscar por número, descrição, solicitante ou unidade..."
-      />
+      <div className="mb-6">
+        <CadastroFilterBar
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          onKeyPress={handleKeyPress}
+          additionalFilters={[
+            {
+              label: 'Status',
+              value: statusFilter || '',
+              onChange: setStatusFilter,
+              options: [
+                { value: '', label: 'Todos os status' },
+                { value: 'aberto', label: 'Aberto' },
+                { value: 'parcial', label: 'Parcial' },
+                { value: 'finalizado', label: 'Finalizado' },
+                { value: 'cancelada', label: 'Cancelada' }
+              ]
+            },
+            {
+              label: 'Filial',
+              value: filialFilter || '',
+              onChange: setFilialFilter,
+              options: [
+                { value: '', label: 'Todas as filiais' },
+                ...filiais.map(filial => ({
+                  value: filial.id.toString(),
+                  label: `${filial.filial || filial.nome || 'Filial'} ${filial.codigo_filial ? `(${filial.codigo_filial})` : ''}`
+                }))
+              ]
+            },
+            {
+              label: 'Data Início',
+              value: dataInicioFilter || '',
+              onChange: setDataInicioFilter,
+              type: 'date'
+            },
+            {
+              label: 'Data Fim',
+              value: dataFimFilter || '',
+              onChange: setDataFimFilter,
+              type: 'date'
+            }
+          ]}
+          placeholder="Buscar por número, descrição, solicitante ou unidade..."
+        />
+      </div>
 
-      {/* Ações de Exportação */}
-      <div className="mb-4">
+      {/* Export Buttons */}
+      <div className="mb-6 flex justify-end">
         <ExportButtons
           onExportXLSX={handleExportXLSX}
           onExportPDF={handleExportPDF}
