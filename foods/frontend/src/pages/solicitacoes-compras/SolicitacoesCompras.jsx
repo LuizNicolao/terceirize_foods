@@ -6,7 +6,6 @@ import { useAuditoria } from '../../hooks/common/useAuditoria';
 import { useExport } from '../../hooks/common/useExport';
 import SolicitacoesComprasService from '../../services/solicitacoesCompras';
 import { Button, ValidationErrorModal, ConfirmModal } from '../../components/ui';
-import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
 import { SolicitacoesComprasModal } from '../../components/solicitacoes-compras';
 import SolicitacoesComprasStats from '../../components/solicitacoes-compras/SolicitacoesComprasStats';
@@ -142,52 +141,6 @@ const SolicitacoesCompras = () => {
 
       {/* Estatísticas */}
       <SolicitacoesComprasStats estatisticas={estatisticas} />
-
-      {/* Filtros */}
-      <CadastroFilterBar
-        searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
-        onKeyPress={handleKeyPress}
-        additionalFilters={[
-          {
-            label: 'Status',
-            value: statusFilter || 'todos',
-            onChange: setStatusFilter,
-            options: [
-              { value: 'todos', label: 'Todos os status' },
-              { value: 'aberto', label: 'Aberto' },
-              { value: 'parcial', label: 'Parcial' },
-              { value: 'finalizado', label: 'Finalizado' },
-              { value: 'cancelada', label: 'Cancelada' }
-            ]
-          },
-          {
-            label: 'Filial',
-            value: filialFilter || 'todos',
-            onChange: setFilialFilter,
-            options: [
-              { value: 'todos', label: 'Todas as filiais' },
-              ...filiais.map(filial => ({
-                value: filial.id.toString(),
-                label: `${filial.filial || filial.nome || 'Filial'} ${filial.codigo_filial ? `(${filial.codigo_filial})` : ''}`
-              }))
-            ]
-          },
-          {
-            label: 'Data Início',
-            value: dataInicioFilter || '',
-            onChange: setDataInicioFilter,
-            type: 'date'
-          },
-          {
-            label: 'Data Fim',
-            value: dataFimFilter || '',
-            onChange: setDataFimFilter,
-            type: 'date'
-          }
-        ]}
-        placeholder="Buscar por número, descrição, solicitante ou unidade..."
-      />
 
       {/* Ações de Exportação */}
       <div className="mb-4">
