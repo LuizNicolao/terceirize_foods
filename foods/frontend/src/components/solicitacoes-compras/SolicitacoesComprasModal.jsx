@@ -24,6 +24,7 @@ const SolicitacoesComprasModal = ({
 
   // Observar data de entrega para buscar semana
   const dataEntrega = watch('data_entrega_cd');
+  const motivo = watch('motivo');
 
   // Buscar semana de abastecimento quando data mudar
   useEffect(() => {
@@ -144,11 +145,19 @@ const SolicitacoesComprasModal = ({
       return;
     }
 
-    // Validar cada item
+    // Validar cada item (sem validar observacao do produto)
     for (let i = 0; i < itens.length; i++) {
       const item = itens[i];
       if (!item.produto_id || !item.quantidade || !item.unidade_medida_id) {
-        toast.error(`Item ${i + 1}: Todos os campos são obrigatórios`);
+        toast.error(`Item ${i + 1}: Produto, quantidade e unidade são obrigatórios`);
+        return;
+      }
+    }
+
+    // Validar observações se motivo for "Compra Programada"
+    if (data.motivo && data.motivo !== 'Compra Emergencial') {
+      if (!data.observacoes || data.observacoes.trim() === '') {
+        toast.error('Observações são obrigatórias para Compra Programada');
         return;
       }
     }
@@ -163,7 +172,7 @@ const SolicitacoesComprasModal = ({
         produto_id: parseInt(item.produto_id),
         quantidade: parseFloat(item.quantidade),
         unidade_medida_id: parseInt(item.unidade_medida_id),
-        observacao: item.observacao || null
+        observacao: item.observacao || null // Observação do produto é opcional
       }))
     };
 
@@ -285,12 +294,19 @@ const SolicitacoesComprasModal = ({
             {/* Observações Gerais */}
             <div className="mt-4">
               <Input
-                label="Observações Gerais"
+                label={`Observações Gerais${motivo && motivo !== 'Compra Emergencial' ? ' *' : ''}`}
                 type="textarea"
                 rows={3}
-                {...register('observacoes')}
+                {...register('observacoes', {
+                  required: motivo && motivo !== 'Compra Emergencial' 
+                    ? 'Observações são obrigatórias para Compra Programada' 
+                    : false
+                })}
                 error={errors.observacoes?.message}
                 disabled={viewMode}
+                placeholder={motivo && motivo !== 'Compra Emergencial' 
+                  ? 'Digite as observações da solicitação...' 
+                  : 'Digite as observações (opcional para Compra Emergencial)...'}
               />
             </div>
           </div>

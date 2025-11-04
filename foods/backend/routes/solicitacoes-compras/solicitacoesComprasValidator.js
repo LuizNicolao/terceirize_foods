@@ -92,6 +92,15 @@ const solicitacoesComprasValidations = {
       .isIn(['Compra Emergencial', 'Compra Programada'])
       .withMessage('Motivo deve ser "Compra Emergencial" ou "Compra Programada"'),
     body('observacoes')
+      .custom((value, { req }) => {
+        // Se motivo for "Compra Programada", observações são obrigatórias
+        if (req.body.motivo && req.body.motivo !== 'Compra Emergencial') {
+          if (!value || value.trim() === '') {
+            throw new Error('Observações são obrigatórias para Compra Programada');
+          }
+        }
+        return true;
+      })
       .optional()
       .isString()
       .trim()
@@ -109,6 +118,12 @@ const solicitacoesComprasValidations = {
     body('itens.*.unidade_medida_id')
       .isInt({ min: 1 })
       .withMessage('Cada item deve ter uma unidade_medida_id válida'),
+    body('itens.*.observacao')
+      .optional()
+      .isString()
+      .trim()
+      .isLength({ max: 500 })
+      .withMessage('Observação do item deve ter no máximo 500 caracteres'),
     handleValidationErrors
   ]
 };
