@@ -73,13 +73,6 @@ class PedidosComprasCRUDController {
       filial_entrega_id
     });
 
-    // Log para debug
-    console.log('[PedidosComprasCRUD] Dados das filiais:', {
-      filial_cobranca_id,
-      cobranca_endereco: filiaisData.cobranca?.endereco,
-      cobranca_cnpj: filiaisData.cobranca?.cnpj
-    });
-
     // Buscar nomes de forma_pagamento e prazo_pagamento
     const { formaPagamentoNome, prazoPagamentoNome } = await PedidosComprasHelpers.buscarFormasPrazos(
       forma_pagamento_id,
@@ -94,12 +87,6 @@ class PedidosComprasCRUDController {
     // Preparar valores para inserção
     const enderecoCobranca = filiaisData.cobranca?.endereco || null;
     const cnpjCobranca = filiaisData.cobranca?.cnpj || null;
-
-    console.log('[PedidosComprasCRUD] Valores que serão salvos:', {
-      filial_cobranca_id: filial_cobranca_id || null,
-      endereco_cobranca: enderecoCobranca,
-      cnpj_cobranca: cnpjCobranca
-    });
 
     // Inserir pedido
     const result = await executeQuery(
