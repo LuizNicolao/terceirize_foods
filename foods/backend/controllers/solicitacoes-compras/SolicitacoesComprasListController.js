@@ -200,7 +200,7 @@ class SolicitacoesComprasListController {
       `SELECT 
         sci.*,
         pg.nome as produto_nome,
-        pg.codigo_produto,
+        pg.codigo as codigo_produto,
         um.simbolo as unidade_simbolo,
         um.nome as unidade_nome
       FROM solicitacao_compras_itens sci
