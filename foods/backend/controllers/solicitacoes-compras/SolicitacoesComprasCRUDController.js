@@ -66,6 +66,11 @@ class SolicitacoesComprasCRUDController {
    * A semana de abastecimento deve ser a semana seguinte à data de entrega CD
    */
   static async buscarSemanaAbastecimento(dataEntrega) {
+    // Se dataEntrega for undefined ou null, retornar null
+    if (!dataEntrega) {
+      return null;
+    }
+
     // Primeiro, buscar se já existe na tabela solicitacoes_compras
     const [existente] = await executeQuery(
       `SELECT semana_abastecimento 
@@ -83,6 +88,10 @@ class SolicitacoesComprasCRUDController {
     // Buscar na tabela calendario usando a data + 7 dias (semana seguinte)
     // A tabela calendario tem a relação entre data e semana_abastecimento
     const dataEntregaObj = new Date(dataEntrega);
+    if (isNaN(dataEntregaObj.getTime())) {
+      return null; // Data inválida
+    }
+    
     const dataSeguinte = new Date(dataEntregaObj);
     dataSeguinte.setDate(dataSeguinte.getDate() + 7);
     const dataSeguinteStr = dataSeguinte.toISOString().split('T')[0];
@@ -100,7 +109,8 @@ class SolicitacoesComprasCRUDController {
     }
 
     // Se não encontrou na tabela calendario, calcular a semana seguinte manualmente
-    return this.calcularSemanaAbastecimento(dataEntrega);
+    const semanaCalculada = this.calcularSemanaAbastecimento(dataEntrega);
+    return semanaCalculada || null;
   }
 
   /**
