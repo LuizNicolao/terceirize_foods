@@ -1,5 +1,4 @@
 import React from 'react';
-import { FaCreditCard } from 'react-icons/fa';
 import { ActionButtons, EmptyState } from '../ui';
 
 const FormasPagamentoTable = ({
@@ -81,11 +80,18 @@ const FormasPagamentoTable = ({
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <ActionButtons
-                        onView={canView ? () => onView(forma) : null}
-                        onEdit={canEdit ? () => onEdit(forma) : null}
-                        onDelete={canDelete ? () => onDelete(forma) : null}
-                      />
+                      <div className="flex justify-end">
+                        <ActionButtons
+                          canView={canView}
+                          canEdit={canEdit}
+                          canDelete={canDelete}
+                          onView={onView}
+                          onEdit={onEdit}
+                          onDelete={onDelete}
+                          item={forma}
+                          size="xs"
+                        />
+                      </div>
                     </td>
                   </tr>
                 );
@@ -128,9 +134,14 @@ const FormasPagamentoTable = ({
               )}
               <div className="flex justify-end space-x-2 pt-3 border-t border-gray-200">
                 <ActionButtons
-                  onView={canView ? () => onView(forma) : null}
-                  onEdit={canEdit ? () => onEdit(forma) : null}
-                  onDelete={canDelete ? () => onDelete(forma) : null}
+                  canView={canView}
+                  canEdit={canEdit}
+                  canDelete={canDelete}
+                  onView={onView}
+                  onEdit={onEdit}
+                  onDelete={onDelete}
+                  item={forma}
+                  size="sm"
                 />
               </div>
             </div>
