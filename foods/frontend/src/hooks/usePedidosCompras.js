@@ -14,7 +14,8 @@ export const usePedidosCompras = () => {
     initialItemsPerPage: 20,
     initialFilters: {},
     enableStats: true,
-    enableDelete: true
+    enableDelete: true,
+    enableDebouncedSearch: true
   });
 
   const [statusFilter, setStatusFilter] = useState('');
@@ -24,17 +25,16 @@ export const usePedidosCompras = () => {
 
   /**
    * Carrega dados com filtros
+   * Não passa 'search' nos params quando enableDebouncedSearch está ativo,
+   * pois o useBaseEntity já gerencia isso internamente
    */
   const loadDataWithFilters = useCallback(async () => {
     const params = {
-      page: baseEntity.currentPage,
-      limit: baseEntity.itemsPerPage,
-      search: baseEntity.searchTerm || undefined,
       status: statusFilter || undefined
     };
 
     await baseEntity.loadData(params);
-  }, [baseEntity.currentPage, baseEntity.itemsPerPage, baseEntity.searchTerm, statusFilter, baseEntity.loadData]);
+  }, [statusFilter, baseEntity.loadData]);
 
   /**
    * Carregar solicitações disponíveis
@@ -52,10 +52,12 @@ export const usePedidosCompras = () => {
 
   /**
    * Carregar dados quando filtros mudarem
+   * Não inclui baseEntity.searchTerm nas dependências porque o useBaseEntity
+   * já gerencia a busca com debounce internamente
    */
   useEffect(() => {
     loadDataWithFilters();
-  }, [baseEntity.currentPage, baseEntity.itemsPerPage, baseEntity.searchTerm, statusFilter]);
+  }, [baseEntity.currentPage, baseEntity.itemsPerPage, statusFilter, loadDataWithFilters]);
 
   /**
    * Carregar solicitações disponíveis ao montar

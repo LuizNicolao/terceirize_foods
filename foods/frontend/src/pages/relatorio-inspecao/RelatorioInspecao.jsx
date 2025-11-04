@@ -26,8 +26,6 @@ const RelatorioInspecao = () => {
     grupos,
     searchTerm,
     statusFilter,
-    dataInicioFilter,
-    dataFimFilter,
     currentPage,
     totalPages,
     totalItems,
@@ -48,8 +46,6 @@ const RelatorioInspecao = () => {
     setSearchTerm,
     handleKeyPress,
     setStatusFilter,
-    setDataInicioFilter,
-    setDataFimFilter,
     getStatusBadge
   } = useRelatorioInspecao();
 

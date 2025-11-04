@@ -11,20 +11,17 @@ import { useFilters } from './common/useFilters';
 
 export const useRelatorioInspecao = () => {
   // Hook base para funcionalidades CRUD
-  // Desabilitar busca com debounce para ter controle manual
   const baseEntity = useBaseEntity('relatorio-inspecao', RelatorioInspecaoService, {
     initialItemsPerPage: 20,
     initialFilters: {},
     enableStats: true,
     enableDelete: true,
-    enableDebouncedSearch: false // Desabilitar para controle manual dos filtros
+    enableDebouncedSearch: true // Busca apenas ao pressionar Enter
   });
 
   // Hook de filtros customizados para RIR
   const customFilters = useFilters({
-    status_geral: '',
-    data_inicio: '',
-    data_fim: ''
+    status_geral: ''
   });
 
   // Estados específicos do RIR
@@ -33,15 +30,12 @@ export const useRelatorioInspecao = () => {
 
   /**
    * Carrega dados com filtros customizados
+   * Não passa 'search' nos params quando enableDebouncedSearch está ativo,
+   * pois o useBaseEntity já gerencia isso internamente
    */
   const loadDataWithFilters = useCallback(async () => {
     const params = {
-      ...baseEntity.getPaginationParams(),
-      ...customFilters.getFilterParams(),
-      search: baseEntity.searchTerm || undefined,
-      status_geral: customFilters.filters.status_geral || undefined,
-      data_inicio: customFilters.filters.data_inicio || undefined,
-      data_fim: customFilters.filters.data_fim || undefined
+      status_geral: customFilters.filters.status_geral || undefined
       };
 
     // Remover parâmetros vazios
@@ -52,12 +46,14 @@ export const useRelatorioInspecao = () => {
       });
 
     await baseEntity.loadData(params);
-  }, [baseEntity, customFilters]);
+  }, [baseEntity.loadData, customFilters.filters.status_geral]);
 
   // Carregar dados quando filtros ou paginação mudam
+  // Não inclui baseEntity.searchTerm nas dependências porque o useBaseEntity
+  // já gerencia a busca com debounce internamente
   useEffect(() => {
     loadDataWithFilters();
-  }, [baseEntity.currentPage, baseEntity.itemsPerPage, customFilters.filters.status_geral, customFilters.filters.data_inicio, customFilters.filters.data_fim]);
+  }, [baseEntity.currentPage, baseEntity.itemsPerPage, customFilters.filters.status_geral, loadDataWithFilters]);
 
   /**
    * Buscar RIR por ID (mantido para compatibilidade)
@@ -310,8 +306,6 @@ export const useRelatorioInspecao = () => {
     // Estados de filtros
     searchTerm: baseEntity.searchTerm,
     statusFilter: customFilters.filters.status_geral,
-    dataInicioFilter: customFilters.filters.data_inicio,
-    dataFimFilter: customFilters.filters.data_fim,
 
     // Ações de modal (do hook base)
     handleAddRIR: baseEntity.handleAdd,
@@ -328,8 +322,6 @@ export const useRelatorioInspecao = () => {
     handleKeyPress,
     handleClearFilters,
     setStatusFilter: (value) => customFilters.updateFilter('status_geral', value),
-    setDataInicioFilter: (value) => customFilters.updateFilter('data_inicio', value),
-    setDataFimFilter: (value) => customFilters.updateFilter('data_fim', value),
     
     // Ações CRUD (customizadas)
     handleSubmitRIR: onSubmitCustom,
