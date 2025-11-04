@@ -233,12 +233,19 @@ class SolicitacoesComprasPDFController {
 
     doc.y = startY + boxHeight + spacing + 60 + 20;
 
-    // Tabela: Produtos Solicitados
-    doc.fontSize(12).font('Helvetica-Bold').fillColor('black');
-    doc.text(`Produtos Solicitados (${itensComPedidos.length})`, 50, doc.y);
-    doc.moveDown(0.5);
+    // Verificar se precisa de nova página antes da tabela
+    if (doc.y > 650) {
+      doc.addPage();
+      doc.y = 50;
+    }
 
-    const tableTop = doc.y;
+    // Tabela: Produtos Solicitados
+    const produtosTitleY = doc.y;
+    doc.fontSize(12).font('Helvetica-Bold').fillColor('black');
+    doc.text(`Produtos Solicitados (${itensComPedidos.length})`, 50, produtosTitleY);
+    
+    const tableStartY = produtosTitleY + 20;
+    const tableTop = tableStartY + 10;
     const tableLeft = 50;
     const colWidths = {
       codigo: 50,
@@ -276,33 +283,49 @@ class SolicitacoesComprasPDFController {
     // Dados dos itens
     doc.fontSize(8).font('Helvetica');
     let currentY = tableTop + 20;
+    const tableWidth = Object.values(colWidths).reduce((a, b) => a + b, 0);
+    const maxY = 700; // Altura máxima antes de quebrar página
     
     itensComPedidos.forEach((item, index) => {
-      if (currentY > 700) {
-        // Nova página se necessário
+      // Verificar se precisa de nova página (deixar espaço para pelo menos uma linha + footer)
+      if (currentY > maxY) {
+        // Desenhar borda inferior da caixa antes de quebrar
+        const boxBottom = currentY - 5;
+        doc.moveTo(tableLeft, boxBottom).lineTo(tableLeft + tableWidth, boxBottom).stroke();
+        
+        // Nova página
         doc.addPage();
-        currentY = 50;
+        
+        // Desenhar caixa na nova página
+        const newTableStartY = 50;
+        const newTableTop = newTableStartY + 10;
+        drawBox(tableLeft - 10, newTableStartY, tableWidth + 20, 750 - newTableStartY);
+        
+        // Reimprimir título da seção
+        doc.fontSize(12).font('Helvetica-Bold').fillColor('black');
+        doc.text(`Produtos Solicitados (${itensComPedidos.length})`, tableLeft, newTableStartY - 15);
         
         // Reimprimir cabeçalho da tabela
+        currentY = newTableTop + 20;
         doc.fontSize(8).font('Helvetica-Bold');
         x = tableLeft;
-        doc.text('CÓDIGO', x, currentY);
+        doc.text('CÓDIGO', x, newTableTop);
         x += colWidths.codigo;
-        doc.text('PRODUTO', x, currentY);
+        doc.text('PRODUTO', x, newTableTop);
         x += colWidths.produto;
-        doc.text('UN', x, currentY);
+        doc.text('UN', x, newTableTop);
         x += colWidths.unidade;
-        doc.text('QTD. SOLICITADA', x, currentY);
+        doc.text('QTD. SOLICITADA', x, newTableTop);
         x += colWidths.quantidade_solicitada;
-        doc.text('QTD. UTILIZADA', x, currentY);
+        doc.text('QTD. UTILIZADA', x, newTableTop);
         x += colWidths.quantidade_utilizada;
-        doc.text('SALDO DISP.', x, currentY);
+        doc.text('SALDO DISP.', x, newTableTop);
         x += colWidths.saldo_disponivel;
-        doc.text('STATUS', x, currentY);
+        doc.text('STATUS', x, newTableTop);
         x += colWidths.status;
-        doc.text('PEDIDOS VINCULADOS', x, currentY);
-        currentY += 20;
-        doc.moveTo(tableLeft, currentY - 5).lineTo(tableLeft + Object.values(colWidths).reduce((a, b) => a + b, 0), currentY - 5).stroke();
+        doc.text('PEDIDOS VINCULADOS', x, newTableTop);
+        currentY = newTableTop + 20;
+        doc.moveTo(tableLeft, currentY - 5).lineTo(tableLeft + tableWidth, currentY - 5).stroke();
       }
 
       x = tableLeft;
@@ -341,6 +364,16 @@ class SolicitacoesComprasPDFController {
 
       currentY += 15;
     });
+
+    // Desenhar caixa ao redor da tabela (calcular altura total)
+    const tableEndY = currentY;
+    const tableHeight = tableEndY - tableStartY + 10;
+    const tableBox = drawBox(tableLeft - 10, tableStartY, tableWidth + 20, tableHeight);
+    
+    // Se a tabela continuou em outra página, fechar a caixa na última página também
+    if (tableEndY < maxY) {
+      // Apenas uma página, já desenhou a caixa
+    }
 
     // Finalizar PDF
     doc.end();
