@@ -312,13 +312,28 @@ const PedidosComprasModal = ({
         const items = Array.isArray(response.data) ? response.data : response.data.items || [];
         setFiliais(items);
         
-        // Usar primeira filial como padrão para cobrança (substituindo lógica de matriz)
-        if (items.length > 0) {
+        // Buscar filial MATRIZ (MTZ) - pode ser por código ou nome
+        const filialMatriz = items.find(filial => 
+          filial.codigo_filial?.toUpperCase() === 'MTZ' ||
+          filial.filial?.toUpperCase().includes('MATRIZ') ||
+          filial.nome?.toUpperCase().includes('MATRIZ')
+        );
+        
+        if (filialMatriz) {
+          setFilialMatriz(filialMatriz);
+          // Pré-selecionar MATRIZ para cobrança se não houver valor e não estiver editando
+          if (!pedidoCompras && !watch('filial_cobranca_id')) {
+            setValue('filial_cobranca_id', filialMatriz.id);
+            // Carregar dados da matriz automaticamente
+            carregarDadosFilialEspecifica(filialMatriz.id, 'cobranca');
+          }
+        } else if (items.length > 0) {
+          // Fallback: usar primeira filial se não encontrar MATRIZ
           const primeiraFilial = items[0];
           setFilialMatriz(primeiraFilial);
-          // Pré-selecionar primeira filial para cobrança se não houver valor
           if (!pedidoCompras && !watch('filial_cobranca_id')) {
             setValue('filial_cobranca_id', primeiraFilial.id);
+            carregarDadosFilialEspecifica(primeiraFilial.id, 'cobranca');
           }
         }
       }
