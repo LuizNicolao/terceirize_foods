@@ -8,31 +8,13 @@ const {
   successResponse, 
   notFoundResponse, 
   errorResponse,
-  conflictResponse,
   STATUS_CODES 
 } = require('../../middleware/responseHandler');
 const { asyncHandler } = require('../../middleware/responseHandler');
+const PedidosComprasHelpers = require('./PedidosComprasHelpers');
+const PedidosComprasItemsController = require('./PedidosComprasItemsController');
 
 class PedidosComprasCRUDController {
-  
-  /**
-   * Gerar próximo número de pedido
-   */
-  static async gerarNumeroPedido() {
-    const ultimo = await executeQuery(
-      `SELECT numero_pedido FROM pedidos_compras 
-       WHERE numero_pedido LIKE 'PC%' 
-       ORDER BY id DESC LIMIT 1`
-    );
-
-    if (ultimo.length === 0) {
-      return 'PC000001';
-    }
-
-    const numero = parseInt(ultimo[0].numero_pedido.substring(2));
-    const proximo = 'PC' + String(numero + 1).padStart(6, '0');
-    return proximo;
-  }
 
   /**
    * Criar novo pedido de compras
@@ -84,56 +66,23 @@ class PedidosComprasCRUDController {
 
     const solData = solicitacao[0];
 
-    // Buscar dados das filiais (faturamento, cobrança, entrega)
-    const filiaisData = {};
-    for (const tipo of ['faturamento', 'cobranca', 'entrega']) {
-      const filialId = req.body[`filial_${tipo}_id`];
-      if (filialId) {
-        const filial = await executeQuery(
-          `SELECT id, filial, codigo_filial, cnpj, razao_social, 
-                  logradouro, numero, bairro, cidade, estado, cep
-           FROM filiais WHERE id = ?`,
-          [filialId]
-        );
-        if (filial.length > 0) {
-          const f = filial[0];
-          filiaisData[tipo] = {
-            id: f.id,
-            nome: f.filial,
-            cnpj: f.cnpj,
-            razao_social: f.razao_social,
-            endereco: `${f.logradouro || ''}, ${f.numero || ''}${f.bairro ? ' - ' + f.bairro : ''}${f.cidade ? ' - ' + f.cidade : ''}${f.estado ? '/' + f.estado : ''}${f.cep ? ' - CEP: ' + f.cep : ''}`.trim()
-          };
-        }
-      }
-    }
+    // Buscar dados das filiais
+    const filiaisData = await PedidosComprasHelpers.buscarDadosFiliais({
+      filial_faturamento_id,
+      filial_cobranca_id,
+      filial_entrega_id
+    });
 
-    // Buscar nomes de forma_pagamento e prazo_pagamento pelos IDs se fornecidos
-    let formaPagamentoNome = forma_pagamento || null;
-    let prazoPagamentoNome = prazo_pagamento || null;
-    
-    if (forma_pagamento_id && !formaPagamentoNome) {
-      const [forma] = await executeQuery(
-        'SELECT nome FROM formas_pagamento WHERE id = ?',
-        [forma_pagamento_id]
-      );
-      if (forma) {
-        formaPagamentoNome = forma.nome;
-      }
-    }
-    
-    if (prazo_pagamento_id && !prazoPagamentoNome) {
-      const [prazo] = await executeQuery(
-        'SELECT nome FROM prazos_pagamento WHERE id = ?',
-        [prazo_pagamento_id]
-      );
-      if (prazo) {
-        prazoPagamentoNome = prazo.nome;
-      }
-    }
+    // Buscar nomes de forma_pagamento e prazo_pagamento
+    const { formaPagamentoNome, prazoPagamentoNome } = await PedidosComprasHelpers.buscarFormasPrazos(
+      forma_pagamento_id,
+      prazo_pagamento_id,
+      forma_pagamento,
+      prazo_pagamento
+    );
 
     // Gerar número do pedido
-    const numero_pedido = await this.gerarNumeroPedido();
+    const numero_pedido = await PedidosComprasHelpers.gerarNumeroPedido();
 
     // Inserir pedido
     const result = await executeQuery(
@@ -180,143 +129,21 @@ class PedidosComprasCRUDController {
     const pedidoId = result.insertId;
 
     // Inserir itens do pedido
-    for (const item of itens) {
-      // Se for produto novo (tem produto_generico_id mas não tem solicitacao_item_id)
-      if (item.produto_generico_id && !item.solicitacao_item_id) {
-        // Buscar dados do produto genérico
-        const [produto] = await executeQuery(
-          `SELECT 
-            pg.id,
-            pg.codigo,
-            pg.nome,
-            pg.unidade_medida_id
-          FROM produto_generico pg
-          WHERE pg.id = ?`,
-          [item.produto_generico_id]
-        );
-
-        if (!produto) {
-          await executeQuery('DELETE FROM pedidos_compras WHERE id = ?', [pedidoId]);
-          return errorResponse(res, `Produto genérico não encontrado (ID: ${item.produto_generico_id})`, STATUS_CODES.BAD_REQUEST);
-        }
-
-        // Buscar unidade de medida
-        let unidadeMedida = item.unidade_medida || null;
-        let unidadeMedidaId = produto.unidade_medida_id || null;
-        
-        if (unidadeMedidaId) {
-          const [unidade] = await executeQuery(
-            `SELECT sigla, nome FROM unidades_medida WHERE id = ?`,
-            [unidadeMedidaId]
-          );
-          if (unidade) {
-            unidadeMedida = unidade.sigla || unidade.nome || item.unidade_medida || null;
-          }
-        }
-
-        // Inserir item do pedido (produto novo)
-        await executeQuery(
-          `INSERT INTO pedido_compras_itens (
-            pedido_id, solicitacao_item_id, produto_generico_id,
-            codigo_produto, nome_produto,
-            unidade_medida_id, unidade_medida,
-            quantidade_solicitada, quantidade_pedido,
-            valor_unitario, observacao
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-          [
-            pedidoId,
-            null, // solicitacao_item_id é null para produtos novos
-            item.produto_generico_id,
-            produto.codigo || null,
-            produto.nome || null,
-            unidadeMedidaId,
-            unidadeMedida,
-            0, // quantidade_solicitada é 0 para produtos novos
-            parseFloat(item.quantidade_pedido) || 0,
-            parseFloat(item.valor_unitario) || 0,
-            item.observacao || null
-          ]
-        );
-      } else if (item.solicitacao_item_id) {
-        // Item da solicitação (lógica original)
-        // Validar saldo disponível
-        const saldoQuery = await executeQuery(
-          `SELECT 
-            sci.quantidade as quantidade_solicitada,
-            COALESCE(SUM(pci.quantidade_pedido), 0) as quantidade_atendida,
-            (sci.quantidade - COALESCE(SUM(pci.quantidade_pedido), 0)) as saldo
-          FROM solicitacao_compras_itens sci
-          LEFT JOIN pedido_compras_itens pci ON pci.solicitacao_item_id = sci.id
-          WHERE sci.id = ?
-          GROUP BY sci.id`,
-          [item.solicitacao_item_id]
-        );
-
-        if (saldoQuery.length === 0) {
-          await executeQuery('DELETE FROM pedidos_compras WHERE id = ?', [pedidoId]);
-          return errorResponse(res, `Item da solicitação não encontrado (ID: ${item.solicitacao_item_id})`, STATUS_CODES.BAD_REQUEST);
-        }
-
-        const saldo = parseFloat(saldoQuery[0].saldo);
-        const quantidadePedido = parseFloat(item.quantidade_pedido);
-
-        if (quantidadePedido > saldo) {
-          await executeQuery('DELETE FROM pedidos_compras WHERE id = ?', [pedidoId]);
-          return errorResponse(res, `Quantidade solicitada (${quantidadePedido}) excede o saldo disponível (${saldo})`, STATUS_CODES.BAD_REQUEST);
-        }
-
-        // Buscar dados do item da solicitação
-        const itemSolicitacao = await executeQuery(
-          `SELECT 
-            sci.*,
-            um.sigla as unidade_simbolo,
-            um.nome as unidade_nome
-          FROM solicitacao_compras_itens sci
-          LEFT JOIN unidades_medida um ON sci.unidade_medida_id = um.id
-          WHERE sci.id = ?`,
-          [item.solicitacao_item_id]
-        );
-
-        if (itemSolicitacao.length === 0) {
-          continue;
-        }
-
-        const itemSol = itemSolicitacao[0];
-
-        // Inserir item do pedido
-        await executeQuery(
-          `INSERT INTO pedido_compras_itens (
-            pedido_id, solicitacao_item_id, produto_generico_id,
-            codigo_produto, nome_produto,
-            unidade_medida_id, unidade_medida,
-            quantidade_solicitada, quantidade_pedido,
-            valor_unitario, observacao
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-          [
-            pedidoId,
-            item.solicitacao_item_id,
-            itemSol.produto_id || null, // produto_id na solicitação é o produto_generico_id
-            itemSol.codigo_produto || null,
-            itemSol.nome_produto || null,
-            itemSol.unidade_medida_id || null,
-            itemSol.unidade_simbolo || itemSol.unidade_medida || null,
-            itemSol.quantidade || 0,
-            quantidadePedido,
-            parseFloat(item.valor_unitario) || 0,
-            item.observacao || null
-          ]
-        );
-      }
+    const itensResult = await PedidosComprasItemsController.inserirItensPedido(pedidoId, itens);
+    
+    if (!itensResult.success) {
+      await executeQuery('DELETE FROM pedidos_compras WHERE id = ?', [pedidoId]);
+      return errorResponse(res, itensResult.error, STATUS_CODES.BAD_REQUEST);
     }
 
     // Buscar pedido criado com todos os dados
-    const pedidoCriado = await this.buscarPedidoCompleto(pedidoId);
+    const pedidoCriado = await PedidosComprasHelpers.buscarPedidoCompleto(pedidoId);
 
     // Adicionar links HATEOAS
     const data = res.addResourceLinks(pedidoCriado);
 
     // Gerar links de ações
-    const userPermissions = req.user ? this.getUserPermissions(req.user) : [];
+    const userPermissions = req.user ? PedidosComprasHelpers.getUserPermissions(req.user) : [];
     const actions = res.generateActionLinks(userPermissions, pedidoCriado.id);
 
     return successResponse(res, data, 'Pedido de compras criado com sucesso', STATUS_CODES.CREATED, {
@@ -369,54 +196,19 @@ class PedidosComprasCRUDController {
     }
 
     // Buscar dados das filiais se necessário
-    const filiaisData = {};
-    if (filial_faturamento_id || filial_cobranca_id || filial_entrega_id) {
-      for (const tipo of ['faturamento', 'cobranca', 'entrega']) {
-        const filialId = req.body[`filial_${tipo}_id`];
-        if (filialId) {
-          const filial = await executeQuery(
-            `SELECT id, filial, codigo_filial, cnpj, razao_social, 
-                    logradouro, numero, bairro, cidade, estado, cep
-             FROM filiais WHERE id = ?`,
-            [filialId]
-          );
-          if (filial.length > 0) {
-            const f = filial[0];
-            filiaisData[tipo] = {
-              id: f.id,
-              nome: f.filial,
-              cnpj: f.cnpj,
-              razao_social: f.razao_social,
-              endereco: `${f.logradouro || ''}, ${f.numero || ''}${f.bairro ? ' - ' + f.bairro : ''}${f.cidade ? ' - ' + f.cidade : ''}${f.estado ? '/' + f.estado : ''}${f.cep ? ' - CEP: ' + f.cep : ''}`.trim()
-            };
-          }
-        }
-      }
-    }
+    const filiaisData = await PedidosComprasHelpers.buscarDadosFiliais({
+      filial_faturamento_id,
+      filial_cobranca_id,
+      filial_entrega_id
+    });
 
-    // Buscar nomes de forma_pagamento e prazo_pagamento pelos IDs se fornecidos
-    let formaPagamentoNome = forma_pagamento || null;
-    let prazoPagamentoNome = prazo_pagamento || null;
-    
-    if (forma_pagamento_id && !formaPagamentoNome) {
-      const [forma] = await executeQuery(
-        'SELECT nome FROM formas_pagamento WHERE id = ?',
-        [forma_pagamento_id]
-      );
-      if (forma) {
-        formaPagamentoNome = forma.nome;
-      }
-    }
-    
-    if (prazo_pagamento_id && !prazoPagamentoNome) {
-      const [prazo] = await executeQuery(
-        'SELECT nome FROM prazos_pagamento WHERE id = ?',
-        [prazo_pagamento_id]
-      );
-      if (prazo) {
-        prazoPagamentoNome = prazo.nome;
-      }
-    }
+    // Buscar nomes de forma_pagamento e prazo_pagamento
+    const { formaPagamentoNome, prazoPagamentoNome } = await PedidosComprasHelpers.buscarFormasPrazos(
+      forma_pagamento_id,
+      prazo_pagamento_id,
+      forma_pagamento,
+      prazo_pagamento
+    );
 
     // Atualizar pedido
     await executeQuery(
@@ -462,117 +254,23 @@ class PedidosComprasCRUDController {
       ]
     );
 
-    // Se itens foram fornecidos, atualizar itens (lógica simplificada - pode ser expandida)
+    // Se itens foram fornecidos, atualizar itens
     if (itens && Array.isArray(itens)) {
-      // Deletar itens existentes e recriar (lógica simplificada)
-      await executeQuery('DELETE FROM pedido_compras_itens WHERE pedido_id = ?', [id]);
+      const itensResult = await PedidosComprasItemsController.atualizarItensPedido(id, itens);
       
-      for (const item of itens) {
-        // Se for produto novo (tem produto_generico_id mas não tem solicitacao_item_id)
-        if (item.produto_generico_id && !item.solicitacao_item_id) {
-          // Buscar dados do produto genérico
-          const [produto] = await executeQuery(
-            `SELECT 
-              pg.id,
-              pg.codigo,
-              pg.nome,
-              pg.unidade_medida_id
-            FROM produto_generico pg
-            WHERE pg.id = ?`,
-            [item.produto_generico_id]
-          );
-
-          if (!produto) {
-            continue;
-          }
-
-          // Buscar unidade de medida
-          let unidadeMedida = item.unidade_medida || null;
-          let unidadeMedidaId = produto.unidade_medida_id || null;
-          
-          if (unidadeMedidaId) {
-            const [unidade] = await executeQuery(
-              `SELECT sigla, nome FROM unidades_medida WHERE id = ?`,
-              [unidadeMedidaId]
-            );
-            if (unidade) {
-              unidadeMedida = unidade.sigla || unidade.nome || item.unidade_medida || null;
-            }
-          }
-
-          // Inserir item do pedido (produto novo)
-          await executeQuery(
-            `INSERT INTO pedido_compras_itens (
-              pedido_id, solicitacao_item_id, produto_generico_id,
-              codigo_produto, nome_produto,
-              unidade_medida_id, unidade_medida,
-              quantidade_solicitada, quantidade_pedido,
-              valor_unitario, observacao
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [
-              id,
-              null, // solicitacao_item_id é null para produtos novos
-              item.produto_generico_id,
-              produto.codigo || null,
-              produto.nome || null,
-              unidadeMedidaId,
-              unidadeMedida,
-              0, // quantidade_solicitada é 0 para produtos novos
-              parseFloat(item.quantidade_pedido) || 0,
-              parseFloat(item.valor_unitario) || 0,
-              item.observacao || null
-            ]
-          );
-        } else if (item.solicitacao_item_id) {
-          // Item da solicitação (lógica original)
-          const itemSolicitacao = await executeQuery(
-            `SELECT 
-              sci.*,
-              um.sigla as unidade_simbolo,
-              um.nome as unidade_nome
-            FROM solicitacao_compras_itens sci
-            LEFT JOIN unidades_medida um ON sci.unidade_medida_id = um.id
-            WHERE sci.id = ?`,
-            [item.solicitacao_item_id]
-          );
-
-          if (itemSolicitacao.length > 0) {
-            const itemSol = itemSolicitacao[0];
-            await executeQuery(
-              `INSERT INTO pedido_compras_itens (
-                pedido_id, solicitacao_item_id, produto_generico_id,
-                codigo_produto, nome_produto,
-                unidade_medida_id, unidade_medida,
-                quantidade_solicitada, quantidade_pedido,
-                valor_unitario, observacao
-              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-              [
-                id,
-                item.solicitacao_item_id,
-                itemSol.produto_id || null, // produto_id na solicitação é o produto_generico_id
-                itemSol.codigo_produto || null,
-                itemSol.nome_produto || null,
-                itemSol.unidade_medida_id || null,
-                itemSol.unidade_simbolo || itemSol.unidade_medida || null,
-                itemSol.quantidade || 0,
-                parseFloat(item.quantidade_pedido) || 0,
-                parseFloat(item.valor_unitario) || 0,
-                item.observacao || null
-              ]
-            );
-          }
-        }
+      if (!itensResult.success) {
+        return errorResponse(res, itensResult.error, STATUS_CODES.BAD_REQUEST);
       }
     }
 
     // Buscar pedido atualizado
-    const pedidoAtualizado = await this.buscarPedidoCompleto(id);
+    const pedidoAtualizado = await PedidosComprasHelpers.buscarPedidoCompleto(id);
 
     // Adicionar links HATEOAS
     const data = res.addResourceLinks(pedidoAtualizado);
 
     // Gerar links de ações
-    const userPermissions = req.user ? this.getUserPermissions(req.user) : [];
+    const userPermissions = req.user ? PedidosComprasHelpers.getUserPermissions(req.user) : [];
     const actions = res.generateActionLinks(userPermissions, pedidoAtualizado.id);
 
     return successResponse(res, data, 'Pedido de compras atualizado com sucesso', STATUS_CODES.OK, {
@@ -621,100 +319,6 @@ class PedidosComprasCRUDController {
 
     return successResponse(res, null, 'Pedido de compras excluído com sucesso', STATUS_CODES.OK);
   });
-
-  /**
-   * Buscar pedido completo (helper)
-   */
-  static async buscarPedidoCompleto(pedidoId) {
-    const pedidos = await executeQuery(
-      `SELECT 
-        p.id,
-        p.numero_pedido,
-        p.solicitacao_compras_id,
-        p.fornecedor_id,
-        p.fornecedor_nome,
-        p.fornecedor_cnpj,
-        p.filial_id,
-        p.filial_nome,
-        p.filial_faturamento_id,
-        p.filial_cobranca_id,
-        p.filial_entrega_id,
-        p.endereco_faturamento,
-        p.endereco_cobranca,
-        p.endereco_entrega,
-        p.cnpj_faturamento,
-        p.cnpj_cobranca,
-        p.cnpj_entrega,
-        p.data_entrega_cd,
-        p.semana_abastecimento,
-        p.valor_total,
-        p.status,
-        p.observacoes,
-        p.forma_pagamento,
-        p.prazo_pagamento,
-        p.justificativa,
-        p.numero_solicitacao,
-        p.criado_por,
-        p.criado_em,
-        p.atualizado_em,
-        s.numero_solicitacao as solicitacao_numero,
-        s.justificativa as solicitacao_justificativa,
-        u.nome as criado_por_nome,
-        DATE_FORMAT(p.criado_em, '%d/%m/%Y %H:%i') as data_criacao,
-        DATE_FORMAT(p.atualizado_em, '%d/%m/%Y %H:%i') as data_atualizacao,
-        DATE_FORMAT(p.data_entrega_cd, '%d/%m/%Y') as data_entrega_formatada
-      FROM pedidos_compras p
-      LEFT JOIN solicitacoes_compras s ON p.solicitacao_compras_id = s.id
-      LEFT JOIN usuarios u ON p.criado_por = u.id
-      WHERE p.id = ?`,
-      [pedidoId]
-    );
-
-    if (pedidos.length === 0) {
-      return null;
-    }
-
-    const pedido = pedidos[0];
-
-    // Buscar itens com todos os campos
-    const itens = await executeQuery(
-      `SELECT 
-        pci.id,
-        pci.pedido_id,
-        pci.solicitacao_item_id,
-        pci.produto_generico_id,
-        pci.codigo_produto,
-        pci.nome_produto,
-        pci.unidade_medida_id,
-        pci.unidade_medida,
-        pci.quantidade_solicitada,
-        pci.quantidade_pedido,
-        pci.valor_unitario,
-        pci.valor_total,
-        pci.observacao,
-        pci.criado_em,
-        pg.nome as produto_generico_nome,
-        pg.codigo as produto_generico_codigo,
-        um.sigla as unidade_sigla,
-        um.nome as unidade_nome
-      FROM pedido_compras_itens pci
-      LEFT JOIN produto_generico pg ON pci.produto_generico_id = pg.id
-      LEFT JOIN unidades_medida um ON pci.unidade_medida_id = um.id
-      WHERE pci.pedido_id = ?
-      ORDER BY pci.id`,
-      [pedidoId]
-    );
-
-    pedido.itens = itens;
-    return pedido;
-  }
-
-  /**
-   * Obter permissões do usuário (helper)
-   */
-  static getUserPermissions(user) {
-    return ['visualizar', 'criar', 'editar', 'excluir'];
-  }
 }
 
 module.exports = PedidosComprasCRUDController;
