@@ -7,7 +7,8 @@ const PedidosComprasModalFooter = ({
   pedidoCompras,
   saving,
   loading,
-  onClose
+  onClose,
+  formId
 }) => {
   return (
     <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 px-6 pb-6">
@@ -23,6 +24,7 @@ const PedidosComprasModalFooter = ({
       {!isViewMode && (
         <Button
           type="submit"
+          form={formId}
           disabled={saving || loading}
           loading={saving}
           size="sm"

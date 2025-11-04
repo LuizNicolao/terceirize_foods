@@ -55,7 +55,7 @@ const PedidosComprasModalBody = ({
   const itensParaExibir = pedidoCompras ? itensSelecionados : itensDisponiveis;
 
   return (
-    <form onSubmit={handleSubmit} className="p-6 space-y-6">
+    <form id="pedidos-compras-form" onSubmit={handleSubmit} className="p-6 space-y-6">
       {/* Solicitação de Compras */}
       <PedidosComprasSolicitacaoSelect
         solicitacoesDisponiveis={solicitacoesDisponiveis}
