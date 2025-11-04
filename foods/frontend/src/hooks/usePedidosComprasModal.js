@@ -95,6 +95,36 @@ export const usePedidosComprasModal = ({ pedidoCompras, isOpen, solicitacoesDisp
     return null;
   }, []);
 
+  const carregarProdutosGenericos = useCallback(async () => {
+    try {
+      const response = await api.get('/produto-generico?limit=1000&status=1');
+      const processData = (response) => {
+        if (response.data?.data?.items) return response.data.data.items;
+        if (response.data?.data && Array.isArray(response.data.data)) return response.data.data;
+        if (Array.isArray(response.data)) return response.data;
+        return response.data || [];
+      };
+      setProdutosGenericos(processData(response));
+    } catch (error) {
+      console.error('Erro ao carregar produtos genéricos:', error);
+    }
+  }, []);
+
+  const carregarUnidadesMedida = useCallback(async () => {
+    try {
+      const response = await api.get('/unidades?limit=1000');
+      const processData = (response) => {
+        if (response.data?.data?.items) return response.data.data.items;
+        if (response.data?.data && Array.isArray(response.data.data)) return response.data.data;
+        if (Array.isArray(response.data)) return response.data;
+        return response.data || [];
+      };
+      setUnidadesMedida(processData(response));
+    } catch (error) {
+      console.error('Erro ao carregar unidades de medida:', error);
+    }
+  }, []);
+
   const carregarFiliais = useCallback(async () => {
     setLoadingFiliais(true);
     try {
