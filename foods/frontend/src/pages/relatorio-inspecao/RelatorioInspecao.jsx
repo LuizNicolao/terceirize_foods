@@ -113,11 +113,10 @@ const RelatorioInspecao = () => {
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         onKeyPress={handleKeyPress}
-        onClear={handleClearFilters}
         additionalFilters={[
           {
             label: 'Status',
-            value: statusFilter,
+            value: statusFilter || '',
             onChange: setStatusFilter,
             options: [
               { value: '', label: 'Todos os status' },
@@ -128,13 +127,13 @@ const RelatorioInspecao = () => {
           },
           {
             label: 'Data Início',
-            value: dataInicioFilter,
+            value: dataInicioFilter || '',
             onChange: setDataInicioFilter,
             type: 'date'
           },
           {
             label: 'Data Fim',
-            value: dataFimFilter,
+            value: dataFimFilter || '',
             onChange: setDataFimFilter,
             type: 'date'
           }

@@ -148,7 +148,6 @@ const SolicitacoesCompras = () => {
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         onKeyPress={handleKeyPress}
-        onClear={handleClearFilters}
         additionalFilters={[
           {
             label: 'Status',
@@ -164,7 +163,7 @@ const SolicitacoesCompras = () => {
           },
           {
             label: 'Filial',
-            value: filialFilter,
+            value: filialFilter || 'todos',
             onChange: setFilialFilter,
             options: [
               { value: 'todos', label: 'Todas as filiais' },
@@ -176,13 +175,13 @@ const SolicitacoesCompras = () => {
           },
           {
             label: 'Data Início',
-            value: dataInicioFilter,
+            value: dataInicioFilter || '',
             onChange: setDataInicioFilter,
             type: 'date'
           },
           {
             label: 'Data Fim',
-            value: dataFimFilter,
+            value: dataFimFilter || '',
             onChange: setDataFimFilter,
             type: 'date'
           }
