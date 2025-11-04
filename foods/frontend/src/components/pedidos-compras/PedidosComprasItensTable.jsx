@@ -46,6 +46,21 @@ const PedidosComprasItensTable = ({
               Quantidade Pedido
             </th>
             {!viewMode && (
+              <>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Valor Unitário <span className="text-red-500">*</span>
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Valor Total
+                </th>
+              </>
+            )}
+            {viewMode && (
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Valor Total
+              </th>
+            )}
+            {!viewMode && (
               <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Ações
               </th>
@@ -56,6 +71,8 @@ const PedidosComprasItensTable = ({
           {itens.map((item, index) => {
             const saldoDisponivel = parseFloat(item.saldo_disponivel || 0);
             const quantidadePedido = parseFloat(item.quantidade_pedido || 0);
+            const valorUnitario = parseFloat(item.valor_unitario || 0);
+            const valorTotal = quantidadePedido * valorUnitario;
             const isSaldoInsuficiente = quantidadePedido > saldoDisponivel;
             const isSelected = item.selected || false;
 
@@ -148,6 +165,47 @@ const PedidosComprasItensTable = ({
                   )}
                 </td>
                 {!viewMode && (
+                  <>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <Input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={valorUnitario || ''}
+                        onChange={(e) => {
+                          const newValue = parseFloat(e.target.value) || 0;
+                          onItemChange(index, { 
+                            ...item, 
+                            valor_unitario: newValue
+                          });
+                        }}
+                        disabled={!isSelected || saldoDisponivel <= 0}
+                        className="w-32"
+                        error={errors[`itens.${index}.valor_unitario`]}
+                        placeholder="0,00"
+                      />
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <span className="text-sm font-medium text-gray-900">
+                        {valorTotal.toLocaleString('pt-BR', {
+                          style: 'currency',
+                          currency: 'BRL'
+                        })}
+                      </span>
+                    </td>
+                  </>
+                )}
+                {viewMode && (
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    <span className="text-sm font-medium text-gray-900">
+                      {valorTotal.toLocaleString('pt-BR', {
+                        style: 'currency',
+                        currency: 'BRL'
+                      })}
+                    </span>
+                  </td>
+                )}
+                {!viewMode && (
                   <td className="px-4 py-3 whitespace-nowrap text-center">
                     <Button
                       variant="ghost"
@@ -164,6 +222,31 @@ const PedidosComprasItensTable = ({
             );
           })}
         </tbody>
+        {!viewMode && (
+          <tfoot className="bg-gray-50 border-t-2 border-gray-300">
+            <tr>
+              <td colSpan="9" className="px-4 py-3 text-right font-medium">
+                <span className="text-sm text-gray-700">Valor Total do Pedido:</span>
+              </td>
+              <td className="px-4 py-3 whitespace-nowrap">
+                <span className="text-lg font-bold text-green-600">
+                  {itens
+                    .filter(item => item.selected && parseFloat(item.quantidade_pedido || 0) > 0)
+                    .reduce((total, item) => {
+                      const qtd = parseFloat(item.quantidade_pedido || 0);
+                      const valorUnit = parseFloat(item.valor_unitario || 0);
+                      return total + (qtd * valorUnit);
+                    }, 0)
+                    .toLocaleString('pt-BR', {
+                      style: 'currency',
+                      currency: 'BRL'
+                    })}
+                </span>
+              </td>
+              <td className="px-4 py-3"></td>
+            </tr>
+          </tfoot>
+        )}
       </table>
     </div>
   );

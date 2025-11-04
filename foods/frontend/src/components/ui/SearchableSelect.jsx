@@ -17,7 +17,8 @@ const SearchableSelect = ({
   showClearButton = true,
   filterBy = "label", // campo para filtrar (pode ser 'label', 'value', ou função customizada)
   renderOption = null, // função customizada para renderizar opções
-  maxHeight = "200px"
+  maxHeight = "200px",
+  onSearchChange = null // callback para busca no backend
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -147,8 +148,14 @@ const SearchableSelect = ({
   };
 
   const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
+    const newSearchTerm = e.target.value;
+    setSearchTerm(newSearchTerm);
     setIsOpen(true);
+    
+    // Chamar callback para busca no backend se fornecido
+    if (onSearchChange && typeof onSearchChange === 'function') {
+      onSearchChange(newSearchTerm);
+    }
   };
 
   const renderOptionItem = (option) => {

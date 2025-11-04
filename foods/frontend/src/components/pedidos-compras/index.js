@@ -6,5 +6,5 @@ export { default as PedidosComprasModal } from './PedidosComprasModal';
 export { default as PedidosComprasStats } from './PedidosComprasStats';
 export { default as PedidosComprasTable } from './PedidosComprasTable';
 export { default as PedidosComprasItensTable } from './PedidosComprasItensTable';
-export { default as PedidosComprasDadosFilial } from './PedidosComprasDadosFilial';
+export { default as PedidosComprasFiliaisSelect } from './PedidosComprasFiliaisSelect';
 
