@@ -41,10 +41,15 @@ const commonValidations = {
 const solicitacoesComprasValidations = {
   create: [
     body('filial_id')
+      .notEmpty()
+      .withMessage('Filial é obrigatória')
       .custom((value) => {
-        const num = parseInt(value);
+        if (value === null || value === undefined || value === '') {
+          throw new Error('Filial é obrigatória');
+        }
+        const num = typeof value === 'string' ? parseInt(value, 10) : value;
         if (isNaN(num) || num < 1) {
-          throw new Error('Filial é obrigatória e deve ser um ID válido');
+          throw new Error('Filial deve ser um ID válido');
         }
         return true;
       })
@@ -129,10 +134,15 @@ const solicitacoesComprasValidations = {
       .isInt({ min: 1 })
       .withMessage('ID deve ser um número inteiro positivo'),
     body('filial_id')
+      .notEmpty()
+      .withMessage('Filial é obrigatória')
       .custom((value) => {
-        const num = parseInt(value);
+        if (value === null || value === undefined || value === '') {
+          throw new Error('Filial é obrigatória');
+        }
+        const num = typeof value === 'string' ? parseInt(value, 10) : value;
         if (isNaN(num) || num < 1) {
-          throw new Error('Filial é obrigatória e deve ser um ID válido');
+          throw new Error('Filial deve ser um ID válido');
         }
         return true;
       })
