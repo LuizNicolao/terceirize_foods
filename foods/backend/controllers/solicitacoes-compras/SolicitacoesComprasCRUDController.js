@@ -290,7 +290,7 @@ class SolicitacoesComprasCRUDController {
 
     // Verificar se filial existe
     const [filial] = await executeQuery(
-      'SELECT filial FROM filiais WHERE id = ?',
+      'SELECT filial, nome FROM filiais WHERE id = ?',
       [filial_id]
     );
 
@@ -300,6 +300,9 @@ class SolicitacoesComprasCRUDController {
 
     // Buscar semana de abastecimento
     const semana_abastecimento = await this.buscarSemanaAbastecimento(data_entrega_cd);
+    
+    // Garantir que todos os valores sejam null ao invés de undefined
+    const unidade = filial.nome || filial.filial || null;
 
     // Atualizar solicitação
     await executeQuery(
@@ -314,13 +317,13 @@ class SolicitacoesComprasCRUDController {
         atualizado_em = NOW()
       WHERE id = ?`,
       [
-        filial.nome,
-        data_entrega_cd,
-        data_entrega_cd,
-        semana_abastecimento,
+        unidade,
+        data_entrega_cd || null,
+        data_entrega_cd || null,
+        semana_abastecimento || null,
         observacoes || null,
-        justificativa,
-        filial_id,
+        justificativa || null,
+        filial_id || null,
         id
       ]
     );
