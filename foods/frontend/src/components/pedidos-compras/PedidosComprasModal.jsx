@@ -591,9 +591,12 @@ const PedidosComprasModal = ({
             <PedidosComprasFiliaisSelect
               tipo="faturamento"
               filiais={filiais}
-              filialSelecionada={solicitacaoSelecionada?.filial_id || null}
+              filialSelecionada={watch('filial_faturamento_id') || solicitacaoSelecionada?.filial_id || null}
+              onFilialChange={(id) => setValue('filial_faturamento_id', id)}
               dadosFilial={dadosFilialFaturamento}
               viewMode={isViewMode}
+              required
+              error={errors.filial_faturamento_id?.message}
             />
             <PedidosComprasFiliaisSelect
               tipo="cobranca"
