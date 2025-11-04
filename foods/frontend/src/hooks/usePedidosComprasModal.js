@@ -248,20 +248,41 @@ export const usePedidosComprasModal = ({ pedidoCompras, isOpen, solicitacoesDisp
           setItensDisponiveis(itens.map(item => ({ ...item, selected: false, quantidade_pedido: 0, valor_unitario: 0 })));
           setItensSelecionados([]);
         } else {
+          // Quando há pedido existente, mapear itens do pedido com itens da solicitação
           const itensDisponiveisNovos = itens.map(item => {
-            const itemNoPedido = pedidoExistente.itens?.find(pi => pi.solicitacao_item_id === item.id);
+            // Procurar item no pedido por solicitacao_item_id ou id
+            const itemNoPedido = pedidoExistente.itens?.find(pi => 
+              pi.solicitacao_item_id === item.id || 
+              pi.id === item.id ||
+              (pi.produto_generico_id && pi.produto_generico_id === item.produto_id)
+            );
             if (itemNoPedido) {
               return {
                 ...item,
+                id: item.id, // Garantir que o id da solicitação seja mantido
                 selected: true,
-                quantidade_pedido: itemNoPedido.quantidade_pedido || item.quantidade || 0,
+                quantidade_pedido: itemNoPedido.quantidade_pedido || itemNoPedido.quantidade || item.quantidade || 0,
                 valor_unitario: itemNoPedido.valor_unitario || 0
               };
             }
             return { ...item, selected: false, quantidade_pedido: 0, valor_unitario: 0 };
           });
-          setItensDisponiveis(itensDisponiveisNovos);
-          setItensSelecionados(itensDisponiveisNovos.filter(item => item.selected));
+          
+          // Se não encontrou itens mapeados, usar diretamente os itens do pedido
+          if (pedidoExistente.itens && pedidoExistente.itens.length > 0 && itensDisponiveisNovos.filter(i => i.selected).length === 0) {
+            const itensDoPedido = pedidoExistente.itens.map(itemPedido => ({
+              ...itemPedido,
+              id: itemPedido.solicitacao_item_id || itemPedido.id,
+              selected: true,
+              quantidade_pedido: itemPedido.quantidade_pedido || itemPedido.quantidade || 0,
+              valor_unitario: itemPedido.valor_unitario || 0
+            }));
+            setItensDisponiveis(itensDoPedido);
+            setItensSelecionados(itensDoPedido);
+          } else {
+            setItensDisponiveis(itensDisponiveisNovos);
+            setItensSelecionados(itensDisponiveisNovos.filter(item => item.selected));
+          }
         }
         
         if (!pedidoExistente && solicitacao.filial_id) {
@@ -312,7 +333,8 @@ export const usePedidosComprasModal = ({ pedidoCompras, isOpen, solicitacoesDisp
   }, [isOpen, carregarFormasPagamento, carregarPrazosPagamento, carregarFiliais]);
 
   useEffect(() => {
-    if (pedidoCompras && isOpen) {
+    if (pedidoCompras && isOpen && formasPagamento.length > 0 && prazosPagamento.length > 0) {
+      // Aguardar um pouco para garantir que as listas foram carregadas
       const timeoutId = setTimeout(() => {
         if (pedidoCompras.forma_pagamento) {
           buscarIdFormaPagamentoPorNome(pedidoCompras.forma_pagamento);
@@ -320,7 +342,7 @@ export const usePedidosComprasModal = ({ pedidoCompras, isOpen, solicitacoesDisp
         if (pedidoCompras.prazo_pagamento) {
           buscarIdPrazoPagamentoPorNome(pedidoCompras.prazo_pagamento);
         }
-      }, 500);
+      }, 300);
 
       return () => clearTimeout(timeoutId);
     }
@@ -392,77 +414,89 @@ export const usePedidosComprasModal = ({ pedidoCompras, isOpen, solicitacoesDisp
 
   useEffect(() => {
     if (pedidoCompras && isOpen) {
-      // Preencher formulário
-      if (pedidoCompras.solicitacao_compras_id) {
-        setValue('solicitacao_compras_id', pedidoCompras.solicitacao_compras_id);
-      }
-      if (pedidoCompras.fornecedor_id) {
-        setValue('fornecedor_id', pedidoCompras.fornecedor_id);
-      }
-      if (pedidoCompras.fornecedor_nome) {
-        setValue('fornecedor_nome', pedidoCompras.fornecedor_nome);
-      }
-      if (pedidoCompras.fornecedor_cnpj) {
-        setValue('fornecedor_cnpj', pedidoCompras.fornecedor_cnpj);
-      }
-      if (pedidoCompras.filial_faturamento_id) {
-        setValue('filial_faturamento_id', pedidoCompras.filial_faturamento_id);
-      }
-      if (pedidoCompras.filial_cobranca_id) {
-        setValue('filial_cobranca_id', pedidoCompras.filial_cobranca_id);
-      }
-      if (pedidoCompras.filial_entrega_id) {
-        setValue('filial_entrega_id', pedidoCompras.filial_entrega_id);
-      }
-      if (pedidoCompras.observacoes) {
-        setValue('observacoes', pedidoCompras.observacoes);
-      }
-      
-      if (pedidoCompras.fornecedor_id) {
-        buscarFornecedorPorId(pedidoCompras.fornecedor_id);
-      }
-      
-      if (pedidoCompras.solicitacao_compras_id) {
-        carregarItensSolicitacao(pedidoCompras.solicitacao_compras_id, pedidoCompras);
-      } else if (pedidoCompras.itens && Array.isArray(pedidoCompras.itens) && pedidoCompras.itens.length > 0) {
-        const itensComSelected = pedidoCompras.itens.map(item => ({
-          ...item,
-          selected: true,
-          quantidade_pedido: item.quantidade_pedido || item.quantidade || 0,
-          valor_unitario: item.valor_unitario || 0
-        }));
-        setItensSelecionados(itensComSelected);
-        setItensDisponiveis(itensComSelected);
-      }
-
-      if (pedidoCompras.filial_id) {
-        carregarDadosFilial(pedidoCompras.filial_id);
-      }
-      
-      if (pedidoCompras.filial_faturamento_id) {
-        carregarDadosFilialEspecifica(pedidoCompras.filial_faturamento_id, 'faturamento');
-      } else if (pedidoCompras.filial_id) {
-        carregarDadosFilialEspecifica(pedidoCompras.filial_id, 'faturamento');
-      }
-      
-      if (pedidoCompras.filial_cobranca_id) {
-        carregarDadosFilialEspecifica(pedidoCompras.filial_cobranca_id, 'cobranca');
-      }
-      
-      if (pedidoCompras.filial_entrega_id) {
-        carregarDadosFilialEspecifica(pedidoCompras.filial_entrega_id, 'entrega');
-      }
-
-      const timeoutId = setTimeout(() => {
-        if (pedidoCompras.forma_pagamento) {
-          buscarIdFormaPagamentoPorNome(pedidoCompras.forma_pagamento);
+      const carregarDados = async () => {
+        // Preencher formulário
+        if (pedidoCompras.solicitacao_compras_id) {
+          setValue('solicitacao_compras_id', pedidoCompras.solicitacao_compras_id);
         }
-        if (pedidoCompras.prazo_pagamento) {
-          buscarIdPrazoPagamentoPorNome(pedidoCompras.prazo_pagamento);
+        if (pedidoCompras.fornecedor_id) {
+          setValue('fornecedor_id', pedidoCompras.fornecedor_id);
         }
-      }, 500);
+        if (pedidoCompras.fornecedor_nome) {
+          setValue('fornecedor_nome', pedidoCompras.fornecedor_nome);
+        }
+        if (pedidoCompras.fornecedor_cnpj) {
+          setValue('fornecedor_cnpj', pedidoCompras.fornecedor_cnpj);
+        }
+        if (pedidoCompras.filial_faturamento_id) {
+          setValue('filial_faturamento_id', pedidoCompras.filial_faturamento_id);
+        }
+        if (pedidoCompras.filial_cobranca_id) {
+          setValue('filial_cobranca_id', pedidoCompras.filial_cobranca_id);
+        }
+        if (pedidoCompras.filial_entrega_id) {
+          setValue('filial_entrega_id', pedidoCompras.filial_entrega_id);
+        }
+        if (pedidoCompras.observacoes) {
+          setValue('observacoes', pedidoCompras.observacoes);
+        }
+        
+        // Carregar fornecedor
+        if (pedidoCompras.fornecedor_id) {
+          buscarFornecedorPorId(pedidoCompras.fornecedor_id);
+        }
+        
+        // Carregar filiais
+        if (pedidoCompras.filial_faturamento_id) {
+          await carregarDadosFilialEspecifica(pedidoCompras.filial_faturamento_id, 'faturamento');
+        } else if (pedidoCompras.filial_id) {
+          await carregarDadosFilialEspecifica(pedidoCompras.filial_id, 'faturamento');
+        }
+        
+        if (pedidoCompras.filial_cobranca_id) {
+          await carregarDadosFilialEspecifica(pedidoCompras.filial_cobranca_id, 'cobranca');
+        }
+        
+        if (pedidoCompras.filial_entrega_id) {
+          await carregarDadosFilialEspecifica(pedidoCompras.filial_entrega_id, 'entrega');
+        }
+        
+        // Carregar itens - sempre tentar carregar da solicitação primeiro
+        if (pedidoCompras.solicitacao_compras_id) {
+          await carregarItensSolicitacao(pedidoCompras.solicitacao_compras_id, pedidoCompras);
+        } else if (pedidoCompras.itens && Array.isArray(pedidoCompras.itens) && pedidoCompras.itens.length > 0) {
+          // Se não tem solicitação mas tem itens, usar itens diretamente
+          const itensComSelected = pedidoCompras.itens.map(item => ({
+            ...item,
+            id: item.solicitacao_item_id || item.id,
+            selected: true,
+            quantidade_pedido: item.quantidade_pedido || item.quantidade || 0,
+            valor_unitario: item.valor_unitario || 0
+          }));
+          setItensSelecionados(itensComSelected);
+          setItensDisponiveis(itensComSelected);
+        }
 
-      return () => clearTimeout(timeoutId);
+        // Aguardar carregamento de formas e prazos antes de buscar IDs
+        if (formasPagamento.length === 0) {
+          await carregarFormasPagamento();
+        }
+        if (prazosPagamento.length === 0) {
+          await carregarPrazosPagamento();
+        }
+        
+        // Aguardar um pouco e buscar IDs
+        setTimeout(() => {
+          if (pedidoCompras.forma_pagamento) {
+            buscarIdFormaPagamentoPorNome(pedidoCompras.forma_pagamento);
+          }
+          if (pedidoCompras.prazo_pagamento) {
+            buscarIdPrazoPagamentoPorNome(pedidoCompras.prazo_pagamento);
+          }
+        }, 300);
+      };
+
+      carregarDados();
     } else if (!pedidoCompras && isOpen) {
       reset();
       setItensDisponiveis([]);
@@ -481,7 +515,7 @@ export const usePedidosComprasModal = ({ pedidoCompras, isOpen, solicitacoesDisp
       setValue('filial_cobranca_id', '');
       setValue('filial_entrega_id', '');
     }
-  }, [pedidoCompras, isOpen, setValue, reset, buscarFornecedorPorId, carregarItensSolicitacao, carregarDadosFilial, carregarDadosFilialEspecifica, buscarIdFormaPagamentoPorNome, buscarIdPrazoPagamentoPorNome]);
+  }, [pedidoCompras, isOpen, setValue, reset, buscarFornecedorPorId, carregarItensSolicitacao, carregarDadosFilialEspecifica, buscarIdFormaPagamentoPorNome, buscarIdPrazoPagamentoPorNome, formasPagamento.length, prazosPagamento.length, carregarFormasPagamento, carregarPrazosPagamento]);
 
   useEffect(() => {
     if (!isOpen) {
