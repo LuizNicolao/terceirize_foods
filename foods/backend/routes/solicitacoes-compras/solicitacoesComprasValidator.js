@@ -41,8 +41,14 @@ const commonValidations = {
 const solicitacoesComprasValidations = {
   create: [
     body('filial_id')
-      .isInt({ min: 1 })
-      .withMessage('Filial é obrigatória e deve ser um ID válido'),
+      .custom((value) => {
+        const num = parseInt(value);
+        if (isNaN(num) || num < 1) {
+          throw new Error('Filial é obrigatória e deve ser um ID válido');
+        }
+        return true;
+      })
+      .toInt(),
     body('data_entrega_cd')
       .isISO8601()
       .withMessage('Data de entrega CD deve ser uma data válida (formato ISO)'),
@@ -68,14 +74,32 @@ const solicitacoesComprasValidations = {
       .isArray({ min: 1 })
       .withMessage('A solicitação deve ter pelo menos um item'),
     body('itens.*.produto_id')
-      .isInt({ min: 1 })
-      .withMessage('Cada item deve ter um produto_id válido'),
+      .custom((value) => {
+        const num = parseInt(value);
+        if (isNaN(num) || num < 1) {
+          throw new Error('Cada item deve ter um produto_id válido');
+        }
+        return true;
+      })
+      .toInt(),
     body('itens.*.quantidade')
-      .isFloat({ min: 0.001 })
-      .withMessage('Cada item deve ter uma quantidade maior que zero'),
+      .custom((value) => {
+        const num = parseFloat(value);
+        if (isNaN(num) || num <= 0) {
+          throw new Error('Cada item deve ter uma quantidade maior que zero');
+        }
+        return true;
+      })
+      .toFloat(),
     body('itens.*.unidade_medida_id')
-      .isInt({ min: 1 })
-      .withMessage('Cada item deve ter uma unidade_medida_id válida'),
+      .custom((value) => {
+        const num = parseInt(value);
+        if (isNaN(num) || num < 1) {
+          throw new Error('Cada item deve ter uma unidade_medida_id válida');
+        }
+        return true;
+      })
+      .toInt(),
     body('itens.*.observacao')
       .optional()
       .isString()
@@ -90,8 +114,14 @@ const solicitacoesComprasValidations = {
       .isInt({ min: 1 })
       .withMessage('ID deve ser um número inteiro positivo'),
     body('filial_id')
-      .isInt({ min: 1 })
-      .withMessage('Filial é obrigatória e deve ser um ID válido'),
+      .custom((value) => {
+        const num = parseInt(value);
+        if (isNaN(num) || num < 1) {
+          throw new Error('Filial é obrigatória e deve ser um ID válido');
+        }
+        return true;
+      })
+      .toInt(),
     body('data_entrega_cd')
       .isISO8601()
       .withMessage('Data de entrega CD deve ser uma data válida (formato ISO)'),
@@ -117,14 +147,32 @@ const solicitacoesComprasValidations = {
       .isArray({ min: 1 })
       .withMessage('A solicitação deve ter pelo menos um item'),
     body('itens.*.produto_id')
-      .isInt({ min: 1 })
-      .withMessage('Cada item deve ter um produto_id válido'),
+      .custom((value) => {
+        const num = parseInt(value);
+        if (isNaN(num) || num < 1) {
+          throw new Error('Cada item deve ter um produto_id válido');
+        }
+        return true;
+      })
+      .toInt(),
     body('itens.*.quantidade')
-      .isFloat({ min: 0.001 })
-      .withMessage('Cada item deve ter uma quantidade maior que zero'),
+      .custom((value) => {
+        const num = parseFloat(value);
+        if (isNaN(num) || num <= 0) {
+          throw new Error('Cada item deve ter uma quantidade maior que zero');
+        }
+        return true;
+      })
+      .toFloat(),
     body('itens.*.unidade_medida_id')
-      .isInt({ min: 1 })
-      .withMessage('Cada item deve ter uma unidade_medida_id válida'),
+      .custom((value) => {
+        const num = parseInt(value);
+        if (isNaN(num) || num < 1) {
+          throw new Error('Cada item deve ter uma unidade_medida_id válida');
+        }
+        return true;
+      })
+      .toInt(),
     body('itens.*.observacao')
       .optional()
       .isString()

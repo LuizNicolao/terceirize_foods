@@ -403,6 +403,19 @@ const validationConfigs = {
     defaultCategory: 'basicInfo'
   },
 
+  // Configuração para Solicitações de Compras
+  'solicitacoes-compras': {
+    categories: {
+      basicInfo: ['filial_id', 'data_entrega_cd', 'motivo', 'observacoes'],
+      items: ['itens', 'itens.*.produto_id', 'itens.*.quantidade', 'itens.*.unidade_medida_id', 'itens.*.observacao']
+    },
+    categoryNames: {
+      basicInfo: 'Cabeçalho da Solicitação',
+      items: 'Produtos da Solicitação'
+    },
+    defaultCategory: 'basicInfo'
+  },
+
   // Configuração padrão para outras entidades
   default: {
     categories: {
