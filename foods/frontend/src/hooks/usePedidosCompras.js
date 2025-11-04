@@ -21,6 +21,29 @@ export const usePedidosCompras = () => {
   const [solicitacoesDisponiveis, setSolicitacoesDisponiveis] = useState([]);
   const [selectedIds, setSelectedIds] = useState([]);
   const [loadingBatch, setLoadingBatch] = useState(false);
+  const [estatisticasCustomizadas, setEstatisticasCustomizadas] = useState({
+    total: 0,
+    em_digitacao: 0,
+    aprovado: 0,
+    cancelado: 0
+  });
+
+  /**
+   * Calcula estatísticas customizadas baseado nos items
+   */
+  const calcularEstatisticas = useCallback((items, totalItems) => {
+    const total = totalItems || items.length || 0;
+    const em_digitacao = items.filter(item => item.status === 'em_digitacao').length;
+    const aprovado = items.filter(item => item.status === 'aprovado').length;
+    const cancelado = items.filter(item => item.status === 'cancelado').length;
+    
+    setEstatisticasCustomizadas({
+      total,
+      em_digitacao,
+      aprovado,
+      cancelado
+    });
+  }, []);
 
   /**
    * Carrega dados com filtros
@@ -34,7 +57,12 @@ export const usePedidosCompras = () => {
     };
 
     await baseEntity.loadData(params);
-  }, [baseEntity.currentPage, baseEntity.itemsPerPage, baseEntity.searchTerm, statusFilter, baseEntity.loadData]);
+    
+    // Calcular estatísticas customizadas após carregar dados
+    // Usar totalItems da paginação se disponível, senão usar items.length
+    const totalItems = baseEntity.totalItems || baseEntity.items.length;
+    calcularEstatisticas(baseEntity.items, totalItems);
+  }, [baseEntity.currentPage, baseEntity.itemsPerPage, baseEntity.searchTerm, statusFilter, baseEntity.loadData, baseEntity.items, baseEntity.totalItems, calcularEstatisticas]);
 
   /**
    * Carregar solicitações disponíveis
@@ -222,7 +250,7 @@ export const usePedidosCompras = () => {
     totalPages: baseEntity.totalPages,
     totalItems: baseEntity.totalItems,
     itemsPerPage: baseEntity.itemsPerPage,
-    estatisticas: baseEntity.stats,
+    estatisticas: estatisticasCustomizadas,
     solicitacoesDisponiveis,
     statusFilter,
     setStatusFilter,
