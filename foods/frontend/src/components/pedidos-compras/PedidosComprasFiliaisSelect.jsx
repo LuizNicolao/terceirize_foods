@@ -58,12 +58,12 @@ const PedidosComprasFiliaisSelect = ({
           <label className="block text-xs font-medium text-gray-600 mb-1">
             Filial
           </label>
-          <div className="text-sm text-gray-900 font-medium bg-gray-50 px-3 py-2 rounded-lg border border-gray-200">
+          <p className="text-sm text-gray-900 font-medium">
             {(() => {
               const filial = filiais.find(f => f.id?.toString() === filialSelecionada?.toString());
               return filial ? `${filial.filial || filial.nome || 'Filial'} ${filial.codigo_filial ? `(${filial.codigo_filial})` : ''}` : '-';
             })()}
-          </div>
+          </p>
         </div>
       )}
 
