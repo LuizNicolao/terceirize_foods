@@ -35,15 +35,13 @@ class SolicitacoesComprasCRUDController {
   }
 
   /**
-   * Calcular semana de abastecimento baseado na data
-   * A semana de abastecimento é a semana SEGUINTE à data de entrega do CD
+   * Calcular semana de abastecimento baseado na data (semana seguinte)
    */
   static calcularSemanaAbastecimento(dataEntrega) {
-    // Adicionar 7 dias à data de entrega para obter a semana seguinte
+    // Adicionar 7 dias para pegar a semana seguinte
     const data = new Date(dataEntrega);
     data.setDate(data.getDate() + 7);
     
-    // Calcular o início da semana (segunda-feira)
     const diaSemana = data.getDay();
     const diferenca = diaSemana === 0 ? -6 : 1 - diaSemana; // Segunda-feira
     
@@ -65,9 +63,10 @@ class SolicitacoesComprasCRUDController {
 
   /**
    * Buscar semana de abastecimento existente ou calcular
+   * A semana de abastecimento deve ser a semana seguinte à data de entrega CD
    */
   static async buscarSemanaAbastecimento(dataEntrega) {
-    // Buscar se já existe
+    // Primeiro, buscar se já existe na tabela solicitacoes_compras
     const [existente] = await executeQuery(
       `SELECT semana_abastecimento 
        FROM solicitacoes_compras 
@@ -81,7 +80,39 @@ class SolicitacoesComprasCRUDController {
       return existente.semana_abastecimento;
     }
 
-    // Calcular nova
+    // Buscar na tabela calendario usando a data_entrega_cd
+    // A tabela calendario já tem a relação correta entre data_entrega_cd e semana_abastecimento
+    const [calendario] = await executeQuery(
+      `SELECT semana_abastecimento, semana_abastecimento_inicio, semana_abastecimento_fim
+       FROM calendario 
+       WHERE data = ?
+       LIMIT 1`,
+      [dataEntrega]
+    );
+
+    if (calendario && calendario.semana_abastecimento) {
+      // Se encontrou na tabela calendario, usar essa semana
+      // Mas verificar se é a semana seguinte (se não for, buscar a próxima semana)
+      const dataEntregaObj = new Date(dataEntrega);
+      const dataSeguinte = new Date(dataEntregaObj);
+      dataSeguinte.setDate(dataSeguinte.getDate() + 7);
+      const dataSeguinteStr = dataSeguinte.toISOString().split('T')[0];
+
+      // Buscar a semana de abastecimento da semana seguinte
+      const [calendarioSeguinte] = await executeQuery(
+        `SELECT semana_abastecimento, semana_abastecimento_inicio, semana_abastecimento_fim
+         FROM calendario 
+         WHERE data = ?
+         LIMIT 1`,
+        [dataSeguinteStr]
+      );
+
+      if (calendarioSeguinte && calendarioSeguinte.semana_abastecimento) {
+        return calendarioSeguinte.semana_abastecimento;
+      }
+    }
+
+    // Se não encontrou na tabela calendario, calcular a semana seguinte manualmente
     return this.calcularSemanaAbastecimento(dataEntrega);
   }
 

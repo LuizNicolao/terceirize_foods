@@ -16,6 +16,7 @@ class SolicitacoesComprasIntegrationsController {
   
   /**
    * Buscar semana de abastecimento baseado na data de entrega
+   * A semana de abastecimento deve ser a semana seguinte à data de entrega CD
    */
   static buscarSemanaAbastecimento = asyncHandler(async (req, res) => {
     const { data_entrega } = req.body;
@@ -24,23 +25,9 @@ class SolicitacoesComprasIntegrationsController {
       return errorResponse(res, 'Data de entrega é obrigatória', STATUS_CODES.BAD_REQUEST);
     }
 
-    // Buscar se já existe
-    const [existente] = await executeQuery(
-      `SELECT semana_abastecimento 
-       FROM solicitacoes_compras 
-       WHERE data_entrega_cd = ? 
-         AND semana_abastecimento IS NOT NULL 
-       LIMIT 1`,
-      [data_entrega]
-    );
-
-    let semana_abastecimento;
-    if (existente && existente.semana_abastecimento) {
-      semana_abastecimento = existente.semana_abastecimento;
-    } else {
-      // Calcular nova
-      semana_abastecimento = SolicitacoesComprasCRUDController.calcularSemanaAbastecimento(data_entrega);
-    }
+    // Usar o método buscarSemanaAbastecimento que busca na tabela calendario
+    // e calcula a semana seguinte
+    const semana_abastecimento = await SolicitacoesComprasCRUDController.buscarSemanaAbastecimento(data_entrega);
 
     return successResponse(res, {
       semana_abastecimento,
