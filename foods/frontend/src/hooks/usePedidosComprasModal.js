@@ -355,33 +355,76 @@ export const usePedidosComprasModal = ({ pedidoCompras, isOpen, solicitacoesDisp
 
   // Handlers
   const handleItemChange = useCallback((index, updatedItem) => {
-    const newItens = [...itensDisponiveis];
-    
-    // Se mudou produto genérico, buscar informações
-    if (updatedItem.produto_id && updatedItem.isNewProduct) {
-      const produto = produtosGenericos.find(p => p.id === parseInt(updatedItem.produto_id));
-      if (produto) {
-        updatedItem.produto_nome = produto.nome;
-        updatedItem.codigo_produto = produto.codigo || produto.codigo_produto || '';
-        updatedItem.unidade_medida_id = produto.unidade_medida_id || '';
-        
-        // Buscar unidade
-        if (produto.unidade_medida_id) {
-          const unidade = unidadesMedida.find(u => u.id === produto.unidade_medida_id);
-          if (unidade) {
-            updatedItem.unidade_simbolo = unidade.sigla || unidade.simbolo || '';
-            updatedItem.unidade_medida = unidade.nome || unidade.sigla || unidade.simbolo || '';
+    // Se está editando um pedido, atualizar itensSelecionados (que são os itens exibidos)
+    if (pedidoCompras) {
+      const newItensSelecionados = [...itensSelecionados];
+      
+      // Se mudou produto genérico, buscar informações
+      if (updatedItem.produto_id && updatedItem.isNewProduct) {
+        const produto = produtosGenericos.find(p => p.id === parseInt(updatedItem.produto_id));
+        if (produto) {
+          updatedItem.produto_nome = produto.nome;
+          updatedItem.codigo_produto = produto.codigo || produto.codigo_produto || '';
+          updatedItem.unidade_medida_id = produto.unidade_medida_id || '';
+          
+          // Buscar unidade
+          if (produto.unidade_medida_id) {
+            const unidade = unidadesMedida.find(u => u.id === produto.unidade_medida_id);
+            if (unidade) {
+              updatedItem.unidade_simbolo = unidade.sigla || unidade.simbolo || '';
+              updatedItem.unidade_medida = unidade.nome || unidade.sigla || unidade.simbolo || '';
+            }
           }
         }
       }
+      
+      newItensSelecionados[index] = updatedItem;
+      setItensSelecionados(newItensSelecionados);
+      
+      // Também atualizar itensDisponiveis para manter consistência
+      const newItensDisponiveis = [...itensDisponiveis];
+      const itemIndexDisponiveis = newItensDisponiveis.findIndex(item => 
+        item.id === updatedItem.id || (item.isNewProduct && item.id === updatedItem.id)
+      );
+      if (itemIndexDisponiveis >= 0) {
+        newItensDisponiveis[itemIndexDisponiveis] = updatedItem;
+      } else {
+        newItensDisponiveis.push(updatedItem);
+      }
+      setItensDisponiveis(newItensDisponiveis);
+    } else {
+      // Se está criando novo pedido, atualizar itensDisponiveis
+      const newItens = [...itensDisponiveis];
+      
+      // Se mudou produto genérico, buscar informações
+      if (updatedItem.produto_id && updatedItem.isNewProduct) {
+        const produto = produtosGenericos.find(p => p.id === parseInt(updatedItem.produto_id));
+        if (produto) {
+          updatedItem.produto_nome = produto.nome;
+          updatedItem.codigo_produto = produto.codigo || produto.codigo_produto || '';
+          updatedItem.unidade_medida_id = produto.unidade_medida_id || '';
+          
+          // Buscar unidade
+          if (produto.unidade_medida_id) {
+            const unidade = unidadesMedida.find(u => u.id === produto.unidade_medida_id);
+            if (unidade) {
+              updatedItem.unidade_simbolo = unidade.sigla || unidade.simbolo || '';
+              updatedItem.unidade_medida = unidade.nome || unidade.sigla || unidade.simbolo || '';
+            }
+          }
+        }
+      }
+      
+      newItens[index] = updatedItem;
+      setItensDisponiveis(newItens);
+      
+      // Para produtos novos, sempre incluir mesmo com quantidade 0
+      const selected = newItens.filter(item => 
+        item.selected && (item.isNewProduct || parseFloat(item.quantidade_pedido || 0) > 0)
+      );
+      setItensSelecionados(selected);
     }
-    
-    newItens[index] = updatedItem;
-    setItensDisponiveis(newItens);
-    
-    const selected = newItens.filter(item => item.selected && parseFloat(item.quantidade_pedido || 0) > 0);
-    setItensSelecionados(selected);
-  }, [itensDisponiveis, produtosGenericos, unidadesMedida]);
+  }, [itensDisponiveis, itensSelecionados, produtosGenericos, unidadesMedida, pedidoCompras]);
 
   const handleRemoveItem = useCallback((index) => {
     const newItens = [...itensDisponiveis];
