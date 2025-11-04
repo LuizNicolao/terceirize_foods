@@ -4,7 +4,7 @@
  */
 
 const { executeQuery } = require('../../config/database');
-const { successResponse, errorResponse, STATUS_CODES } = require('../../utils/responseHandler');
+const { successResponse, errorResponse, STATUS_CODES } = require('../../middleware/responseHandler');
 
 class PedidosComprasStatusController {
   /**
