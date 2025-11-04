@@ -1,13 +1,10 @@
 import React from 'react';
-import { FaPlus } from 'react-icons/fa';
-import { Button } from '../ui';
 import PedidosComprasItensTable from './PedidosComprasItensTable';
 import PedidosComprasFiliaisSelect from './PedidosComprasFiliaisSelect';
 import PedidosComprasDadosSolicitacao from './PedidosComprasDadosSolicitacao';
 import PedidosComprasFornecedorSection from './PedidosComprasFornecedorSection';
 import PedidosComprasPagamentoSection from './PedidosComprasPagamentoSection';
 import PedidosComprasSolicitacaoSelect from './PedidosComprasSolicitacaoSelect';
-import PedidosComprasItensDisponiveis from './PedidosComprasItensDisponiveis';
 
 const PedidosComprasModalBody = ({
   // Form
@@ -37,15 +34,9 @@ const PedidosComprasModalBody = ({
   // Handlers
   handleItemChange,
   handleRemoveItem,
-  handleAdicionarItem,
-  handleAddNewItem,
   
   // Dados auxiliares
   produtosGenericos,
-  
-  // Itens disponíveis para adicionar
-  itensDisponiveisParaAdicionar,
-  loadingItensDisponiveis,
   
   // Props
   pedidoCompras,
@@ -128,21 +119,10 @@ const PedidosComprasModalBody = ({
 
       {/* Itens do Pedido */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-        <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
+        <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900">
             Itens do Pedido {!isViewMode && itensSelecionados.length > 0 && `(${itensSelecionados.length} selecionado(s))`}
           </h3>
-          {!isViewMode && (
-            <Button 
-              onClick={handleAddNewItem}
-              size="sm" 
-              variant="ghost" 
-              type="button"
-            >
-              <FaPlus className="mr-1" />
-              Adicionar Produto
-            </Button>
-          )}
         </div>
         {loadingItens ? (
           <div className="p-8 text-center text-gray-500">
@@ -159,23 +139,6 @@ const PedidosComprasModalBody = ({
           />
         )}
       </div>
-
-      {/* Itens Disponíveis para Adicionar (apenas durante edição) */}
-      {pedidoCompras && !isViewMode && solicitacaoSelecionada && (
-        <div id="itens-disponiveis-section">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Produtos Disponíveis da Solicitação
-          </h3>
-          <p className="text-sm text-gray-600 mb-4">
-            Produtos da solicitação que ainda não foram adicionados a este pedido.
-          </p>
-          <PedidosComprasItensDisponiveis
-            itens={itensDisponiveisParaAdicionar}
-            onAdicionarItem={handleAdicionarItem}
-            loading={loadingItensDisponiveis}
-          />
-        </div>
-      )}
 
       {/* Observações */}
       <div>

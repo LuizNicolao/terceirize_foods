@@ -40,11 +40,7 @@ const PedidosComprasModal = ({
     setFornecedores,
     handleItemChange,
     handleRemoveItem,
-    handleAdicionarItem,
-    handleAddNewItem,
-    produtosGenericos,
-    itensDisponiveisParaAdicionar,
-    loadingItensDisponiveis
+    produtosGenericos
   } = usePedidosComprasModal({ pedidoCompras, isOpen, solicitacoesDisponiveis });
 
   const handleFormSubmit = async (data) => {
@@ -142,11 +138,7 @@ const PedidosComprasModal = ({
           setFornecedores={setFornecedores}
           handleItemChange={handleItemChange}
           handleRemoveItem={handleRemoveItem}
-          handleAdicionarItem={handleAdicionarItem}
-          handleAddNewItem={handleAddNewItem}
           produtosGenericos={produtosGenericos}
-          itensDisponiveisParaAdicionar={itensDisponiveisParaAdicionar}
-          loadingItensDisponiveis={loadingItensDisponiveis}
           pedidoCompras={pedidoCompras}
           isViewMode={isViewMode}
           solicitacoesDisponiveis={solicitacoesDisponiveis}
