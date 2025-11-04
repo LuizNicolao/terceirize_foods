@@ -159,12 +159,12 @@ class SolicitacoesComprasPDFController {
     const titleWidth = doc.widthOfString('Visualizar Solicitação de Compra', { font: 'Helvetica-Bold', fontSize: 24 });
     doc.moveTo(50, titleY + 25).lineTo(50 + titleWidth, titleY + 25).stroke();
     
-    doc.moveDown(2);
+    doc.moveDown(1);
 
     const startY = doc.y;
     const boxWidth = 240;
     const boxHeight = 100;
-    const spacing = 20;
+    const spacing = 10; // Reduzido de 20 para 10
 
     // Caixa: Informações da Solicitação (esquerda)
     const infoBox = drawBox(50, startY, boxWidth, boxHeight);
@@ -231,7 +231,7 @@ class SolicitacoesComprasPDFController {
     doc.fontSize(10).font('Helvetica');
     doc.text(`Justificativa: ${solicitacao.justificativa || '-'}`, justificativaBox.x, justificativaBox.y + 20);
 
-    doc.y = startY + boxHeight + spacing + 60 + 20;
+    doc.y = startY + boxHeight + spacing + 60 + 10; // Reduzido de +20 para +10
 
     // Verificar se precisa de nova página antes da tabela
     if (doc.y > 650) {
@@ -244,20 +244,21 @@ class SolicitacoesComprasPDFController {
     doc.fontSize(12).font('Helvetica-Bold').fillColor('black');
     doc.text(`Produtos Solicitados (${itensComPedidos.length})`, 50, produtosTitleY);
     
-    const tableStartY = produtosTitleY + 20;
+    const tableStartY = produtosTitleY + 15; // Reduzido de 20 para 15
     const tableTop = tableStartY + 10;
     const tableLeft = 50;
+    // Ajustar larguras para caber na página A4 (largura útil ~495 pontos com margem de 50)
     const colWidths = {
-      codigo: 50,
-      produto: 180,
-      unidade: 40,
-      quantidade_solicitada: 60,
-      quantidade_utilizada: 60,
-      saldo_disponivel: 60,
-      status: 60,
-      pedidos: 100
+      codigo: 45,
+      produto: 140,
+      unidade: 30,
+      quantidade_solicitada: 50,
+      quantidade_utilizada: 50,
+      saldo_disponivel: 50,
+      status: 50,
+      pedidos: 80
     };
-    const tableWidth = Object.values(colWidths).reduce((a, b) => a + b, 0);
+    const tableWidth = Object.values(colWidths).reduce((a, b) => a + b, 0); // Total: 495
 
     // Desenhar caixa ao redor da tabela (vai ser ajustada depois)
     const produtosBox = drawBox(tableLeft - 10, tableStartY, tableWidth + 20, 750 - tableStartY);
