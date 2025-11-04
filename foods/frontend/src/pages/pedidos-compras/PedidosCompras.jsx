@@ -123,7 +123,10 @@ const PedidosCompras = () => {
             <span className="hidden sm:inline">Auditoria</span>
           </Button>
           {canCreate('pedidos_compras') && (
-            <Button onClick={handleAddPedidoCompras} size="sm">
+            <Button
+              onClick={handleAddPedidoCompras}
+              size="sm"
+            >
               <FaPlus className="mr-1 sm:mr-2" />
               <span className="hidden sm:inline">Novo Pedido</span>
               <span className="sm:hidden">Novo</span>

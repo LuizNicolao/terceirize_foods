@@ -34,7 +34,7 @@ export const usePedidosCompras = () => {
     };
 
     await baseEntity.loadData(params);
-  }, [statusFilter, baseEntity]);
+  }, [statusFilter, baseEntity.loadData]);
 
   /**
    * Carregar solicitações disponíveis
@@ -51,16 +51,13 @@ export const usePedidosCompras = () => {
   }, []);
 
   /**
-   * Atualizar filtro de status no baseEntity quando mudar
-   * E recarregar dados quando status ou paginação mudarem
+   * Carregar dados quando filtros mudarem
+   * Não inclui baseEntity.searchTerm nas dependências porque o useBaseEntity
+   * já gerencia a busca com debounce internamente
    */
   useEffect(() => {
-    const params = {
-      status: statusFilter || undefined
-    };
-    baseEntity.loadData(params);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [baseEntity.currentPage, baseEntity.itemsPerPage, statusFilter]);
+    loadDataWithFilters();
+  }, [baseEntity.currentPage, baseEntity.itemsPerPage, statusFilter, loadDataWithFilters]);
 
   /**
    * Carregar solicitações disponíveis ao montar
@@ -244,7 +241,11 @@ export const usePedidosCompras = () => {
     handleItemsPerPageChange: baseEntity.handleItemsPerPageChange,
     handleClearFilters,
     setSearchTerm: baseEntity.setSearchTerm,
-    handleKeyPress: baseEntity.handleKeyPress,
+    handleKeyPress: (e) => {
+      if (e.key === 'Enter') {
+        loadDataWithFilters();
+      }
+    },
     getStatusBadge,
     loadSolicitacoesDisponiveis,
     // Seleção e ações em lote
