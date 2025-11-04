@@ -203,6 +203,42 @@ class SolicitacoesComprasService {
       };
     }
   }
+
+  async exportarXLSX(params = {}) {
+    try {
+      const response = await api.get('/solicitacoes-compras/export/xlsx', { 
+        params,
+        responseType: 'blob'
+      });
+      return {
+        success: true,
+        data: response.data
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Erro ao exportar dados'
+      };
+    }
+  }
+
+  async exportarPDF(params = {}) {
+    try {
+      const response = await api.get('/solicitacoes-compras/export/pdf', { 
+        params,
+        responseType: 'blob'
+      });
+      return {
+        success: true,
+        data: response.data
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Erro ao exportar dados'
+      };
+    }
+  }
 }
 
 export default new SolicitacoesComprasService();

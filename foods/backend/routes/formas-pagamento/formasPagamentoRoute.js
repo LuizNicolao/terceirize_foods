@@ -14,6 +14,7 @@ const { paginationMiddleware } = require('../../middleware/pagination');
 const { hateoasMiddleware } = require('../../middleware/hateoas');
 const { auditMiddleware, auditChangesMiddleware, AUDIT_ACTIONS } = require('../../utils/audit');
 const FormasPagamentoController = require('../../controllers/formas-pagamento');
+const FormasPagamentoExportController = require('../../controllers/formas-pagamento/FormasPagamentoExportController');
 
 const router = express.Router();
 
@@ -36,6 +37,20 @@ router.get('/',
 router.get('/ativas',
   checkScreenPermission('formas-pagamento', 'visualizar'),
   FormasPagamentoController.buscarFormasPagamentoAtivas
+);
+
+// ===== ROTAS DE EXPORTAÇÃO (DEVEM VIR ANTES DE /:id) =====
+
+// GET /api/formas-pagamento/export/xlsx - Exportar para XLSX
+router.get('/export/xlsx',
+  checkScreenPermission('formas-pagamento', 'visualizar'),
+  FormasPagamentoExportController.exportarXLSX
+);
+
+// GET /api/formas-pagamento/export/pdf - Exportar para PDF
+router.get('/export/pdf',
+  checkScreenPermission('formas-pagamento', 'visualizar'),
+  FormasPagamentoExportController.exportarPDF
 );
 
 // GET /api/formas-pagamento/:id - Buscar forma de pagamento por ID

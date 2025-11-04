@@ -3,13 +3,15 @@ import { FaPlus, FaQuestionCircle } from 'react-icons/fa';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { useSolicitacoesCompras } from '../../hooks/useSolicitacoesCompras';
 import { useAuditoria } from '../../hooks/common/useAuditoria';
+import { useExport } from '../../hooks/common/useExport';
+import SolicitacoesComprasService from '../../services/solicitacoesCompras';
 import { Button, ValidationErrorModal, ConfirmModal } from '../../components/ui';
 import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
 import { SolicitacoesComprasModal } from '../../components/solicitacoes-compras';
 import SolicitacoesComprasStats from '../../components/solicitacoes-compras/SolicitacoesComprasStats';
 import SolicitacoesComprasTable from '../../components/solicitacoes-compras/SolicitacoesComprasTable';
-import { AuditModal } from '../../components/shared';
+import { AuditModal, ExportButtons } from '../../components/shared';
 
 const SolicitacoesCompras = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
@@ -76,6 +78,32 @@ const SolicitacoesCompras = () => {
     setAuditFilters
   } = useAuditoria('solicitacoes_compras');
 
+  // Hook de exportação
+  const { handleExportXLSX: exportXLSX, handleExportPDF: exportPDF } = useExport(SolicitacoesComprasService);
+
+  // Funções wrapper para exportação com filtros
+  const handleExportXLSX = React.useCallback(() => {
+    const params = {
+      search: searchTerm || undefined,
+      status: statusFilter && statusFilter !== 'todos' ? statusFilter : undefined,
+      filial_id: filialFilter && filialFilter !== 'todos' ? filialFilter : undefined,
+      data_inicio: dataInicioFilter || undefined,
+      data_fim: dataFimFilter || undefined
+    };
+    return exportXLSX(params);
+  }, [exportXLSX, searchTerm, statusFilter, filialFilter, dataInicioFilter, dataFimFilter]);
+
+  const handleExportPDF = React.useCallback(() => {
+    const params = {
+      search: searchTerm || undefined,
+      status: statusFilter && statusFilter !== 'todos' ? statusFilter : undefined,
+      filial_id: filialFilter && filialFilter !== 'todos' ? filialFilter : undefined,
+      data_inicio: dataInicioFilter || undefined,
+      data_fim: dataFimFilter || undefined
+    };
+    return exportPDF(params);
+  }, [exportPDF, searchTerm, statusFilter, filialFilter, dataInicioFilter, dataFimFilter]);
+
   if (loading) {
     return (
       <div className="p-6">
@@ -88,23 +116,22 @@ const SolicitacoesCompras = () => {
   }
 
   return (
-    <div className="p-4 sm:p-6">
+    <div className="p-3 sm:p-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3 sm:gap-4">
         <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Solicitações de Compras</h1>
-        
-        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+        <div className="flex gap-2 sm:gap-3">
           <Button
             onClick={handleOpenAuditModal}
             variant="ghost"
             size="sm"
+            className="text-xs"
           >
             <FaQuestionCircle className="mr-1 sm:mr-2" />
             <span className="hidden sm:inline">Auditoria</span>
-            <span className="sm:hidden">Auditoria</span>
           </Button>
           {canCreate('solicitacoes_compras') && (
-            <Button onClick={handleAddSolicitacao} variant="primary" size="sm">
+            <Button onClick={handleAddSolicitacao} size="sm">
               <FaPlus className="mr-1 sm:mr-2" />
               <span className="hidden sm:inline">Nova Solicitação</span>
               <span className="sm:hidden">Nova</span>
@@ -125,10 +152,10 @@ const SolicitacoesCompras = () => {
         additionalFilters={[
           {
             label: 'Status',
-            value: statusFilter,
+            value: statusFilter || 'todos',
             onChange: setStatusFilter,
             options: [
-              { value: '', label: 'Todos os status' },
+              { value: 'todos', label: 'Todos os status' },
               { value: 'aberto', label: 'Aberto' },
               { value: 'parcial', label: 'Parcial' },
               { value: 'finalizado', label: 'Finalizado' },
@@ -163,28 +190,43 @@ const SolicitacoesCompras = () => {
         placeholder="Buscar por número, descrição, solicitante ou unidade..."
       />
 
-      {/* Tabela */}
-      <SolicitacoesComprasTable
-        solicitacoes={solicitacoes}
-        onView={canView('solicitacoes_compras') ? handleViewSolicitacao : null}
-        onEdit={canEdit('solicitacoes_compras') ? handleEditSolicitacao : null}
-        onDelete={canDelete('solicitacoes_compras') ? handleDeleteSolicitacao : null}
-        canView={canView('solicitacoes_compras')}
-        canEdit={canEdit('solicitacoes_compras')}
-        canDelete={canDelete('solicitacoes_compras')}
-        getFilialName={getFilialName}
-        getStatusLabel={getStatusLabel}
-      />
+      {/* Ações de Exportação */}
+      <div className="mb-4">
+        <ExportButtons
+          onExportXLSX={handleExportXLSX}
+          onExportPDF={handleExportPDF}
+          disabled={!canView('solicitacoes_compras')}
+        />
+      </div>
 
-      {/* Paginação */}
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={handlePageChange}
-        totalItems={totalItems}
-        itemsPerPage={itemsPerPage}
-        onItemsPerPageChange={handleItemsPerPageChange}
-      />
+      {/* Tabela */}
+      <div className="bg-white rounded-lg shadow-sm border">
+        <SolicitacoesComprasTable
+          solicitacoes={solicitacoes}
+          onView={canView('solicitacoes_compras') ? handleViewSolicitacao : null}
+          onEdit={canEdit('solicitacoes_compras') ? handleEditSolicitacao : null}
+          onDelete={canDelete('solicitacoes_compras') ? handleDeleteSolicitacao : null}
+          canView={canView('solicitacoes_compras')}
+          canEdit={canEdit('solicitacoes_compras')}
+          canDelete={canDelete('solicitacoes_compras')}
+          getFilialName={getFilialName}
+          getStatusLabel={getStatusLabel}
+        />
+
+        {/* Paginação */}
+        {totalPages > 1 && (
+          <div className="p-4 border-t border-gray-200">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              itemsPerPage={itemsPerPage}
+              onPageChange={handlePageChange}
+              onItemsPerPageChange={handleItemsPerPageChange}
+            />
+          </div>
+        )}
+      </div>
 
       {/* Modal */}
       <SolicitacoesComprasModal
@@ -228,11 +270,11 @@ const SolicitacoesCompras = () => {
         isOpen={showDeleteConfirmModal}
         onClose={handleCloseDeleteModal}
         onConfirm={handleConfirmDelete}
-        title="Excluir Solicitação de Compras"
-        message={`Tem certeza que deseja excluir a solicitação "${solicitacaoToDelete?.numero_solicitacao}"?`}
+        title="Confirmar Exclusão"
+        message={`Tem certeza que deseja excluir a solicitação "${solicitacaoToDelete?.numero_solicitacao}"? Esta ação não pode ser desfeita.`}
         confirmText="Excluir"
         cancelText="Cancelar"
-        type="danger"
+        variant="danger"
       />
     </div>
   );

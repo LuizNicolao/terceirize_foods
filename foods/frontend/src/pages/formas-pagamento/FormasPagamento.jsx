@@ -48,7 +48,7 @@ const FormasPagamento = () => {
     handleClearFilters,
     setSearchTerm,
     handleKeyPress,
-    setAtivoFilter,
+    setStatusFilter,
     getStatusBadge
   } = useFormasPagamento();
 
@@ -69,7 +69,24 @@ const FormasPagamento = () => {
   } = useAuditoria('formas_pagamento');
 
   // Hook de exportação
-  const { handleExportXLSX, handleExportPDF } = useExport(FormasPagamentoService);
+  const { handleExportXLSX: exportXLSX, handleExportPDF: exportPDF } = useExport(FormasPagamentoService);
+
+  // Funções wrapper para exportação com filtros
+  const handleExportXLSX = React.useCallback(() => {
+    const params = {
+      search: searchTerm || undefined,
+      ativo: statusFilter === 'ativo' ? 1 : statusFilter === 'inativo' ? 0 : undefined
+    };
+    return exportXLSX(params);
+  }, [exportXLSX, searchTerm, statusFilter]);
+
+  const handleExportPDF = React.useCallback(() => {
+    const params = {
+      search: searchTerm || undefined,
+      ativo: statusFilter === 'ativo' ? 1 : statusFilter === 'inativo' ? 0 : undefined
+    };
+    return exportPDF(params);
+  }, [exportPDF, searchTerm, statusFilter]);
 
   if (loading) {
     return (
