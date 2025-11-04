@@ -30,14 +30,40 @@ const createValidationHandler = (categoryConfig = {}) => {
       });
 
       errors.array().forEach(error => {
-        const field = error.path;
+        const field = error.path || error.param || '';
         let categorized = false;
 
         // Categorizar erro baseado na configuração
         Object.entries(categoryConfig.categories).forEach(([category, fields]) => {
-          if (fields.includes(field)) {
+          // Verificar match exato ou por padrão (para campos aninhados como itens.*.produto_id)
+          const matches = fields.some(fieldPattern => {
+            // Match exato
+            if (field === fieldPattern) return true;
+            
+            // Match por padrão para campos aninhados
+            // express-validator retorna itens[0].produto_id, mas configuramos como itens.*.produto_id
+            if (fieldPattern.includes('.*')) {
+              // Converter padrão itens.*.produto_id para regex que matcha itens[0].produto_id
+              const regexPattern = fieldPattern
+                .replace(/\.\*/g, '\\[\\d+\\]')  // .* -> [\d+]
+                .replace(/\./g, '\\.');          // . -> \.
+              const regex = new RegExp('^' + regexPattern + '$');
+              if (regex.test(field)) return true;
+              
+              // Também verificar match por prefixo (ex: itens.* com qualquer campo que comece com itens)
+              const prefix = fieldPattern.replace(/\..*$/, '');
+              if (field.startsWith(prefix + '[') || field.startsWith(prefix + '.')) {
+                return true;
+              }
+            }
+            
+            return false;
+          });
+
+          if (matches) {
             errorCategories[category].push(error);
             categorized = true;
+            return; // Sair do loop quando encontrar match
           }
         });
 
