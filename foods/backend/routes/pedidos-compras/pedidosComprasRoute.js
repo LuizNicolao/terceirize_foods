@@ -105,6 +105,14 @@ router.delete('/:id',
   PedidosComprasController.excluirPedidoCompras
 );
 
+// DELETE /api/pedidos-compras/:id/itens - Desvincular produtos do pedido (parcial ou total)
+router.delete('/:id/itens',
+  checkScreenPermission('pedidos-compras', 'editar'),
+  auditMiddleware(AUDIT_ACTIONS.UPDATE, 'pedido_compras_itens'),
+  commonValidations.id,
+  PedidosComprasController.desvincularProdutosPedido
+);
+
 // ========== ROTAS DE AÇÕES EM LOTE ==========
 
 // POST /api/pedidos-compras/acoes-em-lote/aprovar - Aprovar múltiplos pedidos

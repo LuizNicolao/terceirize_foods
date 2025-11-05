@@ -4,6 +4,7 @@ import { FaSave, FaTimes, FaEye, FaEdit } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { useRelatorioInspecao } from '../../hooks/useRelatorioInspecao';
+import RelatorioInspecaoService from '../../services/relatorioInspecao';
 import { Button, Input, SearchableSelect, LoadingSpinner, Modal } from '../ui';
 import ChecklistTable from './ChecklistTable';
 import ProdutosTable from './ProdutosTable';
@@ -35,6 +36,7 @@ const RelatorioInspecaoModal = ({ isOpen, onClose, onSubmit, rir, viewMode, grup
   const [checklist, setChecklist] = useState([]);
   const [produtos, setProdutos] = useState([]);
   const produtosTableRef = useRef(null);
+  const [pedidoIdAtual, setPedidoIdAtual] = useState(null);
 
   // Carregar dados quando modal abrir
   useEffect(() => {
@@ -71,6 +73,11 @@ const RelatorioInspecaoModal = ({ isOpen, onClose, onSubmit, rir, viewMode, grup
           setValue(key, data[key]);
         }
       });
+      
+      // Salvar pedido_id atual se existir
+      if (data.pedido_id) {
+        setPedidoIdAtual(data.pedido_id);
+      }
       
       // Carregar checklist e produtos
       if (data.checklist_json) {
@@ -121,8 +128,11 @@ const RelatorioInspecaoModal = ({ isOpen, onClose, onSubmit, rir, viewMode, grup
       setValue('fornecedor', '');
       setValue('cnpj_fornecedor', '');
       setProdutos([]);
+      setPedidoIdAtual(null);
       return;
     }
+    
+    setPedidoIdAtual(pedidoId);
 
     const pedido = pedidos.find(p => p.id.toString() === pedidoId.toString());
     if (pedido) {
@@ -155,6 +165,7 @@ const RelatorioInspecaoModal = ({ isOpen, onClose, onSubmit, rir, viewMode, grup
 
           return {
             index: index,
+            pedido_item_id: produto.id, // ID do item do pedido (pedido_compras_itens.id) - necessário para desvincular
             codigo: produto.codigo_produto || '',
             descricao: produto.nome_produto || '',
             und: produto.unidade_medida || '',
@@ -196,8 +207,72 @@ const RelatorioInspecaoModal = ({ isOpen, onClose, onSubmit, rir, viewMode, grup
   };
 
 
-  const handleRemoveProduto = (index) => {
-    setProdutos(produtos.filter((_, i) => i !== index));
+  const handleRemoveProduto = async (index) => {
+    const produto = produtos[index];
+    if (!produto || !pedidoIdAtual) {
+      // Se não tem pedido vinculado, apenas remove da lista local
+      setProdutos(produtos.filter((_, i) => i !== index));
+      return;
+    }
+
+    // Se tem pedido_item_id, desvincular do banco
+    if (produto.pedido_item_id) {
+      const itemIds = [produto.pedido_item_id];
+      const response = await RelatorioInspecaoService.desvincularProdutosPedido(pedidoIdAtual, itemIds);
+      
+      if (response.success) {
+        toast.success(response.message || 'Produto desvinculado do pedido com sucesso');
+        // Remover da lista local
+        setProdutos(produtos.filter((_, i) => i !== index));
+      } else {
+        toast.error(response.message || 'Erro ao desvincular produto do pedido');
+      }
+    } else {
+      // Sem pedido_item_id, apenas remove da lista local
+      setProdutos(produtos.filter((_, i) => i !== index));
+    }
+  };
+
+  const handleDesvincularTodos = async () => {
+    if (!pedidoIdAtual || produtos.length === 0) {
+      return;
+    }
+
+    if (!window.confirm('Deseja realmente desvincular TODOS os produtos do pedido? Esta ação não pode ser desfeita.')) {
+      return;
+    }
+
+    // Remover todos do banco
+    const response = await RelatorioInspecaoService.desvincularProdutosPedido(pedidoIdAtual, []);
+    
+    if (response.success) {
+      toast.success(response.message || 'Todos os produtos foram desvinculados do pedido');
+      // Limpar lista local
+      setProdutos([]);
+    } else {
+      toast.error(response.message || 'Erro ao desvincular produtos do pedido');
+    }
+  };
+
+  const handleDesvincularSelecionados = async (itemIds) => {
+    if (!pedidoIdAtual || itemIds.length === 0) {
+      return;
+    }
+
+    if (!window.confirm(`Deseja realmente desvincular ${itemIds.length} produto(s) selecionado(s) do pedido?`)) {
+      return;
+    }
+
+    // Remover selecionados do banco
+    const response = await RelatorioInspecaoService.desvincularProdutosPedido(pedidoIdAtual, itemIds);
+    
+    if (response.success) {
+      toast.success(response.message || 'Produtos desvinculados do pedido com sucesso');
+      // Remover da lista local
+      setProdutos(produtos.filter(p => !itemIds.includes(p.pedido_item_id)));
+    } else {
+      toast.error(response.message || 'Erro ao desvincular produtos do pedido');
+    }
   };
 
   const handleFormSubmit = async (data) => {
@@ -387,13 +462,29 @@ const RelatorioInspecaoModal = ({ isOpen, onClose, onSubmit, rir, viewMode, grup
           />
 
           {/* SEÇÃO C: Avaliação dos Produtos */}
-          <ProdutosTable
-            ref={produtosTableRef}
-            produtos={produtos}
-            onChange={handleProdutosChange}
-            onRemove={handleRemoveProduto}
-            viewMode={isViewMode}
-          />
+          <div className="bg-white p-4 rounded-lg">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">C) Avaliação dos Produtos</h3>
+              {pedidoIdAtual && produtos.length > 0 && !isViewMode && (
+                <button
+                  onClick={handleDesvincularTodos}
+                  className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors text-sm font-medium"
+                  title="Desvincular todos os produtos do pedido"
+                >
+                  Desvincular Todos do Pedido
+                </button>
+              )}
+            </div>
+            <ProdutosTable
+              ref={produtosTableRef}
+              produtos={produtos}
+              onChange={handleProdutosChange}
+              onRemove={handleRemoveProduto}
+              viewMode={isViewMode}
+              pedidoIdAtual={pedidoIdAtual}
+              onDesvincularSelecionados={handleDesvincularSelecionados}
+            />
+          </div>
 
           {/* SEÇÃO D: Ocorrências e Responsáveis */}
           <div className="bg-gray-50 p-4 rounded-lg">

@@ -228,6 +228,23 @@ class RelatorioInspecaoService {
       };
     }
   }
+
+  async desvincularProdutosPedido(pedidoId, itemIds = []) {
+    try {
+      const response = await api.delete(`/pedidos-compras/${pedidoId}/itens`, {
+        data: { item_ids: itemIds }
+      });
+      return {
+        success: true,
+        message: response.data.message || 'Produtos desvinculados com sucesso'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Erro ao desvincular produtos do pedido'
+      };
+    }
+  }
 }
 
 export default new RelatorioInspecaoService();

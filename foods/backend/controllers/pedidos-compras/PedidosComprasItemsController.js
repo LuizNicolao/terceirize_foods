@@ -183,6 +183,70 @@ class PedidosComprasItemsController {
     // Inserir novos itens
     return await this.inserirItensPedido(pedidoId, itens);
   }
+
+  /**
+   * Desvincular produtos do pedido (parcial ou total)
+   * @param {number} pedidoId - ID do pedido
+   * @param {Array<number>} itemIds - IDs dos itens a desvincular (opcional - se vazio, remove todos)
+   */
+  static async desvincularProdutosPedido(pedidoId, itemIds = []) {
+    try {
+      // Verificar se o pedido existe
+      const pedidos = await executeQuery(
+        'SELECT id, status FROM pedidos_compras WHERE id = ?',
+        [pedidoId]
+      );
+
+      if (pedidos.length === 0) {
+        return {
+          success: false,
+          error: 'Pedido de compras não encontrado'
+        };
+      }
+
+      const pedido = pedidos[0];
+
+      // Verificar se pode desvincular (apenas pedidos em digitação ou aprovados podem ter produtos removidos)
+      // Nota: Dependendo da regra de negócio, pode ser apenas em_digitacao
+      if (!['em_digitacao', 'aprovado'].includes(pedido.status)) {
+        return {
+          success: false,
+          error: 'Não é possível desvincular produtos de um pedido com status ' + pedido.status
+        };
+      }
+
+      // Se itemIds está vazio, remover todos os produtos
+      if (itemIds.length === 0) {
+        await executeQuery(
+          'DELETE FROM pedido_compras_itens WHERE pedido_id = ?',
+          [pedidoId]
+        );
+        return {
+          success: true,
+          message: 'Todos os produtos foram desvinculados do pedido'
+        };
+      }
+
+      // Remover produtos específicos
+      const placeholders = itemIds.map(() => '?').join(',');
+      await executeQuery(
+        `DELETE FROM pedido_compras_itens 
+         WHERE pedido_id = ? AND id IN (${placeholders})`,
+        [pedidoId, ...itemIds]
+      );
+
+      return {
+        success: true,
+        message: `${itemIds.length} produto(s) desvinculado(s) com sucesso`
+      };
+    } catch (error) {
+      console.error('Erro ao desvincular produtos do pedido:', error);
+      return {
+        success: false,
+        error: 'Erro ao desvincular produtos do pedido: ' + error.message
+      };
+    }
+  }
 }
 
 module.exports = PedidosComprasItemsController;

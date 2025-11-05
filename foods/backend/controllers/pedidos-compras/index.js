@@ -20,6 +20,7 @@ module.exports = {
   criarPedidoCompras: PedidosComprasCRUDController.criarPedidoCompras,
   atualizarPedidoCompras: PedidosComprasCRUDController.atualizarPedidoCompras,
   excluirPedidoCompras: PedidosComprasCRUDController.excluirPedidoCompras,
+  desvincularProdutosPedido: PedidosComprasCRUDController.desvincularProdutosPedido,
   
   // Métodos de Status (Ações em Lote)
   aprovarPedidosEmLote: PedidosComprasStatusController.aprovarPedidosEmLote,

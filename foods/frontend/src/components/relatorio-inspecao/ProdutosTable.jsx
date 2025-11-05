@@ -27,12 +27,17 @@ import toast from 'react-hot-toast';
     return parsed ? new Date(parsed).toISOString().split('T')[0] : '';
   };
 
-const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = false }, ref) => {
+const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = false, pedidoIdAtual, onDesvincularSelecionados }, ref) => {
   const [produtosAtualizados, setProdutosAtualizados] = useState(produtos || []);
   const [errors, setErrors] = useState({});
+  const [produtosSelecionados, setProdutosSelecionados] = useState([]);
 
   useEffect(() => {
     setProdutosAtualizados(produtos || []);
+    // Limpar seleção de produtos que não existem mais
+    setProdutosSelecionados(prev => 
+      prev.filter(id => produtos?.some(p => p.pedido_item_id === id))
+    );
   }, [produtos]);
 
   // Calcular controle de validade (%)
@@ -321,21 +326,69 @@ const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = fal
     );
   }
 
+  const handleSelectAll = (checked) => {
+    if (checked) {
+      const ids = produtosAtualizados
+        .filter(p => p.pedido_item_id)
+        .map(p => p.pedido_item_id);
+      setProdutosSelecionados(ids);
+    } else {
+      setProdutosSelecionados([]);
+    }
+  };
+
+  const handleSelectProduto = (pedidoItemId, checked) => {
+    if (checked) {
+      setProdutosSelecionados([...produtosSelecionados, pedidoItemId]);
+    } else {
+      setProdutosSelecionados(produtosSelecionados.filter(id => id !== pedidoItemId));
+    }
+  };
+
+  const handleDesvincularSelecionadosClick = () => {
+    if (produtosSelecionados.length === 0) {
+      return;
+    }
+    if (onDesvincularSelecionados) {
+      onDesvincularSelecionados(produtosSelecionados);
+      setProdutosSelecionados([]);
+    }
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-      <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
+      <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
         <h3 className="text-lg font-semibold text-gray-900">Avaliação dos Produtos Recebidos</h3>
+        {pedidoIdAtual && produtosSelecionados.length > 0 && !viewMode && (
+          <button
+            onClick={handleDesvincularSelecionadosClick}
+            className="px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700 transition-colors text-sm font-medium"
+          >
+            Desvincular Selecionados ({produtosSelecionados.length})
+          </button>
+        )}
       </div>
 
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th colSpan="8" className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase bg-blue-50">
+              <th colSpan={pedidoIdAtual && !viewMode ? 9 : 8} className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase bg-blue-50">
                 Informações do Produto
               </th>
             </tr>
             <tr>
+              {pedidoIdAtual && !viewMode && (
+                <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">
+                  <input
+                    type="checkbox"
+                    checked={produtosAtualizados.length > 0 && produtosAtualizados.every(p => !p.pedido_item_id || produtosSelecionados.includes(p.pedido_item_id))}
+                    onChange={(e) => handleSelectAll(e.target.checked)}
+                    className="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                    title="Selecionar todos"
+                  />
+                </th>
+              )}
               <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Código</th>
               <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Produto</th>
               <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Unidade</th>
@@ -372,6 +425,20 @@ const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = fal
                 <React.Fragment key={index}>
                   {/* Linha 1: Informações do Produto */}
                   <tr className="hover:bg-gray-50">
+                    {pedidoIdAtual && !viewMode && (
+                      <td className="px-4 py-3 whitespace-nowrap text-center">
+                        {produto.pedido_item_id ? (
+                          <input
+                            type="checkbox"
+                            checked={produtosSelecionados.includes(produto.pedido_item_id)}
+                            onChange={(e) => handleSelectProduto(produto.pedido_item_id, e.target.checked)}
+                            className="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                          />
+                        ) : (
+                          <span className="text-gray-400">-</span>
+                        )}
+                      </td>
+                    )}
                     <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
                       {produto.codigo || produto.codigo_produto || '-'}
                     </td>
@@ -653,19 +720,21 @@ const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = fal
                       {resultadoFinal || '-'}
                     </td>
                   </tr>
-                  {/* Linha de ações (opcional, pode ser removida se não quiser) */}
-                  <tr className="bg-gray-100">
-                    <td colSpan="8" className="px-4 py-2 text-right">
-                      <button
-                        onClick={() => onRemove(index)}
-                        className="text-red-600 hover:text-red-900 p-1 rounded transition-colors text-sm"
-                        title="Remover produto"
-                      >
-                        <FaTrash className="w-4 h-4 inline mr-1" />
-                        Remover
-                      </button>
-                    </td>
-                  </tr>
+                  {/* Linha de ações */}
+                  {!viewMode && (
+                    <tr className="bg-gray-100">
+                      <td colSpan={pedidoIdAtual && !viewMode ? 9 : 8} className="px-4 py-2 text-right">
+                        <button
+                          onClick={() => onRemove(index)}
+                          className="text-red-600 hover:text-red-900 p-1 rounded transition-colors text-sm"
+                          title={produto.pedido_item_id ? "Desvincular produto do pedido" : "Remover produto"}
+                        >
+                          <FaTrash className="w-4 h-4 inline mr-1" />
+                          {produto.pedido_item_id ? "Desvincular" : "Remover"}
+                        </button>
+                      </td>
+                    </tr>
+                  )}
                 </React.Fragment>
               );
             })}

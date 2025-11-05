@@ -398,6 +398,24 @@ class PedidosComprasCRUDController {
 
     return successResponse(res, null, 'Pedido de compras excluído com sucesso', STATUS_CODES.OK);
   });
+
+  /**
+   * Desvincular produtos do pedido (parcial ou total)
+   * Endpoint: DELETE /api/pedidos-compras/:id/itens
+   * Body: { item_ids: [1, 2, 3] } ou {} para remover todos
+   */
+  static desvincularProdutosPedido = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { item_ids = [] } = req.body;
+
+    const result = await PedidosComprasItemsController.desvincularProdutosPedido(id, item_ids);
+
+    if (!result.success) {
+      return errorResponse(res, result.error, STATUS_CODES.BAD_REQUEST);
+    }
+
+    return successResponse(res, null, result.message, STATUS_CODES.OK);
+  });
 }
 
 module.exports = PedidosComprasCRUDController;
