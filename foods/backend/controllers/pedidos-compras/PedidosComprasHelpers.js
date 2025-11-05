@@ -202,12 +202,6 @@ class PedidosComprasHelpers {
       return;
     }
 
-    // Log para debug: mostrar todos os itens encontrados
-    console.log(`[DEBUG] Solicitação ${solicitacaoId}: Total de ${itens.length} item(ns) encontrado(s)`);
-    itens.forEach((item, index) => {
-      console.log(`[DEBUG]   Item ${index + 1} - ID: ${item.id}, Solicitado: ${item.quantidade_solicitada}, Utilizado: ${item.quantidade_utilizada}`);
-    });
-
     let todosAtendidos = true;
     let algumAtendido = false;
     const TOLERANCIA = 0.001; // Tolerância para diferenças de precisão decimal
@@ -225,9 +219,6 @@ class PedidosComprasHelpers {
       if (utilizado < (solicitado - TOLERANCIA)) {
         todosAtendidos = false;
       }
-      
-      // Log para debug (pode remover depois)
-      console.log(`[DEBUG] Item ${item.id}: Solicitado=${solicitado}, Utilizado=${utilizado}, Atendido=${utilizado >= (solicitado - TOLERANCIA)}`);
     }
 
     // Determinar status
@@ -237,9 +228,6 @@ class PedidosComprasHelpers {
     } else if (algumAtendido) {
       novoStatus = 'parcial';
     }
-    
-    // Log para debug (pode remover depois)
-    console.log(`[DEBUG] Solicitação ${solicitacaoId}: Status atualizado para '${novoStatus}' (algumAtendido=${algumAtendido}, todosAtendidos=${todosAtendidos})`);
 
     // Atualizar status da solicitação
     await executeQuery(
