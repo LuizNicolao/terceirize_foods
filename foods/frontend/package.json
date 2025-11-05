@@ -20,8 +20,7 @@
     "react-select": "^5.8.0",
     "react-table": "^7.8.0",
     "styled-components": "^6.1.1",
-    "xlsx": "^0.18.5",
-    "@ckeditor/ckeditor5-build-classic": "^41.1.1"
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "eslint": "^8.0.0",
