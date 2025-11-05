@@ -27,6 +27,17 @@ module.exports = {
         webpackConfig.resolve = {};
       }
 
+      // Configurar modules para priorizar node_modules do implantacao
+      if (!webpackConfig.resolve.modules) {
+        webpackConfig.resolve.modules = ['node_modules', path.resolve(__dirname, 'node_modules')];
+      } else {
+        // Garantir que node_modules do implantacao seja o primeiro
+        const implantacaoNodeModules = path.resolve(__dirname, 'node_modules');
+        if (!webpackConfig.resolve.modules.includes(implantacaoNodeModules)) {
+          webpackConfig.resolve.modules.unshift(implantacaoNodeModules);
+        }
+      }
+
       // Adicionar alias para foods-frontend
       if (!webpackConfig.resolve.alias) {
         webpackConfig.resolve.alias = {};
@@ -35,6 +46,7 @@ module.exports = {
 
       // Garantir que React e React-DOM sejam singletons (resolvidos uma única vez)
       // Isso evita o erro "Cannot read properties of null (reading 'useState')"
+      // FORÇAR que todos os imports de React venham do node_modules do implantacao
       const reactPath = path.resolve(__dirname, 'node_modules/react');
       const reactDomPath = path.resolve(__dirname, 'node_modules/react-dom');
       webpackConfig.resolve.alias['react'] = reactPath;
