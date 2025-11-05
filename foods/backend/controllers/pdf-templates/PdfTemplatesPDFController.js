@@ -64,6 +64,16 @@ class PdfTemplatesPDFController {
   static renderizarTemplate(htmlTemplate, dados, variaveisDisponiveis = []) {
     let html = htmlTemplate;
     
+    // Debug: log inicial
+    console.log('[DEBUG Template] Iniciando renderização do template');
+    console.log('[DEBUG Template] Tamanho do HTML:', html.length);
+    console.log('[DEBUG Template] Número de itens nos dados:', dados.itens?.length || 0);
+    console.log('[DEBUG Template] Dados principais:', {
+      numero_solicitacao: dados.numero_solicitacao,
+      total_itens: dados.total_itens,
+      valor_total: dados.valor_total
+    });
+    
     // Processar loops de itens ({{#itens}}...{{/itens}} ou {{{{#itens}}}}...{{{{/itens}}}})
     // Aceita tanto 2 quanto 4 chaves (devido ao escape do CKEditor)
     // Primeiro tenta com 4 chaves, depois com 2
@@ -80,6 +90,13 @@ class PdfTemplatesPDFController {
     while (match) {
       let loopContent = match[1].trim(); // Remover espaços em branco do início/fim
       const itens = dados.itens || [];
+      
+      console.log('[DEBUG Template] Loop encontrado:', {
+        matchLength: match[0].length,
+        contentLength: loopContent.length,
+        contentPreview: loopContent.substring(0, 100),
+        itensCount: itens.length
+      });
       
       // Se o conteúdo do loop estiver vazio ou for apenas espaços, procurar pela tabela logo após
       let tableToReplace = null;
@@ -106,6 +123,17 @@ class PdfTemplatesPDFController {
       let itemsHtml = '';
       itens.forEach((item, index) => {
         let itemHtml = loopContent;
+        
+        // Debug: log primeiro item
+        if (index === 0) {
+          console.log('[DEBUG Template] Processando primeiro item:', {
+            id: item.id,
+            produto_codigo: item.produto_codigo,
+            produto_nome: item.produto_nome,
+            pedidos_vinculados: item.pedidos_vinculados,
+            pedidos_vinculados_lista: item.pedidos_vinculados_lista
+          });
+        }
         
         // Substituir variáveis do item - processar TODAS as variáveis encontradas
         // Primeiro tenta com 4 chaves ({{{{var}}}}), depois com 2 ({{var}})
@@ -152,6 +180,12 @@ class PdfTemplatesPDFController {
         itemsHtml += itemHtml;
       });
       
+      console.log('[DEBUG Template] HTML gerado para itens:', {
+        itemsCount: itens.length,
+        htmlLength: itemsHtml.length,
+        htmlPreview: itemsHtml.substring(0, 200)
+      });
+      
       // Se encontrou tabela para substituir (loop vazio), substituir a tabela inteira
       if (tableToReplace) {
         // Encontrar a estrutura da tabela (table, thead, tbody)
@@ -173,6 +207,12 @@ class PdfTemplatesPDFController {
           // Montar nova tabela com thead + tbody com múltiplas linhas
           const newTable = tableStart + thead + tbodyStart + itemsHtml + tbodyEnd + tableEnd;
           
+          console.log('[DEBUG Template] Substituindo tabela:', {
+            oldLength: (match[0] + tableToReplace).length,
+            newLength: newTable.length,
+            itemsInTable: itemsHtml.split('</tr>').length - 1
+          });
+          
           // Substituir loop + tabela pelo conteúdo renderizado
           html = html.replace(match[0] + tableToReplace, newTable);
         } else {
@@ -191,6 +231,7 @@ class PdfTemplatesPDFController {
     // Substituir variáveis simples do formato {{variavel}} ou {{{{variavel}}}}
     // Primeiro tenta com 4 chaves, depois com 2
     const variaveis4 = html.match(/\{\{\{\{([^}]+)\}\}\}\}/g) || [];
+    console.log('[DEBUG Template] Variáveis com 4 chaves encontradas:', variaveis4.length);
     variaveis4.forEach(variavel => {
       const nomeVariavel = variavel.replace(/[{}]/g, '');
       if (nomeVariavel === '#itens' || nomeVariavel === '/itens' || nomeVariavel.startsWith('#') || nomeVariavel.startsWith('/')) {
@@ -210,6 +251,9 @@ class PdfTemplatesPDFController {
     });
     
     const variaveis2 = html.match(/\{\{([^}]+)\}\}/g) || [];
+    console.log('[DEBUG Template] Variáveis com 2 chaves encontradas:', variaveis2.length);
+    console.log('[DEBUG Template] Variáveis não substituídas (primeiras 10):', variaveis2.slice(0, 10));
+    
     variaveis2.forEach(variavel => {
       const nomeVariavel = variavel.replace(/[{}]/g, '');
       // Ignorar se for um loop ou variável já processada
@@ -228,6 +272,14 @@ class PdfTemplatesPDFController {
       const nomeEscapado = nomeVariavel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       html = html.replace(new RegExp(`\\{\\{${nomeEscapado}\\}\\}`, 'g'), valor);
     });
+    
+    // Debug: verificar se ainda há variáveis não substituídas
+    const variaveisRestantes = html.match(/\{\{([^}]+)\}\}/g) || [];
+    if (variaveisRestantes.length > 0) {
+      console.log('[DEBUG Template] Variáveis não substituídas após processamento:', variaveisRestantes.slice(0, 20));
+    }
+    
+    console.log('[DEBUG Template] Renderização concluída. Tamanho final do HTML:', html.length);
     
     return html;
   }
