@@ -711,6 +711,7 @@ const RotaModal = ({
                           <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
                           <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Nome</th>
                           <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Endereço</th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Ordem</th>
                           <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                         </tr>
                       </thead>
@@ -726,6 +727,15 @@ const RotaModal = ({
                                 `${unidade.endereco}, ${unidade.cidade}/${unidade.estado}` : 
                                 `${unidade.cidade}/${unidade.estado}`
                               }
+                            </td>
+                            <td className="px-4 py-2 text-sm text-gray-900 text-center">
+                              {unidade.ordem_entrega > 0 ? (
+                                <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-800 font-semibold">
+                                  {unidade.ordem_entrega}
+                                </span>
+                              ) : (
+                                <span className="text-gray-400">-</span>
+                              )}
                             </td>
                             <td className="px-4 py-2 text-sm text-gray-900">
                               <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
