@@ -21,7 +21,7 @@
     "react-table": "^7.8.0",
     "styled-components": "^6.1.1",
     "xlsx": "^0.18.5",
-    "@ckeditor/ckeditor5-build-classic": "^41.1.1",
+    "@ckeditor/ckeditor5-build-classic": "^41.4.2",
     "@ckeditor/ckeditor5-editor-classic": "^41.4.2",
     "@ckeditor/ckeditor5-essentials": "^41.4.2",
     "@ckeditor/ckeditor5-table": "^41.4.2",
@@ -62,4 +62,4 @@
     ]
   },
   "proxy": "http://82.29.57.43:3001"
-} 
+}
