@@ -1,25 +1,18 @@
 /**
- * Índice de Controllers de Templates de PDF
- * Exporta todos os controllers para uso nas rotas
+ * Controllers de PDF Templates
+ * Exporta todos os controllers relacionados a templates de PDF
  */
 
 const PdfTemplatesListController = require('./PdfTemplatesListController');
 const PdfTemplatesCRUDController = require('./PdfTemplatesCRUDController');
-const PdfTemplatesPDFController = require('./PdfTemplatesPDFController');
 
 module.exports = {
-  // Métodos de Listagem
-  listarTemplates: PdfTemplatesListController.listarTemplates,
-  buscarTemplatePorId: PdfTemplatesListController.buscarTemplatePorId,
-  buscarTemplatePadrao: PdfTemplatesListController.buscarTemplatePadrao,
-  listarTelasDisponiveis: PdfTemplatesListController.listarTelasDisponiveis,
-  
-  // Métodos CRUD
-  criarTemplate: PdfTemplatesCRUDController.criarTemplate,
-  atualizarTemplate: PdfTemplatesCRUDController.atualizarTemplate,
-  excluirTemplate: PdfTemplatesCRUDController.excluirTemplate,
-  
-  // Métodos de PDF
-  gerarPDFComTemplate: PdfTemplatesPDFController.gerarPDFComTemplate
+  listar: PdfTemplatesListController.listar.bind(PdfTemplatesListController),
+  buscarPorId: PdfTemplatesListController.buscarPorId.bind(PdfTemplatesListController),
+  listarTelasDisponiveis: PdfTemplatesListController.listarTelasDisponiveis.bind(PdfTemplatesListController),
+  buscarTemplatePadrao: PdfTemplatesListController.buscarTemplatePadrao.bind(PdfTemplatesListController),
+  criar: PdfTemplatesCRUDController.criar.bind(PdfTemplatesCRUDController),
+  atualizar: PdfTemplatesCRUDController.atualizar.bind(PdfTemplatesCRUDController),
+  excluir: PdfTemplatesCRUDController.excluir.bind(PdfTemplatesCRUDController)
 };
 

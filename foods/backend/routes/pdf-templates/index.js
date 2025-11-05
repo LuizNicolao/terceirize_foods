@@ -1,5 +1,6 @@
 /**
- * Índice das rotas de Templates de PDF
+ * Rotas de PDF Templates
+ * Exporta as rotas principais
  */
 
 const pdfTemplatesRoute = require('./pdfTemplatesRoute');

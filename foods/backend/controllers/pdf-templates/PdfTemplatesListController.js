@@ -1,183 +1,270 @@
 /**
- * Controller de Listagem de Templates de PDF
- * Responsável por listar e buscar templates
+ * Controller de Listagem de PDF Templates
+ * Implementa operações de listagem e busca de templates de PDF
  */
 
-const { executeQuery } = require('../../config/database');
-const { 
-  successResponse, 
-  notFoundResponse, 
-  STATUS_CODES 
-} = require('../../middleware/responseHandler');
-const { asyncHandler } = require('../../middleware/responseHandler');
-
 class PdfTemplatesListController {
-  
   /**
-   * Listar templates de PDF com paginação e busca
+   * Listar templates com paginação e filtros
    */
-  static listarTemplates = asyncHandler(async (req, res) => {
-    const { search = '', tela_vinculada, ativo } = req.query;
-    const pagination = req.pagination;
+  static async listar(req, res) {
+    try {
+      const { page, limit, search, tela_vinculada, ativo } = req.query;
+      
+      const filtros = {
+        search,
+        tela_vinculada,
+        ativo: ativo !== undefined ? ativo === 'true' || ativo === '1' : undefined
+      };
 
-    let params = [];
-    let whereClause = 'WHERE 1=1';
+      const resultado = await PdfTemplatesListController.listarTemplates({
+        page: parseInt(page) || 1,
+        limit: parseInt(limit) || 20,
+        filtros
+      });
 
-    // Aplicar filtros
-    if (search) {
-      whereClause += ' AND (pt.nome LIKE ? OR pt.descricao LIKE ?)';
-      params.push(`%${search}%`, `%${search}%`);
+      res.json({
+        success: true,
+        data: resultado.templates,
+        pagination: resultado.pagination
+      });
+    } catch (error) {
+      console.error('Erro ao listar templates:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro interno do servidor'
+      });
     }
-
-    if (tela_vinculada) {
-      whereClause += ' AND pt.tela_vinculada = ?';
-      params.push(tela_vinculada);
-    }
-
-    if (ativo !== undefined && ativo !== '') {
-      whereClause += ' AND pt.ativo = ?';
-      params.push(ativo === 'true' || ativo === '1' ? 1 : 0);
-    }
-
-    // Query principal
-    // req.pagination é uma instância de PaginationHelper
-    const limit = pagination.limit || 20;
-    const offset = pagination.offset || 0;
-    
-    const query = `
-      SELECT 
-        pt.*,
-        u1.nome as criado_por_nome,
-        u2.nome as atualizado_por_nome
-      FROM pdf_templates pt
-      LEFT JOIN usuarios u1 ON pt.criado_por = u1.id
-      LEFT JOIN usuarios u2 ON pt.atualizado_por = u2.id
-      ${whereClause}
-      ORDER BY pt.tela_vinculada, pt.padrao DESC, pt.nome ASC
-      LIMIT ${limit} OFFSET ${offset}
-    `;
-
-    const templates = await executeQuery(query, params);
-
-    // Parse JSON para cada template
-    templates.forEach(template => {
-      if (template.variaveis_disponiveis) {
-        try {
-          template.variaveis_disponiveis = JSON.parse(template.variaveis_disponiveis);
-        } catch (e) {
-          template.variaveis_disponiveis = null;
-        }
-      }
-    });
-
-    // Query de contagem
-    const countQuery = `SELECT COUNT(*) as total FROM pdf_templates pt ${whereClause}`;
-    const [countResult] = await executeQuery(countQuery, params);
-    const totalItems = countResult.total;
-
-    // Adicionar links HATEOAS
-    const data = templates.map(template => res.addResourceLinks(template));
-
-    res.json({
-      success: true,
-      data: data,
-      pagination: {
-        total: totalItems,
-        page: pagination.page || 1,
-        limit: limit,
-        pages: Math.ceil(totalItems / limit)
-      }
-    });
-  });
+  }
 
   /**
    * Buscar template por ID
    */
-  static buscarTemplatePorId = asyncHandler(async (req, res) => {
-    const { id } = req.params;
+  static async buscarPorId(req, res) {
+    try {
+      const { id } = req.params;
+      const template = await PdfTemplatesListController.buscarTemplatePorId(parseInt(id));
 
-    const [template] = await executeQuery(
-      `SELECT 
-        pt.*,
-        u1.nome as criado_por_nome,
-        u2.nome as atualizado_por_nome
-      FROM pdf_templates pt
-      LEFT JOIN usuarios u1 ON pt.criado_por = u1.id
-      LEFT JOIN usuarios u2 ON pt.atualizado_por = u2.id
-      WHERE pt.id = ?`,
-      [id]
-    );
-
-    if (!template) {
-      return notFoundResponse(res, 'Template de PDF não encontrado');
-    }
-
-    // Parse JSON se existir
-    if (template.variaveis_disponiveis) {
-      try {
-        template.variaveis_disponiveis = JSON.parse(template.variaveis_disponiveis);
-      } catch (e) {
-        template.variaveis_disponiveis = null;
+      if (!template) {
+        return res.status(404).json({
+          success: false,
+          error: 'Template não encontrado'
+        });
       }
+
+      res.json({
+        success: true,
+        data: template
+      });
+    } catch (error) {
+      console.error('Erro ao buscar template:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro interno do servidor'
+      });
     }
-
-    // Adicionar links HATEOAS
-    const data = res.addResourceLinks(template);
-
-    return successResponse(res, data, 'Template de PDF encontrado', STATUS_CODES.OK);
-  });
+  }
 
   /**
-   * Buscar template padrão para uma tela
+   * Listar telas disponíveis
    */
-  static buscarTemplatePadrao = asyncHandler(async (req, res) => {
-    const { tela_vinculada } = req.params;
+  static async listarTelasDisponiveis(req, res) {
+    try {
+      const telas = [
+        { value: 'solicitacoes-compras', label: 'Solicitações de Compras' },
+        { value: 'pedidos-compras', label: 'Pedidos de Compras' },
+        { value: 'relatorio-inspecao', label: 'Relatório de Inspeção' }
+      ];
 
-    const [template] = await executeQuery(
-      `SELECT 
-        pt.*,
-        u1.nome as criado_por_nome,
-        u2.nome as atualizado_por_nome
-      FROM pdf_templates pt
-      LEFT JOIN usuarios u1 ON pt.criado_por = u1.id
-      LEFT JOIN usuarios u2 ON pt.atualizado_por = u2.id
-      WHERE pt.tela_vinculada = ? AND pt.ativo = 1
-      ORDER BY pt.padrao DESC, pt.criado_em DESC
-      LIMIT 1`,
-      [tela_vinculada]
-    );
-
-    if (!template) {
-      return notFoundResponse(res, 'Nenhum template encontrado para esta tela');
+      res.json({
+        success: true,
+        data: telas
+      });
+    } catch (error) {
+      console.error('Erro ao listar telas disponíveis:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro interno do servidor'
+      });
     }
-
-    // Parse JSON se existir
-    if (template.variaveis_disponiveis) {
-      try {
-        template.variaveis_disponiveis = JSON.parse(template.variaveis_disponiveis);
-      } catch (e) {
-        template.variaveis_disponiveis = null;
-      }
-    }
-
-    // Adicionar links HATEOAS
-    const data = res.addResourceLinks(template);
-
-    return successResponse(res, data, 'Template padrão encontrado', STATUS_CODES.OK);
-  });
+  }
 
   /**
-   * Listar telas disponíveis para vinculação
+   * Buscar template padrão por tela
    */
-  static listarTelasDisponiveis = asyncHandler(async (req, res) => {
-    const telas = [
-      { value: 'solicitacoes-compras', label: 'Solicitações de Compras' },
-      { value: 'pedidos-compras', label: 'Pedidos de Compras' },
-      { value: 'relatorio-inspecao', label: 'Relatório de Inspeção' }
-    ];
+  static async buscarTemplatePadrao(req, res) {
+    try {
+      const { tela } = req.params;
+      const template = await PdfTemplatesListController.buscarTemplatePadraoPorTela(tela);
 
-    return successResponse(res, telas, 'Telas disponíveis listadas com sucesso', STATUS_CODES.OK);
-  });
+      if (!template) {
+        return res.status(404).json({
+          success: false,
+          error: 'Template padrão não encontrado para esta tela'
+        });
+      }
+
+      res.json({
+        success: true,
+        data: template
+      });
+    } catch (error) {
+      console.error('Erro ao buscar template padrão:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro interno do servidor'
+      });
+    }
+  }
+
+  // ===== MÉTODOS DE LÓGICA DE NEGÓCIO =====
+
+  /**
+   * Listar templates com paginação e filtros
+   */
+  static async listarTemplates({ page = 1, limit = 20, filtros = {} }) {
+    try {
+      const { executeQuery } = require('../../config/database');
+      
+      let whereConditions = ['1=1'];
+      let params = [];
+      
+      if (filtros.search) {
+        whereConditions.push('(nome LIKE ? OR descricao LIKE ?)');
+        params.push(`%${filtros.search}%`, `%${filtros.search}%`);
+      }
+      
+      if (filtros.tela_vinculada) {
+        whereConditions.push('tela_vinculada = ?');
+        params.push(filtros.tela_vinculada);
+      }
+      
+      if (filtros.ativo !== undefined) {
+        whereConditions.push('ativo = ?');
+        params.push(filtros.ativo ? 1 : 0);
+      }
+      
+      const whereClause = whereConditions.join(' AND ');
+      const offset = (page - 1) * limit;
+      
+      // Contar total de registros
+      const countQuery = `SELECT COUNT(*) as total FROM pdf_templates WHERE ${whereClause}`;
+      const countResult = await executeQuery(countQuery, params);
+      const totalItems = countResult[0]?.total || 0;
+      const totalPages = Math.ceil(totalItems / limit);
+      
+      // Buscar registros
+      const query = `
+        SELECT 
+          id, nome, descricao, tela_vinculada, html_template, css_styles,
+          ativo, padrao, variaveis_disponiveis, criado_em, atualizado_em
+        FROM pdf_templates
+        WHERE ${whereClause}
+        ORDER BY criado_em DESC
+        LIMIT ? OFFSET ?
+      `;
+      
+      const templates = await executeQuery(query, [...params, limit, offset]);
+      
+      // Processar variaveis_disponiveis (JSON para array)
+      const templatesProcessados = templates.map(template => ({
+        ...template,
+        variaveis_disponiveis: template.variaveis_disponiveis 
+          ? (typeof template.variaveis_disponiveis === 'string' 
+              ? JSON.parse(template.variaveis_disponiveis) 
+              : template.variaveis_disponiveis)
+          : []
+      }));
+      
+      return {
+        templates: templatesProcessados,
+        pagination: {
+          page,
+          limit,
+          totalItems,
+          totalPages
+        }
+      };
+    } catch (error) {
+      console.error('Erro no service de listar templates:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Buscar template por ID
+   */
+  static async buscarTemplatePorId(id) {
+    try {
+      const { executeQuery } = require('../../config/database');
+      
+      const query = `
+        SELECT 
+          id, nome, descricao, tela_vinculada, html_template, css_styles,
+          ativo, padrao, variaveis_disponiveis, criado_em, atualizado_em
+        FROM pdf_templates
+        WHERE id = ?
+      `;
+      
+      const result = await executeQuery(query, [id]);
+      
+      if (result.length === 0) {
+        return null;
+      }
+      
+      const template = result[0];
+      
+      // Processar variaveis_disponiveis (JSON para array)
+      template.variaveis_disponiveis = template.variaveis_disponiveis 
+        ? (typeof template.variaveis_disponiveis === 'string' 
+            ? JSON.parse(template.variaveis_disponiveis) 
+            : template.variaveis_disponiveis)
+        : [];
+      
+      return template;
+    } catch (error) {
+      console.error('Erro no service de buscar template:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Buscar template padrão por tela
+   */
+  static async buscarTemplatePadraoPorTela(tela) {
+    try {
+      const { executeQuery } = require('../../config/database');
+      
+      const query = `
+        SELECT 
+          id, nome, descricao, tela_vinculada, html_template, css_styles,
+          ativo, padrao, variaveis_disponiveis, criado_em, atualizado_em
+        FROM pdf_templates
+        WHERE tela_vinculada = ? AND padrao = 1 AND ativo = 1
+        LIMIT 1
+      `;
+      
+      const result = await executeQuery(query, [tela]);
+      
+      if (result.length === 0) {
+        return null;
+      }
+      
+      const template = result[0];
+      
+      // Processar variaveis_disponiveis (JSON para array)
+      template.variaveis_disponiveis = template.variaveis_disponiveis 
+        ? (typeof template.variaveis_disponiveis === 'string' 
+            ? JSON.parse(template.variaveis_disponiveis) 
+            : template.variaveis_disponiveis)
+        : [];
+      
+      return template;
+    } catch (error) {
+      console.error('Erro no service de buscar template padrão:', error);
+      throw error;
+    }
+  }
 }
 
 module.exports = PdfTemplatesListController;

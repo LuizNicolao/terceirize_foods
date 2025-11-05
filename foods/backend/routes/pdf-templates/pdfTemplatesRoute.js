@@ -1,16 +1,15 @@
 /**
- * Rotas de Templates de PDF
+ * Rotas de PDF Templates
  * Implementa padrões RESTful com HATEOAS, paginação e validação
  */
 
 const express = require('express');
-const { body } = require('express-validator');
-const { authenticateToken, checkPermission } = require('../../middleware/auth');
+const { authenticateToken, checkScreenPermission } = require('../../middleware/auth');
+const { pdfTemplatesValidations, commonValidations } = require('./pdfTemplatesValidator');
 const { paginationMiddleware } = require('../../middleware/pagination');
 const { hateoasMiddleware } = require('../../middleware/hateoas');
 const { auditMiddleware, auditChangesMiddleware, AUDIT_ACTIONS } = require('../../utils/audit');
-const { pdfTemplatesValidations, handleValidationErrors } = require('./pdfTemplatesValidator');
-const PdfTemplatesController = require('../../controllers/pdf-templates');
+const pdfTemplatesController = require('../../controllers/pdf-templates');
 
 const router = express.Router();
 
@@ -19,63 +18,59 @@ router.use(authenticateToken);
 router.use(paginationMiddleware);
 router.use(hateoasMiddleware('pdf-templates'));
 
-// ========== ROTAS PRINCIPAIS ==========
+// ===== ROTAS PRINCIPAIS DE PDF TEMPLATES =====
 
-// GET /api/pdf-templates - Listar todos os templates
-router.get('/',
-  checkPermission('visualizar'),
-  PdfTemplatesController.listarTemplates
+// Listar templates com paginação, busca e filtros
+router.get('/', 
+  checkScreenPermission('pdf_templates', 'visualizar'),
+  commonValidations.search,
+  ...commonValidations.pagination,
+  pdfTemplatesValidations.filtros,
+  pdfTemplatesController.listar
 );
 
-// GET /api/pdf-templates/telas-disponiveis - Listar telas disponíveis
-router.get('/telas-disponiveis',
-  checkPermission('visualizar'),
-  PdfTemplatesController.listarTelasDisponiveis
-);
-
-// GET /api/pdf-templates/tela/:tela_vinculada/padrao - Buscar template padrão de uma tela
-router.get('/tela/:tela_vinculada/padrao',
-  checkPermission('visualizar'),
-  PdfTemplatesController.buscarTemplatePadrao
-);
-
-// GET /api/pdf-templates/:id - Buscar template por ID
+// Buscar template por ID
 router.get('/:id',
-  checkPermission('visualizar'),
-  PdfTemplatesController.buscarTemplatePorId
+  checkScreenPermission('pdf_templates', 'visualizar'),
+  commonValidations.id,
+  pdfTemplatesController.buscarPorId
 );
 
-// POST /api/pdf-templates - Criar novo template
+// Listar telas disponíveis
+router.get('/telas-disponiveis',
+  checkScreenPermission('pdf_templates', 'visualizar'),
+  pdfTemplatesController.listarTelasDisponiveis
+);
+
+// Buscar template padrão por tela
+router.get('/tela/:tela/padrao',
+  checkScreenPermission('pdf_templates', 'visualizar'),
+  pdfTemplatesController.buscarTemplatePadrao
+);
+
+// Criar novo template
 router.post('/',
-  checkPermission('criar'),
-  auditMiddleware(AUDIT_ACTIONS.CREATE, 'pdf_templates'),
-  pdfTemplatesValidations.create,
-  handleValidationErrors,
-  PdfTemplatesController.criarTemplate
+  checkScreenPermission('pdf_templates', 'criar'),
+  pdfTemplatesValidations.criar,
+  auditMiddleware('pdf_templates', AUDIT_ACTIONS.CREATE),
+  pdfTemplatesController.criar
 );
 
-// PUT /api/pdf-templates/:id - Atualizar template
+// Atualizar template
 router.put('/:id',
-  checkPermission('editar'),
-  auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'pdf_templates'),
-  pdfTemplatesValidations.update,
-  handleValidationErrors,
-  PdfTemplatesController.atualizarTemplate
+  checkScreenPermission('pdf_templates', 'editar'),
+  commonValidations.id,
+  pdfTemplatesValidations.atualizar,
+  auditChangesMiddleware('pdf_templates', AUDIT_ACTIONS.UPDATE),
+  pdfTemplatesController.atualizar
 );
 
-// DELETE /api/pdf-templates/:id - Excluir template
+// Excluir template
 router.delete('/:id',
-  checkPermission('excluir'),
-  auditMiddleware(AUDIT_ACTIONS.DELETE, 'pdf_templates'),
-  PdfTemplatesController.excluirTemplate
-);
-
-// POST /api/pdf-templates/gerar-pdf - Gerar PDF usando template
-router.post('/gerar-pdf',
-  checkPermission('visualizar'),
-  body('tela_vinculada').notEmpty().withMessage('Tela vinculada é obrigatória'),
-  body('dados').isObject().withMessage('Dados devem ser um objeto'),
-  PdfTemplatesController.gerarPDFComTemplate
+  checkScreenPermission('pdf_templates', 'excluir'),
+  commonValidations.id,
+  auditMiddleware('pdf_templates', AUDIT_ACTIONS.DELETE),
+  pdfTemplatesController.excluir
 );
 
 module.exports = router;
