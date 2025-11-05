@@ -44,9 +44,11 @@ const CKEditor = ({
 
     // Carregar o script dinamicamente
     const script = document.createElement('script');
-    // Usar caminho relativo baseado na localização atual
-    const basePath = window.location.pathname.split('/').slice(0, -1).join('/') || '';
-    script.src = `${basePath}/ckeditor/ckeditor.js`;
+    // Usar process.env.PUBLIC_URL se disponível (React), senão usar caminho relativo
+    const publicUrl = process.env.PUBLIC_URL || '';
+    // Remover barra dupla no início se houver
+    const cleanPath = publicUrl.replace(/\/$/, '');
+    script.src = `${cleanPath}/ckeditor/ckeditor.js`;
     script.async = true;
     script.onload = () => {
       setScriptLoaded(true);
