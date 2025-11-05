@@ -351,9 +351,23 @@ class PdfTemplatesPDFController {
         const quantidadeUtilizada = parseFloat(item.quantidade_utilizada || 0);
         const saldoDisponivel = parseFloat(item.saldo_disponivel || 0);
         const pedidosVinculadosItem = item.pedidos_vinculados || [];
-        const pedidosNumeros = Array.isArray(pedidosVinculadosItem) 
-          ? pedidosVinculadosItem.map(p => p.numero || p).join(', ')
-          : (typeof pedidosVinculadosItem === 'string' ? pedidosVinculadosItem : '');
+        
+        // Extrair números dos pedidos vinculados
+        let pedidosNumeros = '';
+        if (Array.isArray(pedidosVinculadosItem) && pedidosVinculadosItem.length > 0) {
+          // Se for array de objetos com propriedade 'numero'
+          const numeros = pedidosVinculadosItem
+            .map(p => {
+              if (typeof p === 'object' && p !== null) {
+                return p.numero || p.numero_pedido || '';
+              }
+              return String(p || '');
+            })
+            .filter(p => p && p.trim() !== '');
+          pedidosNumeros = numeros.join(', ');
+        } else if (typeof pedidosVinculadosItem === 'string') {
+          pedidosNumeros = pedidosVinculadosItem;
+        }
         
         return {
           id: item.id || '',
@@ -378,10 +392,8 @@ class PdfTemplatesPDFController {
           unidade_nome: item.unidade_nome || '',
           observacao: item.observacao || item.observacao_item || '',
           pedidos_vinculados: pedidosNumeros,
-          // pedidos_vinculados_lista como string separada por vírgula para compatibilidade
-          pedidos_vinculados_lista: Array.isArray(pedidosVinculadosItem) 
-            ? pedidosVinculadosItem.map(p => p.numero || p).join(', ')
-            : pedidosNumeros,
+          // pedidos_vinculados_lista como string separada por vírgula (mesmo valor de pedidos_vinculados)
+          pedidos_vinculados_lista: pedidosNumeros,
           item_criado_em: item.item_criado_em ? new Date(item.item_criado_em).toLocaleDateString('pt-BR') : ''
         };
       }),
@@ -389,7 +401,7 @@ class PdfTemplatesPDFController {
       // Estatísticas dos itens
       total_itens: itens.length,
       total_quantidade: itens.reduce((sum, item) => sum + parseFloat(item.quantidade || 0), 0).toFixed(3).replace('.', ','),
-      valor_total: '0,00' // Campo não existe na tabela, mas mantido para compatibilidade
+      valor_total: '0,00' // Campo não existe na tabela solicitacoes_compras, mas mantido para compatibilidade
     };
   }
 
