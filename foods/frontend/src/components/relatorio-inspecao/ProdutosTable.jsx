@@ -562,28 +562,23 @@ const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = fal
                   <tr className="bg-gray-50 hover:bg-gray-100">
                     <td className="px-4 py-3 whitespace-nowrap">
                       <div>
-                        <div className="flex items-center gap-1">
-                          <Input
-                            type="number"
-                            value={produto.temperatura || ''}
-                            onChange={(e) => {
-                              handleFieldChange(index, 'temperatura', e.target.value);
-                              // Remover erro quando preencher
-                              if (errors[`${index}-temperatura`]) {
-                                const newErrors = { ...errors };
-                                delete newErrors[`${index}-temperatura`];
-                                setErrors(newErrors);
-                              }
-                            }}
-                            placeholder="°C"
-                            className={`w-20 text-sm ${errors[`${index}-temperatura`] ? 'border-red-500' : ''}`}
-                            disabled={viewMode}
-                            required={produto.grupo_nome && produto.grupo_nome.toLowerCase() === 'frios'}
-                          />
-                          {produto.grupo_nome && produto.grupo_nome.toLowerCase() === 'frios' && (
-                            <span className="text-red-500 text-xs" title="Obrigatório para produtos do grupo Frios">*</span>
-                          )}
-                        </div>
+                        <Input
+                          type="number"
+                          value={produto.temperatura || ''}
+                          onChange={(e) => {
+                            handleFieldChange(index, 'temperatura', e.target.value);
+                            // Remover erro quando preencher
+                            if (errors[`${index}-temperatura`]) {
+                              const newErrors = { ...errors };
+                              delete newErrors[`${index}-temperatura`];
+                              setErrors(newErrors);
+                            }
+                          }}
+                          placeholder="°C"
+                          className={`w-20 text-sm ${errors[`${index}-temperatura`] ? 'border-red-500' : ''}`}
+                          disabled={viewMode}
+                          required={produto.grupo_nome && produto.grupo_nome.toLowerCase() === 'frios'}
+                        />
                         {errors[`${index}-temperatura`] && (
                           <p className="text-xs text-red-600 mt-1">{errors[`${index}-temperatura`]}</p>
                         )}
