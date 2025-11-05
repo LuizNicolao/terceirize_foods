@@ -67,6 +67,10 @@ const CKEditor = ({
         if (value) {
           editorInstanceRef.current.setData(value);
         }
+        // Expor instância globalmente para acesso externo usando o name como identificador
+        if (name && editorInstanceRef.current) {
+          editorInstanceRef.current.name = name;
+        }
       });
     }
 

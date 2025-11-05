@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { FaTimes, FaSave, FaEye, FaEdit, FaPlus } from 'react-icons/fa';
-import { Button, Input, Modal, SearchableSelect } from '../ui';
-import CKEditorWrapper from './CKEditorWrapper';
+import { Button, Input, Modal, SearchableSelect, CKEditor } from '../ui';
 
 const PdfTemplatesModal = ({
   isOpen,
@@ -16,7 +15,7 @@ const PdfTemplatesModal = ({
   const { register, handleSubmit, reset, formState: { errors }, setValue, watch } = useForm();
   const [saving, setSaving] = useState(false);
   const [htmlContent, setHtmlContent] = useState('');
-  const editorRef = useRef(null);
+  const editorInstanceRef = useRef(null);
 
   const telaVinculada = watch('tela_vinculada');
 
@@ -89,9 +88,25 @@ const PdfTemplatesModal = ({
     } else if (!isOpen) {
       // Limpar quando modal fechar
       setHtmlContent('');
-      editorRef.current = null;
+      editorInstanceRef.current = null;
     }
   }, [template, isOpen, setValue, reset]);
+
+  // Função para inserir variável no editor CKEditor 4
+  const inserirVariavel = (variavel) => {
+    if (typeof window.CKEDITOR !== 'undefined') {
+      // Procurar a instância do editor nas instâncias do CKEditor pelo name
+      const editors = window.CKEDITOR.instances;
+      for (const key in editors) {
+        const editor = editors[key];
+        // Verificar se é o editor que queremos pelo elemento textarea name
+        if (editor && editor.element && editor.element.$ && editor.element.$.name === 'html_template') {
+          editor.insertText(`{{${variavel}}}`);
+          break;
+        }
+      }
+    }
+  };
 
   const handleFormSubmit = async (data) => {
     // Validar campos obrigatórios
@@ -221,16 +236,8 @@ const PdfTemplatesModal = ({
                     key={variavel}
                     className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-mono cursor-pointer hover:bg-blue-200"
                     onClick={() => {
-                      if (!isViewMode && editorRef.current) {
-                        const editor = editorRef.current;
-                        const model = editor.model;
-                        const selection = model.document.selection;
-                        
-                        // Inserir variável no editor
-                        model.change(writer => {
-                          const insertPosition = selection.getFirstPosition();
-                          writer.insertText(`{{${variavel}}}`, insertPosition);
-                        });
+                      if (!isViewMode) {
+                        inserirVariavel(variavel);
                       }
                     }}
                     title="Clique para inserir no HTML"
@@ -243,14 +250,32 @@ const PdfTemplatesModal = ({
           )}
 
           {/* Editor HTML/CSS */}
-          <div className="min-h-[500px] max-h-[600px]">
-            <CKEditorWrapper
+          <div className="min-h-[500px]">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              HTML Template *
+            </label>
+            <CKEditor
               value={htmlContent}
-              onChange={setHtmlContent}
+              onChange={(e) => setHtmlContent(e.target.value)}
+              name="html_template"
               disabled={isViewMode || saving}
-              placeholder="Digite o HTML do template aqui..."
-              editorRef={editorRef}
-              isOpen={isOpen}
+              height={500}
+              config={{
+                toolbar: [
+                  { name: 'document', items: [ 'Source', '-', 'Save', 'NewPage', 'Preview' ] },
+                  { name: 'clipboard', items: [ 'Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo' ] },
+                  { name: 'editing', items: [ 'Find', 'Replace', '-', 'SelectAll' ] },
+                  '/',
+                  { name: 'basicstyles', items: [ 'Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'RemoveFormat' ] },
+                  { name: 'paragraph', items: [ 'NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock' ] },
+                  { name: 'links', items: [ 'Link', 'Unlink', 'Anchor' ] },
+                  { name: 'insert', items: [ 'Image', 'Table', 'HorizontalRule', 'SpecialChar', 'PageBreak' ] },
+                  '/',
+                  { name: 'styles', items: [ 'Styles', 'Format', 'Font', 'FontSize' ] },
+                  { name: 'colors', items: [ 'TextColor', 'BGColor' ] },
+                  { name: 'tools', items: [ 'Maximize', 'ShowBlocks' ] }
+                ]
+              }}
             />
             {errors.html_template && (
               <p className="mt-1 text-sm text-red-600">{errors.html_template.message}</p>
