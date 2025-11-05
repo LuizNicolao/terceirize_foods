@@ -18,7 +18,7 @@ class PdfTemplatesListController {
    */
   static listarTemplates = asyncHandler(async (req, res) => {
     const { search = '', tela_vinculada, ativo } = req.query;
-    const pagination = req.pagination || {};
+    const pagination = req.pagination;
 
     let params = [];
     let whereClause = 'WHERE 1=1';
@@ -41,12 +41,8 @@ class PdfTemplatesListController {
 
     // Query principal
     // req.pagination é uma instância de PaginationHelper
-    const limit = pagination.limit ? parseInt(pagination.limit, 10) : 20;
-    const offset = pagination.offset ? parseInt(pagination.offset, 10) : 0;
-    
-    // Garantir valores válidos
-    const finalLimit = isNaN(limit) || limit < 1 ? 20 : limit;
-    const finalOffset = isNaN(offset) || offset < 0 ? 0 : offset;
+    const limit = pagination.limit || 20;
+    const offset = pagination.offset || 0;
     
     const query = `
       SELECT 
@@ -58,10 +54,10 @@ class PdfTemplatesListController {
       LEFT JOIN usuarios u2 ON pt.atualizado_por = u2.id
       ${whereClause}
       ORDER BY pt.tela_vinculada, pt.padrao DESC, pt.nome ASC
-      LIMIT ? OFFSET ?
+      LIMIT ${limit} OFFSET ${offset}
     `;
 
-    const templates = await executeQuery(query, [...params, finalLimit, finalOffset]);
+    const templates = await executeQuery(query, params);
 
     // Parse JSON para cada template
     templates.forEach(template => {
@@ -87,9 +83,9 @@ class PdfTemplatesListController {
       data: data,
       pagination: {
         total: totalItems,
-        page: pagination.page ? parseInt(pagination.page, 10) : 1,
-        limit: finalLimit,
-        pages: Math.ceil(totalItems / finalLimit)
+        page: pagination.page || 1,
+        limit: limit,
+        pages: Math.ceil(totalItems / limit)
       }
     });
   });
