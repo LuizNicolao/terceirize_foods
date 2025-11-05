@@ -118,9 +118,22 @@ class PdfTemplatesPDFController {
   static async gerarPDFDeHTML(html, options = {}) {
     let browser;
     try {
+      // Configuração para Docker/Alpine
+      const executablePath = process.env.PUPPETEER_EXECUTABLE_PATH || undefined;
+      
       browser = await puppeteer.launch({
-        headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
+        headless: 'new', // Usar novo modo headless
+        executablePath: executablePath, // Usar Chrome instalado no sistema se disponível
+        args: [
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-dev-shm-usage',
+          '--disable-accelerated-2d-canvas',
+          '--no-first-run',
+          '--no-zygote',
+          '--disable-gpu',
+          '--disable-software-rasterizer'
+        ]
       });
       
       const page = await browser.newPage();
