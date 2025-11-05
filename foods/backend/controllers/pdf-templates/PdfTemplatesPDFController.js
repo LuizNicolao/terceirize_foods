@@ -1,0 +1,215 @@
+/**
+ * Controller para geração de PDF usando templates
+ */
+
+const { executeQuery } = require('../../config/database');
+const puppeteer = require('puppeteer');
+
+class PdfTemplatesPDFController {
+  /**
+   * Buscar templates ativos por tela (controller para rota)
+   */
+  static async buscarTemplatesPorTela(req, res) {
+    try {
+      const { tela } = req.params;
+      const templates = await PdfTemplatesPDFController._buscarTemplatesPorTelaHelper(tela);
+      
+      res.json({
+        success: true,
+        data: templates
+      });
+    } catch (error) {
+      console.error('Erro ao buscar templates por tela:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro interno do servidor'
+      });
+    }
+  }
+
+  /**
+   * Buscar templates ativos por tela (método helper)
+   */
+  static async _buscarTemplatesPorTelaHelper(telaVinculada) {
+    try {
+      const query = `
+        SELECT 
+          id, nome, descricao, tela_vinculada, html_template, css_styles,
+          ativo, padrao, variaveis_disponiveis
+        FROM pdf_templates
+        WHERE tela_vinculada = ? AND ativo = 1
+        ORDER BY padrao DESC, nome ASC
+      `;
+      
+      const templates = await executeQuery(query, [telaVinculada]);
+      
+      // Processar variaveis_disponiveis
+      return templates.map(template => ({
+        ...template,
+        variaveis_disponiveis: template.variaveis_disponiveis 
+          ? (typeof template.variaveis_disponiveis === 'string' 
+              ? JSON.parse(template.variaveis_disponiveis) 
+              : template.variaveis_disponiveis)
+          : []
+      }));
+    } catch (error) {
+      console.error('Erro ao buscar templates por tela:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Renderizar HTML do template substituindo variáveis
+   */
+  static renderizarTemplate(htmlTemplate, dados, variaveisDisponiveis = []) {
+    let html = htmlTemplate;
+    
+    // Processar loops de itens ({{#itens}}...{{/itens}})
+    const itemLoopRegex = /\{\{#itens\}\}([\s\S]*?)\{\{\/itens\}\}/g;
+    let match;
+    
+    while ((match = itemLoopRegex.exec(html)) !== null) {
+      const loopContent = match[1];
+      const itens = dados.itens || [];
+      
+      let itemsHtml = '';
+      itens.forEach(item => {
+        let itemHtml = loopContent;
+        
+        // Substituir variáveis do item
+        const itemVars = itemHtml.match(/\{\{(\w+)\}\}/g) || [];
+        itemVars.forEach(variavel => {
+          const nomeVariavel = variavel.replace(/[{}]/g, '');
+          const valor = item[nomeVariavel] !== undefined ? item[nomeVariavel] : '';
+          const regex = new RegExp(`\\{\\{${nomeVariavel}\\}\\}`, 'g');
+          itemHtml = itemHtml.replace(regex, valor);
+        });
+        
+        itemsHtml += itemHtml;
+      });
+      
+      // Substituir o loop completo pelo conteúdo renderizado
+      html = html.replace(match[0], itemsHtml);
+    }
+    
+    // Substituir variáveis simples do formato {{variavel}}
+    const variaveis = html.match(/\{\{(\w+)\}\}/g) || [];
+    
+    variaveis.forEach(variavel => {
+      const nomeVariavel = variavel.replace(/[{}]/g, '');
+      // Ignorar se for um loop ou variável já processada
+      if (nomeVariavel === 'itens' || nomeVariavel.startsWith('#') || nomeVariavel.startsWith('/')) {
+        return;
+      }
+      
+      const valor = dados[nomeVariavel] !== undefined ? dados[nomeVariavel] : '';
+      
+      // Substituir todas as ocorrências
+      const regex = new RegExp(`\\{\\{${nomeVariavel}\\}\\}`, 'g');
+      html = html.replace(regex, valor);
+    });
+    
+    return html;
+  }
+
+  /**
+   * Gerar PDF a partir de HTML usando Puppeteer
+   */
+  static async gerarPDFDeHTML(html, options = {}) {
+    let browser;
+    try {
+      browser = await puppeteer.launch({
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
+      });
+      
+      const page = await browser.newPage();
+      
+      // Configurar conteúdo HTML
+      await page.setContent(html, {
+        waitUntil: 'networkidle0'
+      });
+      
+      // Gerar PDF
+      const pdf = await page.pdf({
+        format: 'A4',
+        margin: {
+          top: options.marginTop || '20mm',
+          right: options.marginRight || '20mm',
+          bottom: options.marginBottom || '20mm',
+          left: options.marginLeft || '20mm'
+        },
+        printBackground: true
+      });
+      
+      await browser.close();
+      return pdf;
+    } catch (error) {
+      if (browser) {
+        await browser.close();
+      }
+      console.error('Erro ao gerar PDF de HTML:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Preparar dados para template de solicitação de compras
+   */
+  static prepararDadosSolicitacao(solicitacao, itens, pedidosVinculados) {
+    return {
+      numero_solicitacao: solicitacao.numero_solicitacao || '',
+      data_criacao: solicitacao.criado_em ? new Date(solicitacao.criado_em).toLocaleDateString('pt-BR') : '',
+      data_entrega_cd: solicitacao.data_entrega_cd ? new Date(solicitacao.data_entrega_cd).toLocaleDateString('pt-BR') : '',
+      semana_abastecimento: solicitacao.semana_abastecimento || '',
+      justificativa: solicitacao.justificativa || '',
+      status: solicitacao.status || '',
+      filial_nome: solicitacao.filial_nome || solicitacao.unidade || '',
+      filial_codigo: solicitacao.filial_codigo || '',
+      solicitante_nome: solicitacao.usuario_nome_from_user || solicitacao.usuario_nome || '',
+      pedidos_vinculados: pedidosVinculados.map(p => p.numero_pedido).join(', '),
+      data_documento: solicitacao.data_documento ? new Date(solicitacao.data_documento).toLocaleDateString('pt-BR') : '',
+      // Dados para itens (pode ser usado em loops no template)
+      itens: itens.map(item => ({
+        produto_nome: item.produto_nome || '',
+        produto_codigo: item.produto_codigo || '',
+        quantidade: item.quantidade || 0,
+        unidade: item.unidade_simbolo || item.unidade_nome || '',
+        observacao: item.observacao || ''
+      }))
+    };
+  }
+
+  /**
+   * Gerar HTML completo com CSS inline
+   */
+  static gerarHTMLCompleto(htmlTemplate, cssStyles = null) {
+    const css = cssStyles || '';
+    
+    return `
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Template PDF</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      color: #333;
+    }
+    ${css}
+  </style>
+</head>
+<body>
+  ${htmlTemplate}
+</body>
+</html>
+    `.trim();
+  }
+}
+
+module.exports = PdfTemplatesPDFController;
+

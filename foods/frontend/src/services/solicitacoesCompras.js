@@ -240,9 +240,11 @@ class SolicitacoesComprasService {
     }
   }
 
-  async gerarPDF(id) {
+  async gerarPDF(id, templateId = null) {
     try {
+      const params = templateId ? { template_id: templateId } : {};
       const response = await api.get(`/solicitacoes-compras/${id}/pdf`, {
+        params,
         responseType: 'blob'
       });
       return response.data;

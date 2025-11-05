@@ -41,6 +41,12 @@ router.get('/tela/:tela/padrao',
   pdfTemplatesController.buscarTemplatePadrao
 );
 
+// Listar templates ativos por tela (para seleção na impressão)
+router.get('/tela/:tela/ativos',
+  checkScreenPermission('pdf_templates', 'visualizar'),
+  pdfTemplatesController.listarTemplatesPorTela
+);
+
 // Buscar template por ID (DEVE VIR POR ÚLTIMO)
 router.get('/:id',
   checkScreenPermission('pdf_templates', 'visualizar'),

@@ -187,6 +187,30 @@ class PdfTemplatesService {
     }
   }
 
+  async listarTemplatesPorTela(tela) {
+    try {
+      const response = await api.get(`/pdf-templates/tela/${tela}/ativos`);
+      
+      let templates = [];
+      
+      if (response.data.data) {
+        templates = response.data.data;
+      } else if (Array.isArray(response.data)) {
+        templates = response.data;
+      }
+      
+      return {
+        success: true,
+        data: templates
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Erro ao listar templates por tela'
+      };
+    }
+  }
+
   async gerarPDF(telaVinculada, dados, templateId = null) {
     try {
       const response = await api.post('/pdf-templates/gerar-pdf', {

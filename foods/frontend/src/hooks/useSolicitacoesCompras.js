@@ -6,6 +6,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import SolicitacoesComprasService from '../services/solicitacoesCompras';
+import PdfTemplatesService from '../services/pdfTemplatesService';
 import api from '../services/api';
 import { useBaseEntity } from './common/useBaseEntity';
 import { useFilters } from './common/useFilters';
@@ -37,6 +38,11 @@ export const useSolicitacoesCompras = () => {
   // Estados de seleção em lote
   const [selectedIds, setSelectedIds] = useState([]);
   const [loadingPrint, setLoadingPrint] = useState(false);
+  
+  // Estados de seleção de template
+  const [showTemplateSelectModal, setShowTemplateSelectModal] = useState(false);
+  const [templatesDisponiveis, setTemplatesDisponiveis] = useState([]);
+  const [pendingPrintIds, setPendingPrintIds] = useState([]);
   
   // Dados auxiliares
   const [filiais, setFiliais] = useState([]);
@@ -257,16 +263,44 @@ export const useSolicitacoesCompras = () => {
   }, []);
 
   /**
-   * Imprimir solicitações selecionadas
+   * Buscar templates e decidir se mostra modal ou imprime direto
    */
-  const handleImprimirLote = useCallback(async () => {
-    if (selectedIds.length === 0) return;
-    
+  const buscarTemplatesEImprimir = useCallback(async (ids) => {
+    try {
+      // Buscar templates disponíveis para solicitações de compras
+      const templatesResponse = await PdfTemplatesService.listarTemplatesPorTela('solicitacoes-compras');
+      
+      if (templatesResponse.success && templatesResponse.data && templatesResponse.data.length > 0) {
+        // Se houver múltiplos templates, mostrar modal de seleção
+        if (templatesResponse.data.length > 1) {
+          setTemplatesDisponiveis(templatesResponse.data);
+          setPendingPrintIds(ids);
+          setShowTemplateSelectModal(true);
+        } else {
+          // Se houver apenas um template, usar ele automaticamente
+          const templateId = templatesResponse.data[0].id;
+          await imprimirComTemplate(ids, templateId);
+        }
+      } else {
+        // Se não houver templates, usar geração padrão (sem template_id)
+        await imprimirComTemplate(ids, null);
+      }
+    } catch (error) {
+      console.error('Erro ao buscar templates:', error);
+      // Em caso de erro, usar geração padrão
+      await imprimirComTemplate(ids, null);
+    }
+  }, []);
+
+  /**
+   * Imprimir usando template específico
+   */
+  const imprimirComTemplate = useCallback(async (ids, templateId) => {
     setLoadingPrint(true);
     try {
       // Gerar PDF para cada solicitação selecionada
-      for (const id of selectedIds) {
-        const response = await SolicitacoesComprasService.gerarPDF(id);
+      for (const id of ids) {
+        const response = await SolicitacoesComprasService.gerarPDF(id, templateId);
         if (response) {
           // Abrir PDF em nova aba
           const blob = new Blob([response], { type: 'application/pdf' });
@@ -275,7 +309,7 @@ export const useSolicitacoesCompras = () => {
           window.URL.revokeObjectURL(url);
         }
       }
-      toast.success(`${selectedIds.length} solicitação(ões) impressa(s) com sucesso!`);
+      toast.success(`${ids.length} solicitação(ões) impressa(s) com sucesso!`);
       setSelectedIds([]);
     } catch (error) {
       console.error('Erro ao imprimir solicitações:', error);
@@ -283,7 +317,31 @@ export const useSolicitacoesCompras = () => {
     } finally {
       setLoadingPrint(false);
     }
-  }, [selectedIds]);
+  }, []);
+
+  /**
+   * Imprimir solicitações selecionadas
+   */
+  const handleImprimirLote = useCallback(async () => {
+    if (selectedIds.length === 0) return;
+    await buscarTemplatesEImprimir(selectedIds);
+  }, [selectedIds, buscarTemplatesEImprimir]);
+
+  /**
+   * Imprimir uma solicitação individual
+   */
+  const handleImprimir = useCallback(async (id) => {
+    await buscarTemplatesEImprimir([id]);
+  }, [buscarTemplatesEImprimir]);
+
+  /**
+   * Selecionar template no modal
+   */
+  const handleSelecionarTemplate = useCallback(async (templateId) => {
+    setShowTemplateSelectModal(false);
+    await imprimirComTemplate(pendingPrintIds, templateId);
+    setPendingPrintIds([]);
+  }, [pendingPrintIds, imprimirComTemplate]);
 
   return {
     // Estados principais
@@ -370,7 +428,17 @@ export const useSolicitacoesCompras = () => {
     handleSelectAll,
     handleSelectItem,
     handleImprimirLote,
-    loadingPrint
+    handleImprimir,
+    loadingPrint,
+    
+    // Estados de seleção de template
+    showTemplateSelectModal,
+    templatesDisponiveis,
+    handleSelecionarTemplate,
+    handleCloseTemplateModal: () => {
+      setShowTemplateSelectModal(false);
+      setPendingPrintIds([]);
+    }
   };
 };
 

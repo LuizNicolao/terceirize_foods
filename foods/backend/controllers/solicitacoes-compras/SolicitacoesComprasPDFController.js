@@ -12,6 +12,7 @@ class SolicitacoesComprasPDFController {
    */
   static gerarPDF = asyncHandler(async (req, res) => {
     const { id } = req.params;
+    const { template_id } = req.query; // Template ID opcional
 
     // Buscar dados completos da solicitação
     const [solicitacao] = await executeQuery(
@@ -115,6 +116,57 @@ class SolicitacoesComprasPDFController {
       })
     );
 
+    // Verificar se foi solicitado uso de template personalizado
+    if (template_id) {
+      const PdfTemplatesPDFController = require('../pdf-templates/PdfTemplatesPDFController');
+      
+      // Buscar template
+      const [template] = await executeQuery(
+        `SELECT id, nome, html_template, css_styles, variaveis_disponiveis
+         FROM pdf_templates
+         WHERE id = ? AND tela_vinculada = 'solicitacoes-compras' AND ativo = 1`,
+        [template_id]
+      );
+
+      if (template) {
+        // Processar variaveis_disponiveis
+        const variaveisDisponiveis = template.variaveis_disponiveis 
+          ? (typeof template.variaveis_disponiveis === 'string' 
+              ? JSON.parse(template.variaveis_disponiveis) 
+              : template.variaveis_disponiveis)
+          : [];
+
+        // Preparar dados para substituição
+        const dados = PdfTemplatesPDFController.prepararDadosSolicitacao(
+          solicitacao,
+          itensComPedidos,
+          pedidosVinculados
+        );
+
+        // Renderizar template
+        const htmlRenderizado = PdfTemplatesPDFController.renderizarTemplate(
+          template.html_template,
+          dados,
+          variaveisDisponiveis
+        );
+
+        // Gerar HTML completo com CSS
+        const htmlCompleto = PdfTemplatesPDFController.gerarHTMLCompleto(
+          htmlRenderizado,
+          template.css_styles
+        );
+
+        // Gerar PDF usando Puppeteer
+        const pdfBuffer = await PdfTemplatesPDFController.gerarPDFDeHTML(htmlCompleto);
+
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `inline; filename=solicitacao_${solicitacao.numero_solicitacao}.pdf`);
+        res.send(pdfBuffer);
+        return;
+      }
+    }
+
+    // Se não houver template_id ou template não encontrado, usar geração padrão com PDFKit
     // Gerar PDF usando PDFKit - Layout adaptado do modal
     const PDFDocument = require('pdfkit');
     const doc = new PDFDocument({ 
@@ -227,7 +279,7 @@ class SolicitacoesComprasPDFController {
     doc.text('Número da Solicitação:', leftMargin + colWidth + spacing, currentY);
     doc.font('Helvetica').text(solicitacao.numero_solicitacao || '-', leftMargin + colWidth + spacing, currentY + 12);
     currentY += lineHeight;
-
+    
     // Linha 4: Solicitante | Pedidos Vinculados
     doc.fontSize(10).font('Helvetica-Bold');
     doc.text('Solicitante:', leftMargin + 10, currentY);

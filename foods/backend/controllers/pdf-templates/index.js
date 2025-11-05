@@ -5,12 +5,14 @@
 
 const PdfTemplatesListController = require('./PdfTemplatesListController');
 const PdfTemplatesCRUDController = require('./PdfTemplatesCRUDController');
+const PdfTemplatesPDFController = require('./PdfTemplatesPDFController');
 
 module.exports = {
   listar: PdfTemplatesListController.listar.bind(PdfTemplatesListController),
   buscarPorId: PdfTemplatesListController.buscarPorId.bind(PdfTemplatesListController),
   listarTelasDisponiveis: PdfTemplatesListController.listarTelasDisponiveis.bind(PdfTemplatesListController),
   buscarTemplatePadrao: PdfTemplatesListController.buscarTemplatePadrao.bind(PdfTemplatesListController),
+  listarTemplatesPorTela: PdfTemplatesPDFController.buscarTemplatesPorTela.bind(PdfTemplatesPDFController),
   criar: PdfTemplatesCRUDController.criar.bind(PdfTemplatesCRUDController),
   atualizar: PdfTemplatesCRUDController.atualizar.bind(PdfTemplatesCRUDController),
   excluir: PdfTemplatesCRUDController.excluir.bind(PdfTemplatesCRUDController)

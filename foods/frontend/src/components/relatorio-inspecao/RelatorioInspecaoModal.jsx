@@ -212,8 +212,8 @@ const RelatorioInspecaoModal = ({ isOpen, onClose, onSubmit, rir, viewMode, grup
         toast.success(response.message || 'Relatório salvo com sucesso!');
         if (onSubmit) {
           onSubmit(formData);
-        }
-        onClose();
+    }
+    onClose();
       } else {
         if (response.validationErrors) {
           toast.error('Erros de validação encontrados');

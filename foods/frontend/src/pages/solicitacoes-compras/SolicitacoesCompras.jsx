@@ -9,6 +9,7 @@ import { Button, ValidationErrorModal, ConfirmModal } from '../../components/ui'
 import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
 import { SolicitacoesComprasModal } from '../../components/solicitacoes-compras';
+import TemplateSelectModal from '../../components/solicitacoes-compras/TemplateSelectModal';
 import SolicitacoesComprasStats from '../../components/solicitacoes-compras/SolicitacoesComprasStats';
 import SolicitacoesComprasTable from '../../components/solicitacoes-compras/SolicitacoesComprasTable';
 import { AuditModal, ExportButtons } from '../../components/shared';
@@ -64,7 +65,11 @@ const SolicitacoesCompras = () => {
     handleSelectAll,
     handleSelectItem,
     handleImprimirLote,
-    loadingPrint
+    loadingPrint,
+    showTemplateSelectModal,
+    templatesDisponiveis,
+    handleSelecionarTemplate,
+    handleCloseTemplateModal
   } = useSolicitacoesCompras();
 
   const {
@@ -256,6 +261,15 @@ const SolicitacoesCompras = () => {
         confirmText="Excluir"
         cancelText="Cancelar"
         variant="danger"
+      />
+
+      {/* Modal de Seleção de Template */}
+      <TemplateSelectModal
+        isOpen={showTemplateSelectModal}
+        onClose={handleCloseTemplateModal}
+        templates={templatesDisponiveis}
+        onSelect={handleSelecionarTemplate}
+        title="Selecione o Template para Impressão"
       />
     </div>
   );
