@@ -67,12 +67,13 @@ class PdfTemplatesPDFController {
     // Processar loops de itens ({{#itens}}...{{/itens}} ou {{{{#itens}}}}...{{{{/itens}}}})
     // Aceita tanto 2 quanto 4 chaves (devido ao escape do CKEditor)
     // Primeiro tenta com 4 chaves, depois com 2
-    let itemLoopRegex = /\{\{\{\{#itens\}\}\}\}([\s\S]*?)\{\{\{\{\/itens\}\}\}\}/g;
+    // Regex melhorado para aceitar espaços/whitespace entre as tags
+    let itemLoopRegex = /\{\{\{\{#itens\}\}\}\}\s*([\s\S]*?)\s*\{\{\{\{\/itens\}\}\}\}/g;
     let match = itemLoopRegex.exec(html);
     
     if (!match) {
       // Se não encontrou com 4 chaves, tenta com 2
-      itemLoopRegex = /\{\{#itens\}\}([\s\S]*?)\{\{\/itens\}\}/g;
+      itemLoopRegex = /\{\{#itens\}\}\s*([\s\S]*?)\s*\{\{\/itens\}\}/g;
       match = itemLoopRegex.exec(html);
     }
     
