@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+// Importar CSS do CKEditor - necessário para o editor funcionar
+import '@ckeditor/ckeditor5-build-classic/build/ckeditor.css';
 
 /**
  * Componente wrapper para CKEditor 5
@@ -31,13 +33,32 @@ const CKEditorWrapper = ({ value, onChange, disabled, placeholder, editorRef: ex
 
     const loadEditor = async () => {
       try {
+        // Verificar se o container existe
+        if (!containerRef.current) {
+          console.error('Container ref não está disponível');
+          setError('Erro: Container do editor não encontrado');
+          setIsLoading(false);
+          return;
+        }
+        
         // Importar CKEditor dinamicamente
+        console.log('Importando ClassicEditor...');
         const { ClassicEditor } = await import('@ckeditor/ckeditor5-build-classic');
+        console.log('ClassicEditor importado com sucesso');
         
         // Aguardar um pouco para garantir que o DOM está pronto
-        await new Promise(resolve => setTimeout(resolve, 200));
+        await new Promise(resolve => setTimeout(resolve, 100));
         
-        if (!mounted || !containerRef.current) return;
+        if (!mounted || !containerRef.current) {
+          console.warn('Componente desmontado após importação');
+          setIsLoading(false);
+          return;
+        }
+        
+        console.log('Criando instância do editor...', { 
+          containerExists: !!containerRef.current,
+          containerElement: containerRef.current
+        });
         
         // Destruir editor anterior se existir
         if (editorInstanceRef.current) {
@@ -112,17 +133,32 @@ const CKEditorWrapper = ({ value, onChange, disabled, placeholder, editorRef: ex
         setIsLoading(false);
       } catch (err) {
         console.error('Erro ao carregar CKEditor:', err);
-        setError('Erro ao carregar editor. Certifique-se de que o pacote @ckeditor/ckeditor5-build-classic está instalado.');
+        console.error('Detalhes:', {
+          message: err.message,
+          name: err.name,
+          stack: err.stack
+        });
+        setError(`Erro ao carregar editor: ${err.message}. Verifique se o pacote @ckeditor/ckeditor5-build-classic está instalado (npm install @ckeditor/ckeditor5-build-classic)`);
         setIsLoading(false);
       }
     };
 
     // Aguardar um pouco para garantir que o DOM está montado
+    // Usar requestAnimationFrame para garantir que o DOM está renderizado
     const timer = setTimeout(() => {
-      if (containerRef.current) {
-        loadEditor();
-      }
-    }, 100);
+      requestAnimationFrame(() => {
+        if (containerRef.current && mounted) {
+          loadEditor();
+        } else {
+          console.error('Container não encontrado após timeout', { 
+            containerExists: !!containerRef.current,
+            mounted 
+          });
+          setError('Erro: Container do editor não encontrado. Verifique se o modal está aberto.');
+          setIsLoading(false);
+        }
+      });
+    }, 200);
 
     return () => {
       clearTimeout(timer);
@@ -141,13 +177,13 @@ const CKEditorWrapper = ({ value, onChange, disabled, placeholder, editorRef: ex
 
   // Atualizar valor quando mudar externamente
   useEffect(() => {
-    if (editorInstanceRef.current && value !== undefined) {
+    if (editorInstanceRef.current && value !== undefined && isOpen) {
       const currentData = editorInstanceRef.current.getData();
       if (value !== currentData) {
         editorInstanceRef.current.setData(value || '');
       }
     }
-  }, [value]);
+  }, [value, isOpen]);
 
   // Atualizar estado disabled
   useEffect(() => {
@@ -183,8 +219,8 @@ const CKEditorWrapper = ({ value, onChange, disabled, placeholder, editorRef: ex
   }
 
   return (
-    <div className="ckeditor-wrapper border border-gray-300 rounded-md overflow-hidden">
-      <div ref={containerRef}></div>
+    <div className="ckeditor-wrapper border border-gray-300 rounded-md overflow-hidden" style={{ minHeight: '400px' }}>
+      <div ref={containerRef} style={{ minHeight: '400px' }}></div>
     </div>
   );
 };
