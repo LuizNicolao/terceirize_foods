@@ -294,6 +294,14 @@ const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = fal
         newErrors[`${index}-aval_sensorial`] = 'Avaliação sensorial é obrigatória';
         hasErrors = true;
       }
+      
+      // Validar temperatura (obrigatória apenas para produtos do grupo Frios)
+      const grupoNome = produto.grupo_nome || '';
+      const isGrupoFrios = grupoNome.toLowerCase() === 'frios';
+      if (isGrupoFrios && (!produto.temperatura || produto.temperatura.trim() === '')) {
+        newErrors[`${index}-temperatura`] = 'Temperatura é obrigatória para produtos do grupo Frios';
+        hasErrors = true;
+      }
     });
 
     setErrors(newErrors);
@@ -536,7 +544,10 @@ const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = fal
                     </th>
                   </tr>
                   <tr className="bg-gray-50">
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Temp. (°C)</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                      Temp. (°C)
+                      <span className="text-red-500 ml-1" title="Obrigatório apenas para produtos do grupo Frios">*</span>
+                    </th>
                     <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Aval. Sensorial *</th>
                     <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Tam. Lote</th>
                     <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">NQA</th>
@@ -548,13 +559,28 @@ const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = fal
                   {/* Linha 2: Avaliação e Resultado - Dados */}
                   <tr className="bg-gray-50 hover:bg-gray-100">
                     <td className="px-4 py-3 whitespace-nowrap">
-                      <Input
-                        type="number"
-                        value={produto.temperatura || ''}
-                        onChange={(e) => handleFieldChange(index, 'temperatura', e.target.value)}
-                        placeholder="°C"
-                        className="w-20 text-sm"
-                      />
+                      <div>
+                        <Input
+                          type="number"
+                          value={produto.temperatura || ''}
+                          onChange={(e) => {
+                            handleFieldChange(index, 'temperatura', e.target.value);
+                            // Remover erro quando preencher
+                            if (errors[`${index}-temperatura`]) {
+                              const newErrors = { ...errors };
+                              delete newErrors[`${index}-temperatura`];
+                              setErrors(newErrors);
+                            }
+                          }}
+                          placeholder="°C"
+                          className={`w-20 text-sm ${errors[`${index}-temperatura`] ? 'border-red-500' : ''}`}
+                          disabled={viewMode}
+                          required={produto.grupo_nome && produto.grupo_nome.toLowerCase() === 'frios'}
+                        />
+                        {errors[`${index}-temperatura`] && (
+                          <p className="text-xs text-red-600 mt-1">{errors[`${index}-temperatura`]}</p>
+                        )}
+                      </div>
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       <div>

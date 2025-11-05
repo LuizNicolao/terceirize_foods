@@ -210,7 +210,7 @@ const RelatorioInspecaoModal = ({ isOpen, onClose, onSubmit, rir, viewMode, grup
     if (produtosTableRef.current && produtos.length > 0) {
       const isValid = produtosTableRef.current.validate();
       if (!isValid) {
-        toast.error('Por favor, preencha todos os campos obrigatórios: Fabricação, Lote, Validade e Avaliação Sensorial para todos os produtos');
+        toast.error('Por favor, preencha todos os campos obrigatórios: Fabricação, Lote, Validade, Avaliação Sensorial e Temperatura (para produtos do grupo Frios) para todos os produtos');
         return;
       }
     }
