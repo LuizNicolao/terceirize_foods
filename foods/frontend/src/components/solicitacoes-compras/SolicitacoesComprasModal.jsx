@@ -385,20 +385,17 @@ const SolicitacoesComprasModal = ({
               />
 
               {/* Pedidos Vinculados (se editando/visualizando) - ao lado de Solicitante */}
-              {solicitacao && solicitacao.pedidos_vinculados && solicitacao.pedidos_vinculados.length > 0 ? (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Pedidos Vinculados
-                  </label>
-                  <div className="bg-gray-50 border border-gray-200 rounded-md p-3 min-h-[42px] flex items-center">
-                    <span className="text-sm text-gray-900">
-                      {solicitacao.pedidos_vinculados.join(', ')}
-                    </span>
-                  </div>
-                </div>
-              ) : solicitacao ? (
-                <div></div>
-              ) : null}
+              {solicitacao && (
+                <Input
+                  label="Pedidos Vinculados"
+                  value={solicitacao.pedidos_vinculados && solicitacao.pedidos_vinculados.length > 0 
+                    ? solicitacao.pedidos_vinculados.join(', ') 
+                    : '-'}
+                  disabled={true}
+                  className="bg-gray-50"
+                  readOnly
+                />
+              )}
             </div>
 
             {/* Observações Gerais */}
