@@ -76,6 +76,11 @@ const PedidosComprasItensTable = ({
             const valorTotal = quantidadePedido * valorUnitario;
             const isSaldoInsuficiente = quantidadePedido > saldoDisponivel;
             const isSelected = item.selected || false;
+            // Item já vinculado ao pedido (tem quantidade ou valor unitário, indicando que já está no pedido)
+            const isItemVinculado = quantidadePedido > 0 || (item.selected && parseFloat(item.valor_unitario || 0) > 0);
+            // Sempre permitir desmarcar quando está selecionado (para desvincular/remover)
+            // Impedir marcar apenas quando não está selecionado, não é item vinculado E saldo <= 0
+            const isDisabled = !isSelected && !isItemVinculado && saldoDisponivel <= 0;
 
             return (
               <tr 
@@ -88,10 +93,21 @@ const PedidosComprasItensTable = ({
                       type="checkbox"
                       checked={isSelected}
                       onChange={(e) => {
-                        onItemChange(index, { ...item, selected: e.target.checked });
+                        // Se está desmarcando, zerar quantidade e valor também
+                        if (!e.target.checked) {
+                          onItemChange(index, { 
+                            ...item, 
+                            selected: false,
+                            quantidade_pedido: 0,
+                            valor_unitario: 0
+                          });
+                        } else {
+                          onItemChange(index, { ...item, selected: true });
+                        }
                       }}
-                      disabled={saldoDisponivel <= 0}
-                      className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                      disabled={isDisabled}
+                      className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                      title={isDisabled ? 'Saldo insuficiente para adicionar este item' : isSelected ? 'Clique para desvincular do pedido' : 'Clique para incluir no pedido'}
                     />
                   </td>
                 )}
