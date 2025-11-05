@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { FaSave, FaTimes, FaEye, FaEdit } from 'react-icons/fa';
 import toast from 'react-hot-toast';
@@ -34,6 +34,7 @@ const RelatorioInspecaoModal = ({ isOpen, onClose, onSubmit, rir, viewMode, grup
   const [loadingPedidos, setLoadingPedidos] = useState(false);
   const [checklist, setChecklist] = useState([]);
   const [produtos, setProdutos] = useState([]);
+  const produtosTableRef = useRef(null);
 
   // Carregar dados quando modal abrir
   useEffect(() => {
@@ -45,8 +46,16 @@ const RelatorioInspecaoModal = ({ isOpen, onClose, onSubmit, rir, viewMode, grup
         reset();
         setValue('data_inspecao', new Date().toISOString().split('T')[0]);
         setValue('hora_inspecao', new Date().toTimeString().slice(0, 5));
-        setChecklist([]);
         setProdutos([]);
+        // Inicializar checklist com um item vazio
+        setChecklist([{
+          tipo_transporte: '',
+          tipo_produto: '',
+          isento_material: '',
+          condicoes_caminhao: '',
+          acondicionamento: '',
+          condicoes_embalagem: ''
+        }]);
       }
       loadInitialData();
     }
@@ -65,7 +74,26 @@ const RelatorioInspecaoModal = ({ isOpen, onClose, onSubmit, rir, viewMode, grup
       
       // Carregar checklist e produtos
       if (data.checklist_json) {
-        setChecklist(Array.isArray(data.checklist_json) ? data.checklist_json : []);
+        const checklistData = Array.isArray(data.checklist_json) ? data.checklist_json : [];
+        // Se o checklist estiver vazio, inicializar com um item vazio
+        setChecklist(checklistData.length > 0 ? checklistData : [{
+          tipo_transporte: '',
+          tipo_produto: '',
+          isento_material: '',
+          condicoes_caminhao: '',
+          acondicionamento: '',
+          condicoes_embalagem: ''
+        }]);
+      } else {
+        // Se não houver checklist, inicializar com um item vazio
+        setChecklist([{
+          tipo_transporte: '',
+          tipo_produto: '',
+          isento_material: '',
+          condicoes_caminhao: '',
+          acondicionamento: '',
+          condicoes_embalagem: ''
+        }]);
       }
       if (data.produtos_json) {
         setProdutos(Array.isArray(data.produtos_json) ? data.produtos_json : []);
@@ -167,20 +195,6 @@ const RelatorioInspecaoModal = ({ isOpen, onClose, onSubmit, rir, viewMode, grup
     setProdutos(produtosData);
   };
 
-  const handleAddChecklistItem = () => {
-    setChecklist([...checklist, {
-      tipo_transporte: '',
-      tipo_produto: '',
-      isento_material: '',
-      condicoes_caminhao: '',
-      acondicionamento: '',
-      condicoes_embalagem: ''
-    }]);
-  };
-
-  const handleRemoveChecklistItem = (index) => {
-    setChecklist(checklist.filter((_, i) => i !== index));
-  };
 
   const handleRemoveProduto = (index) => {
     setProdutos(produtos.filter((_, i) => i !== index));
@@ -190,6 +204,15 @@ const RelatorioInspecaoModal = ({ isOpen, onClose, onSubmit, rir, viewMode, grup
     if (!data.numero_nota_fiscal || !data.fornecedor) {
       toast.error('Campos obrigatórios: Número da Nota Fiscal e Fornecedor');
       return;
+    }
+
+    // Validar campos obrigatórios dos produtos
+    if (produtosTableRef.current && produtos.length > 0) {
+      const isValid = produtosTableRef.current.validate();
+      if (!isValid) {
+        toast.error('Por favor, preencha todos os campos obrigatórios: Fabricação, Lote e Validade para todos os produtos');
+        return;
+      }
     }
 
     setSaving(true);
@@ -360,13 +383,12 @@ const RelatorioInspecaoModal = ({ isOpen, onClose, onSubmit, rir, viewMode, grup
             checklist={checklist}
             grupos={gruposData || grupos || []}
             onChange={handleChecklistChange}
-            onAdd={handleAddChecklistItem}
-            onRemove={handleRemoveChecklistItem}
             viewMode={isViewMode}
           />
 
           {/* SEÇÃO C: Avaliação dos Produtos */}
           <ProdutosTable
+            ref={produtosTableRef}
             produtos={produtos}
             onChange={handleProdutosChange}
             onRemove={handleRemoveProduto}

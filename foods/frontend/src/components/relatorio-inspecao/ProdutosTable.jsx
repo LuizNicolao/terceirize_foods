@@ -1,53 +1,80 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useImperativeHandle, forwardRef } from 'react';
 import { FaTrash } from 'react-icons/fa';
 import { Input } from '../ui';
 import RelatorioInspecaoService from '../../services/relatorioInspecao';
 import toast from 'react-hot-toast';
 
-const ProdutosTable = ({ produtos, onChange, onRemove, viewMode = false }) => {
+// Funções utilitárias para manipulação de datas
+const formatDateBR = (dateISO) => {
+  if (!dateISO) return '';
+  const date = new Date(dateISO);
+  return date.toLocaleDateString('pt-BR');
+};
+
+const parseDateBR = (dateBR) => {
+  if (!dateBR) return null;
+  const [dia, mes, ano] = dateBR.split('/');
+  return `${ano}-${mes}-${dia}`;
+};
+
+const formatDateISO = (dateBR) => {
+  if (!dateBR) return '';
+  const parsed = parseDateBR(dateBR);
+  return parsed ? new Date(parsed).toISOString().split('T')[0] : '';
+};
+
+const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = false }, ref) => {
   const [produtosAtualizados, setProdutosAtualizados] = useState(produtos || []);
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     setProdutosAtualizados(produtos || []);
   }, [produtos]);
 
-  const formatDateBR = (dateISO) => {
-    if (!dateISO) return '';
-    const date = new Date(dateISO);
-    return date.toLocaleDateString('pt-BR');
-  };
-
-  const parseDateBR = (dateBR) => {
-    if (!dateBR) return null;
-    const [dia, mes, ano] = dateBR.split('/');
-    return `${ano}-${mes}-${dia}`;
-  };
-
-  const formatDateISO = (dateBR) => {
-    if (!dateBR) return '';
-    const parsed = parseDateBR(dateBR);
-    return parsed ? new Date(parsed).toISOString().split('T')[0] : '';
-  };
-
   // Calcular controle de validade (%)
+  // Regra: percentual_consumido = (1 - (dias_restantes / prazo_total)) * 100
+  // Se > 30% → Campo vermelho (produto próximo ao vencimento)
+  // Se ≤ 30% → Campo verde (produto OK)
   const calcularControleValidade = useCallback((fabricacao, validade) => {
     if (!fabricacao || !validade) return null;
 
     try {
-      const fabricacaoDate = new Date(formatDateISO(fabricacao));
-      const validadeDate = new Date(formatDateISO(validade));
+      // Converter datas para formato ISO se necessário
+      // Input type="date" retorna formato ISO (YYYY-MM-DD)
+      // Se contém '/', é formato BR (DD/MM/YYYY) e precisa converter
+      let fabricacaoISO = fabricacao.includes('/') ? formatDateISO(fabricacao) : fabricacao;
+      let validadeISO = validade.includes('/') ? formatDateISO(validade) : validade;
+      
+      // Criar objetos Date e resetar horas para meia-noite (evitar problemas de timezone)
+      const fabricacaoDate = new Date(fabricacaoISO);
+      fabricacaoDate.setHours(0, 0, 0, 0);
+      
+      const validadeDate = new Date(validadeISO);
+      validadeDate.setHours(0, 0, 0, 0);
+      
       const hoje = new Date();
+      hoje.setHours(0, 0, 0, 0);
 
       if (isNaN(fabricacaoDate.getTime()) || isNaN(validadeDate.getTime())) return null;
 
+      // Calcular prazo_total = dias(validade - fabricacao)
       const prazoTotal = Math.ceil((validadeDate - fabricacaoDate) / (1000 * 60 * 60 * 24));
+      
+      // Calcular dias_restantes = dias(validade - hoje)
       const diasRestantes = Math.ceil((validadeDate - hoje) / (1000 * 60 * 60 * 24));
       
+      // Validar se prazo_total é válido
       if (prazoTotal <= 0) return null;
 
-      const percentualConsumido = ((1 - (diasRestantes / prazoTotal)) * 100).toFixed(2);
-      return parseFloat(percentualConsumido);
+      // Calcular percentual_consumido = (1 - (dias_restantes / prazo_total)) * 100
+      const percentualConsumido = ((1 - (diasRestantes / prazoTotal)) * 100);
+      
+      // Limitar entre 0 e 100% para evitar valores negativos ou superiores a 100%
+      const percentualLimitado = Math.max(0, Math.min(100, percentualConsumido));
+      
+      return parseFloat(percentualLimitado.toFixed(2));
     } catch (error) {
+      console.error('Erro ao calcular controle de validade:', error);
       return null;
     }
   }, []);
@@ -175,6 +202,35 @@ const ProdutosTable = ({ produtos, onChange, onRemove, viewMode = false }) => {
       : 'bg-red-100 text-red-800 font-semibold';
   };
 
+  // Validar campos obrigatórios
+  const validateProdutos = useCallback(() => {
+    const newErrors = {};
+    let hasErrors = false;
+
+    produtosAtualizados.forEach((produto, index) => {
+      if (!produto.fabricacao && !produto.fabricacaoBR) {
+        newErrors[`${index}-fabricacao`] = 'Fabricação é obrigatória';
+        hasErrors = true;
+      }
+      if (!produto.lote || produto.lote.trim() === '') {
+        newErrors[`${index}-lote`] = 'Lote é obrigatório';
+        hasErrors = true;
+      }
+      if (!produto.validade && !produto.validadeBR) {
+        newErrors[`${index}-validade`] = 'Validade é obrigatória';
+        hasErrors = true;
+      }
+    });
+
+    setErrors(newErrors);
+    return !hasErrors;
+  }, [produtosAtualizados]);
+
+  // Expor função de validação via ref
+  useImperativeHandle(ref, () => ({
+    validate: validateProdutos
+  }), [validateProdutos]);
+
   if (produtosAtualizados.length === 0) {
     return (
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center text-gray-500">
@@ -202,9 +258,9 @@ const ProdutosTable = ({ produtos, onChange, onRemove, viewMode = false }) => {
               <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Produto</th>
               <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Unidade</th>
               <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Qtd. Pedido</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Fabricação</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Lote</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Validade</th>
+              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Fabricação *</th>
+              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Lote *</th>
+              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Validade *</th>
               <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Ctrl. Val. (%)</th>
             </tr>
           </thead>
@@ -232,37 +288,78 @@ const ProdutosTable = ({ produtos, onChange, onRemove, viewMode = false }) => {
                       {produto.qtde || produto.quantidade_pedido || '-'}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
-                      <Input
-                        type="date"
-                        value={produto.fabricacao || formatDateISO(produto.fabricacaoBR) || ''}
-                        onChange={(e) => {
-                          const dateBR = formatDateBR(e.target.value);
-                          handleFieldChange(index, 'fabricacaoBR', dateBR);
-                          handleFieldChange(index, 'fabricacao', e.target.value);
-                        }}
-                        className="w-32 text-sm"
-                      />
+                      <div>
+                        <Input
+                          type="date"
+                          value={produto.fabricacao || formatDateISO(produto.fabricacaoBR) || ''}
+                          onChange={(e) => {
+                            const dateBR = formatDateBR(e.target.value);
+                            handleFieldChange(index, 'fabricacaoBR', dateBR);
+                            handleFieldChange(index, 'fabricacao', e.target.value);
+                            // Remover erro quando preencher
+                            if (errors[`${index}-fabricacao`]) {
+                              const newErrors = { ...errors };
+                              delete newErrors[`${index}-fabricacao`];
+                              setErrors(newErrors);
+                            }
+                          }}
+                          className={`w-32 text-sm ${errors[`${index}-fabricacao`] ? 'border-red-500' : ''}`}
+                          disabled={viewMode}
+                          required
+                        />
+                        {errors[`${index}-fabricacao`] && (
+                          <p className="text-xs text-red-600 mt-1">{errors[`${index}-fabricacao`]}</p>
+                        )}
+                      </div>
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
-                      <Input
-                        type="text"
-                        value={produto.lote || ''}
-                        onChange={(e) => handleFieldChange(index, 'lote', e.target.value)}
-                        placeholder="Lote"
-                        className="w-24 text-sm"
-                      />
+                      <div>
+                        <Input
+                          type="text"
+                          value={produto.lote || ''}
+                          onChange={(e) => {
+                            handleFieldChange(index, 'lote', e.target.value);
+                            // Remover erro quando preencher
+                            if (errors[`${index}-lote`]) {
+                              const newErrors = { ...errors };
+                              delete newErrors[`${index}-lote`];
+                              setErrors(newErrors);
+                            }
+                          }}
+                          placeholder="Lote"
+                          className={`w-24 text-sm ${errors[`${index}-lote`] ? 'border-red-500' : ''}`}
+                          disabled={viewMode}
+                          required
+                        />
+                        {errors[`${index}-lote`] && (
+                          <p className="text-xs text-red-600 mt-1">{errors[`${index}-lote`]}</p>
+                        )}
+                      </div>
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
-                      <Input
-                        type="date"
-                        value={produto.validade || formatDateISO(produto.validadeBR) || ''}
-                        onChange={(e) => {
-                          const dateBR = formatDateBR(e.target.value);
-                          handleFieldChange(index, 'validadeBR', dateBR);
-                          handleFieldChange(index, 'validade', e.target.value);
-                        }}
-                        className="w-32 text-sm"
-                      />
+                      <div>
+                        <Input
+                          type="date"
+                          value={produto.validade || formatDateISO(produto.validadeBR) || ''}
+                          onChange={(e) => {
+                            const dateBR = formatDateBR(e.target.value);
+                            handleFieldChange(index, 'validadeBR', dateBR);
+                            handleFieldChange(index, 'validade', e.target.value);
+                            // Remover erro quando preencher
+                            if (errors[`${index}-validade`]) {
+                              const newErrors = { ...errors };
+                              delete newErrors[`${index}-validade`];
+                              setErrors(newErrors);
+                            }
+                          }}
+                          className={`w-32 text-sm ${errors[`${index}-validade`] ? 'border-red-500' : ''}`}
+                          disabled={viewMode}
+                          required
+                        />
+                        {errors[`${index}-validade`] && (
+                          <p className="text-xs text-red-600 mt-1">{errors[`${index}-validade`]}</p>
+                        )}
+                      </div>
                     </td>
                     <td className={`px-4 py-3 whitespace-nowrap text-sm text-center ${getValidadeColor(controleValidade)}`}>
                       {controleValidade !== null && controleValidade !== undefined 
@@ -374,6 +471,10 @@ const ProdutosTable = ({ produtos, onChange, onRemove, viewMode = false }) => {
     </div>
   );
 };
+
+});
+
+ProdutosTable.displayName = 'ProdutosTable';
 
 export default ProdutosTable;
 
