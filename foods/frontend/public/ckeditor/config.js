@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2025, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -28,8 +28,11 @@ CKEDITOR.editorConfig = function( config ) {
 	// Altura padrão
 	config.height = 400;
 	
-	// Remover barra de status e plugins que geram avisos
-	config.removePlugins = 'elementspath,exportpdf,uploadimage';
+	// Remover barra de status
+	config.removePlugins = 'elementspath';
+	
+	// Desabilitar plugins que geram avisos (não são necessários)
+	config.removePlugins = config.removePlugins ? config.removePlugins + ',exportpdf,uploadimage' : 'elementspath,exportpdf,uploadimage';
 	
 	// Permitir upload de imagens (se necessário no futuro)
 	config.filebrowserUploadUrl = '/api/upload';
