@@ -154,6 +154,7 @@ class PdfTemplatesListController {
       const totalPages = Math.ceil(totalItems / limit);
       
       // Buscar registros
+      // Nota: LIMIT e OFFSET devem ser interpolados diretamente, não como placeholders
       const query = `
         SELECT 
           id, nome, descricao, tela_vinculada, html_template, css_styles,
@@ -161,10 +162,10 @@ class PdfTemplatesListController {
         FROM pdf_templates
         WHERE ${whereClause}
         ORDER BY criado_em DESC
-        LIMIT ? OFFSET ?
+        LIMIT ${parseInt(limit)} OFFSET ${parseInt(offset)}
       `;
       
-      const templates = await executeQuery(query, [...params, limit, offset]);
+      const templates = await executeQuery(query, params);
       
       // Processar variaveis_disponiveis (JSON para array)
       const templatesProcessados = templates.map(template => ({
