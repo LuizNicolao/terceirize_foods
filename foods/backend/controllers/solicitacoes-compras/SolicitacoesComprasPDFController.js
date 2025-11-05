@@ -19,18 +19,20 @@ class SolicitacoesComprasPDFController {
         sc.id,
         sc.numero_solicitacao,
         sc.data_entrega_cd,
+        sc.data_documento,
         sc.semana_abastecimento,
         sc.justificativa,
         sc.observacoes,
         sc.status,
         sc.criado_em,
         sc.unidade,
+        sc.solicitante,
         f.filial as filial_nome,
         f.codigo_filial as filial_codigo,
         u.nome as usuario_nome
       FROM solicitacoes_compras sc
       LEFT JOIN filiais f ON sc.filial_id = f.id
-      LEFT JOIN usuarios u ON sc.usuario_id = u.id
+      LEFT JOIN usuarios u ON sc.usuario_id = u.id OR sc.criado_por = u.id
       WHERE sc.id = ?`,
       [id]
     );
@@ -45,6 +47,7 @@ class SolicitacoesComprasPDFController {
         sci.id,
         sci.produto_id,
         sci.quantidade,
+        sci.observacao,
         sci.unidade_medida_id,
         pg.codigo as produto_codigo,
         pg.nome as produto_nome,
@@ -57,6 +60,19 @@ class SolicitacoesComprasPDFController {
       ORDER BY pg.nome`,
       [id]
     );
+
+    // Buscar números de pedidos vinculados à solicitação (únicos)
+    const pedidosVinculados = await executeQuery(
+      `SELECT DISTINCT pc.numero_pedido
+       FROM pedidos_compras pc
+       INNER JOIN pedido_compras_itens pci ON pc.id = pci.pedido_id
+       INNER JOIN solicitacao_compras_itens sci ON pci.solicitacao_item_id = sci.id
+       WHERE sci.solicitacao_id = ?
+       ORDER BY pc.numero_pedido`,
+      [id]
+    );
+
+    const numerosPedidos = pedidosVinculados.map(p => p.numero_pedido);
 
     // Buscar vínculos com pedidos para calcular quantidade_utilizada e saldo_disponivel
     const itensComPedidos = await Promise.all(
@@ -99,11 +115,10 @@ class SolicitacoesComprasPDFController {
       })
     );
 
-    // Gerar PDF usando PDFKit
-    // 0,5 cm = 14.17 pontos (aproximadamente 14 pontos)
+    // Gerar PDF usando PDFKit - Layout adaptado do modal
     const PDFDocument = require('pdfkit');
     const doc = new PDFDocument({ 
-      margin: 14,
+      margin: 50,
       size: 'A4'
     });
 
@@ -111,34 +126,26 @@ class SolicitacoesComprasPDFController {
     res.setHeader('Content-Disposition', `inline; filename=solicitacao_${solicitacao.numero_solicitacao}.pdf`);
     doc.pipe(res);
 
-    // Função auxiliar para desenhar caixa com borda
-    const drawBox = (x, y, width, height, padding = 10) => {
-      doc.rect(x, y, width, height).stroke();
-      return { x: x + padding, y: y + padding, width: width - (padding * 2), height: height - (padding * 2) };
-    };
-
     // Função auxiliar para desenhar badge de status
     const drawStatusBadge = (x, y, status) => {
       const statusText = status?.toUpperCase() || '-';
       const statusWidth = doc.widthOfString(statusText, { font: 'Helvetica-Bold', fontSize: 9 }) + 10;
       const statusHeight = 15;
       
-      // Cor de fundo baseada no status
-      let bgColor = '#E5E7EB'; // cinza padrão
-      let textColor = '#374151'; // cinza escuro
+      let bgColor = '#E5E7EB';
+      let textColor = '#374151';
       
       if (status === 'parcial') {
-        bgColor = '#FED7AA'; // laranja claro
-        textColor = '#C2410C'; // laranja escuro
+        bgColor = '#FED7AA';
+        textColor = '#C2410C';
       } else if (status === 'finalizado') {
-        bgColor = '#BBF7D0'; // verde claro
-        textColor = '#166534'; // verde escuro
+        bgColor = '#BBF7D0';
+        textColor = '#166534';
       } else if (status === 'aberto') {
-        bgColor = '#DBEAFE'; // azul claro
-        textColor = '#1E40AF'; // azul escuro
+        bgColor = '#DBEAFE';
+        textColor = '#1E40AF';
       }
       
-      // Desenhar retângulo arredondado
       doc.roundedRect(x, y, statusWidth, statusHeight, 4)
          .fillColor(bgColor)
          .fill()
@@ -147,265 +154,210 @@ class SolicitacoesComprasPDFController {
       doc.fontSize(9).font('Helvetica-Bold')
          .text(statusText, x + 5, y + 2, { width: statusWidth - 10, align: 'center' });
       
-      doc.fillColor('black'); // Resetar cor
+      doc.fillColor('black');
       return { width: statusWidth, height: statusHeight };
     };
 
-    // Título principal (reduzido de 24 para 18)
-    doc.fontSize(18).font('Helvetica-Bold').fillColor('black');
-    const titleY = 14;
-    doc.text('Visualizar Solicitação de Compra', 14, titleY);
-    
-    // Linha embaixo do título
-    const titleWidth = doc.widthOfString('Visualizar Solicitação de Compra', { font: 'Helvetica-Bold', fontSize: 18 });
-    doc.moveTo(14, titleY + 18).lineTo(14 + titleWidth, titleY + 18).stroke();
-    
-    doc.y = titleY + 25;
-    doc.moveDown(1);
+    // Título principal
+    doc.fontSize(20).font('Helvetica-Bold').fillColor('black');
+    doc.text('Visualizar Solicitação', 50, 50, { align: 'center' });
+    doc.moveDown(1.5);
 
-    const startY = doc.y;
-    const boxWidth = 240;
-    const boxHeight = 100;
-    const spacing = 10; // Reduzido de 20 para 10
+    // Cabeçalho da Solicitação (similar ao modal)
+    let headerY = doc.y;
+    const leftMargin = 50;
+    const rightMargin = 50;
+    const pageWidth = 595; // A4 width
+    const usableWidth = pageWidth - leftMargin - rightMargin;
+    const colWidth = usableWidth / 2;
+    const spacing = 20;
+    const lineHeight = 25;
+    let currentY = headerY;
+    const headerStartY = currentY;
 
-    // Caixa: Informações da Solicitação (esquerda)
-    const infoBox = drawBox(14, startY, boxWidth, boxHeight);
-    doc.fontSize(12).font('Helvetica-Bold').fillColor('black');
-    doc.text('Informações da Solicitação', infoBox.x, infoBox.y);
+    // Estimar altura do cabeçalho (vamos calcular depois e redesenhar)
+    let estimatedHeaderHeight = 200;
+    if (solicitacao.observacoes) {
+      estimatedHeaderHeight = 250; // Mais espaço para observações
+    }
+
+    // Desenhar fundo cinza claro para o cabeçalho (simular bg-gray-50)
+    doc.rect(leftMargin, headerStartY - 10, usableWidth, estimatedHeaderHeight)
+       .fillColor('#F9FAFB')
+       .fill()
+       .fillColor('black');
+
+    // Título da seção
+    doc.fontSize(14).font('Helvetica-Bold').fillColor('black');
+    doc.text('Cabeçalho da Solicitação', leftMargin + 15, currentY + 5);
+    currentY += 30;
+
+    // Linha 1: Filial | Data de Entrega CD
+    doc.fontSize(10).font('Helvetica-Bold');
+    doc.text('Filial:', leftMargin + 15, currentY);
+    doc.font('Helvetica').text(solicitacao.filial_nome || solicitacao.unidade || '-', leftMargin + 15, currentY + 13);
     
-    let infoContentY = infoBox.y + 20;
-    doc.fontSize(10);
-    
-    // Número
-    doc.font('Helvetica-Bold').text('Número:', infoBox.x, infoContentY);
-    doc.font('Helvetica').text(solicitacao.numero_solicitacao || '-', infoBox.x + 60, infoContentY);
-    infoContentY += 15;
-    
-    // Data de Criação
-    const dataCriacao = solicitacao.criado_em 
-      ? new Date(solicitacao.criado_em).toLocaleString('pt-BR', { 
-          day: '2-digit', 
-          month: '2-digit', 
-          year: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit'
-        })
-      : '-';
-    doc.font('Helvetica-Bold').text('Data de Criação:', infoBox.x, infoContentY);
-    doc.font('Helvetica').text(dataCriacao, infoBox.x + 100, infoContentY);
-    infoContentY += 15;
-    
-    // Data Entrega CD
+    doc.font('Helvetica-Bold');
+    doc.text('Data de Entrega CD:', leftMargin + colWidth + spacing, currentY);
     const dataEntrega = solicitacao.data_entrega_cd
       ? new Date(solicitacao.data_entrega_cd).toLocaleDateString('pt-BR')
       : '-';
-    doc.font('Helvetica-Bold').text('Data Entrega CD:', infoBox.x, infoContentY);
-    doc.font('Helvetica').text(dataEntrega, infoBox.x + 110, infoContentY);
-    infoContentY += 15;
-    
-    // Status com badge
-    doc.font('Helvetica-Bold').text('Status:', infoBox.x, infoContentY);
-    const statusLabel = solicitacao.status?.toLowerCase() || '';
-    drawStatusBadge(infoBox.x + 50, infoContentY - 2, statusLabel);
+    doc.font('Helvetica').text(dataEntrega, leftMargin + colWidth + spacing, currentY + 13);
+    currentY += lineHeight * 2;
 
-    // Caixa: Filial (direita)
-    const filialBox = drawBox(14 + boxWidth + spacing, startY, boxWidth, boxHeight);
-    doc.fontSize(12).font('Helvetica-Bold').fillColor('black');
-    doc.text('Filial', filialBox.x, filialBox.y);
+    // Linha 2: Semana de Abastecimento | Justificativa
+    doc.fontSize(10).font('Helvetica-Bold');
+    doc.text('Semana de Abastecimento:', leftMargin + 15, currentY);
+    doc.font('Helvetica').text(solicitacao.semana_abastecimento || '-', leftMargin + 15, currentY + 13);
     
-    let filialContentY = filialBox.y + 20;
-    doc.fontSize(10);
-    
-    // Nome
-    doc.font('Helvetica-Bold').text('Nome:', filialBox.x, filialContentY);
-    doc.font('Helvetica').text(solicitacao.filial_nome || solicitacao.unidade || '-', filialBox.x + 50, filialContentY);
-    filialContentY += 15;
-    
-    // Código
-    doc.font('Helvetica-Bold').text('Código:', filialBox.x, filialContentY);
-    doc.font('Helvetica').text(solicitacao.filial_codigo || '-', filialBox.x + 50, filialContentY);
+    doc.font('Helvetica-Bold');
+    doc.text('Justificativa:', leftMargin + colWidth + spacing, currentY);
+    doc.font('Helvetica').text(solicitacao.justificativa || '-', leftMargin + colWidth + spacing, currentY + 13);
+    currentY += lineHeight * 2;
 
-    // Caixa: Justificativa (abaixo das informações)
-    const justificativaBox = drawBox(14, startY + boxHeight + spacing, boxWidth * 2 + spacing, 60);
-    doc.fontSize(12).font('Helvetica-Bold').fillColor('black');
-    doc.text('Justificativa', justificativaBox.x, justificativaBox.y);
+    // Linha 3: Data do Documento | Número da Solicitação
+    doc.fontSize(10).font('Helvetica-Bold');
+    doc.text('Data do Documento:', leftMargin + 15, currentY);
+    const dataDocumento = solicitacao.data_documento
+      ? new Date(solicitacao.data_documento).toLocaleDateString('pt-BR')
+      : (solicitacao.criado_em
+          ? new Date(solicitacao.criado_em).toLocaleDateString('pt-BR')
+          : '-');
+    doc.font('Helvetica').text(dataDocumento, leftMargin + 15, currentY + 13);
     
-    doc.fontSize(10).font('Helvetica');
-    doc.text(`Justificativa: ${solicitacao.justificativa || '-'}`, justificativaBox.x, justificativaBox.y + 20);
+    doc.font('Helvetica-Bold');
+    doc.text('Número da Solicitação:', leftMargin + colWidth + spacing, currentY);
+    doc.font('Helvetica').text(solicitacao.numero_solicitacao || '-', leftMargin + colWidth + spacing, currentY + 13);
+    currentY += lineHeight * 2;
 
-    doc.y = startY + boxHeight + spacing + 60 + 10; // Reduzido de +20 para +10
+    // Linha 4: Solicitante | Pedidos Vinculados
+    doc.fontSize(10).font('Helvetica-Bold');
+    doc.text('Solicitante:', leftMargin + 15, currentY);
+    doc.font('Helvetica').text(solicitacao.usuario_nome || solicitacao.solicitante || '-', leftMargin + 15, currentY + 13);
+    
+    doc.font('Helvetica-Bold');
+    doc.text('Pedidos Vinculados:', leftMargin + colWidth + spacing, currentY);
+    const pedidosText = numerosPedidos.length > 0 ? numerosPedidos.join(', ') : '-';
+    doc.font('Helvetica').text(pedidosText, leftMargin + colWidth + spacing, currentY + 13);
+    currentY += lineHeight * 2;
+
+    // Observações Gerais
+    if (solicitacao.observacoes) {
+      currentY += 10;
+      doc.fontSize(10).font('Helvetica-Bold');
+      doc.text('Observações Gerais:', leftMargin + 15, currentY);
+      currentY += 15;
+      const observacoesHeight = doc.heightOfString(solicitacao.observacoes, {
+        width: usableWidth - 30,
+        align: 'left'
+      });
+      doc.font('Helvetica').text(solicitacao.observacoes, leftMargin + 15, currentY, {
+        width: usableWidth - 30,
+        align: 'left'
+      });
+      currentY += observacoesHeight + 10;
+    } else {
+      currentY += 20;
+    }
+
+    doc.y = currentY + 20;
+    doc.moveDown(1);
 
     // Verificar se precisa de nova página antes da tabela
     if (doc.y > 750) {
       doc.addPage();
-      doc.y = 14;
+      doc.y = 50;
     }
 
-    // Tabela: Produtos Solicitados
+    // Produtos da Solicitação (similar ao modal)
     const produtosTitleY = doc.y;
-    doc.fontSize(12).font('Helvetica-Bold').fillColor('black');
-    doc.text(`Produtos Solicitados (${itensComPedidos.length})`, 14, produtosTitleY);
-    
-    const tableStartY = produtosTitleY + 15; // Reduzido de 20 para 15
-    const tableTop = tableStartY + 10;
-    const tableLeft = 14;
-    // Ajustar larguras para caber na página A4 (largura útil ~567 pontos com margem de 14)
-    const colWidths = {
-      codigo: 50,
-      produto: 160,
-      unidade: 35,
-      quantidade_solicitada: 55,
-      quantidade_utilizada: 55,
-      saldo_disponivel: 55,
-      status: 55,
-      pedidos: 100
-    };
-    const tableWidth = Object.values(colWidths).reduce((a, b) => a + b, 0); // Total: 565
+    doc.fontSize(14).font('Helvetica-Bold').fillColor('black');
+    doc.text('Produtos da Solicitação', leftMargin + 15, produtosTitleY);
+    doc.y = produtosTitleY + 25;
 
-    // Desenhar caixa ao redor da tabela (vai ser ajustada depois)
-    const produtosBox = drawBox(tableLeft - 10, tableStartY, tableWidth + 20, 750 - tableStartY);
+    // Tabela simples (similar ao modal)
+    const tableLeft = leftMargin + 15;
+    const tableTop = doc.y;
+    const tableWidth = usableWidth - 30;
+    
+    // Larguras das colunas (similar ao modal)
+    const colWidths = {
+      produto: tableWidth * 0.40,  // 40%
+      unidade: tableWidth * 0.15,  // 15%
+      quantidade: tableWidth * 0.25, // 25%
+      observacao: tableWidth * 0.20  // 20%
+    };
 
     // Cabeçalho da tabela
-    doc.fontSize(8).font('Helvetica-Bold');
+    doc.fontSize(10).font('Helvetica-Bold');
     let x = tableLeft;
-    doc.text('CÓDIGO', x, tableTop, { width: colWidths.codigo, align: 'center' });
-    x += colWidths.codigo;
-    doc.text('PRODUTO', x, tableTop, { width: colWidths.produto });
+    doc.text('Produto Genérico', x, tableTop, { width: colWidths.produto });
     x += colWidths.produto;
-    doc.text('UN', x, tableTop, { width: colWidths.unidade, align: 'center' });
+    doc.text('Unidade', x, tableTop, { width: colWidths.unidade, align: 'center' });
     x += colWidths.unidade;
-    
-    // QTD. SOLICITADA em duas linhas
-    doc.text('QTD.', x, tableTop, { width: colWidths.quantidade_solicitada, align: 'center' });
-    doc.text('SOLICITADA', x, tableTop + 8, { width: colWidths.quantidade_solicitada, align: 'center' });
-    x += colWidths.quantidade_solicitada;
-    
-    // QTD. UTILIZADA em duas linhas
-    doc.text('QTD.', x, tableTop, { width: colWidths.quantidade_utilizada, align: 'center' });
-    doc.text('UTILIZADA', x, tableTop + 8, { width: colWidths.quantidade_utilizada, align: 'center' });
-    x += colWidths.quantidade_utilizada;
-    
-    // SALDO DISP. em duas linhas
-    doc.text('SALDO', x, tableTop, { width: colWidths.saldo_disponivel, align: 'center' });
-    doc.text('DISP.', x, tableTop + 8, { width: colWidths.saldo_disponivel, align: 'center' });
-    x += colWidths.saldo_disponivel;
-    
-    doc.text('STATUS', x, tableTop, { width: colWidths.status, align: 'center' });
-    x += colWidths.status;
-    doc.text('PEDIDOS', x, tableTop, { width: colWidths.pedidos, align: 'center' });
+    doc.text('Quantidade', x, tableTop, { width: colWidths.quantidade, align: 'right' });
+    x += colWidths.quantidade;
+    doc.text('Observação', x, tableTop, { width: colWidths.observacao });
 
-    // Linha separadora (ajustada para cabeçalho em duas linhas)
-    doc.moveTo(tableLeft, tableTop + 18).lineTo(tableLeft + tableWidth, tableTop + 18).stroke();
+    // Linha separadora
+    doc.moveTo(tableLeft, tableTop + 15).lineTo(tableLeft + tableWidth, tableTop + 15).stroke();
 
     // Dados dos itens
-    doc.fontSize(8).font('Helvetica');
-    let currentY = tableTop + 23; // Ajustado para acomodar cabeçalho em duas linhas
-    const maxY = 750; // Altura máxima antes de quebrar página (ajustada para margem menor)
+    doc.fontSize(9).font('Helvetica');
+    let tableRowY = tableTop + 20;
+    const maxY = 750;
     let pageBreakOccurred = false;
     
     itensComPedidos.forEach((item, index) => {
-      // Verificar se precisa de nova página (deixar espaço para pelo menos uma linha + footer)
-      if (currentY > maxY) {
+      // Verificar se precisa de nova página
+      if (tableRowY > maxY) {
         pageBreakOccurred = true;
-        
-        // Fechar a caixa na página atual
-        const boxBottom = currentY - 5;
-        doc.moveTo(tableLeft - 10, boxBottom).lineTo(tableLeft + tableWidth + 10, boxBottom).stroke();
-        
-        // Nova página
         doc.addPage();
+        doc.y = 50;
+        tableRowY = doc.y;
         
-        // Desenhar caixa na nova página
-        const newTableStartY = 14;
-        const newTableTop = newTableStartY + 10;
-        drawBox(tableLeft - 10, newTableStartY, tableWidth + 20, 750 - newTableStartY);
+        // Reimprimir título
+        doc.fontSize(14).font('Helvetica-Bold');
+        doc.text('Produtos da Solicitação', leftMargin + 15, tableRowY - 25);
         
-        // Reimprimir título da seção
-        doc.fontSize(12).font('Helvetica-Bold').fillColor('black');
-        doc.text(`Produtos Solicitados (${itensComPedidos.length})`, tableLeft, newTableStartY - 15);
-        
-        // Reimprimir cabeçalho da tabela (em duas linhas)
-        currentY = newTableTop + 23;
-        doc.fontSize(8).font('Helvetica-Bold');
+        // Reimprimir cabeçalho
+        doc.fontSize(10).font('Helvetica-Bold');
         x = tableLeft;
-        doc.text('CÓDIGO', x, newTableTop, { width: colWidths.codigo, align: 'center' });
-        x += colWidths.codigo;
-        doc.text('PRODUTO', x, newTableTop, { width: colWidths.produto });
+        doc.text('Produto Genérico', x, tableRowY, { width: colWidths.produto });
         x += colWidths.produto;
-        doc.text('UN', x, newTableTop, { width: colWidths.unidade, align: 'center' });
+        doc.text('Unidade', x, tableRowY, { width: colWidths.unidade, align: 'center' });
         x += colWidths.unidade;
-        
-        // QTD. SOLICITADA em duas linhas
-        doc.text('QTD.', x, newTableTop, { width: colWidths.quantidade_solicitada, align: 'center' });
-        doc.text('SOLICITADA', x, newTableTop + 8, { width: colWidths.quantidade_solicitada, align: 'center' });
-        x += colWidths.quantidade_solicitada;
-        
-        // QTD. UTILIZADA em duas linhas
-        doc.text('QTD.', x, newTableTop, { width: colWidths.quantidade_utilizada, align: 'center' });
-        doc.text('UTILIZADA', x, newTableTop + 8, { width: colWidths.quantidade_utilizada, align: 'center' });
-        x += colWidths.quantidade_utilizada;
-        
-        // SALDO DISP. em duas linhas
-        doc.text('SALDO', x, newTableTop, { width: colWidths.saldo_disponivel, align: 'center' });
-        doc.text('DISP.', x, newTableTop + 8, { width: colWidths.saldo_disponivel, align: 'center' });
-        x += colWidths.saldo_disponivel;
-        
-        doc.text('STATUS', x, newTableTop, { width: colWidths.status, align: 'center' });
-        x += colWidths.status;
-        doc.text('PEDIDOS', x, newTableTop, { width: colWidths.pedidos, align: 'center' });
-        currentY = newTableTop + 23;
-        doc.moveTo(tableLeft, currentY - 5).lineTo(tableLeft + tableWidth, currentY - 5).stroke();
+        doc.text('Quantidade', x, tableRowY, { width: colWidths.quantidade, align: 'right' });
+        x += colWidths.quantidade;
+        doc.text('Observação', x, tableRowY, { width: colWidths.observacao });
+        doc.moveTo(tableLeft, tableRowY + 15).lineTo(tableLeft + tableWidth, tableRowY + 15).stroke();
+        tableRowY += 20;
       }
 
       x = tableLeft;
-      doc.text(item.produto_codigo || '-', x, currentY);
-      x += colWidths.codigo;
-      
-      // Produto (pode quebrar linha)
-      const produtoNome = item.produto_nome || '-';
-      const maxWidth = colWidths.produto - 5;
-      doc.text(produtoNome, x, currentY, { width: maxWidth, ellipsis: true });
+      // Produto (código + nome)
+      const produtoText = item.produto_codigo 
+        ? `${item.produto_codigo} - ${item.produto_nome || '-'}`
+        : (item.produto_nome || '-');
+      doc.font('Helvetica').text(produtoText, x, tableRowY, { width: colWidths.produto - 5 });
       x += colWidths.produto;
       
-      doc.text(item.unidade_simbolo || '-', x, currentY);
+      // Unidade
+      doc.text(item.unidade_simbolo || item.unidade_nome || '-', x, tableRowY, { width: colWidths.unidade, align: 'center' });
       x += colWidths.unidade;
       
-      doc.text(parseFloat(item.quantidade || 0).toFixed(2), x, currentY, { width: colWidths.quantidade_solicitada, align: 'right' });
-      x += colWidths.quantidade_solicitada;
+      // Quantidade
+      doc.text(parseFloat(item.quantidade || 0).toFixed(3), x, tableRowY, { width: colWidths.quantidade, align: 'right' });
+      x += colWidths.quantidade;
       
-      doc.text(parseFloat(item.quantidade_utilizada || 0).toFixed(2), x, currentY, { width: colWidths.quantidade_utilizada, align: 'right' });
-      x += colWidths.quantidade_utilizada;
-      
-      doc.text(parseFloat(item.saldo_disponivel || 0).toFixed(2), x, currentY, { width: colWidths.saldo_disponivel, align: 'right' });
-      x += colWidths.saldo_disponivel;
-      
-      // Status com badge
-      const itemStatus = item.status_item?.toLowerCase() || '';
-      const badgeInfo = drawStatusBadge(x, currentY - 2, itemStatus);
-      x += colWidths.status;
-      
-      // Pedidos vinculados
-      const pedidosText = item.pedidos_vinculados.length > 0
-        ? item.pedidos_vinculados.map(p => `${p.numero} (${p.quantidade.toFixed(3)})`).join(', ')
-        : '-';
-      doc.font('Helvetica').fontSize(8).fillColor('black');
-      doc.text(pedidosText, x, currentY, { width: colWidths.pedidos, ellipsis: true });
+      // Observação
+      doc.text(item.observacao || '-', x, tableRowY, { width: colWidths.observacao - 5 });
 
-      currentY += 15;
+      tableRowY += 18;
     });
 
-    // Fechar a caixa na última página (se não houve quebra de página, ajustar altura)
-    if (!pageBreakOccurred) {
-      // Ajustar altura da caixa para o conteúdo real
-      const tableEndY = currentY;
-      const tableHeight = tableEndY - tableStartY + 10;
-      // Redesenhar a caixa com altura correta
-      doc.rect(tableLeft - 10, tableStartY, tableWidth + 20, tableHeight).stroke();
-    } else {
-      // Se houve quebra, fechar a caixa na última página
-      const boxBottom = currentY - 5;
-      doc.moveTo(tableLeft - 10, boxBottom).lineTo(tableLeft + tableWidth + 10, boxBottom).stroke();
-    }
+    // Linha final da tabela
+    doc.moveTo(tableLeft, tableRowY - 3).lineTo(tableLeft + tableWidth, tableRowY - 3).stroke();
 
     // Finalizar PDF
     doc.end();
