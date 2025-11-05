@@ -248,9 +248,23 @@ class SolicitacoesComprasListController {
       })
     );
 
+    // Buscar números de pedidos vinculados à solicitação (únicos)
+    const pedidosVinculados = await executeQuery(
+      `SELECT DISTINCT pc.numero_pedido
+       FROM pedidos_compras pc
+       INNER JOIN pedido_compras_itens pci ON pc.id = pci.pedido_id
+       INNER JOIN solicitacao_compras_itens sci ON pci.solicitacao_item_id = sci.id
+       WHERE sci.solicitacao_id = ?
+       ORDER BY pc.numero_pedido`,
+      [id]
+    );
+
+    const numerosPedidos = pedidosVinculados.map(p => p.numero_pedido);
+
     const responseData = {
       ...solicitacao,
-      itens: itensComVinculos
+      itens: itensComVinculos,
+      pedidos_vinculados: numerosPedidos
     };
 
     return successResponse(res, responseData, 'Solicitação de compras encontrada com sucesso');

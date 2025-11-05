@@ -375,6 +375,27 @@ const SolicitacoesComprasModal = ({
                 />
               )}
 
+              {/* Pedidos Vinculados (se editando/visualizando) */}
+              {solicitacao && solicitacao.pedidos_vinculados && solicitacao.pedidos_vinculados.length > 0 && (
+                <div className="lg:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Pedidos Vinculados
+                  </label>
+                  <div className="bg-gray-50 border border-gray-200 rounded-md p-3">
+                    <div className="flex flex-wrap gap-2">
+                      {solicitacao.pedidos_vinculados.map((numeroPedido, index) => (
+                        <span
+                          key={index}
+                          className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 border border-blue-200"
+                        >
+                          {numeroPedido}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Solicitante */}
               <Input
                 label="Solicitante"
