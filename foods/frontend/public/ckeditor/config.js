@@ -17,7 +17,7 @@ CKEDITOR.editorConfig = function( config ) {
 		{ name: 'basicstyles', items: [ 'Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'CopyFormatting', 'RemoveFormat' ] },
 		{ name: 'paragraph', items: [ 'NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote', 'CreateDiv', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock', '-', 'BidiLtr', 'BidiRtl', 'Language' ] },
 		{ name: 'links', items: [ 'Link', 'Unlink', 'Anchor' ] },
-		{ name: 'insert', items: [ 'Image', 'Table', 'HorizontalRule', 'Smiley', 'SpecialChar', 'PageBreak', 'Iframe' ] },
+		{ name: 'insert', items: [ 'Image', 'Table', 'HorizontalRule', 'Smiley', 'SpecialChar', 'PageBreak', 'Iframe', 'qrc' ] },
 		'/',
 		{ name: 'styles', items: [ 'Styles', 'Format', 'Font', 'FontSize' ] },
 		{ name: 'colors', items: [ 'TextColor', 'BGColor' ] },
@@ -31,10 +31,9 @@ CKEDITOR.editorConfig = function( config ) {
 	// Remover barra de status
 	config.removePlugins = 'elementspath';
 	
-	// Desabilitar plugins que geram avisos ou estão incompletos (não são necessários)
-	// tablesorter: plugin incompleto (falta arquivos JS e lang)
-	// qrc: plugin incompleto (só tem imagens, sem arquivos JS)
-	config.removePlugins = config.removePlugins ? config.removePlugins + ',exportpdf,uploadimage,tablesorter,qrc' : 'elementspath,exportpdf,uploadimage,tablesorter,qrc';
+	// Desabilitar plugins que geram avisos ou não são necessários
+	// qrc e tablesorter: agora habilitados (qrc não precisa de arquivos extras, tablesorter tem arquivos de idioma)
+	config.removePlugins = config.removePlugins ? config.removePlugins + ',exportpdf,uploadimage' : 'elementspath,exportpdf,uploadimage';
 	
 	// Permitir upload de imagens (se necessário no futuro)
 	config.filebrowserUploadUrl = '/api/upload';
