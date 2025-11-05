@@ -152,7 +152,8 @@ class SolicitacoesComprasPDFController {
           : [];
 
         // Preparar dados para substituição
-        const dados = PdfTemplatesPDFController.prepararDadosSolicitacao(
+        const dados = PdfTemplatesPDFController.prepararDados(
+          'solicitacoes-compras',
           solicitacao,
           itensComPedidos,
           pedidosVinculados
