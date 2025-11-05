@@ -601,83 +601,37 @@ const CKEditor = ({
               }
             }
             
-            // Tentar criar uma nova cópia do elemento se necessário (último recurso)
-            // Mas primeiro, tentar diretamente
-            try {
-              // Verificar uma última vez que o elemento está no DOM
-              if (!element || !document.contains(element)) {
-                throw new Error('Elemento não está no DOM');
-              }
-              
-              editorInstanceRef.current = window.CKEDITOR.replace(element, editorConfig);
-            } catch (replaceError) {
-              // Se falhar, tentar criar um novo elemento completamente limpo
-              console.warn('[DEBUG CKEditor] Erro no replace, tentando criar novo elemento:', replaceError);
-              
-              // Aguardar um pouco antes de criar novo elemento
-              await new Promise(resolve => setTimeout(resolve, 200));
-              
-              // Criar novo textarea completamente limpo
-              const newTextarea = document.createElement('textarea');
-              newTextarea.name = element.name || name || 'ckeditor';
-              const newId = `ckeditor-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-              newTextarea.id = newId;
-              newTextarea.setAttribute('data-ckeditor', 'true');
-              
-              // Copiar atributos relevantes
-              if (element.value) {
-                newTextarea.value = element.value;
-              }
-              
-              // Substituir no DOM ANTES de passar para CKEditor
-              if (element.parentNode) {
-                element.parentNode.replaceChild(newTextarea, element);
-                editorRef.current = newTextarea;
-                
-                // Aguardar para garantir que está no DOM e renderizado
-                await new Promise(resolve => setTimeout(resolve, 200));
-                
-                // Verificar que o novo elemento está no DOM
-                if (!document.contains(newTextarea)) {
-                  throw new Error('Novo elemento não está no DOM');
+                // Tentar criar diretamente
+                // Verificar uma última vez que o elemento está no DOM
+                if (!element || !document.contains(element)) {
+                  throw new Error('Elemento não está no DOM');
                 }
                 
-                // Limpar qualquer referência antiga que possa estar causando problema
-                if (window.CKEDITOR && window.CKEDITOR.instances) {
-                  // Limpar instâncias que possam estar apontando para o elemento antigo
-                  Object.keys(window.CKEDITOR.instances).forEach(instId => {
-                    try {
-                      const inst = window.CKEDITOR.instances[instId];
-                      if (inst && inst.element && inst.element.$ === element) {
-                        console.log('[DEBUG CKEditor] Limpando instância órfã que aponta para elemento antigo');
-                        delete window.CKEDITOR.instances[instId];
-                      }
-                    } catch (e) {
-                      // Ignorar
-                    }
-                  });
+                editorInstanceRef.current = window.CKEDITOR.replace(element, editorConfig);
+                console.log('[DEBUG CKEditor] CKEditor inicializado com sucesso:', {
+                  instanceId: editorInstanceRef.current?.id,
+                  instanceName: editorInstanceRef.current?.name,
+                  status: editorInstanceRef.current?.status
+                });
+                
+                // Verificar se a instância foi criada corretamente
+                if (!editorInstanceRef.current) {
+                  throw new Error('Falha ao criar instância do CKEditor');
                 }
                 
-                // Aguardar mais um pouco
-                await new Promise(resolve => setTimeout(resolve, 100));
-                
-                // Tentar novamente com o novo elemento
-                editorInstanceRef.current = window.CKEDITOR.replace(newTextarea, editorConfig);
-              } else {
-                throw replaceError;
+                resolve();
+              } catch (error) {
+                console.error('[DEBUG CKEditor] Erro na inicialização:', error);
+                reject(error);
               }
-            }
-            console.log('[DEBUG CKEditor] CKEditor inicializado com sucesso:', {
-              instanceId: editorInstanceRef.current?.id,
-              instanceName: editorInstanceRef.current?.name,
-              status: editorInstanceRef.current?.status
-            });
+            };
             
-            // Verificar se a instância foi criada corretamente
-            if (!editorInstanceRef.current) {
-              console.error('Falha ao criar instância do CKEditor');
-              return;
-            }
+            // Adicionar à fila
+            window.CKEDITOR_INIT_QUEUE.queue.push(initFunction);
+            window.CKEDITOR_INIT_QUEUE.processQueue();
+            
+            // Aguardar conclusão
+            await initPromise;
           } catch (error) {
             console.error('[DEBUG CKEditor] Erro ao inicializar CKEditor:', error);
             console.error('[DEBUG CKEditor] Stack trace:', error.stack);
