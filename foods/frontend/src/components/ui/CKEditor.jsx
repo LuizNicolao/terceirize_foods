@@ -256,7 +256,7 @@ const CKEditor = ({
       }
 
       // Aguardar um pouco mais para garantir que o elemento está completamente no DOM
-      setTimeout(() => {
+      setTimeout(async () => {
         if (!editorRef.current || !containerRef.current || !document.contains(editorRef.current)) {
           return;
         }
@@ -272,6 +272,24 @@ const CKEditor = ({
           return;
         }
 
+        // Aguardar mais um frame para garantir que o DOM está completamente renderizado
+        await new Promise(resolve => requestAnimationFrame(resolve));
+        
+        // Aguardar um pouco mais para garantir que o elemento está completamente pronto
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        // Verificações finais antes de inicializar
+        const element = editorRef.current;
+        if (!element || !element.parentNode || !document.contains(element)) {
+          return;
+        }
+
+        // Verificar se o elemento ainda está no DOM após os delays
+        if (!document.body.contains(element)) {
+          console.warn('Elemento não está mais no body do documento');
+          return;
+        }
+
         // Inicializar CKEditor
         const editorConfig = {
           language: 'pt-br',
@@ -280,11 +298,6 @@ const CKEditor = ({
         };
 
         try {
-          // Verificações finais antes de inicializar
-          const element = editorRef.current;
-          if (!element || !element.parentNode || !document.contains(element)) {
-            return;
-          }
 
           // Garantir que o elemento tem um ID válido
           if (!element.id) {
@@ -295,13 +308,58 @@ const CKEditor = ({
           if (window.CKEDITOR.instances[element.id]) {
             try {
               window.CKEDITOR.instances[element.id].destroy();
+              // Aguardar um pouco para garantir que a destruição foi concluída
+              await new Promise(resolve => setTimeout(resolve, 50));
             } catch (e) {
               console.warn('Erro ao destruir instância existente:', e);
             }
           }
 
-          // Inicializar o editor
-          editorInstanceRef.current = window.CKEDITOR.replace(element, editorConfig);
+          // Verificações finais antes de inicializar
+          // Verificar se o elemento ainda está no DOM e se tem todos os métodos necessários
+          if (!element || !element.parentNode || !document.contains(element)) {
+            console.warn('Elemento não está mais no DOM antes de inicializar');
+            return;
+          }
+
+          // Verificar se o elemento tem ownerDocument
+          if (!element.ownerDocument || !element.ownerDocument.defaultView) {
+            console.warn('Elemento não tem ownerDocument válido');
+            return;
+          }
+
+          // Garantir que o elemento está realmente visível/atachado ao DOM
+          try {
+            // Tentar acessar offsetParent para garantir que está no layout
+            const test = element.offsetParent;
+          } catch (e) {
+            console.warn('Elemento não está pronto para inicialização:', e);
+            return;
+          }
+
+          // Inicializar o editor com tratamento de erro
+          try {
+            editorInstanceRef.current = window.CKEDITOR.replace(element, editorConfig);
+            
+            // Verificar se a instância foi criada corretamente
+            if (!editorInstanceRef.current) {
+              console.error('Falha ao criar instância do CKEditor');
+              return;
+            }
+          } catch (error) {
+            console.error('Erro ao inicializar CKEditor:', error);
+            // Tentar novamente após um pequeno delay
+            setTimeout(() => {
+              if (element && document.contains(element)) {
+                try {
+                  editorInstanceRef.current = window.CKEDITOR.replace(element, editorConfig);
+                } catch (retryError) {
+                  console.error('Erro ao tentar novamente inicializar CKEditor:', retryError);
+                }
+              }
+            }, 100);
+            return;
+          }
 
             // Configurar evento de mudança
             if (onChange && editorInstanceRef.current) {
