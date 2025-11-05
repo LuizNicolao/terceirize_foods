@@ -20,7 +20,7 @@ export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
   const [loadingGenericos, setLoadingGenericos] = useState({});
   
   const [filtros, setFiltros] = useState({
-    grupo: '',
+    grupo: null, // null = todos os grupos
     semana_abastecimento: '',
     semana_consumo: '',
     tipo_rota_id: '',
@@ -264,7 +264,7 @@ export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
    */
   const limparFiltros = useCallback(() => {
     setFiltros({
-      grupo: '',
+      grupo: null, // null = todos os grupos
       semana_abastecimento: '',
       semana_consumo: '',
       tipo_rota_id: '',

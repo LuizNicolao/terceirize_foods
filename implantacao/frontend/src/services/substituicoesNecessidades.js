@@ -156,7 +156,10 @@ class SubstituicoesNecessidadesService {
     if (filtros.rota_id) params.append('rota_id', filtros.rota_id);
     if (filtros.semana_abastecimento) params.append('semana_abastecimento', filtros.semana_abastecimento);
     if (filtros.semana_consumo) params.append('semana_consumo', filtros.semana_consumo);
-    if (filtros.grupo) params.append('grupo', filtros.grupo);
+    // Só enviar grupo se for uma string não vazia (null/undefined/vazio = todos os grupos)
+    if (filtros.grupo && filtros.grupo.trim() !== '' && filtros.grupo !== 'todos') {
+      params.append('grupo', filtros.grupo);
+    }
 
     const response = await api.get(`/necessidades-substituicoes/buscar-dados-impressao?${params.toString()}`);
     return response.data;
@@ -167,7 +170,13 @@ class SubstituicoesNecessidadesService {
    * @param {Object} filtros - Filtros: tipo_rota_id (obrigatório), rota_id (obrigatório), semana_abastecimento (obrigatório), grupo (opcional), semana_consumo (opcional)
    */
   static async marcarComoImpresso(filtros) {
-    const response = await api.post('/necessidades-substituicoes/marcar-como-impresso', filtros);
+    // Preparar filtros para envio (remover grupo se for null/todos/vazio)
+    const filtrosParaEnvio = { ...filtros };
+    if (!filtrosParaEnvio.grupo || filtrosParaEnvio.grupo.trim() === '' || filtrosParaEnvio.grupo === 'todos') {
+      delete filtrosParaEnvio.grupo;
+    }
+    
+    const response = await api.post('/necessidades-substituicoes/marcar-como-impresso', filtrosParaEnvio);
     return response.data;
   }
 }

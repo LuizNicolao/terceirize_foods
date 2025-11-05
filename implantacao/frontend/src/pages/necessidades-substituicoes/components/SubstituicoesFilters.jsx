@@ -71,12 +71,18 @@ const SubstituicoesFilters = ({
             Grupo de Produtos
           </label>
           <SearchableSelect
-            value={filtros.grupo || ''}
-            onChange={(value) => onFiltroChange({ grupo: value })}
-            options={grupos.map(grupo => ({
-              value: grupo.nome,
-              label: grupo.nome
-            }))}
+            value={filtros.grupo || 'todos'}
+            onChange={(value) => {
+              // Se o valor for vazio ou 'todos', limpar o filtro (não enviar grupo)
+              onFiltroChange({ grupo: value && value !== 'todos' && value !== '' ? value : null });
+            }}
+            options={[
+              { value: 'todos', label: 'Todos os grupos' },
+              ...grupos.map(grupo => ({
+                value: grupo.nome,
+                label: grupo.nome
+              }))
+            ]}
             placeholder="Todos os grupos"
             disabled={loading}
           />
