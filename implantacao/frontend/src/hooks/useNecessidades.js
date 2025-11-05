@@ -37,7 +37,36 @@ export const useNecessidades = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await necessidadesService.listar(filtros);
+      // Converter filtros para o formato esperado pelo backend
+      const paramsComPaginacao = {};
+      
+      // Mapear filtros para os parâmetros corretos
+      if (filtros.escola) {
+        paramsComPaginacao.escola = typeof filtros.escola === 'object' ? filtros.escola.nome_escola || filtros.escola.nome : filtros.escola;
+      }
+      if (filtros.grupo) {
+        paramsComPaginacao.grupo = typeof filtros.grupo === 'object' ? filtros.grupo.id || filtros.grupo.nome : filtros.grupo;
+      }
+      if (filtros.data) {
+        paramsComPaginacao.data = filtros.data;
+      }
+      if (filtros.search) {
+        paramsComPaginacao.search = filtros.search;
+      }
+      if (filtros.semana_abastecimento) {
+        paramsComPaginacao.semana_abastecimento = filtros.semana_abastecimento;
+      }
+      
+      // Se não há filtros específicos selecionados pelo usuário (escola, grupo, search), passar limit alto
+      // A data pode estar preenchida automaticamente, então não considerar ela como filtro "significativo"
+      // Caso contrário, usar paginação padrão (10 itens)
+      if (!paramsComPaginacao.escola && !paramsComPaginacao.grupo && !paramsComPaginacao.search) {
+        // Sem filtros específicos selecionados pelo usuário: trazer mais registros (até 1000)
+        paramsComPaginacao.limit = 1000;
+        paramsComPaginacao.page = 1;
+      }
+      
+      const response = await necessidadesService.listar(paramsComPaginacao);
       
       if (response.success) {
         setNecessidades(response.data);

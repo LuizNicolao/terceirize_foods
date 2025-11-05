@@ -7,22 +7,26 @@ export const useNecessidadesFilters = () => {
   const [filtros, setFiltros] = useState({
     escola: null,
     grupo: null,
-    data: '', // Semana de consumo (será inicializada com semana atual)
+    data: '', // Semana de consumo (será inicializada com semana atual apenas na primeira vez)
     search: '',
     semana_abastecimento: '',
     ativo: true
   });
+  const [inicializado, setInicializado] = useState(false);
 
-  // Inicializar com a semana atual para "Semana de Consumo"
+  // Inicializar com a semana atual para "Semana de Consumo" apenas na primeira vez
   useEffect(() => {
-    const semanaAtual = obterValorPadrao();
-    if (semanaAtual) {
-      setFiltros(prev => ({
-        ...prev,
-        data: semanaAtual
-      }));
+    if (!inicializado) {
+      const semanaAtual = obterValorPadrao();
+      if (semanaAtual) {
+        setFiltros(prev => ({
+          ...prev,
+          data: semanaAtual
+        }));
+        setInicializado(true);
+      }
     }
-  }, [obterValorPadrao]);
+  }, [obterValorPadrao, inicializado]);
 
   const updateFiltros = useCallback((novosFiltros) => {
     setFiltros(prev => ({
@@ -40,6 +44,8 @@ export const useNecessidadesFilters = () => {
       semana_abastecimento: '',
       ativo: true
     });
+    // Marcar como inicializado para não re-preencer automaticamente após limpar
+    setInicializado(true);
   }, []);
 
   const setEscola = useCallback((escola) => {
