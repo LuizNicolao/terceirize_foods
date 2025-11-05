@@ -63,8 +63,11 @@ const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = fal
       // Calcular dias_restantes = dias(validade - hoje)
       const diasRestantes = Math.ceil((validadeDate - hoje) / (1000 * 60 * 60 * 24));
       
-      // Validar se prazo_total é válido
-      if (prazoTotal <= 0) return null;
+      // Validar se prazo_total é válido (deve ser maior que 0)
+      if (prazoTotal <= 0) {
+        // Se as datas são iguais ou inválidas, retornar null
+        return null;
+      }
 
       // Calcular percentual_consumido = (1 - (dias_restantes / prazo_total)) * 100
       const percentualConsumido = ((1 - (diasRestantes / prazoTotal)) * 100);
@@ -165,16 +168,17 @@ const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = fal
         produto.fabricacao || produto.fabricacaoBR,
         produto.validade || produto.validadeBR
       );
-      if (controleValidade !== null) {
-        produto.controle_validade = controleValidade;
-      }
+      // Sempre atualizar controle_validade, mesmo que seja null (para limpar valor anterior)
+      produto.controle_validade = controleValidade;
     } else if (typeof field === 'object') {
-      // Recalcular se objeto contém datas
-      const controleValidade = calcularControleValidade(
-        produto.fabricacao || produto.fabricacaoBR,
-        produto.validade || produto.validadeBR
-      );
-      if (controleValidade !== null) {
+      // Recalcular se objeto contém datas (fabricacao, validade, fabricacaoBR, validadeBR)
+      if (field.fabricacao !== undefined || field.validade !== undefined || 
+          field.fabricacaoBR !== undefined || field.validadeBR !== undefined) {
+        const controleValidade = calcularControleValidade(
+          produto.fabricacao || produto.fabricacaoBR,
+          produto.validade || produto.validadeBR
+        );
+        // Sempre atualizar controle_validade, mesmo que seja null (para limpar valor anterior)
         produto.controle_validade = controleValidade;
       }
     }
@@ -294,8 +298,11 @@ const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = fal
                           value={produto.fabricacao || formatDateISO(produto.fabricacaoBR) || ''}
                           onChange={(e) => {
                             const dateBR = formatDateBR(e.target.value);
-                            handleFieldChange(index, 'fabricacaoBR', dateBR);
-                            handleFieldChange(index, 'fabricacao', e.target.value);
+                            // Atualizar ambos os campos de uma vez para garantir que o cálculo funcione
+                            handleFieldChange(index, {
+                              fabricacao: e.target.value,
+                              fabricacaoBR: dateBR
+                            });
                             // Remover erro quando preencher
                             if (errors[`${index}-fabricacao`]) {
                               const newErrors = { ...errors };
@@ -343,8 +350,11 @@ const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = fal
                           value={produto.validade || formatDateISO(produto.validadeBR) || ''}
                           onChange={(e) => {
                             const dateBR = formatDateBR(e.target.value);
-                            handleFieldChange(index, 'validadeBR', dateBR);
-                            handleFieldChange(index, 'validade', e.target.value);
+                            // Atualizar ambos os campos de uma vez para garantir que o cálculo funcione
+                            handleFieldChange(index, {
+                              validade: e.target.value,
+                              validadeBR: dateBR
+                            });
                             // Remover erro quando preencher
                             if (errors[`${index}-validade`]) {
                               const newErrors = { ...errors };
