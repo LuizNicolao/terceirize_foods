@@ -255,30 +255,31 @@ const CKEditor = ({
           if (editorRef.current && editorRef.current.parentNode && document.contains(editorRef.current)) {
             editorInstanceRef.current = window.CKEDITOR.replace(editorRef.current, editorConfig);
 
-        // Configurar evento de mudança
-        if (onChange && editorInstanceRef.current) {
-          editorInstanceRef.current.on('change', () => {
-            if (editorInstanceRef.current) {
-              const data = editorInstanceRef.current.getData();
-              onChange({
-                target: {
-                  name: name || 'ckeditor',
-                  value: data
+            // Configurar evento de mudança
+            if (onChange && editorInstanceRef.current) {
+              editorInstanceRef.current.on('change', () => {
+                if (editorInstanceRef.current) {
+                  const data = editorInstanceRef.current.getData();
+                  onChange({
+                    target: {
+                      name: name || 'ckeditor',
+                      value: data
+                    }
+                  });
+                }
+              });
+
+              editorInstanceRef.current.on('instanceReady', () => {
+                // Definir valor inicial
+                if (value && editorInstanceRef.current) {
+                  editorInstanceRef.current.setData(value);
+                }
+                // Expor instância globalmente para acesso externo usando o name como identificador
+                if (name && editorInstanceRef.current) {
+                  editorInstanceRef.current.name = name;
                 }
               });
             }
-          });
-
-          editorInstanceRef.current.on('instanceReady', () => {
-            // Definir valor inicial
-            if (value && editorInstanceRef.current) {
-              editorInstanceRef.current.setData(value);
-            }
-            // Expor instância globalmente para acesso externo usando o name como identificador
-            if (name && editorInstanceRef.current) {
-              editorInstanceRef.current.name = name;
-            }
-          });
           }
         } catch (error) {
           console.error('Erro ao inicializar CKEditor:', error);
