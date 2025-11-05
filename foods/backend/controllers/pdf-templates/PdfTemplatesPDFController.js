@@ -208,23 +208,26 @@ class PdfTemplatesPDFController {
       pedidos_vinculados_lista: pedidosVinculados.map(p => p.numero_pedido),
       
       // Dados para itens (pode ser usado em loops no template)
-      itens: itens.map(item => ({
-        id: item.id || '',
-        solicitacao_id: item.solicitacao_id || '',
-        produto_id: item.produto_id || '',
-        produto_codigo: item.produto_codigo || item.codigo_produto || '',
-        produto_nome: item.produto_nome || item.nome_produto || '',
-        codigo_produto: item.produto_codigo || item.codigo_produto || '',
-        nome_produto: item.produto_nome || item.nome_produto || '',
-        quantidade: item.quantidade || 0,
-        quantidade_formatada: (item.quantidade || 0).toFixed(3).replace('.', ','),
-        unidade_medida_id: item.unidade_medida_id || '',
-        unidade: item.unidade_simbolo || item.unidade_medida || item.unidade_nome || '',
-        unidade_simbolo: item.unidade_simbolo || item.unidade_medida || '',
-        unidade_nome: item.unidade_nome || '',
-        observacao: item.observacao || item.observacao_item || '',
-        item_criado_em: item.item_criado_em ? new Date(item.item_criado_em).toLocaleDateString('pt-BR') : ''
-      })),
+      itens: itens.map(item => {
+        const quantidade = parseFloat(item.quantidade || 0);
+        return {
+          id: item.id || '',
+          solicitacao_id: item.solicitacao_id || '',
+          produto_id: item.produto_id || '',
+          produto_codigo: item.produto_codigo || item.codigo_produto || '',
+          produto_nome: item.produto_nome || item.nome_produto || '',
+          codigo_produto: item.produto_codigo || item.codigo_produto || '',
+          nome_produto: item.produto_nome || item.nome_produto || '',
+          quantidade: quantidade,
+          quantidade_formatada: quantidade.toFixed(3).replace('.', ','),
+          unidade_medida_id: item.unidade_medida_id || '',
+          unidade: item.unidade_simbolo || item.unidade_medida || item.unidade_nome || '',
+          unidade_simbolo: item.unidade_simbolo || item.unidade_medida || '',
+          unidade_nome: item.unidade_nome || '',
+          observacao: item.observacao || item.observacao_item || '',
+          item_criado_em: item.item_criado_em ? new Date(item.item_criado_em).toLocaleDateString('pt-BR') : ''
+        };
+      }),
       
       // Estatísticas dos itens
       total_itens: itens.length,
