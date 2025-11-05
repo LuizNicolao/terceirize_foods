@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 /**
  * Componente wrapper para CKEditor 4
@@ -24,21 +24,68 @@ const CKEditor = ({
   const editorRef = useRef(null);
   const editorInstanceRef = useRef(null);
   const containerRef = useRef(null);
+  const [scriptLoaded, setScriptLoaded] = useState(false);
+
+  // Carregar script do CKEditor dinamicamente
+  useEffect(() => {
+    // Se já está carregado, marcar como carregado
+    if (typeof window.CKEDITOR !== 'undefined') {
+      setScriptLoaded(true);
+      return;
+    }
+
+    // Verificar se o script já está sendo carregado
+    const existingScript = document.querySelector('script[src*="ckeditor.js"]');
+    if (existingScript) {
+      existingScript.onload = () => setScriptLoaded(true);
+      existingScript.onerror = () => console.error('Erro ao carregar CKEditor');
+      return;
+    }
+
+    // Carregar o script dinamicamente
+    const script = document.createElement('script');
+    // Usar caminho relativo baseado na localização atual
+    const basePath = window.location.pathname.split('/').slice(0, -1).join('/') || '';
+    script.src = `${basePath}/ckeditor/ckeditor.js`;
+    script.async = true;
+    script.onload = () => {
+      setScriptLoaded(true);
+    };
+    script.onerror = () => {
+      console.error('Erro ao carregar CKEditor. Verifique se o arquivo está em /public/ckeditor/ckeditor.js');
+    };
+    document.head.appendChild(script);
+
+    return () => {
+      // Limpar script se necessário
+      if (script.parentNode) {
+        script.parentNode.removeChild(script);
+      }
+    };
+  }, []);
 
   useEffect(() => {
-    // Verificar se CKEditor está disponível
-    if (typeof window.CKEDITOR === 'undefined') {
-      console.error('CKEditor não está carregado. Verifique se o script está incluído no index.html');
+    // Aguardar o script carregar
+    if (!scriptLoaded || typeof window.CKEDITOR === 'undefined') {
+      return;
+    }
+
+    // Se o editor já existe, não recriar
+    if (editorInstanceRef.current) {
       return;
     }
 
     // Criar elemento textarea para o editor
-    if (!editorRef.current) {
+    if (!editorRef.current && containerRef.current) {
       const textarea = document.createElement('textarea');
       textarea.name = name || 'ckeditor';
-      textarea.id = `ckeditor-${Date.now()}`;
+      textarea.id = `ckeditor-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       containerRef.current.appendChild(textarea);
       editorRef.current = textarea;
+    }
+
+    if (!editorRef.current || !containerRef.current) {
+      return;
     }
 
     // Inicializar CKEditor
@@ -77,11 +124,15 @@ const CKEditor = ({
     // Limpar ao desmontar
     return () => {
       if (editorInstanceRef.current) {
-        editorInstanceRef.current.destroy();
+        try {
+          editorInstanceRef.current.destroy();
+        } catch (e) {
+          console.warn('Erro ao destruir editor:', e);
+        }
         editorInstanceRef.current = null;
       }
     };
-  }, []); // Executar apenas uma vez na montagem
+  }, [scriptLoaded]); // Recriar quando o script carregar
 
   // Atualizar valor quando prop value mudar
   useEffect(() => {
@@ -100,6 +151,18 @@ const CKEditor = ({
       }
     }
   }, [disabled]);
+
+  if (!scriptLoaded) {
+    return (
+      <div 
+        ref={containerRef} 
+        className={`ckeditor-wrapper ${className} flex items-center justify-center bg-gray-50 border border-gray-200 rounded`}
+        style={{ minHeight: `${height}px` }}
+      >
+        <div className="text-gray-500 text-sm">Carregando editor...</div>
+      </div>
+    );
+  }
 
   return (
     <div 
