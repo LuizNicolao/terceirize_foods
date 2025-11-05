@@ -78,11 +78,11 @@ class PdfTemplatesPDFController {
     }
     
     while (match) {
-      const loopContent = match[1];
+      let loopContent = match[1].trim(); // Remover espaços em branco do início/fim
       const itens = dados.itens || [];
       
       // Debug: log para verificar dados
-      console.log('[DEBUG PDF Template] Loop encontrado, conteúdo:', loopContent.substring(0, 100));
+      console.log('[DEBUG PDF Template] Loop encontrado, conteúdo:', loopContent.substring(0, 200));
       console.log('[DEBUG PDF Template] Número de itens:', itens.length);
       if (itens.length > 0) {
         console.log('[DEBUG PDF Template] Primeiro item:', {
@@ -91,6 +91,22 @@ class PdfTemplatesPDFController {
           produto_nome: itens[0].produto_nome,
           quantidade_formatada: itens[0].quantidade_formatada
         });
+      }
+      
+      // Se o conteúdo do loop estiver vazio ou for apenas espaços, procurar pela tabela logo após
+      if (!loopContent || loopContent.trim().length === 0) {
+        // Tentar encontrar a tabela HTML logo após o loop
+        const afterLoop = html.substring(html.indexOf(match[0]) + match[0].length);
+        // Procurar por <table ou <tbody próximo
+        const tableMatch = afterLoop.match(/(<table[\s\S]*?<tbody[\s\S]*?<tr[\s\S]*?<\/tr>[\s\S]*?<\/tbody>[\s\S]*?<\/table>)/i);
+        if (tableMatch) {
+          // Encontrar o <tr> dentro do <tbody> para usar como template
+          const trMatch = tableMatch[0].match(/<tr[^>]*>([\s\S]*?)<\/tr>/i);
+          if (trMatch) {
+            loopContent = trMatch[0]; // Usar o <tr> completo como conteúdo do loop
+            console.log('[DEBUG PDF Template] Loop vazio detectado, usando <tr> encontrado:', trMatch[0].substring(0, 200));
+          }
+        }
       }
       
       let itemsHtml = '';
