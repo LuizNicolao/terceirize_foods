@@ -6,8 +6,8 @@
  * - Componentes específicos: mantidos localmente
  */
 
-// Re-exportar TODOS os componentes UI do Foods
-export * from 'foods-frontend/src/components/ui';
+// Re-exportar TODOS os componentes UI do Foods usando caminho relativo
+export * from '../../../foods/frontend/src/components/ui';
 
 // Componentes específicos do Implantação (manter locais)
 export { default as SemanaAbastecimentoFilter } from './SemanaAbastecimentoFilter';

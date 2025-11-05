@@ -7,7 +7,7 @@
  */
 
 // Re-exportar TODOS os componentes compartilhados do Foods
-export * from 'foods-frontend/src/components/shared';
+export * from '../../../foods/frontend/src/components/shared';
 
 // Componentes específicos do Implantação (manter locais)
 export { default as ConsultaActions } from './ConsultaActions';
