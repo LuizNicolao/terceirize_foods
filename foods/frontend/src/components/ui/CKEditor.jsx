@@ -309,15 +309,26 @@ const CKEditor = ({
             // Aguardar que todas as instâncias existentes estejam completamente carregadas antes de criar novas
             const allInstances = Object.values(window.CKEDITOR.instances);
             const unloadedInstances = allInstances.filter(inst => inst && inst.status === 'unloaded');
+            const readyInstances = allInstances.filter(inst => inst && (inst.status === 'ready' || inst.status === 'loaded'));
+            
+            console.log('[DEBUG CKEditor] Estado das instâncias:', {
+              total: allInstances.length,
+              unloaded: unloadedInstances.length,
+              ready: readyInstances.length
+            });
+            
             if (unloadedInstances.length > 0) {
               console.log('[DEBUG CKEditor] Aguardando instâncias não carregadas:', unloadedInstances.length);
               // Aguardar até que todas as instâncias estejam carregadas ou timeout
               let waitCount = 0;
-              const maxWait = 50; // 5 segundos máximo
+              const maxWait = 100; // 10 segundos máximo (aumentado)
               while (unloadedInstances.some(inst => inst && inst.status === 'unloaded') && waitCount < maxWait) {
                 await new Promise(resolve => setTimeout(resolve, 100));
                 waitCount++;
               }
+              
+              // Aguardar mais um pouco para garantir que está completamente pronto
+              await new Promise(resolve => setTimeout(resolve, 300));
             }
             
             // Destruir instância com o mesmo ID se existir
@@ -520,18 +531,58 @@ const CKEditor = ({
               return;
             }
             
+            // Verificar se já existe uma instância para este elemento específico antes de tentar replace
+            // Isso pode causar o erro 'equals' se o elemento ainda tem referências antigas
+            const existingInstanceForElement = Object.values(window.CKEDITOR.instances || {}).find(inst => {
+              try {
+                return inst && inst.element && (
+                  inst.element.$ === element ||
+                  (inst.element.$ && inst.element.$.$ === element) ||
+                  (inst.element.$ && inst.element.$.$ === element.$)
+                );
+              } catch (e) {
+                return false;
+              }
+            });
+            
+            if (existingInstanceForElement && existingInstanceForElement.status !== 'destroyed') {
+              console.warn('[DEBUG CKEditor] Encontrada instância ativa para este elemento, destruindo antes de replace...');
+              try {
+                existingInstanceForElement.destroy();
+                await new Promise(resolve => setTimeout(resolve, 300));
+                // Limpar do registro
+                if (existingInstanceForElement.id) {
+                  delete window.CKEDITOR.instances[existingInstanceForElement.id];
+                }
+              } catch (e) {
+                console.warn('[DEBUG CKEditor] Erro ao destruir instância encontrada:', e);
+                if (existingInstanceForElement.id) {
+                  delete window.CKEDITOR.instances[existingInstanceForElement.id];
+                }
+              }
+            }
+            
             // Tentar criar uma nova cópia do elemento se necessário (último recurso)
             // Mas primeiro, tentar diretamente
             try {
+              // Verificar uma última vez que o elemento está no DOM
+              if (!element || !document.contains(element)) {
+                throw new Error('Elemento não está no DOM');
+              }
+              
               editorInstanceRef.current = window.CKEDITOR.replace(element, editorConfig);
             } catch (replaceError) {
-              // Se falhar, tentar criar um novo elemento
+              // Se falhar, tentar criar um novo elemento completamente limpo
               console.warn('[DEBUG CKEditor] Erro no replace, tentando criar novo elemento:', replaceError);
               
-              // Criar novo textarea e substituir o antigo
+              // Aguardar um pouco antes de criar novo elemento
+              await new Promise(resolve => setTimeout(resolve, 200));
+              
+              // Criar novo textarea completamente limpo
               const newTextarea = document.createElement('textarea');
               newTextarea.name = element.name || name || 'ckeditor';
-              newTextarea.id = `ckeditor-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+              const newId = `ckeditor-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+              newTextarea.id = newId;
               newTextarea.setAttribute('data-ckeditor', 'true');
               
               // Copiar atributos relevantes
@@ -539,12 +590,36 @@ const CKEditor = ({
                 newTextarea.value = element.value;
               }
               
-              // Substituir no DOM
+              // Substituir no DOM ANTES de passar para CKEditor
               if (element.parentNode) {
                 element.parentNode.replaceChild(newTextarea, element);
                 editorRef.current = newTextarea;
                 
-                // Aguardar um pouco
+                // Aguardar para garantir que está no DOM e renderizado
+                await new Promise(resolve => setTimeout(resolve, 200));
+                
+                // Verificar que o novo elemento está no DOM
+                if (!document.contains(newTextarea)) {
+                  throw new Error('Novo elemento não está no DOM');
+                }
+                
+                // Limpar qualquer referência antiga que possa estar causando problema
+                if (window.CKEDITOR && window.CKEDITOR.instances) {
+                  // Limpar instâncias que possam estar apontando para o elemento antigo
+                  Object.keys(window.CKEDITOR.instances).forEach(instId => {
+                    try {
+                      const inst = window.CKEDITOR.instances[instId];
+                      if (inst && inst.element && inst.element.$ === element) {
+                        console.log('[DEBUG CKEditor] Limpando instância órfã que aponta para elemento antigo');
+                        delete window.CKEDITOR.instances[instId];
+                      }
+                    } catch (e) {
+                      // Ignorar
+                    }
+                  });
+                }
+                
+                // Aguardar mais um pouco
                 await new Promise(resolve => setTimeout(resolve, 100));
                 
                 // Tentar novamente com o novo elemento
