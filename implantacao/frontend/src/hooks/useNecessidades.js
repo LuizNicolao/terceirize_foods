@@ -40,15 +40,17 @@ export const useNecessidades = () => {
       // Converter filtros para o formato esperado pelo backend
       const paramsComPaginacao = {};
       
+      // Verificar se há filtros significativos selecionados pelo usuário
+      const temEscola = filtros.escola && (typeof filtros.escola === 'object' ? filtros.escola.nome_escola || filtros.escola.nome : filtros.escola);
+      const temGrupo = filtros.grupo && (typeof filtros.grupo === 'object' ? filtros.grupo.id || filtros.grupo.nome : filtros.grupo);
+      const temSearch = filtros.search && filtros.search.trim() !== '';
+      
       // Mapear filtros para os parâmetros corretos
-      if (filtros.escola) {
+      if (temEscola) {
         paramsComPaginacao.escola = typeof filtros.escola === 'object' ? filtros.escola.nome_escola || filtros.escola.nome : filtros.escola;
       }
-      if (filtros.grupo) {
+      if (temGrupo) {
         paramsComPaginacao.grupo = typeof filtros.grupo === 'object' ? filtros.grupo.id || filtros.grupo.nome : filtros.grupo;
-      }
-      if (filtros.data) {
-        paramsComPaginacao.data = filtros.data;
       }
       if (filtros.search) {
         paramsComPaginacao.search = filtros.search;
@@ -58,12 +60,15 @@ export const useNecessidades = () => {
       }
       
       // Se não há filtros específicos selecionados pelo usuário (escola, grupo, search), passar limit alto
-      // A data pode estar preenchida automaticamente, então não considerar ela como filtro "significativo"
-      // Caso contrário, usar paginação padrão (10 itens)
-      if (!paramsComPaginacao.escola && !paramsComPaginacao.grupo && !paramsComPaginacao.search) {
-        // Sem filtros específicos selecionados pelo usuário: trazer mais registros (até 1000)
+      // E NÃO passar a data (mesmo que esteja preenchida automaticamente) para mostrar todas as necessidades
+      if (!temEscola && !temGrupo && !temSearch) {
+        // Sem filtros específicos selecionados pelo usuário: trazer mais registros (até 1000) e não filtrar por data
         paramsComPaginacao.limit = 1000;
         paramsComPaginacao.page = 1;
+        // Não passar data para não filtrar por semana quando não há outros filtros
+      } else if (filtros.data) {
+        // Só passar data se houver outros filtros selecionados
+        paramsComPaginacao.data = filtros.data;
       }
       
       const response = await necessidadesService.listar(paramsComPaginacao);
