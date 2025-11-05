@@ -44,9 +44,6 @@ const PdfTemplatesModal = ({
         'data_entrega_cd',
         'data_necessidade',
         'semana_abastecimento',
-        // Valores
-        'valor_total',
-        'valor_total_numerico',
         // Filial
         'filial_id',
         'filial_nome',
@@ -67,19 +64,19 @@ const PdfTemplatesModal = ({
         // Itens (loop)
         '{{#itens}}',
         '  id',
+        '  solicitacao_id',
         '  produto_id',
         '  produto_codigo',
         '  produto_nome',
+        '  codigo_produto',
+        '  nome_produto',
         '  quantidade',
         '  quantidade_formatada',
+        '  unidade_medida_id',
         '  unidade',
         '  unidade_simbolo',
         '  unidade_nome',
         '  observacao',
-        '  valor_unitario',
-        '  valor_unitario_formatado',
-        '  valor_total',
-        '  valor_total_formatado',
         '  item_criado_em',
         '{{/itens}}'
       ],

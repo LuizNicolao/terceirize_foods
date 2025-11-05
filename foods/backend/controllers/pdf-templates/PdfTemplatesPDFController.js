@@ -170,15 +170,12 @@ class PdfTemplatesPDFController {
    * Preparar dados para template de solicitação de compras
    */
   static prepararDadosSolicitacao(solicitacao, itens, pedidosVinculados) {
-    // Calcular valor total se não existir
-    const valorTotal = solicitacao.valor_total || itens.reduce((sum, item) => sum + parseFloat(item.valor_total_item || 0), 0);
-    
     return {
       // Campos principais da solicitação
       id: solicitacao.id || '',
       numero_solicitacao: solicitacao.numero_solicitacao || '',
       descricao: solicitacao.descricao || solicitacao.justificativa || '',
-      motivo: solicitacao.motivo || '',
+      motivo: solicitacao.motivo || solicitacao.justificativa || '',
       justificativa: solicitacao.justificativa || '',
       observacoes: solicitacao.observacoes || '',
       status: solicitacao.status || '',
@@ -192,10 +189,6 @@ class PdfTemplatesPDFController {
       data_entrega_cd: solicitacao.data_entrega_cd ? new Date(solicitacao.data_entrega_cd).toLocaleDateString('pt-BR') : '',
       data_necessidade: solicitacao.data_necessidade ? new Date(solicitacao.data_necessidade).toLocaleDateString('pt-BR') : '',
       semana_abastecimento: solicitacao.semana_abastecimento || '',
-      
-      // Valores
-      valor_total: valorTotal.toFixed(2).replace('.', ','),
-      valor_total_numerico: valorTotal,
       
       // Filial
       filial_id: solicitacao.filial_id || '',
@@ -230,10 +223,6 @@ class PdfTemplatesPDFController {
         unidade_simbolo: item.unidade_simbolo || item.unidade_medida || '',
         unidade_nome: item.unidade_nome || '',
         observacao: item.observacao || item.observacao_item || '',
-        valor_unitario: item.valor_unitario || 0,
-        valor_unitario_formatado: (item.valor_unitario || 0).toFixed(2).replace('.', ','),
-        valor_total: item.valor_total_item || (parseFloat(item.quantidade || 0) * parseFloat(item.valor_unitario || 0)),
-        valor_total_formatado: (item.valor_total_item || (parseFloat(item.quantidade || 0) * parseFloat(item.valor_unitario || 0))).toFixed(2).replace('.', ','),
         item_criado_em: item.item_criado_em ? new Date(item.item_criado_em).toLocaleDateString('pt-BR') : ''
       })),
       

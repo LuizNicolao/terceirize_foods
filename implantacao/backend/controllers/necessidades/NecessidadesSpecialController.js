@@ -146,7 +146,7 @@ const gerarNecessidade = async (req, res) => {
           escola_nome,
           escola_rota || '',
           escola_codigo_teknisa || '',
-          ajuste || 0,
+          ajuste || 0, 
           total || 0, // Total calculado automaticamente pelo sistema
           semana_consumo,
           semana_abastecimento || null,
