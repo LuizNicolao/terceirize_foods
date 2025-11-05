@@ -5,27 +5,27 @@ import RelatorioInspecaoService from '../../services/relatorioInspecao';
 import toast from 'react-hot-toast';
 
 // Funções utilitárias para manipulação de datas
-const formatDateBR = (dateISO) => {
-  if (!dateISO) return '';
-  const date = new Date(dateISO);
-  return date.toLocaleDateString('pt-BR');
-};
+  const formatDateBR = (dateISO) => {
+    if (!dateISO) return '';
+    const date = new Date(dateISO);
+    return date.toLocaleDateString('pt-BR');
+  };
 
-const parseDateBR = (dateBR) => {
-  if (!dateBR) return null;
+  const parseDateBR = (dateBR) => {
+    if (!dateBR) return null;
   const partes = dateBR.split('/');
   if (partes.length !== 3) return null;
   const [dia, mes, ano] = partes;
   // Validar formato (DD/MM/YYYY)
   if (dia.length !== 2 || mes.length !== 2 || ano.length !== 4) return null;
-  return `${ano}-${mes}-${dia}`;
-};
+    return `${ano}-${mes}-${dia}`;
+  };
 
-const formatDateISO = (dateBR) => {
-  if (!dateBR) return '';
-  const parsed = parseDateBR(dateBR);
-  return parsed ? new Date(parsed).toISOString().split('T')[0] : '';
-};
+  const formatDateISO = (dateBR) => {
+    if (!dateBR) return '';
+    const parsed = parseDateBR(dateBR);
+    return parsed ? new Date(parsed).toISOString().split('T')[0] : '';
+  };
 
 const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = false }, ref) => {
   const [produtosAtualizados, setProdutosAtualizados] = useState(produtos || []);
@@ -91,7 +91,7 @@ const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = fal
       
       // Limitar entre 0 e 100% para evitar valores negativos ou superiores a 100%
       const percentualLimitado = Math.max(0, Math.min(100, percentualConsumido));
-      
+
       return parseFloat(percentualLimitado.toFixed(2));
     } catch (error) {
       console.error('Erro ao calcular controle de validade:', error, { fabricacao, validade });
@@ -150,13 +150,25 @@ const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = fal
   }, [produtosAtualizados]);
 
   // Calcular resultado final
+  // Regra: 
+  // 1. Se Ctrl. Val. (%) > 30% → Reprovado (produto próximo ao vencimento)
+  // 2. Se num_reprovadas >= RE && RE > 0 → Reprovado
+  // 3. Caso contrário → Aprovado
   const calcularResultadoFinal = useCallback((produto) => {
+    // Verificar controle de validade
+    const controleValidade = produto.controle_validade;
+    if (controleValidade !== null && controleValidade !== undefined && controleValidade > 30) {
+      return 'Reprovado'; // Produto próximo ao vencimento (> 30%)
+    }
+    
+    // Verificar amostras reprovadas
     const numReprovadas = parseInt(produto.num_amostras_reprovadas || 0);
     const re = parseInt(produto.re || 0);
 
     if (re > 0 && numReprovadas >= re) {
       return 'Reprovado';
     }
+    
     return 'Aprovado';
   }, []);
 
@@ -191,13 +203,19 @@ const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = fal
         produto.validade || produto.validadeBR
       );
       // Atualizar controle_validade no produto
-      produto.controle_validade = controleValidade;
+        produto.controle_validade = controleValidade;
     }
 
-    // Sempre recalcular resultado final quando mudar reprovadas ou quando atualizar RE
-    if (typeof field === 'string' && (field === 'num_amostras_reprovadas' || field === 're')) {
-      produto.resultado_final = calcularResultadoFinal(produto);
-    } else if (typeof field === 'object' && (field.num_amostras_reprovadas !== undefined || field.re !== undefined)) {
+    // Sempre recalcular resultado final quando:
+    // - Mudar reprovadas ou RE (amostragem)
+    // - Mudar controle de validade (fabricação/validade)
+    const mudouAmostragem = (typeof field === 'string' && (field === 'num_amostras_reprovadas' || field === 're')) ||
+                             (typeof field === 'object' && (field.num_amostras_reprovadas !== undefined || field.re !== undefined));
+    
+    const mudouControleValidade = temAlteracaoData || 
+                                   (typeof field === 'object' && field.controle_validade !== undefined);
+    
+    if (mudouAmostragem || mudouControleValidade) {
       produto.resultado_final = calcularResultadoFinal(produto);
     }
 
@@ -327,6 +345,14 @@ const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = fal
               const controleValidade = controleValidadeCalculado !== null && controleValidadeCalculado !== undefined
                 ? controleValidadeCalculado 
                 : (produto.controle_validade !== null && produto.controle_validade !== undefined ? produto.controle_validade : null);
+              
+              // Atualizar produto com controle_validade calculado se necessário
+              if (controleValidade !== produto.controle_validade) {
+                produto.controle_validade = controleValidade;
+              }
+              
+              // Calcular resultado final considerando controle de validade
+              const resultadoFinal = calcularResultadoFinal(produto);
 
               return (
                 <React.Fragment key={index}>
@@ -346,11 +372,11 @@ const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = fal
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       <div>
-                        <Input
-                          type="date"
-                          value={produto.fabricacao || formatDateISO(produto.fabricacaoBR) || ''}
+                      <Input
+                        type="date"
+                        value={produto.fabricacao || formatDateISO(produto.fabricacaoBR) || ''}
                           max={new Date().toISOString().split('T')[0]}
-                          onChange={(e) => {
+                        onChange={(e) => {
                             const dataSelecionada = e.target.value;
                             const hoje = new Date();
                             hoje.setHours(0, 0, 0, 0);
@@ -376,7 +402,7 @@ const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = fal
                               delete newErrors[`${index}-fabricacao`];
                               setErrors(newErrors);
                             }
-                          }}
+                        }}
                           className={`w-32 text-sm ${errors[`${index}-fabricacao`] ? 'border-red-500' : ''}`}
                           disabled={viewMode}
                           required
@@ -388,9 +414,9 @@ const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = fal
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       <div>
-                        <Input
-                          type="text"
-                          value={produto.lote || ''}
+                      <Input
+                        type="text"
+                        value={produto.lote || ''}
                           onChange={(e) => {
                             handleFieldChange(index, 'lote', e.target.value);
                             // Remover erro quando preencher
@@ -400,11 +426,11 @@ const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = fal
                               setErrors(newErrors);
                             }
                           }}
-                          placeholder="Lote"
+                        placeholder="Lote"
                           className={`w-24 text-sm ${errors[`${index}-lote`] ? 'border-red-500' : ''}`}
                           disabled={viewMode}
                           required
-                        />
+                      />
                         {errors[`${index}-lote`] && (
                           <p className="text-xs text-red-600 mt-1">{errors[`${index}-lote`]}</p>
                         )}
@@ -412,11 +438,11 @@ const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = fal
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       <div>
-                        <Input
-                          type="date"
-                          value={produto.validade || formatDateISO(produto.validadeBR) || ''}
+                      <Input
+                        type="date"
+                        value={produto.validade || formatDateISO(produto.validadeBR) || ''}
                           min={new Date().toISOString().split('T')[0]}
-                          onChange={(e) => {
+                        onChange={(e) => {
                             const dataSelecionada = e.target.value;
                             const hoje = new Date();
                             hoje.setHours(0, 0, 0, 0);
@@ -442,7 +468,7 @@ const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = fal
                               delete newErrors[`${index}-validade`];
                               setErrors(newErrors);
                             }
-                          }}
+                        }}
                           className={`w-32 text-sm ${errors[`${index}-validade`] ? 'border-red-500' : ''}`}
                           disabled={viewMode}
                           required
@@ -574,8 +600,8 @@ const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = fal
                         min="0"
                       />
                     </td>
-                    <td className={`px-4 py-3 whitespace-nowrap text-sm text-center ${getResultadoColor(produto.resultado_final || calcularResultadoFinal(produto))}`}>
-                      {produto.resultado_final || calcularResultadoFinal(produto) || '-'}
+                    <td className={`px-4 py-3 whitespace-nowrap text-sm text-center ${getResultadoColor(resultadoFinal)}`}>
+                      {resultadoFinal || '-'}
                     </td>
                   </tr>
                   {/* Linha de ações (opcional, pode ser removida se não quiser) */}

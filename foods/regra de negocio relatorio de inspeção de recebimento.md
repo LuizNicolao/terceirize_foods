@@ -324,9 +324,18 @@ percentual_consumido = Math.max(0, Math.min(100, percentual_consumido))
 
 2. **Resultado Final (Aprovado/Reprovado)** ✅
 ```javascript
-// Baseado em AC (Aceitação) e RE (Rejeição) do plano NQA
-// Calculado automaticamente quando muda num_amostras_reprovadas ou RE
-if (num_reprovadas >= RE && RE > 0) {
+// Regra combinada:
+// 1. Se Ctrl. Val. (%) > 30% → Reprovado (produto próximo ao vencimento)
+// 2. Se num_reprovadas >= RE && RE > 0 → Reprovado (amostragem)
+// 3. Caso contrário → Aprovado
+
+// Calculado automaticamente quando muda:
+// - Ctrl. Val. (%) (fabricação/validade)
+// - num_amostras_reprovadas ou RE
+
+if (controle_validade > 30) {
+    resultado_final = "Reprovado"  // Produto próximo ao vencimento (> 30%)
+} else if (num_reprovadas >= RE && RE > 0) {
     resultado_final = "Reprovado"  // Badge vermelho
 } else {
     resultado_final = "Aprovado"   // Badge verde
