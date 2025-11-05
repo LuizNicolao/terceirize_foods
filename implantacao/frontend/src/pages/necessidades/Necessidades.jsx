@@ -189,6 +189,9 @@ const Necessidades = () => {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Rota
                   </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Grupo
+                  </th>
                   <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Produtos
                   </th>
@@ -208,14 +211,16 @@ const Necessidades = () => {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {(() => {
-                  // Agrupar necessidades por necessidade_id (se disponível) ou por escola e data
+                  // Agrupar necessidades por necessidade_id (se disponível) ou por escola, data e grupo
+                  // Incluir grupo na chave para permitir múltiplas necessidades na mesma escola/semana com grupos diferentes
                   const agrupadas = necessidades.reduce((acc, necessidade) => {
-                    const chave = necessidade.necessidade_id || `${necessidade.escola}-${necessidade.semana_consumo}`;
+                    const chave = necessidade.necessidade_id || `${necessidade.escola}-${necessidade.semana_consumo}-${necessidade.grupo || 'sem-grupo'}`;
                     if (!acc[chave]) {
                       acc[chave] = {
                         necessidade_id: necessidade.necessidade_id,
                         escola: necessidade.escola,
                         rota: necessidade.escola_rota,
+                        grupo: necessidade.grupo,
                         data_consumo: necessidade.semana_consumo,
                         data_abastecimento: necessidade.semana_abastecimento,
                         data_preenchimento: necessidade.data_preenchimento,
@@ -238,6 +243,9 @@ const Necessidades = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {grupo.rota || '-'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {grupo.grupo || '-'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-center">
                         <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
