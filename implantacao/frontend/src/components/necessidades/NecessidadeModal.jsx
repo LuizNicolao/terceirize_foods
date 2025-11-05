@@ -368,14 +368,18 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
     
     // Se total for 0 ou vazio, retornar 100% (falta tudo)
     if (!total || total === 0 || total === '' || isNaN(total)) {
-      return '100,00%';
+      const diferenca = pedido;
+      return `100,00% (${formatarNumero(diferenca)})`;
     }
     
     // Calcular: 1 - (TOTAL / PEDIDO)
     const percentual = (1 - (total / pedido)) * 100;
     
-    // Formatar com 2 casas decimais
-    return `${percentual.toFixed(2).replace('.', ',')}%`;
+    // Calcular diferença absoluta: PEDIDO - TOTAL
+    const diferenca = pedido - total;
+    
+    // Formatar com 2 casas decimais para percentual e 3 para diferença
+    return `${percentual.toFixed(2).replace('.', ',')}% (${formatarNumero(diferenca)})`;
   };
 
   return (
