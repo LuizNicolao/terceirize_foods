@@ -398,14 +398,17 @@ const CKEditor = ({
                   });
                 }
             
-                // Destruir instância com o mesmo ID se existir
+                // Destruir instância com o mesmo ID se existir (com force: true para limpeza completa)
                 if (element.id && window.CKEDITOR.instances[element.id]) {
                   try {
                     const oldInstance = window.CKEDITOR.instances[element.id];
                     // Verificar se a instância ainda está válida antes de destruir
                     if (oldInstance && oldInstance.status !== 'destroyed') {
-                      oldInstance.destroy();
-                      await new Promise(resolve => setTimeout(resolve, 200));
+                      // Usar destroy(true) para forçar limpeza completa
+                      oldInstance.destroy(true);
+                      await new Promise(resolve => setTimeout(resolve, 300));
+                      // Forçar remoção do registro também
+                      delete window.CKEDITOR.instances[element.id];
                     }
                   } catch (e) {
                     console.warn('[DEBUG CKEditor] Erro ao destruir instância existente:', e);
@@ -416,6 +419,35 @@ const CKEditor = ({
                       console.warn('[DEBUG CKEditor] Erro ao remover instância do registro:', e2);
                     }
                   }
+                }
+                
+                // Verificar se há outras instâncias que apontam para este elemento (por comparação de elemento)
+                if (window.CKEDITOR && window.CKEDITOR.instances) {
+                  Object.keys(window.CKEDITOR.instances).forEach(instanceId => {
+                    try {
+                      const inst = window.CKEDITOR.instances[instanceId];
+                      if (inst && inst.element) {
+                        // Verificar se o elemento da instância é o mesmo que estamos tentando usar
+                        const instElement = inst.element.$ || inst.element;
+                        if (instElement === element || instElement === element.$) {
+                          console.warn('[DEBUG CKEditor] Encontrada instância que aponta para este elemento, destruindo...');
+                          try {
+                            if (inst.status !== 'destroyed') {
+                              inst.destroy(true);
+                            }
+                            delete window.CKEDITOR.instances[instanceId];
+                          } catch (e) {
+                            console.warn('[DEBUG CKEditor] Erro ao destruir instância conflitante:', e);
+                            delete window.CKEDITOR.instances[instanceId];
+                          }
+                        }
+                      }
+                    } catch (e) {
+                      // Ignorar erros ao verificar
+                    }
+                  });
+                  // Aguardar um pouco após limpeza
+                  await new Promise(resolve => setTimeout(resolve, 200));
                 }
           
                 // Limpar qualquer dado do CKEditor associado ao elemento antes de criar nova instância
@@ -471,6 +503,44 @@ const CKEditor = ({
                 // Verificar uma última vez que o elemento ainda está no DOM e válido
                 if (!element || !document.contains(element)) {
                   throw new Error('Elemento não está mais no DOM antes de replace');
+                }
+                
+                // Verificar que o elemento não está sendo usado por outra instância
+                if (window.CKEDITOR && window.CKEDITOR.dom) {
+                  try {
+                    // Tentar obter editor do elemento (sem criar novo CKEDITOR.dom.element que causa erro)
+                    // Verificar diretamente nas instâncias
+                    const conflictingInstance = Object.values(window.CKEDITOR.instances || {}).find(inst => {
+                      if (!inst || !inst.element) return false;
+                      try {
+                        const instElement = inst.element.$ || inst.element;
+                        return instElement === element && inst.status !== 'destroyed';
+                      } catch (e) {
+                        return false;
+                      }
+                    });
+                    
+                    if (conflictingInstance) {
+                      console.warn('[DEBUG CKEditor] Conflito detectado, destruindo instância conflitante...');
+                      try {
+                        conflictingInstance.destroy(true);
+                        delete window.CKEDITOR.instances[conflictingInstance.id];
+                        await new Promise(resolve => setTimeout(resolve, 200));
+                      } catch (e) {
+                        console.warn('[DEBUG CKEditor] Erro ao destruir instância conflitante:', e);
+                        if (conflictingInstance.id) {
+                          delete window.CKEDITOR.instances[conflictingInstance.id];
+                        }
+                      }
+                    }
+                  } catch (e) {
+                    // Ignorar - pode ser que o elemento não tenha editor ainda
+                  }
+                }
+                
+                // Verificar novamente que o elemento ainda está no DOM
+                if (!element || !document.contains(element)) {
+                  throw new Error('Elemento foi removido do DOM durante limpeza');
                 }
                 
                 // Tentar criar diretamente
