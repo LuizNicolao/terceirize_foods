@@ -387,7 +387,6 @@ class PdfTemplatesPDFController {
       valor_total: '0,00' // Campo não existe na tabela solicitacoes_compras, mas mantido para compatibilidade
     };
   }
-  }
 
   /**
    * Gerar HTML completo com CSS inline
