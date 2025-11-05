@@ -470,8 +470,6 @@ const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = fal
       </div>
     </div>
   );
-};
-
 });
 
 ProdutosTable.displayName = 'ProdutosTable';
