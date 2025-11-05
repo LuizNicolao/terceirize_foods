@@ -81,6 +81,18 @@ class PdfTemplatesPDFController {
       const loopContent = match[1];
       const itens = dados.itens || [];
       
+      // Debug: log para verificar dados
+      console.log('[DEBUG PDF Template] Loop encontrado, conteúdo:', loopContent.substring(0, 100));
+      console.log('[DEBUG PDF Template] Número de itens:', itens.length);
+      if (itens.length > 0) {
+        console.log('[DEBUG PDF Template] Primeiro item:', {
+          id: itens[0].id,
+          produto_codigo: itens[0].produto_codigo,
+          produto_nome: itens[0].produto_nome,
+          quantidade_formatada: itens[0].quantidade_formatada
+        });
+      }
+      
       let itemsHtml = '';
       itens.forEach((item, index) => {
         let itemHtml = loopContent;
@@ -129,6 +141,9 @@ class PdfTemplatesPDFController {
         
         itemsHtml += itemHtml;
       });
+      
+      // Debug: log resultado
+      console.log('[DEBUG PDF Template] HTML gerado para itens (primeiros 500 chars):', itemsHtml.substring(0, 500));
       
       // Substituir o loop completo pelo conteúdo renderizado
       html = html.replace(match[0], itemsHtml);
