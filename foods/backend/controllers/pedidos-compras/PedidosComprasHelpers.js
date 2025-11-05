@@ -202,6 +202,12 @@ class PedidosComprasHelpers {
       return;
     }
 
+    // Log para debug: mostrar todos os itens encontrados
+    console.log(`[DEBUG] Solicitação ${solicitacaoId}: Total de ${itens.length} item(ns) encontrado(s)`);
+    itens.forEach((item, index) => {
+      console.log(`[DEBUG]   Item ${index + 1} - ID: ${item.id}, Solicitado: ${item.quantidade_solicitada}, Utilizado: ${item.quantidade_utilizada}`);
+    });
+
     let todosAtendidos = true;
     let algumAtendido = false;
     const TOLERANCIA = 0.001; // Tolerância para diferenças de precisão decimal
