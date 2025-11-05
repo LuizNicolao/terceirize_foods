@@ -118,7 +118,7 @@ class SolicitacoesComprasPDFController {
     // Gerar PDF usando PDFKit - Layout adaptado do modal
     const PDFDocument = require('pdfkit');
     const doc = new PDFDocument({ 
-      margin: 50,
+      margin: 30,
       size: 'A4'
     });
 
@@ -160,133 +160,131 @@ class SolicitacoesComprasPDFController {
 
     // Título principal
     doc.fontSize(20).font('Helvetica-Bold').fillColor('black');
-    doc.text('Visualizar Solicitação', 50, 50, { align: 'center' });
-    doc.moveDown(1.5);
+    doc.text('Visualizar Solicitação', 30, 30, { align: 'center' });
+    doc.moveDown(1);
 
     // Cabeçalho da Solicitação (similar ao modal)
     let headerY = doc.y;
-    const leftMargin = 50;
-    const rightMargin = 50;
+    const leftMargin = 30;
+    const rightMargin = 30;
     const pageWidth = 595; // A4 width
     const usableWidth = pageWidth - leftMargin - rightMargin;
     const colWidth = usableWidth / 2;
     const spacing = 20;
-    const lineHeight = 25;
+    const lineHeight = 18; // Reduzido de 25 para 18
     let currentY = headerY;
     const headerStartY = currentY;
 
-    // Estimar altura do cabeçalho (vamos calcular depois e redesenhar)
-    let estimatedHeaderHeight = 200;
+    // Estimar altura do cabeçalho
+    let estimatedHeaderHeight = 160;
     if (solicitacao.observacoes) {
-      estimatedHeaderHeight = 250; // Mais espaço para observações
+      estimatedHeaderHeight = 200; // Mais espaço para observações
     }
 
     // Desenhar fundo cinza claro para o cabeçalho (simular bg-gray-50)
-    doc.rect(leftMargin, headerStartY - 10, usableWidth, estimatedHeaderHeight)
+    doc.rect(leftMargin, headerStartY - 5, usableWidth, estimatedHeaderHeight)
        .fillColor('#F9FAFB')
        .fill()
        .fillColor('black');
 
-    // Título da seção
-    doc.fontSize(14).font('Helvetica-Bold').fillColor('black');
-    doc.text('Cabeçalho da Solicitação', leftMargin + 15, currentY + 5);
-    currentY += 30;
+    // Removido título "Cabeçalho da Solicitação"
+    currentY += 5;
 
     // Linha 1: Filial | Data de Entrega CD
     doc.fontSize(10).font('Helvetica-Bold');
-    doc.text('Filial:', leftMargin + 15, currentY);
-    doc.font('Helvetica').text(solicitacao.filial_nome || solicitacao.unidade || '-', leftMargin + 15, currentY + 13);
+    doc.text('Filial:', leftMargin + 10, currentY);
+    doc.font('Helvetica').text(solicitacao.filial_nome || solicitacao.unidade || '-', leftMargin + 10, currentY + 12);
     
     doc.font('Helvetica-Bold');
     doc.text('Data de Entrega CD:', leftMargin + colWidth + spacing, currentY);
     const dataEntrega = solicitacao.data_entrega_cd
       ? new Date(solicitacao.data_entrega_cd).toLocaleDateString('pt-BR')
       : '-';
-    doc.font('Helvetica').text(dataEntrega, leftMargin + colWidth + spacing, currentY + 13);
-    currentY += lineHeight * 2;
+    doc.font('Helvetica').text(dataEntrega, leftMargin + colWidth + spacing, currentY + 12);
+    currentY += lineHeight;
 
     // Linha 2: Semana de Abastecimento | Justificativa
     doc.fontSize(10).font('Helvetica-Bold');
-    doc.text('Semana de Abastecimento:', leftMargin + 15, currentY);
-    doc.font('Helvetica').text(solicitacao.semana_abastecimento || '-', leftMargin + 15, currentY + 13);
+    doc.text('Semana de Abastecimento:', leftMargin + 10, currentY);
+    doc.font('Helvetica').text(solicitacao.semana_abastecimento || '-', leftMargin + 10, currentY + 12);
     
     doc.font('Helvetica-Bold');
     doc.text('Justificativa:', leftMargin + colWidth + spacing, currentY);
-    doc.font('Helvetica').text(solicitacao.justificativa || '-', leftMargin + colWidth + spacing, currentY + 13);
-    currentY += lineHeight * 2;
+    doc.font('Helvetica').text(solicitacao.justificativa || '-', leftMargin + colWidth + spacing, currentY + 12);
+    currentY += lineHeight;
 
     // Linha 3: Data do Documento | Número da Solicitação
     doc.fontSize(10).font('Helvetica-Bold');
-    doc.text('Data do Documento:', leftMargin + 15, currentY);
+    doc.text('Data do Documento:', leftMargin + 10, currentY);
     const dataDocumento = solicitacao.data_documento
       ? new Date(solicitacao.data_documento).toLocaleDateString('pt-BR')
       : (solicitacao.criado_em
           ? new Date(solicitacao.criado_em).toLocaleDateString('pt-BR')
           : '-');
-    doc.font('Helvetica').text(dataDocumento, leftMargin + 15, currentY + 13);
+    doc.font('Helvetica').text(dataDocumento, leftMargin + 10, currentY + 12);
     
     doc.font('Helvetica-Bold');
     doc.text('Número da Solicitação:', leftMargin + colWidth + spacing, currentY);
-    doc.font('Helvetica').text(solicitacao.numero_solicitacao || '-', leftMargin + colWidth + spacing, currentY + 13);
-    currentY += lineHeight * 2;
+    doc.font('Helvetica').text(solicitacao.numero_solicitacao || '-', leftMargin + colWidth + spacing, currentY + 12);
+    currentY += lineHeight;
 
     // Linha 4: Solicitante | Pedidos Vinculados
     doc.fontSize(10).font('Helvetica-Bold');
-    doc.text('Solicitante:', leftMargin + 15, currentY);
+    doc.text('Solicitante:', leftMargin + 10, currentY);
     const solicitanteNome = solicitacao.usuario_nome || solicitacao.usuario_nome_from_user || '-';
-    doc.font('Helvetica').text(solicitanteNome, leftMargin + 15, currentY + 13);
+    doc.font('Helvetica').text(solicitanteNome, leftMargin + 10, currentY + 12);
     
     doc.font('Helvetica-Bold');
     doc.text('Pedidos Vinculados:', leftMargin + colWidth + spacing, currentY);
     const pedidosText = numerosPedidos.length > 0 ? numerosPedidos.join(', ') : '-';
-    doc.font('Helvetica').text(pedidosText, leftMargin + colWidth + spacing, currentY + 13);
-    currentY += lineHeight * 2;
+    doc.font('Helvetica').text(pedidosText, leftMargin + colWidth + spacing, currentY + 12);
+    currentY += lineHeight;
 
     // Observações Gerais
     if (solicitacao.observacoes) {
-      currentY += 10;
+      currentY += 8;
       doc.fontSize(10).font('Helvetica-Bold');
-      doc.text('Observações Gerais:', leftMargin + 15, currentY);
-      currentY += 15;
+      doc.text('Observações Gerais:', leftMargin + 10, currentY);
+      currentY += 12;
       const observacoesHeight = doc.heightOfString(solicitacao.observacoes, {
-        width: usableWidth - 30,
+        width: usableWidth - 20,
         align: 'left'
       });
-      doc.font('Helvetica').text(solicitacao.observacoes, leftMargin + 15, currentY, {
-        width: usableWidth - 30,
+      doc.font('Helvetica').text(solicitacao.observacoes, leftMargin + 10, currentY, {
+        width: usableWidth - 20,
         align: 'left'
       });
-      currentY += observacoesHeight + 10;
+      currentY += observacoesHeight + 8;
     } else {
-      currentY += 20;
+      currentY += 10;
     }
 
-    doc.y = currentY + 20;
+    doc.y = currentY + 15;
     doc.moveDown(1);
 
     // Verificar se precisa de nova página antes da tabela
     if (doc.y > 750) {
       doc.addPage();
-      doc.y = 50;
+      doc.y = 30;
     }
 
     // Produtos da Solicitação (similar ao modal)
     const produtosTitleY = doc.y;
     doc.fontSize(14).font('Helvetica-Bold').fillColor('black');
-    doc.text('Produtos da Solicitação', leftMargin + 15, produtosTitleY);
-    doc.y = produtosTitleY + 25;
+    doc.text('Produtos da Solicitação', leftMargin + 10, produtosTitleY);
+    doc.y = produtosTitleY + 20;
 
     // Tabela simples (similar ao modal)
-    const tableLeft = leftMargin + 15;
+    const tableLeft = leftMargin + 10;
     const tableTop = doc.y;
-    const tableWidth = usableWidth - 30;
+    const tableWidth = usableWidth - 20;
     
-    // Larguras das colunas (similar ao modal)
+    // Larguras das colunas (melhor espaçamento)
     const colWidths = {
-      produto: tableWidth * 0.40,  // 40%
-      unidade: tableWidth * 0.15,  // 15%
-      quantidade: tableWidth * 0.25, // 25%
-      observacao: tableWidth * 0.20  // 20%
+      produto: tableWidth * 0.45,  // 45%
+      unidade: tableWidth * 0.12,  // 12%
+      quantidade: tableWidth * 0.18, // 18%
+      observacao: tableWidth * 0.25  // 25%
     };
 
     // Cabeçalho da tabela
@@ -314,12 +312,12 @@ class SolicitacoesComprasPDFController {
       if (tableRowY > maxY) {
         pageBreakOccurred = true;
         doc.addPage();
-        doc.y = 50;
+        doc.y = 30;
         tableRowY = doc.y;
         
         // Reimprimir título
         doc.fontSize(14).font('Helvetica-Bold');
-        doc.text('Produtos da Solicitação', leftMargin + 15, tableRowY - 25);
+        doc.text('Produtos da Solicitação', leftMargin + 10, tableRowY - 20);
         
         // Reimprimir cabeçalho
         doc.fontSize(10).font('Helvetica-Bold');
