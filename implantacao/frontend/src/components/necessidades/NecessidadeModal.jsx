@@ -504,7 +504,7 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
                       PEDIDO
                     </th>
                     <th rowSpan="2" className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      %
+                      % (Nº)
                     </th>
                   </tr>
                   <tr>
