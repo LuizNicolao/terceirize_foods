@@ -87,7 +87,7 @@ const gerarNecessidade = async (req, res) => {
     const necessidadesCriadas = [];
     
     for (const produto of produtos) {
-      const { produto_id, produto_nome, produto_unidade, ajuste } = produto;
+      const { produto_id, produto_nome, produto_unidade, ajuste, total } = produto;
 
       // Validar dados do produto
       if (!produto_id || !produto_nome) {
@@ -127,6 +127,7 @@ const gerarNecessidade = async (req, res) => {
             escola_rota,
             codigo_teknisa,
             ajuste, 
+            total,
             semana_consumo,
             semana_abastecimento,
             grupo,
@@ -134,7 +135,7 @@ const gerarNecessidade = async (req, res) => {
             status,
             observacoes,
             necessidade_id
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, [
           nutricionistaEscola.usuario_email, // Email da nutricionista vinculada à escola
           nutricionistaEscola.usuario_id,   // ID da nutricionista vinculada à escola
@@ -145,7 +146,8 @@ const gerarNecessidade = async (req, res) => {
           escola_nome,
           escola_rota || '',
           escola_codigo_teknisa || '',
-          ajuste || 0, 
+          ajuste || 0,
+          total || 0, // Total calculado automaticamente pelo sistema
           semana_consumo,
           semana_abastecimento || null,
           grupo,

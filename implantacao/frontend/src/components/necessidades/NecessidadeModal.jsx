@@ -316,7 +316,8 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
         produto_id: Number(produto.id), // Garantir que seja número
         produto_nome: produto.nome,
         produto_unidade: produto.unidade_medida,
-        ajuste: Number(produto.ajuste) || 0 // Usar o campo PEDIDO (ajuste) preenchido pelo usuário
+        ajuste: Number(produto.ajuste) || 0, // Usar o campo PEDIDO (ajuste) preenchido pelo usuário
+        total: Number(produto.total) || 0 // Total calculado automaticamente pelo sistema
       }))
     };
 
