@@ -81,17 +81,9 @@ class PdfTemplatesPDFController {
       let loopContent = match[1].trim(); // Remover espaços em branco do início/fim
       const itens = dados.itens || [];
       
-      // Debug: log para verificar dados
-      console.log('[DEBUG PDF Template] Loop encontrado, conteúdo:', loopContent.substring(0, 200));
-      console.log('[DEBUG PDF Template] Número de itens:', itens.length);
-      if (itens.length > 0) {
-        console.log('[DEBUG PDF Template] Primeiro item:', {
-          id: itens[0].id,
-          produto_codigo: itens[0].produto_codigo,
-          produto_nome: itens[0].produto_nome,
-          quantidade_formatada: itens[0].quantidade_formatada
-        });
-      }
+      // Debug: log para verificar dados do loop
+      console.log('[DEBUG] Loop encontrado, conteúdo (primeiros 200 chars):', loopContent.substring(0, 200));
+      console.log('[DEBUG] Número de itens:', itens.length);
       
       // Se o conteúdo do loop estiver vazio ou for apenas espaços, procurar pela tabela logo após
       let tableToReplace = null;
@@ -110,7 +102,7 @@ class PdfTemplatesPDFController {
             const trMatch = tbodyMatch[1].match(/(<tr[^>]*>[\s\S]*?<\/tr>)/i);
             if (trMatch) {
               loopContent = trMatch[1]; // Usar o <tr> completo como conteúdo do loop
-              console.log('[DEBUG PDF Template] Loop vazio detectado, usando <tr> encontrado:', trMatch[1].substring(0, 200));
+              console.log('[DEBUG] Loop vazio detectado, usando <tr> encontrado (primeiros 200 chars):', trMatch[1].substring(0, 200));
             }
           }
         }
@@ -166,7 +158,7 @@ class PdfTemplatesPDFController {
       });
       
       // Debug: log resultado
-      console.log('[DEBUG PDF Template] HTML gerado para itens (primeiros 500 chars):', itemsHtml.substring(0, 500));
+      console.log('[DEBUG] HTML gerado para itens (primeiros 300 chars):', itemsHtml.substring(0, 300));
       
       // Se encontrou tabela para substituir (loop vazio), substituir a tabela inteira
       if (tableToReplace) {
@@ -191,7 +183,7 @@ class PdfTemplatesPDFController {
           
           // Substituir loop + tabela pelo conteúdo renderizado
           html = html.replace(match[0] + tableToReplace, newTable);
-          console.log('[DEBUG PDF Template] Tabela substituída com sucesso');
+          console.log('[DEBUG] Tabela substituída com sucesso');
         } else {
           // Fallback: apenas substituir o loop
           html = html.replace(match[0], itemsHtml);
@@ -346,11 +338,17 @@ class PdfTemplatesPDFController {
       pedidos_vinculados_lista: pedidosVinculados.map(p => p.numero_pedido),
       
       // Dados para itens (pode ser usado em loops no template)
-      itens: itens.map(item => {
+      itens: itens.map((item, index) => {
         const quantidade = parseFloat(item.quantidade || 0);
         const quantidadeUtilizada = parseFloat(item.quantidade_utilizada || 0);
         const saldoDisponivel = parseFloat(item.saldo_disponivel || 0);
         const pedidosVinculadosItem = item.pedidos_vinculados || [];
+        
+        // Debug: log pedidos vinculados do item
+        if (index === 0) {
+          console.log('[DEBUG] Primeiro item - pedidos_vinculados (raw):', JSON.stringify(pedidosVinculadosItem));
+          console.log('[DEBUG] Primeiro item - tipo:', typeof pedidosVinculadosItem, Array.isArray(pedidosVinculadosItem));
+        }
         
         // Extrair números dos pedidos vinculados
         let pedidosNumeros = '';
@@ -365,8 +363,18 @@ class PdfTemplatesPDFController {
             })
             .filter(p => p && p.trim() !== '');
           pedidosNumeros = numeros.join(', ');
+          
+          if (index === 0) {
+            console.log('[DEBUG] Primeiro item - números extraídos:', numeros);
+            console.log('[DEBUG] Primeiro item - pedidosNumeros final:', pedidosNumeros);
+          }
         } else if (typeof pedidosVinculadosItem === 'string') {
           pedidosNumeros = pedidosVinculadosItem;
+          if (index === 0) {
+            console.log('[DEBUG] Primeiro item - pedidosNumeros (string):', pedidosNumeros);
+          }
+        } else if (index === 0) {
+          console.log('[DEBUG] Primeiro item - pedidos_vinculados vazio ou inválido');
         }
         
         return {
@@ -403,6 +411,17 @@ class PdfTemplatesPDFController {
       total_quantidade: itens.reduce((sum, item) => sum + parseFloat(item.quantidade || 0), 0).toFixed(3).replace('.', ','),
       valor_total: '0,00' // Campo não existe na tabela solicitacoes_compras, mas mantido para compatibilidade
     };
+    
+    // Debug: log valor total e pedidos vinculados
+    console.log('[DEBUG] valor_total:', dados.valor_total);
+    console.log('[DEBUG] pedidos_vinculados (solicitação):', dados.pedidos_vinculados);
+    console.log('[DEBUG] pedidos_vinculados_lista (solicitação):', dados.pedidos_vinculados_lista);
+    if (dados.itens && dados.itens.length > 0) {
+      console.log('[DEBUG] Primeiro item - pedidos_vinculados:', dados.itens[0].pedidos_vinculados);
+      console.log('[DEBUG] Primeiro item - pedidos_vinculados_lista:', dados.itens[0].pedidos_vinculados_lista);
+    }
+    
+    return dados;
   }
 
   /**
