@@ -255,6 +255,20 @@ const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = fal
       if (!produto.validade && !produto.validadeBR) {
         newErrors[`${index}-validade`] = 'Validade é obrigatória';
         hasErrors = true;
+      } else {
+        // Validar se validade não é anterior à data atual
+        const validade = produto.validade || produto.validadeBR;
+        if (validade) {
+          let validadeISO = validade.includes('/') ? formatDateISO(validade) : validade;
+          if (validadeISO) {
+            const validadeDate = new Date(validadeISO);
+            validadeDate.setHours(0, 0, 0, 0);
+            if (validadeDate < hoje) {
+              newErrors[`${index}-validade`] = 'Data de validade não pode ser anterior à data atual';
+              hasErrors = true;
+            }
+          }
+        }
       }
     });
 
@@ -401,14 +415,28 @@ const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = fal
                         <Input
                           type="date"
                           value={produto.validade || formatDateISO(produto.validadeBR) || ''}
+                          min={new Date().toISOString().split('T')[0]}
                           onChange={(e) => {
-                            const dateBR = formatDateBR(e.target.value);
+                            const dataSelecionada = e.target.value;
+                            const hoje = new Date();
+                            hoje.setHours(0, 0, 0, 0);
+                            const dataValidade = new Date(dataSelecionada);
+                            
+                            // Validar se a data de validade não é anterior à data atual
+                            if (dataValidade < hoje) {
+                              const newErrors = { ...errors };
+                              newErrors[`${index}-validade`] = 'Data de validade não pode ser anterior à data atual';
+                              setErrors(newErrors);
+                              return;
+                            }
+                            
+                            const dateBR = formatDateBR(dataSelecionada);
                             // Atualizar ambos os campos de uma vez para garantir que o cálculo funcione
                             handleFieldChange(index, {
-                              validade: e.target.value,
+                              validade: dataSelecionada,
                               validadeBR: dateBR
                             });
-                            // Remover erro quando preencher
+                            // Remover erro quando preencher corretamente
                             if (errors[`${index}-validade`]) {
                               const newErrors = { ...errors };
                               delete newErrors[`${index}-validade`];
