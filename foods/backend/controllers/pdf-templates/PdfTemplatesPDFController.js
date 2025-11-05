@@ -433,15 +433,6 @@ class PdfTemplatesPDFController {
   }
 
   /**
-   * Preparar dados para template de solicitação de compras
-   * @deprecated Use prepararDados('solicitacoes-compras', ...) ao invés disso
-   */
-  static prepararDadosSolicitacao(solicitacao, itens, pedidosVinculados) {
-    // Usar o novo método prepararDados
-    return PdfTemplatesPDFController.prepararDados('solicitacoes-compras', solicitacao, itens, pedidosVinculados);
-  }
-
-  /**
    * Gerar HTML completo com CSS inline
    */
   static gerarHTMLCompleto(htmlTemplate, cssStyles = null) {
