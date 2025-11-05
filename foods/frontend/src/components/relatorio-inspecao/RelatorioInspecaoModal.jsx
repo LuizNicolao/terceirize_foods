@@ -325,7 +325,7 @@ const RelatorioInspecaoModal = ({ isOpen, onClose, onSubmit, rir, viewMode, grup
 
               {/* Fornecedor */}
               <Input
-                label="Fornecedor *"
+                label={<span>Fornecedor <span className="text-red-500">*</span></span>}
                 {...register('fornecedor', {
                   required: 'Fornecedor é obrigatório'
                 })}
@@ -345,7 +345,7 @@ const RelatorioInspecaoModal = ({ isOpen, onClose, onSubmit, rir, viewMode, grup
 
               {/* Nº Nota Fiscal */}
               <Input
-                label="Nº Nota Fiscal *"
+                label={<span>Nº Nota Fiscal <span className="text-red-500">*</span></span>}
                 {...register('numero_nota_fiscal', {
                   required: 'Número da Nota Fiscal é obrigatório'
                 })}
@@ -356,7 +356,7 @@ const RelatorioInspecaoModal = ({ isOpen, onClose, onSubmit, rir, viewMode, grup
 
               {/* Data Recebimento */}
               <Input
-                label="Data Recebimento *"
+                label={<span>Data Recebimento <span className="text-red-500">*</span></span>}
                 type="date"
                 {...register('data_inspecao', {
                   required: 'Data de recebimento é obrigatória'
@@ -367,7 +367,7 @@ const RelatorioInspecaoModal = ({ isOpen, onClose, onSubmit, rir, viewMode, grup
 
               {/* Hora Recebimento */}
               <Input
-                label="Hora Recebimento *"
+                label={<span>Hora Recebimento <span className="text-red-500">*</span></span>}
                 type="time"
                 {...register('hora_inspecao', {
                   required: 'Hora de recebimento é obrigatória'

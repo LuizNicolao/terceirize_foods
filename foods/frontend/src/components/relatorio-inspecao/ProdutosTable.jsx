@@ -340,9 +340,9 @@ const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = fal
               <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Produto</th>
               <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Unidade</th>
               <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Qtd. Pedido</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Fabricação *</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Lote *</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Validade *</th>
+              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Fabricação <span className="text-red-500">*</span></th>
+              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Lote <span className="text-red-500">*</span></th>
+              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Validade <span className="text-red-500">*</span></th>
               <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Ctrl. Val. (%)</th>
             </tr>
           </thead>
@@ -544,8 +544,13 @@ const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = fal
                     </th>
                   </tr>
                   <tr className="bg-gray-50">
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Temp. (°C)</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Aval. Sensorial *</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                      Temp. (°C)
+                      {produtosAtualizados.some(p => p.grupo_nome && p.grupo_nome.toLowerCase() === 'frios') && (
+                        <span className="text-red-500 ml-1">*</span>
+                      )}
+                    </th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Aval. Sensorial <span className="text-red-500">*</span></th>
                     <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Tam. Lote</th>
                     <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">NQA</th>
                     <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Nº Amostras Aval.</th>
