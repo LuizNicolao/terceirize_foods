@@ -449,9 +449,9 @@ const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = fal
                                 if (valDate < fabDate) {
                                   return <span className="text-red-600 text-xs font-semibold" title="Validade não pode ser anterior à fabricação">⚠️ Inválido</span>;
                                 }
-                                // Validar se datas são iguais
+                                // Validar se datas são iguais (também é inválido)
                                 if (valDate.getTime() === fabDate.getTime()) {
-                                  return <span className="text-orange-600 text-xs" title="Validade igual à fabricação - não é possível calcular">⚠️ Iguais</span>;
+                                  return <span className="text-red-600 text-xs font-semibold" title="Validade igual à fabricação - não é possível calcular">⚠️ Inválido</span>;
                                 }
                                 // Se chegou aqui, as datas são válidas mas o cálculo retornou null por outro motivo
                                 return <span className="text-gray-500 text-xs" title="Erro ao calcular - verifique as datas">Erro</span>;
