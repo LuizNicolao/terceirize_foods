@@ -44,17 +44,45 @@ const CKEditor = ({
 
     // Carregar o script dinamicamente
     const script = document.createElement('script');
-    // Usar process.env.PUBLIC_URL se disponível (React), senão usar caminho relativo
-    const publicUrl = process.env.PUBLIC_URL || '';
-    // Remover barra dupla no início se houver
-    const cleanPath = publicUrl.replace(/\/$/, '');
-    script.src = `${cleanPath}/ckeditor/ckeditor.js`;
+    // Detectar caminho base: usar homepage do package.json ou detectar da URL atual
+    let basePath = process.env.PUBLIC_URL || '';
+    
+    // Se não tem PUBLIC_URL, tentar detectar do caminho atual
+    if (!basePath) {
+      const pathname = window.location.pathname;
+      // Se estiver em /foods/..., usar /foods como base
+      if (pathname.startsWith('/foods')) {
+        basePath = '/foods';
+      } else {
+        basePath = '';
+      }
+    }
+    
+    // Construir caminho do CKEditor
+    const ckeditorPath = `${basePath}/ckeditor/ckeditor.js`;
+    
+    // Definir CKEDITOR_BASEPATH antes de carregar o script
+    window.CKEDITOR_BASEPATH = `${basePath}/ckeditor/`;
+    
+    script.src = ckeditorPath;
     script.async = true;
     script.onload = () => {
-      setScriptLoaded(true);
+      // Verificar se CKEDITOR foi carregado corretamente
+      if (typeof window.CKEDITOR !== 'undefined') {
+        // Garantir que o basePath está configurado
+        if (!window.CKEDITOR.basePath || window.CKEDITOR.basePath !== window.CKEDITOR_BASEPATH) {
+          window.CKEDITOR.basePath = window.CKEDITOR_BASEPATH;
+        }
+        setScriptLoaded(true);
+      } else {
+        console.error('CKEditor não foi inicializado após carregar o script');
+      }
     };
     script.onerror = () => {
-      console.error('Erro ao carregar CKEditor. Verifique se o arquivo está em /public/ckeditor/ckeditor.js');
+      console.error('Erro ao carregar CKEditor. Tentou carregar de:', ckeditorPath);
+      console.error('Verifique se o arquivo está em /public/ckeditor/ckeditor.js');
+      console.error('PUBLIC_URL:', process.env.PUBLIC_URL);
+      console.error('Caminho atual:', window.location.pathname);
     };
     document.head.appendChild(script);
 
