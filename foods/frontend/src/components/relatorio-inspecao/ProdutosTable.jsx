@@ -13,7 +13,11 @@ const formatDateBR = (dateISO) => {
 
 const parseDateBR = (dateBR) => {
   if (!dateBR) return null;
-  const [dia, mes, ano] = dateBR.split('/');
+  const partes = dateBR.split('/');
+  if (partes.length !== 3) return null;
+  const [dia, mes, ano] = partes;
+  // Validar formato (DD/MM/YYYY)
+  if (dia.length !== 2 || mes.length !== 2 || ano.length !== 4) return null;
   return `${ano}-${mes}-${dia}`;
 };
 
@@ -45,6 +49,11 @@ const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = fal
       let fabricacaoISO = fabricacao.includes('/') ? formatDateISO(fabricacao) : fabricacao;
       let validadeISO = validade.includes('/') ? formatDateISO(validade) : validade;
       
+      // Validar se a conversão funcionou
+      if (!fabricacaoISO || !validadeISO) {
+        return null;
+      }
+      
       // Criar objetos Date e resetar horas para meia-noite (evitar problemas de timezone)
       const fabricacaoDate = new Date(fabricacaoISO);
       fabricacaoDate.setHours(0, 0, 0, 0);
@@ -55,19 +64,27 @@ const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = fal
       const hoje = new Date();
       hoje.setHours(0, 0, 0, 0);
 
-      if (isNaN(fabricacaoDate.getTime()) || isNaN(validadeDate.getTime())) return null;
+      if (isNaN(fabricacaoDate.getTime()) || isNaN(validadeDate.getTime())) {
+        return null;
+      }
 
+      // Validar se validade é posterior à fabricação
+      if (validadeDate < fabricacaoDate) {
+        // Validade anterior à fabricação é inválido
+        return null;
+      }
+      
       // Calcular prazo_total = dias(validade - fabricacao)
       const prazoTotal = Math.ceil((validadeDate - fabricacaoDate) / (1000 * 60 * 60 * 24));
-      
-      // Calcular dias_restantes = dias(validade - hoje)
-      const diasRestantes = Math.ceil((validadeDate - hoje) / (1000 * 60 * 60 * 24));
       
       // Validar se prazo_total é válido (deve ser maior que 0)
       if (prazoTotal <= 0) {
         // Se as datas são iguais ou inválidas, retornar null
         return null;
       }
+      
+      // Calcular dias_restantes = dias(validade - hoje)
+      const diasRestantes = Math.ceil((validadeDate - hoje) / (1000 * 60 * 60 * 24));
 
       // Calcular percentual_consumido = (1 - (dias_restantes / prazo_total)) * 100
       const percentualConsumido = ((1 - (diasRestantes / prazoTotal)) * 100);
@@ -77,7 +94,7 @@ const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = fal
       
       return parseFloat(percentualLimitado.toFixed(2));
     } catch (error) {
-      console.error('Erro ao calcular controle de validade:', error);
+      console.error('Erro ao calcular controle de validade:', error, { fabricacao, validade });
       return null;
     }
   }, []);
@@ -163,24 +180,18 @@ const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = fal
     }
 
     // Se mudou fabricação ou validade, recalcular controle de validade
-    if (typeof field === 'string' && (field === 'fabricacao' || field === 'validade' || field === 'fabricacaoBR' || field === 'validadeBR')) {
+    // Sempre recalcular após atualizar qualquer campo de data
+    const temAlteracaoData = (typeof field === 'string' && (field === 'fabricacao' || field === 'validade' || field === 'fabricacaoBR' || field === 'validadeBR')) ||
+                             (typeof field === 'object' && (field.fabricacao !== undefined || field.validade !== undefined || field.fabricacaoBR !== undefined || field.validadeBR !== undefined));
+    
+    if (temAlteracaoData) {
+      // Calcular controle de validade com os valores atualizados do produto
       const controleValidade = calcularControleValidade(
         produto.fabricacao || produto.fabricacaoBR,
         produto.validade || produto.validadeBR
       );
-      // Sempre atualizar controle_validade, mesmo que seja null (para limpar valor anterior)
+      // Atualizar controle_validade no produto
       produto.controle_validade = controleValidade;
-    } else if (typeof field === 'object') {
-      // Recalcular se objeto contém datas (fabricacao, validade, fabricacaoBR, validadeBR)
-      if (field.fabricacao !== undefined || field.validade !== undefined || 
-          field.fabricacaoBR !== undefined || field.validadeBR !== undefined) {
-        const controleValidade = calcularControleValidade(
-          produto.fabricacao || produto.fabricacaoBR,
-          produto.validade || produto.validadeBR
-        );
-        // Sempre atualizar controle_validade, mesmo que seja null (para limpar valor anterior)
-        produto.controle_validade = controleValidade;
-      }
     }
 
     // Sempre recalcular resultado final quando mudar reprovadas ou quando atualizar RE
@@ -210,16 +221,37 @@ const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = fal
   const validateProdutos = useCallback(() => {
     const newErrors = {};
     let hasErrors = false;
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
 
     produtosAtualizados.forEach((produto, index) => {
+      // Validar fabricação
       if (!produto.fabricacao && !produto.fabricacaoBR) {
         newErrors[`${index}-fabricacao`] = 'Fabricação é obrigatória';
         hasErrors = true;
+      } else {
+        // Validar se fabricação não é superior à data atual
+        const fabricacao = produto.fabricacao || produto.fabricacaoBR;
+        if (fabricacao) {
+          let fabricacaoISO = fabricacao.includes('/') ? formatDateISO(fabricacao) : fabricacao;
+          if (fabricacaoISO) {
+            const fabricacaoDate = new Date(fabricacaoISO);
+            fabricacaoDate.setHours(0, 0, 0, 0);
+            if (fabricacaoDate > hoje) {
+              newErrors[`${index}-fabricacao`] = 'Data de fabricação não pode ser superior à data atual';
+              hasErrors = true;
+            }
+          }
+        }
       }
+      
+      // Validar lote
       if (!produto.lote || produto.lote.trim() === '') {
         newErrors[`${index}-lote`] = 'Lote é obrigatório';
         hasErrors = true;
       }
+      
+      // Validar validade
       if (!produto.validade && !produto.validadeBR) {
         newErrors[`${index}-validade`] = 'Validade é obrigatória';
         hasErrors = true;
@@ -270,10 +302,17 @@ const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = fal
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {produtosAtualizados.map((produto, index) => {
-              const controleValidade = calcularControleValidade(
-                produto.fabricacao || produto.fabricacaoBR,
-                produto.validade || produto.validadeBR
-              ) || produto.controle_validade;
+              // Sempre calcular o controle de validade com os valores atuais
+              const fabricacaoAtual = produto.fabricacao || produto.fabricacaoBR || '';
+              const validadeAtual = produto.validade || produto.validadeBR || '';
+              
+              // Calcular controle de validade sempre que renderizar
+              const controleValidadeCalculado = calcularControleValidade(fabricacaoAtual, validadeAtual);
+              
+              // Se temos um cálculo válido, usar ele. Caso contrário, usar o valor salvo (se existir)
+              const controleValidade = controleValidadeCalculado !== null && controleValidadeCalculado !== undefined
+                ? controleValidadeCalculado 
+                : (produto.controle_validade !== null && produto.controle_validade !== undefined ? produto.controle_validade : null);
 
               return (
                 <React.Fragment key={index}>
@@ -296,14 +335,28 @@ const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = fal
                         <Input
                           type="date"
                           value={produto.fabricacao || formatDateISO(produto.fabricacaoBR) || ''}
+                          max={new Date().toISOString().split('T')[0]}
                           onChange={(e) => {
-                            const dateBR = formatDateBR(e.target.value);
+                            const dataSelecionada = e.target.value;
+                            const hoje = new Date();
+                            hoje.setHours(0, 0, 0, 0);
+                            const dataFabricacao = new Date(dataSelecionada);
+                            
+                            // Validar se a data de fabricação não é superior à data atual
+                            if (dataFabricacao > hoje) {
+                              const newErrors = { ...errors };
+                              newErrors[`${index}-fabricacao`] = 'Data de fabricação não pode ser superior à data atual';
+                              setErrors(newErrors);
+                              return;
+                            }
+                            
+                            const dateBR = formatDateBR(dataSelecionada);
                             // Atualizar ambos os campos de uma vez para garantir que o cálculo funcione
                             handleFieldChange(index, {
-                              fabricacao: e.target.value,
+                              fabricacao: dataSelecionada,
                               fabricacaoBR: dateBR
                             });
-                            // Remover erro quando preencher
+                            // Remover erro quando preencher corretamente
                             if (errors[`${index}-fabricacao`]) {
                               const newErrors = { ...errors };
                               delete newErrors[`${index}-fabricacao`];
@@ -372,9 +425,47 @@ const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = fal
                       </div>
                     </td>
                     <td className={`px-4 py-3 whitespace-nowrap text-sm text-center ${getValidadeColor(controleValidade)}`}>
-                      {controleValidade !== null && controleValidade !== undefined 
-                        ? `${controleValidade}%` 
-                        : '-'}
+                      {(() => {
+                        // Se tem cálculo válido, mostrar percentual
+                        if (controleValidade !== null && controleValidade !== undefined) {
+                          return `${controleValidade}%`;
+                        }
+                        
+                        // Se tem ambas as datas mas não calculou, verificar o motivo
+                        const fab = produto.fabricacao || produto.fabricacaoBR || '';
+                        const val = produto.validade || produto.validadeBR || '';
+                        
+                        if (fab && val) {
+                          try {
+                            let fabISO = fab.includes('/') ? formatDateISO(fab) : fab;
+                            let valISO = val.includes('/') ? formatDateISO(val) : val;
+                            
+                            if (fabISO && valISO) {
+                              const fabDate = new Date(fabISO);
+                              const valDate = new Date(valISO);
+                              
+                              if (!isNaN(fabDate.getTime()) && !isNaN(valDate.getTime())) {
+                                // Validar se validade é anterior à fabricação
+                                if (valDate < fabDate) {
+                                  return <span className="text-red-600 text-xs font-semibold" title="Validade não pode ser anterior à fabricação">⚠️ Inválido</span>;
+                                }
+                                // Validar se datas são iguais
+                                if (valDate.getTime() === fabDate.getTime()) {
+                                  return <span className="text-orange-600 text-xs" title="Validade igual à fabricação - não é possível calcular">⚠️ Iguais</span>;
+                                }
+                                // Se chegou aqui, as datas são válidas mas o cálculo retornou null por outro motivo
+                                return <span className="text-gray-500 text-xs" title="Erro ao calcular - verifique as datas">Erro</span>;
+                              }
+                            }
+                          } catch (e) {
+                            // Ignorar erros de conversão
+                            return <span className="text-gray-500 text-xs" title="Erro ao processar datas">Erro</span>;
+                          }
+                        }
+                        
+                        // Sem datas preenchidas
+                        return '-';
+                      })()}
                     </td>
                   </tr>
                   
