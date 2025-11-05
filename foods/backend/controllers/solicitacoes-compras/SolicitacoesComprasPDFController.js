@@ -105,11 +105,6 @@ class SolicitacoesComprasPDFController {
           WHERE pci.solicitacao_item_id = ?`,
           [item.id]
         );
-        
-        // Debug: log para verificar vínculos encontrados
-        if (itens.indexOf(item) === 0) {
-          console.log('[DEBUG] Item ID', item.id, '- vínculos encontrados:', JSON.stringify(vinculos));
-        }
 
         // Calcular quantidade utilizada e saldo disponível
         const quantidade_utilizada = vinculos.reduce((sum, v) => sum + parseFloat(v.quantidade_pedido || 0), 0);
