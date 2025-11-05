@@ -88,7 +88,7 @@ class ProdutoGenericoListController {
     // Aplicar ordenação
     let orderBy = 'pg.nome ASC';
     if (sortField && sortDirection) {
-      const validFields = ['codigo', 'nome', 'status', 'grupo_id', 'subgrupo_id', 'classe_id', 'unidade_medida_id', 'produto_origem_id', 'produto_padrao'];
+      const validFields = ['codigo', 'nome', 'status', 'grupo_id', 'subgrupo_id', 'classe_id', 'unidade_medida_id', 'produto_origem_id', 'produto_padrao', 'grupo_nome', 'subgrupo_nome', 'classe_nome', 'produto_origem_nome'];
       if (validFields.includes(sortField)) {
         const direction = sortDirection.toLowerCase() === 'desc' ? 'DESC' : 'ASC';
         
@@ -98,6 +98,10 @@ class ProdutoGenericoListController {
           'nome': 'pg.nome',
           'status': 'pg.status',
           'grupo_id': 'pg.grupo_id',
+          'grupo_nome': 'g.nome',
+          'subgrupo_nome': 'sg.nome',
+          'classe_nome': 'c.nome',
+          'produto_origem_nome': 'po.nome',
           'subgrupo_id': 'pg.subgrupo_id',
           'classe_id': 'pg.classe_id',
           'unidade_medida_id': 'pg.unidade_medida_id',

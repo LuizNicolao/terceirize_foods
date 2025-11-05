@@ -54,21 +54,41 @@ const ProdutosGenericosTable = ({
                   currentDirection={sortDirection}
                   onSort={onSort}
                 />
-                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Grupo
-                </th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Subgrupo
-                </th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Classe
-                </th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Padrão
-                </th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Origem
-                </th>
+                <SortableTableHeader
+                  label="Grupo"
+                  field="grupo_nome"
+                  currentSort={sortField}
+                  currentDirection={sortDirection}
+                  onSort={onSort}
+                />
+                <SortableTableHeader
+                  label="Subgrupo"
+                  field="subgrupo_nome"
+                  currentSort={sortField}
+                  currentDirection={sortDirection}
+                  onSort={onSort}
+                />
+                <SortableTableHeader
+                  label="Classe"
+                  field="classe_nome"
+                  currentSort={sortField}
+                  currentDirection={sortDirection}
+                  onSort={onSort}
+                />
+                <SortableTableHeader
+                  label="Padrão"
+                  field="produto_padrao"
+                  currentSort={sortField}
+                  currentDirection={sortDirection}
+                  onSort={onSort}
+                />
+                <SortableTableHeader
+                  label="Origem"
+                  field="produto_origem_nome"
+                  currentSort={sortField}
+                  currentDirection={sortDirection}
+                  onSort={onSort}
+                />
                 <SortableTableHeader
                   label="Status"
                   field="status"
