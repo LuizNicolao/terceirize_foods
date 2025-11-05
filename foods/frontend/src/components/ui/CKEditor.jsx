@@ -67,16 +67,29 @@ const CKEditor = ({
     script.src = ckeditorPath;
     script.async = true;
     script.onload = () => {
-      // Verificar se CKEDITOR foi carregado corretamente
-      if (typeof window.CKEDITOR !== 'undefined') {
-        // Garantir que o basePath está configurado
-        if (!window.CKEDITOR.basePath || window.CKEDITOR.basePath !== window.CKEDITOR_BASEPATH) {
-          window.CKEDITOR.basePath = window.CKEDITOR_BASEPATH;
+      // Aguardar um pouco para garantir que CKEDITOR foi inicializado
+      setTimeout(() => {
+        // Verificar se CKEDITOR foi carregado corretamente
+        if (typeof window.CKEDITOR !== 'undefined') {
+          // Garantir que o basePath está configurado
+          if (!window.CKEDITOR.basePath || window.CKEDITOR.basePath !== window.CKEDITOR_BASEPATH) {
+            window.CKEDITOR.basePath = window.CKEDITOR_BASEPATH;
+          }
+          // Carregar config.js se existir
+          const configScript = document.createElement('script');
+          configScript.src = `${basePath}/ckeditor/config.js`;
+          configScript.onerror = () => {
+            // Não é crítico se config.js não existir
+            console.warn('config.js do CKEditor não encontrado, usando configuração padrão');
+          };
+          document.head.appendChild(configScript);
+          
+          setScriptLoaded(true);
+        } else {
+          console.error('CKEditor não foi inicializado após carregar o script');
+          console.error('Verifique se o arquivo ckeditor.js está correto e acessível');
         }
-        setScriptLoaded(true);
-      } else {
-        console.error('CKEditor não foi inicializado após carregar o script');
-      }
+      }, 100);
     };
     script.onerror = () => {
       console.error('Erro ao carregar CKEditor. Tentou carregar de:', ckeditorPath);
