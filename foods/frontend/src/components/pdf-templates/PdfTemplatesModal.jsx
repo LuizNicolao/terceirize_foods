@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { FaTimes, FaSave, FaEye, FaEdit, FaPlus } from 'react-icons/fa';
 import { Button, Input, Modal, SearchableSelect } from '../ui';
+import CKEditorWrapper from './CKEditorWrapper';
 
 const PdfTemplatesModal = ({
   isOpen,
@@ -16,6 +17,7 @@ const PdfTemplatesModal = ({
   const [saving, setSaving] = useState(false);
   const [htmlContent, setHtmlContent] = useState('');
   const [cssContent, setCssContent] = useState('');
+  const editorRef = useRef(null);
 
   const telaVinculada = watch('tela_vinculada');
 
@@ -27,8 +29,11 @@ const PdfTemplatesModal = ({
           setValue(key, template[key]);
         }
       });
-      setHtmlContent(template.html_template || '');
-      setCssContent(template.css_styles || '');
+      // Aguardar um pouco para o editor carregar antes de definir o conteúdo
+      setTimeout(() => {
+        setHtmlContent(template.html_template || '');
+        setCssContent(template.css_styles || '');
+      }, 300);
       
       // Converter campos booleanos
       setValue('ativo', template.ativo === 1 || template.ativo === true ? '1' : '0');
@@ -40,6 +45,11 @@ const PdfTemplatesModal = ({
       setCssContent('');
       setValue('ativo', '1'); // Padrão: Ativo
       setValue('padrao', '0'); // Padrão: Não é padrão
+    } else if (!isOpen) {
+      // Limpar quando modal fechar
+      setHtmlContent('');
+      setCssContent('');
+      editorRef.current = null;
     }
   }, [template, isOpen, setValue, reset]);
 
@@ -197,17 +207,16 @@ const PdfTemplatesModal = ({
                     key={variavel}
                     className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-mono cursor-pointer hover:bg-blue-200"
                     onClick={() => {
-                      if (!isViewMode) {
-                        const textarea = document.querySelector('textarea[name="html_template"]');
-                        if (textarea) {
-                          const start = textarea.selectionStart;
-                          const end = textarea.selectionEnd;
-                          const text = textarea.value;
-                          const newText = text.substring(0, start) + `{{${variavel}}}` + text.substring(end);
-                          setHtmlContent(newText);
-                          textarea.focus();
-                          textarea.setSelectionRange(start + variavel.length + 4, start + variavel.length + 4);
-                        }
+                      if (!isViewMode && editorRef.current) {
+                        const editor = editorRef.current;
+                        const model = editor.model;
+                        const selection = model.document.selection;
+                        
+                        // Inserir variável no editor
+                        model.change(writer => {
+                          const insertPosition = selection.getFirstPosition();
+                          writer.insertText(`{{${variavel}}}`, insertPosition);
+                        });
                       }
                     }}
                     title="Clique para inserir no HTML"
@@ -224,16 +233,13 @@ const PdfTemplatesModal = ({
             <label className="block text-sm font-medium text-gray-700 mb-2">
               HTML Template * <span className="text-xs text-gray-500">(Use variáveis com {'{{variavel}}'})</span>
             </label>
-            <textarea
-              name="html_template"
+            <CKEditorWrapper
               value={htmlContent}
-              onChange={(e) => setHtmlContent(e.target.value)}
+              onChange={setHtmlContent}
               disabled={isViewMode || saving}
-              rows={15}
-              className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 ${
-                errors.html_template ? 'border-red-500' : 'border-gray-300'
-              } ${isViewMode || saving ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
               placeholder="Digite o HTML do template aqui..."
+              editorRef={editorRef}
+              isOpen={isOpen}
             />
             {errors.html_template && (
               <p className="mt-1 text-sm text-red-600">{errors.html_template.message}</p>
