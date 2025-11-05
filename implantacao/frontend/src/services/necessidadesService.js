@@ -66,7 +66,8 @@ const necessidadesService = {
 
   // Buscar produtos por grupo (do sistema implantacao)
   buscarProdutosPorGrupo: async (grupoId) => {
-    const response = await api.get(`/produtos-per-capita?grupo=${grupoId}&ativo=true`);
+    // Passar limit alto para retornar todos os produtos do grupo (max permitido é 1000)
+    const response = await api.get(`/produtos-per-capita?grupo=${grupoId}&ativo=true&limit=1000`);
     return response.data;
   },
 
