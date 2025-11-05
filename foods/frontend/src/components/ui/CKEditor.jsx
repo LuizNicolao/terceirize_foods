@@ -202,19 +202,37 @@ const CKEditor = ({
 
     // Usar requestAnimationFrame para garantir que o DOM está pronto
     const initEditor = () => {
-      // Criar elemento textarea para o editor
-      if (!editorRef.current && containerRef.current) {
-        const textarea = document.createElement('textarea');
-        textarea.name = name || 'ckeditor';
-        textarea.id = `ckeditor-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-        
-        // Adicionar atributos necessários para o CKEditor
-        textarea.setAttribute('data-ckeditor', 'true');
-        
-        // Adicionar ao DOM
-        containerRef.current.appendChild(textarea);
-        editorRef.current = textarea;
-      }
+      // Aguardar um frame adicional para garantir que o container está pronto
+      requestAnimationFrame(() => {
+        // Criar elemento textarea para o editor
+        if (!editorRef.current && containerRef.current) {
+          // Verificar se o container está realmente no DOM
+          if (!document.contains(containerRef.current)) {
+            return;
+          }
+
+          const textarea = document.createElement('textarea');
+          textarea.name = name || 'ckeditor';
+          textarea.id = `ckeditor-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+          
+          // Adicionar atributos necessários para o CKEditor
+          textarea.setAttribute('data-ckeditor', 'true');
+          
+          // Adicionar ao DOM
+          containerRef.current.appendChild(textarea);
+          editorRef.current = textarea;
+          
+          // Aguardar um frame adicional após adicionar ao DOM
+          requestAnimationFrame(() => {
+            continueInit();
+          });
+        } else {
+          continueInit();
+        }
+      });
+    };
+
+    const continueInit = () => {
 
       if (!editorRef.current || !containerRef.current || !editorRef.current.parentNode) {
         return;
@@ -243,6 +261,17 @@ const CKEditor = ({
           return;
         }
 
+        // Verificações adicionais para garantir que o elemento está pronto
+        if (!editorRef.current.parentNode || !editorRef.current.ownerDocument) {
+          return;
+        }
+
+        // Verificar se o CKEditor está completamente carregado
+        if (!window.CKEDITOR || typeof window.CKEDITOR.replace !== 'function') {
+          console.warn('CKEditor não está completamente carregado');
+          return;
+        }
+
         // Inicializar CKEditor
         const editorConfig = {
           language: 'pt-br',
@@ -251,9 +280,28 @@ const CKEditor = ({
         };
 
         try {
-          // Verificar se o elemento ainda está no DOM antes de inicializar
-          if (editorRef.current && editorRef.current.parentNode && document.contains(editorRef.current)) {
-            editorInstanceRef.current = window.CKEDITOR.replace(editorRef.current, editorConfig);
+          // Verificações finais antes de inicializar
+          const element = editorRef.current;
+          if (!element || !element.parentNode || !document.contains(element)) {
+            return;
+          }
+
+          // Garantir que o elemento tem um ID válido
+          if (!element.id) {
+            element.id = `ckeditor-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+          }
+
+          // Verificar se já existe uma instância para este elemento
+          if (window.CKEDITOR.instances[element.id]) {
+            try {
+              window.CKEDITOR.instances[element.id].destroy();
+            } catch (e) {
+              console.warn('Erro ao destruir instância existente:', e);
+            }
+          }
+
+          // Inicializar o editor
+          editorInstanceRef.current = window.CKEDITOR.replace(element, editorConfig);
 
             // Configurar evento de mudança
             if (onChange && editorInstanceRef.current) {
@@ -280,12 +328,11 @@ const CKEditor = ({
                 }
               });
             }
-          }
         } catch (error) {
           console.error('Erro ao inicializar CKEditor:', error);
         }
-        }, 100); // Delay maior para garantir que o DOM está completamente pronto
-    };
+      }, 200); // Delay maior para garantir que o DOM está completamente pronto
+    }; // Fim de continueInit
 
     // Usar requestAnimationFrame para garantir que o DOM está atualizado
     const rafId = requestAnimationFrame(() => {
