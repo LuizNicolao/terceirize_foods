@@ -166,16 +166,25 @@ class PdfTemplatesPDFController {
         // Primeiro tenta com 4 chaves ({{{{var}}}}), depois com 2 ({{var}})
         // Regex melhorado para pegar variáveis mesmo com caracteres especiais
         const itemVars4 = itemHtml.match(/\{\{\{\{([^}]+)\}\}\}\}/g) || [];
+        if (index === 0 && itemVars4.length > 0) {
+          console.log('[DEBUG Template] Variáveis com 4 chaves encontradas no item:', itemVars4.slice(0, 10));
+        }
         itemVars4.forEach(variavel => {
           const nomeVariavel = variavel.replace(/[{}]/g, '');
           // Converter array para string se necessário
           let valor = item[nomeVariavel];
           if (valor === undefined || valor === null) {
+            if (index === 0) {
+              console.warn(`[DEBUG Template] ⚠️ Item[${nomeVariavel}] não encontrado. Chaves disponíveis:`, Object.keys(item).slice(0, 20));
+            }
             valor = '';
           } else if (Array.isArray(valor)) {
             valor = valor.join(', ');
           } else {
             valor = String(valor);
+          }
+          if (index === 0) {
+            console.log(`[DEBUG Template] Item[${nomeVariavel}]:`, valor, `(tipo original: ${typeof item[nomeVariavel]})`);
           }
           // Escapar caracteres especiais para regex
           const nomeEscapado = nomeVariavel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -184,6 +193,9 @@ class PdfTemplatesPDFController {
         
         // Depois processa variáveis com 2 chaves
         const itemVars2 = itemHtml.match(/\{\{([^}]+)\}\}/g) || [];
+        if (index === 0 && itemVars2.length > 0) {
+          console.log('[DEBUG Template] Variáveis com 2 chaves encontradas no item:', itemVars2.slice(0, 10));
+        }
         itemVars2.forEach(variavel => {
           const nomeVariavel = variavel.replace(/[{}]/g, '');
           // Ignorar se já foi processado com 4 chaves ou se for #itens
@@ -193,11 +205,17 @@ class PdfTemplatesPDFController {
           // Converter array para string se necessário
           let valor = item[nomeVariavel];
           if (valor === undefined || valor === null) {
+            if (index === 0) {
+              console.warn(`[DEBUG Template] ⚠️ Item[${nomeVariavel}] não encontrado. Chaves disponíveis:`, Object.keys(item).slice(0, 20));
+            }
             valor = '';
           } else if (Array.isArray(valor)) {
             valor = valor.join(', ');
           } else {
             valor = String(valor);
+          }
+          if (index === 0) {
+            console.log(`[DEBUG Template] Item[${nomeVariavel}]:`, valor, `(tipo original: ${typeof item[nomeVariavel]})`);
           }
           // Escapar caracteres especiais para regex
           const nomeEscapado = nomeVariavel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -279,7 +297,8 @@ class PdfTemplatesPDFController {
     
     const variaveis2 = html.match(/\{\{([^}]+)\}\}/g) || [];
     console.log('[DEBUG Template] Variáveis com 2 chaves encontradas:', variaveis2.length);
-    console.log('[DEBUG Template] Variáveis não substituídas (primeiras 10):', variaveis2.slice(0, 10));
+    const variaveisUnicas = [...new Set(variaveis2.map(v => v.replace(/[{}]/g, '')))];
+    console.log('[DEBUG Template] Variáveis únicas encontradas (primeiras 20):', variaveisUnicas.slice(0, 20));
     
     variaveis2.forEach(variavel => {
       const nomeVariavel = variavel.replace(/[{}]/g, '');
@@ -290,12 +309,14 @@ class PdfTemplatesPDFController {
       // Converter array para string se necessário
       let valor = dados[nomeVariavel];
       if (valor === undefined || valor === null) {
+        console.warn(`[DEBUG Template] ⚠️ Variável '${nomeVariavel}' não encontrada nos dados principais. Chaves disponíveis:`, Object.keys(dados).slice(0, 30));
         valor = '';
       } else if (Array.isArray(valor)) {
         valor = valor.join(', ');
       } else {
         valor = String(valor);
       }
+      console.log(`[DEBUG Template] Dados[${nomeVariavel}]:`, valor, `(tipo original: ${typeof dados[nomeVariavel]})`);
       const nomeEscapado = nomeVariavel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       html = html.replace(new RegExp(`\\{\\{${nomeEscapado}\\}\\}`, 'g'), valor);
     });
@@ -481,6 +502,27 @@ class PdfTemplatesPDFController {
       total_quantidade: itens.reduce((sum, item) => sum + parseFloat(item.quantidade || 0), 0).toFixed(3).replace('.', ','),
       valor_total: '0,00' // Campo não existe na tabela solicitacoes_compras, mas mantido para compatibilidade
     };
+    
+    console.log('[DEBUG prepararDados] Dados preparados. Chaves principais:', Object.keys(retorno).slice(0, 30));
+    console.log('[DEBUG prepararDados] Valores principais:', {
+      numero_solicitacao: retorno.numero_solicitacao,
+      solicitante: retorno.solicitante,
+      pedidos_vinculados: retorno.pedidos_vinculados,
+      total_itens: retorno.total_itens,
+      valor_total: retorno.valor_total
+    });
+    console.log('[DEBUG prepararDados] Número de itens preparados:', retorno.itens?.length || 0);
+    if (retorno.itens && retorno.itens.length > 0) {
+      console.log('[DEBUG prepararDados] Primeiro item preparado:', {
+        produto_nome: retorno.itens[0].produto_nome,
+        quantidade_formatada: retorno.itens[0].quantidade_formatada,
+        pedidos_vinculados: retorno.itens[0].pedidos_vinculados
+      });
+      console.log('[DEBUG prepararDados] Todas as chaves do primeiro item:', Object.keys(retorno.itens[0]));
+    }
+    console.log('[DEBUG prepararDados] ========================================');
+    
+    return retorno;
   }
 
   /**
