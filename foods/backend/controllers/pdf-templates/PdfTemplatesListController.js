@@ -18,7 +18,7 @@ class PdfTemplatesListController {
    */
   static listarTemplates = asyncHandler(async (req, res) => {
     const { search = '', tela_vinculada, ativo } = req.query;
-    const pagination = req.pagination;
+    const pagination = req.pagination || {};
 
     let params = [];
     let whereClause = 'WHERE 1=1';
@@ -40,8 +40,13 @@ class PdfTemplatesListController {
     }
 
     // Query principal
-    const limit = pagination.limit;
-    const offset = pagination.offset;
+    // req.pagination é uma instância de PaginationHelper
+    const limit = pagination.limit ? parseInt(pagination.limit, 10) : 20;
+    const offset = pagination.offset ? parseInt(pagination.offset, 10) : 0;
+    
+    // Garantir valores válidos
+    const finalLimit = isNaN(limit) || limit < 1 ? 20 : limit;
+    const finalOffset = isNaN(offset) || offset < 0 ? 0 : offset;
     
     const query = `
       SELECT 
@@ -56,7 +61,7 @@ class PdfTemplatesListController {
       LIMIT ? OFFSET ?
     `;
 
-    const templates = await executeQuery(query, [...params, limit, offset]);
+    const templates = await executeQuery(query, [...params, finalLimit, finalOffset]);
 
     // Parse JSON para cada template
     templates.forEach(template => {
@@ -82,9 +87,9 @@ class PdfTemplatesListController {
       data: data,
       pagination: {
         total: totalItems,
-        page: pagination.page,
-        limit: limit,
-        pages: Math.ceil(totalItems / limit)
+        page: pagination.page ? parseInt(pagination.page, 10) : 1,
+        limit: finalLimit,
+        pages: Math.ceil(totalItems / finalLimit)
       }
     });
   });
