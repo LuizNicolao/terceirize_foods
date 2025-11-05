@@ -35,7 +35,8 @@ import {
   FaShoppingCart,
   FaClipboardCheck,
   FaCreditCard,
-  FaCalendarAlt as FaCalendarAltPayment
+  FaCalendarAlt as FaCalendarAltPayment,
+  FaFilePdf
 } from 'react-icons/fa';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePermissions } from '../../contexts/PermissionsContext';
@@ -117,6 +118,7 @@ const menuGroups = [
     title: 'Configurações',
     items: [
       { path: '/foods/permissoes', icon: FaShieldAlt, label: 'Permissões', screen: 'permissoes' },
+      { path: '/foods/pdf-templates', icon: FaFilePdf, label: 'Templates de PDF', screen: 'pdf_templates' },
     ]
   }
 ];

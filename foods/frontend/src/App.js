@@ -43,6 +43,7 @@ import CalendarioRelatorios from './pages/calendario/CalendarioRelatorios';
 import FormasPagamento from './pages/formas-pagamento/FormasPagamento';
 import PrazosPagamento from './pages/prazos-pagamento/PrazosPagamento';
 import PedidosCompras from './pages/pedidos-compras/PedidosCompras';
+import PdfTemplates from './pages/pdf-templates/PdfTemplates';
 
 // Componente para rotas protegidas com autenticação
 const AuthenticatedRoute = ({ children }) => {
@@ -468,6 +469,17 @@ const App = () => {
           <AuthenticatedRoute>
             <ProtectedRoute screen="pedidos_compras">
               <PedidosCompras />
+            </ProtectedRoute>
+          </AuthenticatedRoute>
+        } 
+      />
+
+      <Route 
+        path="/foods/pdf-templates" 
+        element={
+          <AuthenticatedRoute>
+            <ProtectedRoute screen="pdf_templates">
+              <PdfTemplates />
             </ProtectedRoute>
           </AuthenticatedRoute>
         } 

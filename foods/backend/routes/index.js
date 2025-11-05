@@ -43,6 +43,7 @@ const calendarioRoutes = require('./calendario');
 const formasPagamentoRoutes = require('./formas-pagamento');
 const prazosPagamentoRoutes = require('./prazos-pagamento');
 const pedidosComprasRoutes = require('./pedidos-compras');
+const pdfTemplatesRoutes = require('./pdf-templates');
 const openaiRoutes = require('./openai/openaiRoute');
 const cepRoutes = require('./shared/cepRoute');
 
@@ -87,6 +88,7 @@ const routes = [
   { path: '/formas-pagamento', router: formasPagamentoRoutes },
   { path: '/prazos-pagamento', router: prazosPagamentoRoutes },
   { path: '/pedidos-compras', router: pedidosComprasRoutes },
+  { path: '/pdf-templates', router: pdfTemplatesRoutes },
   { path: '/openai', router: openaiRoutes },
   { path: '/shared', router: cepRoutes }
 ];

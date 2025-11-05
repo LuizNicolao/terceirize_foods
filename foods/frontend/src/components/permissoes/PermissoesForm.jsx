@@ -56,7 +56,8 @@ const PermissoesForm = ({
     ],
     'Sistema': [
       { key: 'cotacao', label: 'Cotação' },
-      { key: 'permissoes', label: 'Permissões' }
+      { key: 'permissoes', label: 'Permissões' },
+      { key: 'pdf_templates', label: 'Templates de PDF' }
     ]
   };
 
