@@ -481,10 +481,10 @@ class PdfTemplatesPDFController {
           nome_produto: item.produto_nome || item.nome_produto || '',
           quantidade: quantidade,
           quantidade_formatada: quantidade.toFixed(3).replace('.', ','),
-          // Para compatibilidade: quantidade_utilizada também formatada por padrão
+          // quantidade_utilizada e saldo_disponivel - formatados por padrão (compatibilidade com template)
           quantidade_utilizada: quantidadeUtilizada.toFixed(3).replace('.', ','),
           quantidade_utilizada_formatada: quantidadeUtilizada.toFixed(3).replace('.', ','),
-          // Para compatibilidade: saldo_disponivel também formatado por padrão
+          // saldo_disponivel também formatado por padrão (compatibilidade com template)
           saldo_disponivel: saldoDisponivel.toFixed(3).replace('.', ','),
           saldo_disponivel_formatado: saldoDisponivel.toFixed(3).replace('.', ','),
           status: item.status_item || item.status || 'ABERTO',
