@@ -406,7 +406,8 @@ class PdfTemplatesPDFController {
     });
     console.log('[DEBUG prepararDados] Número de itens recebidos:', itens?.length || 0);
     console.log('[DEBUG prepararDados] Pedidos vinculados:', pedidosVinculados?.map(p => p.numero_pedido) || []);
-    return {
+    
+    const retorno = {
       // Campos principais da solicitação
       id: solicitacao.id || '',
       numero_solicitacao: solicitacao.numero_solicitacao || '',
