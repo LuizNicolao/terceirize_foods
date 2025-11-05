@@ -278,11 +278,25 @@ class PdfTemplatesPDFController {
           const toReplace = fullMatch + tableToReplace;
           const loopIndex = html.indexOf(fullMatch);
           if (loopIndex !== -1) {
-            // Verificar se a tabela está logo após o loop
+            // Verificar se a tabela está logo após o loop (considerar espaços em branco)
             const afterLoop = html.substring(loopIndex + fullMatch.length);
-            if (afterLoop.trim().startsWith(tableToReplace.trim().substring(0, 20))) {
-              html = html.substring(0, loopIndex) + newTable + html.substring(loopIndex + toReplace.length);
+            // Normalizar espaços em branco para comparação
+            const afterLoopTrimmed = afterLoop.trim();
+            const tableTrimmed = tableToReplace.trim();
+            
+            // Verificar se a tabela começa logo após (pode ter espaços/quebras de linha)
+            if (afterLoopTrimmed.startsWith(tableTrimmed.substring(0, 30)) || afterLoop.includes('<table')) {
+              // Calcular tamanho exato do que será substituído
+              const beforeReplace = html.substring(0, loopIndex);
+              const afterReplace = html.substring(loopIndex + toReplace.length);
+              html = beforeReplace + newTable + afterReplace;
               console.log('[DEBUG Template] ✅ Substituição realizada com sucesso');
+              console.log('[DEBUG Template] Tamanhos:', {
+                before: beforeReplace.length,
+                newTable: newTable.length,
+                after: afterReplace.length,
+                total: html.length
+              });
             } else {
               console.warn('[DEBUG Template] ⚠️ Tabela não está logo após o loop, usando fallback');
               html = html.replace(fullMatch, itemsHtml);
@@ -305,9 +319,19 @@ class PdfTemplatesPDFController {
         html = html.replace(fullMatch, itemsHtml);
       }
       
-      // Continuar procurando por mais loops (resetar regex para nova busca)
+      // Continuar procurando por mais loops
+      // Resetar regex e buscar novamente no HTML atualizado
       itemLoopRegex.lastIndex = 0;
+      
+      // Tentar primeiro com 4 chaves
+      itemLoopRegex = /\{\{\{\{#itens\}\}\}\}\s*([\s\S]*?)\s*\{\{\{\{\/itens\}\}\}\}/g;
       match = itemLoopRegex.exec(html);
+      
+      // Se não encontrou, tentar com 2 chaves
+      if (!match) {
+        itemLoopRegex = /\{\{#itens\}\}\s*([\s\S]*?)\s*\{\{\/itens\}\}/g;
+        match = itemLoopRegex.exec(html);
+      }
     }
     
     // Substituir variáveis simples do formato {{variavel}} ou {{{{variavel}}}}
