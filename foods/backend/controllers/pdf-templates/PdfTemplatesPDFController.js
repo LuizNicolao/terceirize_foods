@@ -439,6 +439,8 @@ class PdfTemplatesPDFController {
       criado_por_nome: solicitacao.usuario_nome_from_user || solicitacao.usuario_nome || '',
       solicitante_nome: solicitacao.usuario_nome_from_user || solicitacao.usuario_nome || solicitacao.solicitante || '',
       solicitante: solicitacao.solicitante || solicitacao.usuario_nome_from_user || solicitacao.usuario_nome || '',
+      // Alias para usuario_nome (compatibilidade)
+      usuario_nome: solicitacao.usuario_nome_from_user || solicitacao.usuario_nome || solicitacao.solicitante || '',
       usuario_email: solicitacao.usuario_email || '',
       
       // Pedidos vinculados
