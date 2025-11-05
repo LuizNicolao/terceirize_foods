@@ -66,7 +66,8 @@ class PdfTemplatesPDFController {
     
     // Processar loops de itens ({{#itens}}...{{/itens}} ou {{{{#itens}}}}...{{{{/itens}}}})
     // Aceita tanto 2 quanto 4 chaves (devido ao escape do CKEditor)
-    const itemLoopRegex = /\{\{#{1,2}itens\}\}([\s\S]*?)\{\{\/{1,2}itens\}\}/g;
+    // Regex melhorado para pegar tanto {{#itens}} quanto {{{{#itens}}}}
+    const itemLoopRegex = /\{\{#{0,2}itens\}\}([\s\S]*?)\{\{\/{0,2}itens\}\}/g;
     let match;
     
     while ((match = itemLoopRegex.exec(html)) !== null) {
@@ -78,18 +79,23 @@ class PdfTemplatesPDFController {
         let itemHtml = loopContent;
         
         // Substituir variáveis do item (aceita tanto {{var}} quanto {{{{var}}}})
-        const itemVars = itemHtml.match(/\{\{{1,2}(\w+)\}{1,2}\}/g) || [];
-        itemVars.forEach(variavel => {
-          // Remover todas as chaves para obter o nome da variável
+        // Primeiro tenta com 4 chaves, depois com 2
+        const itemVars4 = itemHtml.match(/\{\{\{\{(\w+)\}\}\}\}/g) || [];
+        itemVars4.forEach(variavel => {
           const nomeVariavel = variavel.replace(/[{}]/g, '');
-          const valor = item[nomeVariavel] !== undefined ? item[nomeVariavel] : '';
-          
-          // Substituir com o mesmo número de chaves que encontrou
-          const numChaves = (variavel.match(/\{/g) || []).length;
-          const chavesInicio = '{'.repeat(numChaves);
-          const chavesFim = '}'.repeat(numChaves);
-          const regex = new RegExp(`\\{\\{${numChaves > 2 ? '{' : ''}${nomeVariavel}${numChaves > 2 ? '}' : ''}\\}\\}`, 'g');
-          itemHtml = itemHtml.replace(regex, valor);
+          const valor = item[nomeVariavel] !== undefined ? String(item[nomeVariavel]) : '';
+          itemHtml = itemHtml.replace(new RegExp(`\\{\\{\\{\\{${nomeVariavel}\\}\\}\\}\\}`, 'g'), valor);
+        });
+        
+        const itemVars2 = itemHtml.match(/\{\{(\w+)\}\}/g) || [];
+        itemVars2.forEach(variavel => {
+          const nomeVariavel = variavel.replace(/[{}]/g, '');
+          // Ignorar se já foi processado com 4 chaves ou se for #itens
+          if (nomeVariavel === '#itens' || nomeVariavel === '/itens' || nomeVariavel.startsWith('#')) {
+            return;
+          }
+          const valor = item[nomeVariavel] !== undefined ? String(item[nomeVariavel]) : '';
+          itemHtml = itemHtml.replace(new RegExp(`\\{\\{${nomeVariavel}\\}\\}`, 'g'), valor);
         });
         
         itemsHtml += itemHtml;
@@ -101,23 +107,25 @@ class PdfTemplatesPDFController {
     
     // Substituir variáveis simples do formato {{variavel}} ou {{{{variavel}}}}
     // Primeiro tenta com 4 chaves, depois com 2
-    const variaveis = html.match(/\{\{{1,2}(\w+)\}{1,2}\}/g) || [];
-    
-    variaveis.forEach(variavel => {
-      // Remover todas as chaves para obter o nome da variável
+    const variaveis4 = html.match(/\{\{\{\{(\w+)\}\}\}\}/g) || [];
+    variaveis4.forEach(variavel => {
       const nomeVariavel = variavel.replace(/[{}]/g, '');
-      
-      // Ignorar se for um loop ou variável já processada
-      if (nomeVariavel === 'itens' || nomeVariavel.startsWith('#') || nomeVariavel.startsWith('/')) {
+      if (nomeVariavel === '#itens' || nomeVariavel === '/itens' || nomeVariavel.startsWith('#') || nomeVariavel.startsWith('/')) {
         return;
       }
-      
-      const valor = dados[nomeVariavel] !== undefined ? dados[nomeVariavel] : '';
-      
-      // Substituir com o mesmo número de chaves que encontrou
-      const numChaves = (variavel.match(/\{/g) || []).length;
-      const regex = new RegExp(`\\{\\{${numChaves > 2 ? '{' : ''}${nomeVariavel}${numChaves > 2 ? '}' : ''}\\}\\}`, 'g');
-      html = html.replace(regex, valor);
+      const valor = dados[nomeVariavel] !== undefined ? String(dados[nomeVariavel]) : '';
+      html = html.replace(new RegExp(`\\{\\{\\{\\{${nomeVariavel}\\}\\}\\}\\}`, 'g'), valor);
+    });
+    
+    const variaveis2 = html.match(/\{\{(\w+)\}\}/g) || [];
+    variaveis2.forEach(variavel => {
+      const nomeVariavel = variavel.replace(/[{}]/g, '');
+      // Ignorar se for um loop ou variável já processada
+      if (nomeVariavel === 'itens' || nomeVariavel === '#itens' || nomeVariavel === '/itens' || nomeVariavel.startsWith('#') || nomeVariavel.startsWith('/')) {
+        return;
+      }
+      const valor = dados[nomeVariavel] !== undefined ? String(dados[nomeVariavel]) : '';
+      html = html.replace(new RegExp(`\\{\\{${nomeVariavel}\\}\\}`, 'g'), valor);
     });
     
     return html;
