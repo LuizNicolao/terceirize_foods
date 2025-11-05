@@ -74,10 +74,13 @@ const CKEditor = ({
     
     // Função para carregar o script quando encontrar o caminho correto
     const loadCKEditorScript = async (basePath) => {
+      // Baseado no padrão usado no sistema (logo usa /foods/logo-small.png)
       const possiblePaths = [
-        `${basePath}/ckeditor/ckeditor.js`,
-        `/ckeditor/ckeditor.js`,
+        `${basePath}/ckeditor/ckeditor.js`,  // /foods/ckeditor/ckeditor.js
+        `/foods/ckeditor/ckeditor.js`,      // Forçar /foods mesmo se basePath estiver vazio
+        `/ckeditor/ckeditor.js`,            // Raiz
         `${window.location.origin}${basePath}/ckeditor/ckeditor.js`,
+        `${window.location.origin}/foods/ckeditor/ckeditor.js`,
         `${window.location.origin}/ckeditor/ckeditor.js`
       ];
       
