@@ -306,14 +306,28 @@ class PdfTemplatesPDFController {
       if (nomeVariavel === 'itens' || nomeVariavel === '#itens' || nomeVariavel === '/itens' || nomeVariavel.startsWith('#') || nomeVariavel.startsWith('/')) {
         return;
       }
+      
+      // Variáveis que só existem nos itens - não devem ser procuradas nos dados principais
+      // Se aparecerem aqui, significa que não foram substituídas no loop (erro no template)
+      const variaveisApenasItens = [
+        'saldo_disponivel', 'quantidade_utilizada', 'quantidade_formatada', 
+        'produto_codigo', 'produto_nome', 'codigo_produto', 'nome_produto',
+        'unidade_simbolo', 'unidade_nome', 'observacao', 'pedidos_vinculados',
+        'item_criado_em', 'solicitacao_id', 'produto_id', 'unidade_medida_id'
+      ];
+      
+      if (variaveisApenasItens.includes(nomeVariavel)) {
+        // Variável de item encontrada fora do loop - substituir por string vazia silenciosamente
+        // (não gerar warning, pois é esperado que apareça no HTML após o loop)
+        const nomeEscapado = nomeVariavel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        html = html.replace(new RegExp(`\\{\\{${nomeEscapado}\\}\\}`, 'g'), '');
+        return;
+      }
+      
       // Converter array para string se necessário
       let valor = dados[nomeVariavel];
       if (valor === undefined || valor === null) {
-        // Variáveis que só existem nos itens não devem gerar warning se estiverem nos dados principais
-        const variaveisApenasItens = ['saldo_disponivel', 'quantidade_utilizada', 'quantidade_formatada', 'produto_codigo', 'produto_nome'];
-        if (!variaveisApenasItens.includes(nomeVariavel)) {
-          console.warn(`[DEBUG Template] ⚠️ Variável '${nomeVariavel}' não encontrada nos dados principais. Chaves disponíveis:`, Object.keys(dados).slice(0, 30));
-        }
+        console.warn(`[DEBUG Template] ⚠️ Variável '${nomeVariavel}' não encontrada nos dados principais. Chaves disponíveis:`, Object.keys(dados).slice(0, 30));
         valor = '';
       } else if (Array.isArray(valor)) {
         valor = valor.join(', ');
