@@ -204,6 +204,7 @@ class PedidosComprasHelpers {
 
     let todosAtendidos = true;
     let algumAtendido = false;
+    const TOLERANCIA = 0.001; // Tolerância para diferenças de precisão decimal
 
     for (const item of itens) {
       const solicitado = parseFloat(item.quantidade_solicitada || 0);
@@ -213,9 +214,14 @@ class PedidosComprasHelpers {
         algumAtendido = true;
       }
 
-      if (utilizado < solicitado) {
+      // Considera atendido se utilizado >= solicitado (com tolerância para precisão decimal)
+      // Se utilizado < solicitado - tolerância, então não está totalmente atendido
+      if (utilizado < (solicitado - TOLERANCIA)) {
         todosAtendidos = false;
       }
+      
+      // Log para debug (pode remover depois)
+      console.log(`[DEBUG] Item ${item.id}: Solicitado=${solicitado}, Utilizado=${utilizado}, Atendido=${utilizado >= (solicitado - TOLERANCIA)}`);
     }
 
     // Determinar status
@@ -225,6 +231,9 @@ class PedidosComprasHelpers {
     } else if (algumAtendido) {
       novoStatus = 'parcial';
     }
+    
+    // Log para debug (pode remover depois)
+    console.log(`[DEBUG] Solicitação ${solicitacaoId}: Status atualizado para '${novoStatus}' (algumAtendido=${algumAtendido}, todosAtendidos=${todosAtendidos})`);
 
     // Atualizar status da solicitação
     await executeQuery(
