@@ -26,10 +26,10 @@ class SolicitacoesComprasPDFController {
         sc.status,
         sc.criado_em,
         sc.unidade,
-        sc.solicitante,
+        sc.usuario_nome,
         f.filial as filial_nome,
         f.codigo_filial as filial_codigo,
-        u.nome as usuario_nome
+        u.nome as usuario_nome_from_user
       FROM solicitacoes_compras sc
       LEFT JOIN filiais f ON sc.filial_id = f.id
       LEFT JOIN usuarios u ON sc.usuario_id = u.id OR sc.criado_por = u.id
@@ -233,7 +233,8 @@ class SolicitacoesComprasPDFController {
     // Linha 4: Solicitante | Pedidos Vinculados
     doc.fontSize(10).font('Helvetica-Bold');
     doc.text('Solicitante:', leftMargin + 15, currentY);
-    doc.font('Helvetica').text(solicitacao.usuario_nome || solicitacao.solicitante || '-', leftMargin + 15, currentY + 13);
+    const solicitanteNome = solicitacao.usuario_nome || solicitacao.usuario_nome_from_user || '-';
+    doc.font('Helvetica').text(solicitanteNome, leftMargin + 15, currentY + 13);
     
     doc.font('Helvetica-Bold');
     doc.text('Pedidos Vinculados:', leftMargin + colWidth + spacing, currentY);
