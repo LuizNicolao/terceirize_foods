@@ -66,11 +66,17 @@ class PdfTemplatesPDFController {
     
     // Processar loops de itens ({{#itens}}...{{/itens}} ou {{{{#itens}}}}...{{{{/itens}}}})
     // Aceita tanto 2 quanto 4 chaves (devido ao escape do CKEditor)
-    // Regex melhorado para pegar tanto {{#itens}} quanto {{{{#itens}}}}
-    const itemLoopRegex = /\{\{#{0,2}itens\}\}([\s\S]*?)\{\{\/{0,2}itens\}\}/g;
-    let match;
+    // Primeiro tenta com 4 chaves, depois com 2
+    let itemLoopRegex = /\{\{\{\{#itens\}\}\}\}([\s\S]*?)\{\{\{\{\/itens\}\}\}\}/g;
+    let match = itemLoopRegex.exec(html);
     
-    while ((match = itemLoopRegex.exec(html)) !== null) {
+    if (!match) {
+      // Se não encontrou com 4 chaves, tenta com 2
+      itemLoopRegex = /\{\{#itens\}\}([\s\S]*?)\{\{\/itens\}\}/g;
+      match = itemLoopRegex.exec(html);
+    }
+    
+    while (match) {
       const loopContent = match[1];
       const itens = dados.itens || [];
       
@@ -103,6 +109,9 @@ class PdfTemplatesPDFController {
       
       // Substituir o loop completo pelo conteúdo renderizado
       html = html.replace(match[0], itemsHtml);
+      
+      // Continuar procurando por mais loops
+      match = itemLoopRegex.exec(html);
     }
     
     // Substituir variáveis simples do formato {{variavel}} ou {{{{variavel}}}}
