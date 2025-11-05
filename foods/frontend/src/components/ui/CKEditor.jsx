@@ -42,151 +42,87 @@ const CKEditor = ({
       return;
     }
 
-    // Carregar o script dinamicamente
-    const script = document.createElement('script');
+    // Função para verificar se um arquivo existe via fetch
+    const checkFileExists = async (url) => {
+      try {
+        const response = await fetch(url, { method: 'HEAD' });
+        return response.ok && response.headers.get('content-type')?.includes('javascript');
+      } catch {
+        return false;
+      }
+    };
     
-    // Detectar caminho base dinamicamente
-    const getBasePath = () => {
-      // Primeiro, tentar detectar do caminho atual
-      const pathname = window.location.pathname;
+    // Função para carregar o script quando encontrar o caminho correto
+    const loadCKEditorScript = async (basePath) => {
+      const possiblePaths = [
+        `${basePath}/ckeditor/ckeditor.js`,
+        `/ckeditor/ckeditor.js`,
+        `${window.location.origin}${basePath}/ckeditor/ckeditor.js`,
+        `${window.location.origin}/ckeditor/ckeditor.js`
+      ];
       
-      // Se estiver em /foods/..., usar /foods como base
+      // Verificar cada caminho até encontrar um válido
+      for (let i = 0; i < possiblePaths.length; i++) {
+        const path = possiblePaths[i];
+        console.log(`🔍 Verificando: ${path}`);
+        
+        const exists = await checkFileExists(path);
+        if (exists) {
+          console.log(`✅ Arquivo encontrado em: ${path}`);
+          
+          // Definir CKEDITOR_BASEPATH antes de carregar
+          const detectedBasePath = path.includes('/foods') ? '/foods' : '';
+          window.CKEDITOR_BASEPATH = `${detectedBasePath}/ckeditor/`;
+          
+          // Carregar o script
+          const script = document.createElement('script');
+          script.src = path;
+          script.async = true;
+          
+          script.onload = () => {
+            setTimeout(() => {
+              if (typeof window.CKEDITOR !== 'undefined') {
+                window.CKEDITOR.basePath = window.CKEDITOR_BASEPATH;
+                const configScript = document.createElement('script');
+                configScript.src = `${detectedBasePath}/ckeditor/config.js`;
+                configScript.onerror = () => {
+                  console.warn('config.js não encontrado, usando padrão');
+                };
+                document.head.appendChild(configScript);
+                setScriptLoaded(true);
+              } else {
+                console.error('CKEditor não inicializado após carregar');
+              }
+            }, 100);
+          };
+          
+          script.onerror = () => {
+            console.error(`❌ Erro ao executar script de: ${path}`);
+            if (i < possiblePaths.length - 1) {
+              loadCKEditorScript(basePath); // Tentar próximo
+            }
+          };
+          
+          document.head.appendChild(script);
+          return; // Sair quando encontrar
+        }
+      }
+      
+      // Se nenhum caminho funcionou
+      console.error('❌ CKEditor não encontrado em nenhum dos caminhos:', possiblePaths);
+    };
+    
+    // Detectar caminho base
+    const getBasePath = () => {
+      const pathname = window.location.pathname;
       if (pathname.startsWith('/foods')) {
         return '/foods';
       }
-      
-      // Se não, tentar usar o caminho até a primeira barra (após a raiz)
-      const parts = pathname.split('/').filter(p => p);
-      if (parts.length > 0 && parts[0] !== 'foods') {
-        // Pode estar em outro contexto, usar o primeiro segmento
-        return '/' + parts[0];
-      }
-      
-      // Default: raiz
       return '';
     };
     
     const basePath = getBasePath();
-    
-    // Construir caminho do CKEditor usando caminho absoluto
-    // Tentar diferentes caminhos possíveis
-    const possiblePaths = [
-      `${basePath}/ckeditor/ckeditor.js`,
-      `${window.location.origin}${basePath}/ckeditor/ckeditor.js`,
-      `/ckeditor/ckeditor.js`,
-      `${window.location.origin}/ckeditor/ckeditor.js`
-    ];
-    
-    // Usar o primeiro caminho, mas adicionar fallback
-    const ckeditorPath = possiblePaths[0];
-    
-    // Definir CKEDITOR_BASEPATH antes de carregar o script
-    window.CKEDITOR_BASEPATH = `${basePath}/ckeditor/`;
-    
-    script.src = ckeditorPath;
-    script.async = true;
-    script.onload = () => {
-      // Aguardar um pouco para garantir que CKEDITOR foi inicializado
-      setTimeout(() => {
-        // Verificar se CKEDITOR foi carregado corretamente
-        if (typeof window.CKEDITOR !== 'undefined') {
-          // Garantir que o basePath está configurado
-          if (!window.CKEDITOR.basePath || window.CKEDITOR.basePath !== window.CKEDITOR_BASEPATH) {
-            window.CKEDITOR.basePath = window.CKEDITOR_BASEPATH;
-          }
-          // Carregar config.js se existir
-          const configScript = document.createElement('script');
-          configScript.src = `${basePath}/ckeditor/config.js`;
-          configScript.onerror = () => {
-            // Não é crítico se config.js não existir
-            console.warn('config.js do CKEditor não encontrado, usando configuração padrão');
-          };
-          document.head.appendChild(configScript);
-          
-          setScriptLoaded(true);
-        } else {
-          console.error('CKEditor não foi inicializado após carregar o script');
-          // Tentar próximo caminho
-          const tryNextScript = () => {
-            const nextScript = document.createElement('script');
-            if (possiblePaths.length > 1) {
-              nextScript.src = possiblePaths[1];
-              nextScript.async = true;
-              nextScript.onload = () => {
-                setTimeout(() => {
-                  if (typeof window.CKEDITOR !== 'undefined') {
-                    setScriptLoaded(true);
-                  }
-                }, 100);
-              };
-              nextScript.onerror = () => {
-                console.error('Todas as tentativas de carregar CKEditor falharam');
-              };
-              document.head.appendChild(nextScript);
-            }
-          };
-          setTimeout(tryNextScript, 500);
-        }
-      }, 100);
-    };
-    let attemptIndex = 0;
-    const tryLoadScript = (pathIndex = 0) => {
-      if (pathIndex >= possiblePaths.length) {
-        console.error('❌ Todos os caminhos falharam. Verifique se o arquivo está em /public/ckeditor/ckeditor.js');
-        console.error('📋 Caminhos tentados:', possiblePaths);
-        console.error('📍 Caminho atual da página:', window.location.pathname);
-        console.error('🌐 Origem:', window.location.origin);
-        return;
-      }
-      
-      const currentPath = possiblePaths[pathIndex];
-      console.log(`🔄 Tentando carregar CKEditor de: ${currentPath} (tentativa ${pathIndex + 1}/${possiblePaths.length})`);
-      
-      const newScript = document.createElement('script');
-      newScript.src = currentPath;
-      newScript.async = true;
-      
-      newScript.onload = () => {
-        setTimeout(() => {
-          if (typeof window.CKEDITOR !== 'undefined') {
-            const usedBasePath = pathIndex === 0 ? basePath : (currentPath.includes('/foods') ? '/foods' : '');
-            window.CKEDITOR_BASEPATH = `${usedBasePath}/ckeditor/`;
-            if (!window.CKEDITOR.basePath || window.CKEDITOR.basePath !== window.CKEDITOR_BASEPATH) {
-              window.CKEDITOR.basePath = window.CKEDITOR_BASEPATH;
-            }
-            const configScript = document.createElement('script');
-            configScript.src = `${usedBasePath}/ckeditor/config.js`;
-            configScript.onerror = () => {
-              console.warn('config.js do CKEditor não encontrado, usando configuração padrão');
-            };
-            document.head.appendChild(configScript);
-            setScriptLoaded(true);
-          } else {
-            console.error('CKEditor não foi inicializado após carregar o script');
-            tryLoadScript(pathIndex + 1);
-          }
-        }, 100);
-      };
-      
-      newScript.onerror = () => {
-        console.error(`❌ Falha ao carregar de: ${currentPath}`);
-        tryLoadScript(pathIndex + 1);
-      };
-      
-      document.head.appendChild(newScript);
-    };
-    
-    script.onerror = () => {
-      tryLoadScript(1); // Começar do segundo caminho
-    };
-    document.head.appendChild(script);
-
-    return () => {
-      // Limpar script se necessário
-      if (script.parentNode) {
-        script.parentNode.removeChild(script);
-      }
-    };
+    loadCKEditorScript(basePath);
   }, []);
 
   useEffect(() => {
