@@ -418,195 +418,62 @@ const CKEditor = ({
                   }
                 }
           
-          // Limpar qualquer dado do CKEditor associado ao elemento antes de criar nova instância
-          // NÃO usar CKEDITOR.dom.element aqui pois pode causar o erro 'equals'
-          try {
-            // Remover atributos de dados do CKEditor
-            if (element.getAttribute) {
-              element.removeAttribute('data-cke-instance');
-              element.removeAttribute('data-cke');
-            }
-            // Limpar propriedades customizadas que o CKEditor possa ter adicionado
-            if (element.$) {
-              try {
-                delete element.$;
-              } catch (e) {
-                // Ignorar se não puder deletar
-              }
-            }
-            // Limpar propriedades que o CKEditor pode ter adicionado diretamente
-            const propsToRemove = ['$', 'getEditor', 'ckeditorInstance'];
-            propsToRemove.forEach(prop => {
-              try {
-                if (element[prop] !== undefined) {
-                  delete element[prop];
-                }
-              } catch (e) {
-                // Ignorar
-              }
-            });
-          } catch (e) {
-            console.warn('[DEBUG CKEditor] Erro ao limpar dados do CKEditor do elemento:', e);
-          }
-
-          // Verificações finais antes de inicializar
-          // Verificar se o elemento ainda está no DOM e se tem todos os métodos necessários
-          if (!element || !element.parentNode || !document.contains(element)) {
-            console.warn('Elemento não está mais no DOM antes de inicializar');
-            return;
-          }
-
-          // Verificar se o elemento tem ownerDocument
-          if (!element.ownerDocument || !element.ownerDocument.defaultView) {
-            console.warn('Elemento não tem ownerDocument válido');
-            return;
-          }
-
-          // Garantir que o elemento está realmente visível/atachado ao DOM
-          try {
-            // Tentar acessar offsetParent para garantir que está no layout
-            const test = element.offsetParent;
-          } catch (e) {
-            console.warn('Elemento não está pronto para inicialização:', e);
-            return;
-          }
-
-          // Debug: verificar estado do elemento antes de inicializar
-          console.log('[DEBUG CKEditor] Verificando elemento antes de inicializar:', {
-            element: !!element,
-            elementId: element?.id,
-            parentNode: !!element?.parentNode,
-            inDocument: element ? document.contains(element) : false,
-            offsetParent: element?.offsetParent ? 'existe' : 'null',
-            ownerDocument: !!element?.ownerDocument,
-            ckeditorLoaded: typeof window.CKEDITOR !== 'undefined',
-            ckeditorReplace: typeof window.CKEDITOR?.replace === 'function',
-            instancesCount: window.CKEDITOR?.instances ? Object.keys(window.CKEDITOR.instances).length : 0
-          });
-
-          // Verificar uma última vez se o elemento ainda está válido e no DOM
-          if (!element || !element.parentNode || !document.contains(element)) {
-            console.warn('[DEBUG CKEditor] Elemento não está mais no DOM antes de inicializar CKEditor');
-            return;
-          }
-
-          // Verificar se o elemento ainda não tem uma instância ativa
-          if (element.id && window.CKEDITOR.instances[element.id]) {
-            const existingInstance = window.CKEDITOR.instances[element.id];
-            console.log('[DEBUG CKEditor] Instância existente encontrada:', {
-              instanceId: element.id,
-              status: existingInstance?.status,
-              destroyed: existingInstance?.status === 'destroyed'
-            });
-            if (existingInstance && existingInstance.status !== 'destroyed') {
-              console.warn('[DEBUG CKEditor] Já existe uma instância ativa para este elemento, aguardando...');
-              await new Promise(resolve => setTimeout(resolve, 200));
-              // Tentar destruir novamente
-              try {
-                if (existingInstance.status !== 'destroyed') {
-                  existingInstance.destroy();
-                  await new Promise(resolve => setTimeout(resolve, 100));
-                  console.log('[DEBUG CKEditor] Instância existente destruída com sucesso');
-                }
-              } catch (e) {
-                console.warn('[DEBUG CKEditor] Erro ao destruir instância existente:', e);
-                delete window.CKEDITOR.instances[element.id];
-              }
-            }
-          }
-
-          // Inicializar o editor com tratamento de erro
-          try {
-            // Verificar se o elemento ainda está no DOM antes de inicializar
-            if (!element || !document.contains(element)) {
-              console.warn('[DEBUG CKEditor] Elemento removido do DOM antes da inicialização');
-              return;
-            }
-
-            console.log('[DEBUG CKEditor] Tentando inicializar CKEditor no elemento:', element.id);
-            
-            // Verificar se há instâncias que apontam para este elemento
-            // (evitar usar CKEDITOR.dom.element.getEditor() pois pode causar erro 'equals')
-            if (window.CKEDITOR && window.CKEDITOR.instances) {
-              const instancesForThisElement = Object.values(window.CKEDITOR.instances).filter(inst => {
+                // Limpar qualquer dado do CKEditor associado ao elemento antes de criar nova instância
+                // NÃO usar CKEDITOR.dom.element aqui pois pode causar o erro 'equals'
                 try {
-                  return inst && inst.element && (
-                    inst.element.$ === element || 
-                    inst.element.$ === element.$ ||
-                    (inst.element.$ && inst.element.$.$ === element)
-                  );
-                } catch (e) {
-                  return false;
-                }
-              });
-              
-              if (instancesForThisElement.length > 0) {
-                console.warn('[DEBUG CKEditor] Encontradas instâncias apontando para este elemento:', instancesForThisElement.length);
-                for (const inst of instancesForThisElement) {
-                  try {
-                    if (inst.status !== 'destroyed') {
-                      inst.destroy();
-                      await new Promise(resolve => setTimeout(resolve, 100));
-                    }
-                    if (inst.id) {
-                      delete window.CKEDITOR.instances[inst.id];
-                    }
-                  } catch (e) {
-                    console.warn('[DEBUG CKEditor] Erro ao destruir instância encontrada:', e);
-                    if (inst.id) {
-                      delete window.CKEDITOR.instances[inst.id];
+                  // Remover atributos de dados do CKEditor
+                  if (element.getAttribute) {
+                    element.removeAttribute('data-cke-instance');
+                    element.removeAttribute('data-cke');
+                  }
+                  // Limpar propriedades customizadas que o CKEditor possa ter adicionado
+                  if (element.$) {
+                    try {
+                      delete element.$;
+                    } catch (e) {
+                      // Ignorar se não puder deletar
                     }
                   }
+                  // Limpar propriedades que o CKEditor pode ter adicionado diretamente
+                  const propsToRemove = ['$', 'getEditor', 'ckeditorInstance'];
+                  propsToRemove.forEach(prop => {
+                    try {
+                      if (element[prop] !== undefined) {
+                        delete element[prop];
+                      }
+                    } catch (e) {
+                      // Ignorar
+                    }
+                  });
+                } catch (e) {
+                  console.warn('[DEBUG CKEditor] Erro ao limpar dados do CKEditor do elemento:', e);
                 }
-              }
-            }
-            
-            // Aguardar um pouco mais para garantir que qualquer limpeza anterior foi concluída
-            await new Promise(resolve => setTimeout(resolve, 100));
-            
-            // Verificar uma última vez que o elemento ainda está no DOM e válido
-            if (!element || !document.contains(element)) {
-              console.warn('[DEBUG CKEditor] Elemento não está mais no DOM antes de replace');
-              return;
-            }
-            
-            // Verificar se já existe uma instância para este elemento específico antes de tentar replace
-            // Isso pode causar o erro 'equals' se o elemento ainda tem referências antigas
-            const existingInstanceForElement = Object.values(window.CKEDITOR.instances || {}).find(inst => {
-              try {
-                return inst && inst.element && (
-                  inst.element.$ === element ||
-                  (inst.element.$ && inst.element.$.$ === element) ||
-                  (inst.element.$ && inst.element.$.$ === element.$)
-                );
-              } catch (e) {
-                return false;
-              }
-            });
-            
-            if (existingInstanceForElement && existingInstanceForElement.status !== 'destroyed') {
-              console.warn('[DEBUG CKEditor] Encontrada instância ativa para este elemento, destruindo antes de replace...');
-              try {
-                existingInstanceForElement.destroy();
-                await new Promise(resolve => setTimeout(resolve, 300));
-                // Limpar do registro
-                if (existingInstanceForElement.id) {
-                  delete window.CKEDITOR.instances[existingInstanceForElement.id];
+
+                // Verificações finais antes de inicializar
+                // Verificar se o elemento ainda está no DOM e se tem todos os métodos necessários
+                if (!element || !element.parentNode || !document.contains(element)) {
+                  throw new Error('Elemento não está mais no DOM antes de inicializar');
                 }
-              } catch (e) {
-                console.warn('[DEBUG CKEditor] Erro ao destruir instância encontrada:', e);
-                if (existingInstanceForElement.id) {
-                  delete window.CKEDITOR.instances[existingInstanceForElement.id];
+
+                // Verificar se o elemento tem ownerDocument
+                if (!element.ownerDocument || !element.ownerDocument.defaultView) {
+                  throw new Error('Elemento não tem ownerDocument válido');
                 }
-              }
-            }
-            
-                // Tentar criar diretamente
-                // Verificar uma última vez que o elemento está no DOM
+
+                // Garantir que o elemento está realmente visível/atachado ao DOM
+                try {
+                  // Tentar acessar offsetParent para garantir que está no layout
+                  const test = element.offsetParent;
+                } catch (e) {
+                  throw new Error('Elemento não está pronto para inicialização');
+                }
+
+                // Verificar uma última vez que o elemento ainda está no DOM e válido
                 if (!element || !document.contains(element)) {
-                  throw new Error('Elemento não está no DOM');
+                  throw new Error('Elemento não está mais no DOM antes de replace');
                 }
                 
+                // Tentar criar diretamente
                 editorInstanceRef.current = window.CKEDITOR.replace(element, editorConfig);
                 console.log('[DEBUG CKEditor] CKEditor inicializado com sucesso:', {
                   instanceId: editorInstanceRef.current?.id,
@@ -629,8 +496,10 @@ const CKEditor = ({
             // Adicionar à fila
             window.CKEDITOR_INIT_QUEUE.queue.push(initFunction);
             window.CKEDITOR_INIT_QUEUE.processQueue();
-            
-            // Aguardar conclusão
+          });
+          
+          // Aguardar conclusão
+          try {
             await initPromise;
           } catch (error) {
             console.error('[DEBUG CKEditor] Erro ao inicializar CKEditor:', error);
