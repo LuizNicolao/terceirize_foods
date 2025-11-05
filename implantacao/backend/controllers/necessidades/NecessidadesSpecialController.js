@@ -69,18 +69,39 @@ const gerarNecessidade = async (req, res) => {
       });
     }
 
-    // Verificar se já existe necessidade para esta escola/semana (independente do produto)
-    const existing = await executeQuery(`
-      SELECT DISTINCT necessidade_id FROM necessidades 
-      WHERE escola_id = ? AND semana_consumo = ?
-    `, [escola_id, semana_consumo]);
+    // Buscar grupo do primeiro produto para validação (todos os produtos devem ser do mesmo grupo)
+    let grupoPrincipal = null;
+    let grupoIdPrincipal = null;
+    
+    if (produtos.length > 0 && produtos[0].produto_id) {
+      const primeiroGrupoResult = await executeQuery(`
+        SELECT ppc.grupo, ppc.grupo_id 
+        FROM produtos_per_capita ppc 
+        WHERE ppc.produto_id = ? 
+        LIMIT 1
+      `, [produtos[0].produto_id]);
+      
+      if (primeiroGrupoResult.length > 0) {
+        grupoPrincipal = primeiroGrupoResult[0].grupo;
+        grupoIdPrincipal = primeiroGrupoResult[0].grupo_id;
+      }
+    }
 
-    if (existing.length > 0) {
-      return res.status(409).json({
-        success: false,
-        error: 'Necessidade já existe',
-        message: `Necessidade para a escola "${escola_nome}" já gerada nessa semana selecionada, permitido realizar alterações na tela de Ajustes de Necessidade`
-      });
+    // Verificar se já existe necessidade para esta escola/semana/grupo específico
+    // Permite criar necessidades de grupos diferentes na mesma semana para a mesma escola
+    if (grupoPrincipal) {
+      const existing = await executeQuery(`
+        SELECT DISTINCT necessidade_id FROM necessidades 
+        WHERE escola_id = ? AND semana_consumo = ? AND grupo = ?
+      `, [escola_id, semana_consumo, grupoPrincipal]);
+
+      if (existing.length > 0) {
+        return res.status(409).json({
+          success: false,
+          error: 'Necessidade já existe',
+          message: `Necessidade para a escola "${escola_nome}" e grupo "${grupoPrincipal}" já gerada nessa semana selecionada, permitido realizar alterações na tela de Ajustes de Necessidade`
+        });
+      }
     }
 
     // Inserir necessidades para cada produto
