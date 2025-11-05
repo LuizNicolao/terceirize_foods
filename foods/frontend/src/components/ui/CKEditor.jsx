@@ -53,7 +53,10 @@ const CKEditor = ({
           return contentType?.includes('javascript') || contentType?.includes('text/plain');
         }
         // Se HEAD falhar, tentar GET (alguns servidores não suportam HEAD)
-        const getResponse = await fetch(url, { method: 'GET', cache: 'no-cache', signal: AbortSignal.timeout(2000) });
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 2000);
+        const getResponse = await fetch(url, { method: 'GET', cache: 'no-cache', signal: controller.signal });
+        clearTimeout(timeout);
         if (getResponse.ok) {
           const contentType = getResponse.headers.get('content-type');
           // Verificar se é JavaScript (mesmo que venha como text/plain)
