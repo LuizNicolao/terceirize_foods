@@ -31,8 +31,10 @@ CKEDITOR.editorConfig = function( config ) {
 	// Remover barra de status
 	config.removePlugins = 'elementspath';
 	
-	// Desabilitar plugins que geram avisos (não são necessários)
-	config.removePlugins = config.removePlugins ? config.removePlugins + ',exportpdf,uploadimage' : 'elementspath,exportpdf,uploadimage';
+	// Desabilitar plugins que geram avisos ou estão incompletos (não são necessários)
+	// tablesorter: plugin incompleto (falta arquivos JS e lang)
+	// qrc: plugin incompleto (só tem imagens, sem arquivos JS)
+	config.removePlugins = config.removePlugins ? config.removePlugins + ',exportpdf,uploadimage,tablesorter,qrc' : 'elementspath,exportpdf,uploadimage,tablesorter,qrc';
 	
 	// Permitir upload de imagens (se necessário no futuro)
 	config.filebrowserUploadUrl = '/api/upload';
