@@ -136,7 +136,9 @@ const PdfTemplatesModal = ({
         css_styles: null, // CSS agora é editado diretamente no HTML via CKEditor
         ativo: data.ativo === '1' || data.ativo === 1 || data.ativo === true,
         padrao: data.padrao === '1' || data.padrao === 1 || data.padrao === true,
-        variaveis_disponiveis: variaveisDisponiveis
+        variaveis_disponiveis: Array.isArray(variaveisDisponiveis) 
+          ? JSON.stringify(variaveisDisponiveis) 
+          : variaveisDisponiveis
       };
 
       await onSubmit(formData);
