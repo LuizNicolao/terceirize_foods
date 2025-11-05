@@ -16,76 +16,9 @@ const PdfTemplatesModal = ({
   const { register, handleSubmit, reset, formState: { errors }, setValue, watch } = useForm();
   const [saving, setSaving] = useState(false);
   const [htmlContent, setHtmlContent] = useState('');
-  const [cssContent, setCssContent] = useState('');
   const editorRef = useRef(null);
 
   const telaVinculada = watch('tela_vinculada');
-
-  useEffect(() => {
-    if (template && isOpen) {
-      // Preencher formulário com dados do template
-      Object.keys(template).forEach(key => {
-        if (template[key] !== null && template[key] !== undefined && key !== 'html_template' && key !== 'css_styles') {
-          setValue(key, template[key]);
-        }
-      });
-      // Aguardar um pouco para o editor carregar antes de definir o conteúdo
-      setTimeout(() => {
-        setHtmlContent(template.html_template || '');
-        setCssContent(template.css_styles || '');
-      }, 300);
-      
-      // Converter campos booleanos
-      setValue('ativo', template.ativo === 1 || template.ativo === true ? '1' : '0');
-      setValue('padrao', template.padrao === 1 || template.padrao === true ? '1' : '0');
-    } else if (!template && isOpen) {
-      // Resetar formulário para novo template
-      reset();
-      setHtmlContent('');
-      setCssContent('');
-      setValue('ativo', '1'); // Padrão: Ativo
-      setValue('padrao', '0'); // Padrão: Não é padrão
-    } else if (!isOpen) {
-      // Limpar quando modal fechar
-      setHtmlContent('');
-      setCssContent('');
-      editorRef.current = null;
-    }
-  }, [template, isOpen, setValue, reset]);
-
-  const handleFormSubmit = async (data) => {
-    // Validar HTML template
-    if (!htmlContent || !htmlContent.trim()) {
-      alert('HTML Template é obrigatório');
-      return;
-    }
-
-    setSaving(true);
-    try {
-      const formData = {
-        nome: data.nome.trim(),
-        descricao: data.descricao?.trim() || null,
-        tela_vinculada: data.tela_vinculada,
-        html_template: htmlContent.trim(),
-        css_styles: cssContent.trim() || null,
-        ativo: data.ativo === '1' || data.ativo === 1 || data.ativo === true,
-        padrao: data.padrao === '1' || data.padrao === 1 || data.padrao === true,
-        variaveis_disponiveis: data.variaveis_disponiveis || []
-      };
-
-      await onSubmit(formData);
-      setHtmlContent('');
-      setCssContent('');
-    } catch (error) {
-      console.error('Erro ao salvar template:', error);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  if (!isOpen) return null;
-
-  const isViewMode = viewMode === true;
 
   // Variáveis disponíveis baseadas na tela selecionada
   const getVariaveisDisponiveis = () => {
@@ -125,6 +58,80 @@ const PdfTemplatesModal = ({
 
   const variaveisDisponiveis = getVariaveisDisponiveis();
 
+  useEffect(() => {
+    if (template && isOpen) {
+      // Preencher formulário com dados do template
+      Object.keys(template).forEach(key => {
+        if (template[key] !== null && template[key] !== undefined && key !== 'html_template' && key !== 'css_styles') {
+          setValue(key, template[key]);
+        }
+      });
+      // Aguardar um pouco para o editor carregar antes de definir o conteúdo
+      setTimeout(() => {
+        setHtmlContent(template.html_template || '');
+      }, 300);
+      
+      // Converter campos booleanos
+      setValue('ativo', template.ativo === 1 || template.ativo === true ? '1' : '0');
+      setValue('padrao', template.padrao === 1 || template.padrao === true ? '1' : '0');
+    } else if (!template && isOpen) {
+      // Resetar formulário para novo template
+      reset();
+      setHtmlContent('');
+      setValue('ativo', '1'); // Padrão: Ativo
+      setValue('padrao', '0'); // Padrão: Não é padrão
+    } else if (!isOpen) {
+      // Limpar quando modal fechar
+      setHtmlContent('');
+      editorRef.current = null;
+    }
+  }, [template, isOpen, setValue, reset]);
+
+  const handleFormSubmit = async (data) => {
+    // Validar campos obrigatórios
+    if (!data.nome || !data.nome.trim()) {
+      alert('Nome do template é obrigatório');
+      return;
+    }
+
+    if (!data.tela_vinculada) {
+      alert('Tela vinculada é obrigatória');
+      return;
+    }
+
+    // Validar HTML template
+    if (!htmlContent || !htmlContent.trim()) {
+      alert('HTML Template é obrigatório');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const formData = {
+        nome: data.nome.trim(),
+        descricao: data.descricao?.trim() || null,
+        tela_vinculada: data.tela_vinculada,
+        html_template: htmlContent.trim(),
+        css_styles: null, // CSS agora é editado diretamente no HTML via CKEditor
+        ativo: data.ativo === '1' || data.ativo === 1 || data.ativo === true,
+        padrao: data.padrao === '1' || data.padrao === 1 || data.padrao === true,
+        variaveis_disponiveis: variaveisDisponiveis
+      };
+
+      await onSubmit(formData);
+      setHtmlContent('');
+    } catch (error) {
+      console.error('Erro ao salvar template:', error);
+      alert('Erro ao salvar template. Verifique o console para mais detalhes.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  const isViewMode = viewMode === true;
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="full">
       <div className="bg-white rounded-lg shadow-xl max-h-[90vh] overflow-y-auto">
@@ -159,7 +166,7 @@ const PdfTemplatesModal = ({
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit(handleFormSubmit)} className="p-6 space-y-6">
+        <form onSubmit={handleSubmit(handleFormSubmit)} className="p-6 space-y-6 flex flex-col" style={{ minHeight: 'calc(90vh - 120px)' }}>
           {/* Informações Básicas */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
@@ -194,7 +201,7 @@ const PdfTemplatesModal = ({
             disabled={isViewMode || saving}
           />
 
-          {/* Variáveis Disponíveis */}
+          {/* Variáveis Disponíveis - Acima do Editor */}
           {telaVinculada && variaveisDisponiveis.length > 0 && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <h3 className="text-sm font-semibold text-blue-900 mb-2">Variáveis Disponíveis</h3>
@@ -228,11 +235,8 @@ const PdfTemplatesModal = ({
             </div>
           )}
 
-          {/* HTML Template */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              HTML Template *
-            </label>
+          {/* Editor HTML/CSS */}
+          <div className="flex-1 min-h-[600px]">
             <CKEditorWrapper
               value={htmlContent}
               onChange={setHtmlContent}
@@ -243,27 +247,6 @@ const PdfTemplatesModal = ({
             />
             {errors.html_template && (
               <p className="mt-1 text-sm text-red-600">{errors.html_template.message}</p>
-            )}
-          </div>
-
-          {/* CSS Styles */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              CSS Styles
-            </label>
-            <textarea
-              name="css_styles"
-              value={cssContent}
-              onChange={(e) => setCssContent(e.target.value)}
-              disabled={isViewMode || saving}
-              rows={10}
-              className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 ${
-                errors.css_styles ? 'border-red-500' : 'border-gray-300'
-              } ${isViewMode || saving ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
-              placeholder="Digite o CSS aqui..."
-            />
-            {errors.css_styles && (
-              <p className="mt-1 text-sm text-red-600">{errors.css_styles.message}</p>
             )}
           </div>
 
@@ -299,9 +282,6 @@ const PdfTemplatesModal = ({
                 <option value="0">Não</option>
                 <option value="1">Sim</option>
               </select>
-              <p className="mt-1 text-xs text-gray-500">
-                Se marcado como padrão, será usado automaticamente quando nenhum template específico for selecionado
-              </p>
             </div>
           </div>
 

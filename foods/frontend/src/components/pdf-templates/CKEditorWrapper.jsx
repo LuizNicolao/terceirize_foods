@@ -13,10 +13,9 @@ const CKEditorWrapper = ({ value, onChange, disabled, placeholder, editorRef: ex
   useEffect(() => {
     // Só inicializar se o componente estiver aberto/visível
     if (isOpen === false || isOpen === undefined) {
-      // Destruir editor se o modal fechar
+        // Destruir editor se o modal fechar
       if (editorInstanceRef.current) {
-        editorInstanceRef.current.destroy()
-          .catch(err => console.error('Erro ao destruir editor:', err));
+        editorInstanceRef.current.destroy().catch(() => {});
         editorInstanceRef.current = null;
         if (externalEditorRef) {
           externalEditorRef.current = null;
@@ -55,48 +54,32 @@ const CKEditorWrapper = ({ value, onChange, disabled, placeholder, editorRef: ex
         const containerAvailable = await waitForContainer();
         
         if (!mounted || !containerAvailable || !containerRef.current) {
-          console.error('Container não disponível após tentativas', {
-            containerExists: !!containerRef.current,
-            mounted,
-            retryCount
-          });
           setError('Erro: Container do editor não encontrado. Verifique se o modal está totalmente aberto.');
           setIsLoading(false);
           return;
         }
         
         // Importar CKEditor dinamicamente (CSS é incluído automaticamente pelo pacote)
-        console.log('Importando ClassicEditor...');
         const CKEditorModule = await import('@ckeditor/ckeditor5-build-classic');
-        console.log('Módulo importado:', CKEditorModule);
         
         // Tentar diferentes formas de acessar o ClassicEditor
         const ClassicEditor = CKEditorModule.default || CKEditorModule.ClassicEditor || CKEditorModule;
         
         if (!ClassicEditor || typeof ClassicEditor.create !== 'function') {
-          throw new Error('ClassicEditor não encontrado ou não é uma função válida. Estrutura do módulo: ' + JSON.stringify(Object.keys(CKEditorModule)));
+          throw new Error('ClassicEditor não encontrado ou não é uma função válida');
         }
-        
-        console.log('ClassicEditor importado com sucesso', { hasCreate: typeof ClassicEditor.create === 'function' });
         
         // Aguardar um pouco mais para garantir que o DOM está totalmente pronto
         await new Promise(resolve => setTimeout(resolve, 150));
         
         if (!mounted || !containerRef.current) {
-          console.warn('Componente desmontado após importação');
           setIsLoading(false);
           return;
         }
         
-        console.log('Criando instância do editor...', { 
-          containerExists: !!containerRef.current,
-          containerElement: containerRef.current
-        });
-        
         // Destruir editor anterior se existir
         if (editorInstanceRef.current) {
-          editorInstanceRef.current.destroy()
-            .catch(err => console.error('Erro ao destruir editor anterior:', err));
+          editorInstanceRef.current.destroy().catch(() => {});
         }
 
         // Criar instância do editor
@@ -159,14 +142,7 @@ const CKEditorWrapper = ({ value, onChange, disabled, placeholder, editorRef: ex
         });
 
         setIsLoading(false);
-        console.log('Editor criado com sucesso!');
       } catch (err) {
-        console.error('Erro ao carregar CKEditor:', err);
-        console.error('Detalhes:', {
-          message: err.message,
-          name: err.name,
-          stack: err.stack
-        });
         setError(`Erro ao carregar editor: ${err.message}. Verifique se o pacote @ckeditor/ckeditor5-build-classic está instalado (npm install @ckeditor/ckeditor5-build-classic)`);
         setIsLoading(false);
       }
@@ -189,8 +165,7 @@ const CKEditorWrapper = ({ value, onChange, disabled, placeholder, editorRef: ex
       mounted = false;
       if (editorInstance || editorInstanceRef.current) {
         const editorToDestroy = editorInstance || editorInstanceRef.current;
-        editorToDestroy.destroy()
-          .catch(err => console.error('Erro ao destruir editor:', err));
+        editorToDestroy.destroy().catch(() => {});
         editorInstanceRef.current = null;
         if (externalEditorRef) {
           externalEditorRef.current = null;
@@ -224,13 +199,13 @@ const CKEditorWrapper = ({ value, onChange, disabled, placeholder, editorRef: ex
   // Sempre renderizar o container, mesmo quando loading ou erro
   // Isso garante que o ref esteja disponível quando o modal abrir
   return (
-    <div className="ckeditor-wrapper border border-gray-300 rounded-md overflow-hidden" style={{ minHeight: '400px' }}>
+    <div className="ckeditor-wrapper border border-gray-300 rounded-md overflow-hidden" style={{ minHeight: '600px' }}>
       <div 
         ref={containerRef} 
-        style={{ minHeight: '400px', display: isLoading || error ? 'none' : 'block' }}
+        style={{ minHeight: '600px', display: isLoading || error ? 'none' : 'block' }}
       ></div>
       {(isLoading || error) && (
-        <div style={{ minHeight: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ minHeight: '600px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           {isLoading && (
             <div className="flex items-center justify-center">
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-600"></div>
