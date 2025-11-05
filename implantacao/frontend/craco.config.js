@@ -22,29 +22,30 @@ module.exports = {
         }
       }
 
-      // Adicionar alias para foods-frontend
+      // Configurar resolve
       if (!webpackConfig.resolve) {
         webpackConfig.resolve = {};
       }
+
+      // Adicionar alias para foods-frontend
       if (!webpackConfig.resolve.alias) {
         webpackConfig.resolve.alias = {};
       }
       webpackConfig.resolve.alias['foods-frontend'] = path.resolve(__dirname, '../../foods/frontend');
 
-      // Permitir importações fora de src/ para o diretório foods
-      if (!webpackConfig.resolve.fallback) {
-        webpackConfig.resolve.fallback = {};
-      }
+      // Garantir que React e React-DOM sejam singletons (resolvidos uma única vez)
+      // Isso evita o erro "Cannot read properties of null (reading 'useState')"
+      const reactPath = path.resolve(__dirname, 'node_modules/react');
+      const reactDomPath = path.resolve(__dirname, 'node_modules/react-dom');
+      webpackConfig.resolve.alias['react'] = reactPath;
+      webpackConfig.resolve.alias['react-dom'] = reactDomPath;
 
-      // Adicionar symlink resolver para permitir importações de fora de src/
+      // Remover ModuleScopePlugin para permitir importações de fora de src/
       const ModuleScopePlugin = require('react-dev-utils/ModuleScopePlugin');
-      const originalResolve = webpackConfig.resolve;
-      webpackConfig.resolve = {
-        ...originalResolve,
-        plugins: originalResolve.plugins?.filter(
-          plugin => !(plugin instanceof ModuleScopePlugin)
-        ) || []
-      };
+      const plugins = webpackConfig.resolve.plugins || [];
+      webpackConfig.resolve.plugins = plugins.filter(
+        plugin => !(plugin instanceof ModuleScopePlugin)
+      );
 
       return webpackConfig;
     }
