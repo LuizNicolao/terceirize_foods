@@ -19,18 +19,28 @@ class SolicitacoesComprasPDFController {
       `SELECT 
         sc.id,
         sc.numero_solicitacao,
+        sc.descricao,
+        sc.motivo,
         sc.data_entrega_cd,
+        sc.data_necessidade,
         sc.data_documento,
         sc.semana_abastecimento,
         sc.justificativa,
         sc.observacoes,
         sc.status,
+        sc.valor_total,
         sc.criado_em,
+        sc.atualizado_em,
         sc.unidade,
         sc.usuario_nome,
+        sc.solicitante,
+        sc.criado_por,
+        sc.usuario_id,
+        sc.filial_id,
         f.filial as filial_nome,
         f.codigo_filial as filial_codigo,
-        u.nome as usuario_nome_from_user
+        u.nome as usuario_nome_from_user,
+        u.email as usuario_email
       FROM solicitacoes_compras sc
       LEFT JOIN filiais f ON sc.filial_id = f.id
       LEFT JOIN usuarios u ON sc.usuario_id = u.id OR sc.criado_por = u.id
@@ -46,10 +56,18 @@ class SolicitacoesComprasPDFController {
     const itens = await executeQuery(
       `SELECT 
         sci.id,
+        sci.solicitacao_id,
         sci.produto_id,
+        sci.codigo_produto,
+        sci.nome_produto,
         sci.quantidade,
         sci.observacao,
+        sci.observacao as observacao_item,
         sci.unidade_medida_id,
+        sci.unidade_medida,
+        sci.valor_unitario,
+        sci.valor_total as valor_total_item,
+        sci.criado_em as item_criado_em,
         pg.codigo as produto_codigo,
         pg.nome as produto_nome,
         um.sigla as unidade_simbolo,

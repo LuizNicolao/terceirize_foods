@@ -25,15 +25,63 @@ const PdfTemplatesModal = ({
     
     const variaveis = {
       'solicitacoes-compras': [
+        // Identificação
+        'id',
         'numero_solicitacao',
-        'data_criacao',
-        'data_entrega_cd',
-        'semana_abastecimento',
+        // Descrições
+        'descricao',
+        'motivo',
         'justificativa',
+        'observacoes',
+        // Status
         'status',
+        // Datas
+        'data_criacao',
+        'data_criacao_completa',
+        'data_atualizacao',
+        'data_atualizacao_completa',
+        'data_documento',
+        'data_entrega_cd',
+        'data_necessidade',
+        'semana_abastecimento',
+        // Valores
+        'valor_total',
+        'valor_total_numerico',
+        // Filial
+        'filial_id',
         'filial_nome',
         'filial_codigo',
-        'solicitante_nome'
+        'unidade',
+        // Usuário/Solicitante
+        'usuario_id',
+        'criado_por',
+        'solicitante_nome',
+        'solicitante',
+        'usuario_email',
+        // Pedidos
+        'pedidos_vinculados',
+        'pedidos_vinculados_lista',
+        // Estatísticas
+        'total_itens',
+        'total_quantidade',
+        // Itens (loop)
+        '{{#itens}}',
+        '  id',
+        '  produto_id',
+        '  produto_codigo',
+        '  produto_nome',
+        '  quantidade',
+        '  quantidade_formatada',
+        '  unidade',
+        '  unidade_simbolo',
+        '  unidade_nome',
+        '  observacao',
+        '  valor_unitario',
+        '  valor_unitario_formatado',
+        '  valor_total',
+        '  valor_total_formatado',
+        '  item_criado_em',
+        '{{/itens}}'
       ],
       'pedidos-compras': [
         'numero_pedido',
