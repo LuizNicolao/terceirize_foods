@@ -21,3 +21,4 @@ export { MaskedInput } from './MaskedInput';
 export { MaskedFormInput } from './MaskedFormInput'; 
 export { default as SearchableSelect } from './SearchableSelect';
 export { default as SortableTableHeader } from './SortableTableHeader';
+export { default as CKEditor } from './CKEditor';
