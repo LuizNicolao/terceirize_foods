@@ -379,13 +379,19 @@ const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = fal
             </tr>
             <tr>
               {pedidoIdAtual && !viewMode && (
-                <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase w-12">
                   <input
                     type="checkbox"
-                    checked={produtosAtualizados.length > 0 && produtosAtualizados.every(p => !p.pedido_item_id || produtosSelecionados.includes(p.pedido_item_id))}
+                    checked={
+                      produtosAtualizados.length > 0 && 
+                      produtosAtualizados.some(p => p.pedido_item_id) &&
+                      produtosAtualizados
+                        .filter(p => p.pedido_item_id)
+                        .every(p => produtosSelecionados.includes(p.pedido_item_id))
+                    }
                     onChange={(e) => handleSelectAll(e.target.checked)}
-                    className="rounded border-gray-300 text-green-600 focus:ring-green-500"
-                    title="Selecionar todos"
+                    className="rounded border-gray-300 text-green-600 focus:ring-green-500 cursor-pointer"
+                    title="Selecionar todos para desvincular"
                   />
                 </th>
               )}
@@ -426,13 +432,14 @@ const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = fal
                   {/* Linha 1: Informações do Produto */}
                   <tr className="hover:bg-gray-50">
                     {pedidoIdAtual && !viewMode && (
-                      <td className="px-4 py-3 whitespace-nowrap text-center">
+                      <td className="px-4 py-3 whitespace-nowrap text-center w-12">
                         {produto.pedido_item_id ? (
                           <input
                             type="checkbox"
                             checked={produtosSelecionados.includes(produto.pedido_item_id)}
                             onChange={(e) => handleSelectProduto(produto.pedido_item_id, e.target.checked)}
-                            className="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                            className="rounded border-gray-300 text-green-600 focus:ring-green-500 cursor-pointer"
+                            title="Selecionar para desvincular do pedido"
                           />
                         ) : (
                           <span className="text-gray-400">-</span>
