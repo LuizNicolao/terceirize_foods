@@ -29,23 +29,23 @@ router.get('/',
   pdfTemplatesController.listar
 );
 
-// Buscar template por ID
-router.get('/:id',
-  checkScreenPermission('pdf_templates', 'visualizar'),
-  commonValidations.id,
-  pdfTemplatesController.buscarPorId
-);
-
-// Listar telas disponíveis
+// Listar telas disponíveis (DEVE VIR ANTES DE /:id)
 router.get('/telas-disponiveis',
   checkScreenPermission('pdf_templates', 'visualizar'),
   pdfTemplatesController.listarTelasDisponiveis
 );
 
-// Buscar template padrão por tela
+// Buscar template padrão por tela (DEVE VIR ANTES DE /:id)
 router.get('/tela/:tela/padrao',
   checkScreenPermission('pdf_templates', 'visualizar'),
   pdfTemplatesController.buscarTemplatePadrao
+);
+
+// Buscar template por ID (DEVE VIR POR ÚLTIMO)
+router.get('/:id',
+  checkScreenPermission('pdf_templates', 'visualizar'),
+  commonValidations.id,
+  pdfTemplatesController.buscarPorId
 );
 
 // Criar novo template
