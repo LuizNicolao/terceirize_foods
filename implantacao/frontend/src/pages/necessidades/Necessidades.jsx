@@ -94,8 +94,8 @@ const Necessidades = () => {
       const resultado = await gerarNecessidade(dados);
       if (resultado.success) {
         setModalAberto(false);
-        // Recarregar necessidades após gerar
-        carregarNecessidades();
+        // Recarregar necessidades após gerar, mantendo os filtros atuais
+        carregarNecessidades(filtros);
       }
       // Toast de sucesso/erro é tratado no hook
     } catch (error) {
@@ -212,8 +212,9 @@ const Necessidades = () => {
               <tbody className="bg-white divide-y divide-gray-200">
                 {(() => {
                   // Agrupar necessidades por necessidade_id (se disponível) ou por escola, data e grupo
-                  // Incluir grupo na chave para permitir múltiplas necessidades na mesma escola/semana com grupos diferentes
+                  // Incluir grupo na chave para permitir múltiplos grupos na mesma escola/semana
                   const agrupadas = necessidades.reduce((acc, necessidade) => {
+                    // Se tem necessidade_id, usar ele. Senão, usar escola-data-grupo para diferenciar grupos
                     const chave = necessidade.necessidade_id || `${necessidade.escola}-${necessidade.semana_consumo}-${necessidade.grupo || 'sem-grupo'}`;
                     if (!acc[chave]) {
                       acc[chave] = {
@@ -244,8 +245,14 @@ const Necessidades = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {grupo.rota || '-'}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {grupo.grupo || '-'}
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                        {grupo.grupo ? (
+                          <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">
+                            {grupo.grupo}
+                          </span>
+                        ) : (
+                          '-'
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-center">
                         <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
