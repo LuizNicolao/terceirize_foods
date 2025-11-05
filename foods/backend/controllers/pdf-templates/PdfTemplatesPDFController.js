@@ -81,27 +81,49 @@ class PdfTemplatesPDFController {
       const itens = dados.itens || [];
       
       let itemsHtml = '';
-      itens.forEach(item => {
+      itens.forEach((item, index) => {
         let itemHtml = loopContent;
         
-        // Substituir variáveis do item (aceita tanto {{var}} quanto {{{{var}}}})
-        // Primeiro tenta com 4 chaves, depois com 2
-        const itemVars4 = itemHtml.match(/\{\{\{\{(\w+)\}\}\}\}/g) || [];
+        // Substituir variáveis do item - processar TODAS as variáveis encontradas
+        // Primeiro tenta com 4 chaves ({{{{var}}}}), depois com 2 ({{var}})
+        // Regex melhorado para pegar variáveis mesmo com caracteres especiais
+        const itemVars4 = itemHtml.match(/\{\{\{\{([^}]+)\}\}\}\}/g) || [];
         itemVars4.forEach(variavel => {
           const nomeVariavel = variavel.replace(/[{}]/g, '');
-          const valor = item[nomeVariavel] !== undefined ? String(item[nomeVariavel]) : '';
-          itemHtml = itemHtml.replace(new RegExp(`\\{\\{\\{\\{${nomeVariavel}\\}\\}\\}\\}`, 'g'), valor);
+          // Converter array para string se necessário
+          let valor = item[nomeVariavel];
+          if (valor === undefined || valor === null) {
+            valor = '';
+          } else if (Array.isArray(valor)) {
+            valor = valor.join(', ');
+          } else {
+            valor = String(valor);
+          }
+          // Escapar caracteres especiais para regex
+          const nomeEscapado = nomeVariavel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          itemHtml = itemHtml.replace(new RegExp(`\\{\\{\\{\\{${nomeEscapado}\\}\\}\\}\\}`, 'g'), valor);
         });
         
-        const itemVars2 = itemHtml.match(/\{\{(\w+)\}\}/g) || [];
+        // Depois processa variáveis com 2 chaves
+        const itemVars2 = itemHtml.match(/\{\{([^}]+)\}\}/g) || [];
         itemVars2.forEach(variavel => {
           const nomeVariavel = variavel.replace(/[{}]/g, '');
           // Ignorar se já foi processado com 4 chaves ou se for #itens
-          if (nomeVariavel === '#itens' || nomeVariavel === '/itens' || nomeVariavel.startsWith('#')) {
+          if (nomeVariavel === '#itens' || nomeVariavel === '/itens' || nomeVariavel.startsWith('#') || nomeVariavel.startsWith('/')) {
             return;
           }
-          const valor = item[nomeVariavel] !== undefined ? String(item[nomeVariavel]) : '';
-          itemHtml = itemHtml.replace(new RegExp(`\\{\\{${nomeVariavel}\\}\\}`, 'g'), valor);
+          // Converter array para string se necessário
+          let valor = item[nomeVariavel];
+          if (valor === undefined || valor === null) {
+            valor = '';
+          } else if (Array.isArray(valor)) {
+            valor = valor.join(', ');
+          } else {
+            valor = String(valor);
+          }
+          // Escapar caracteres especiais para regex
+          const nomeEscapado = nomeVariavel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          itemHtml = itemHtml.replace(new RegExp(`\\{\\{${nomeEscapado}\\}\\}`, 'g'), valor);
         });
         
         itemsHtml += itemHtml;
@@ -116,25 +138,43 @@ class PdfTemplatesPDFController {
     
     // Substituir variáveis simples do formato {{variavel}} ou {{{{variavel}}}}
     // Primeiro tenta com 4 chaves, depois com 2
-    const variaveis4 = html.match(/\{\{\{\{(\w+)\}\}\}\}/g) || [];
+    const variaveis4 = html.match(/\{\{\{\{([^}]+)\}\}\}\}/g) || [];
     variaveis4.forEach(variavel => {
       const nomeVariavel = variavel.replace(/[{}]/g, '');
       if (nomeVariavel === '#itens' || nomeVariavel === '/itens' || nomeVariavel.startsWith('#') || nomeVariavel.startsWith('/')) {
         return;
       }
-      const valor = dados[nomeVariavel] !== undefined ? String(dados[nomeVariavel]) : '';
-      html = html.replace(new RegExp(`\\{\\{\\{\\{${nomeVariavel}\\}\\}\\}\\}`, 'g'), valor);
+      // Converter array para string se necessário
+      let valor = dados[nomeVariavel];
+      if (valor === undefined || valor === null) {
+        valor = '';
+      } else if (Array.isArray(valor)) {
+        valor = valor.join(', ');
+      } else {
+        valor = String(valor);
+      }
+      const nomeEscapado = nomeVariavel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      html = html.replace(new RegExp(`\\{\\{\\{\\{${nomeEscapado}\\}\\}\\}\\}`, 'g'), valor);
     });
     
-    const variaveis2 = html.match(/\{\{(\w+)\}\}/g) || [];
+    const variaveis2 = html.match(/\{\{([^}]+)\}\}/g) || [];
     variaveis2.forEach(variavel => {
       const nomeVariavel = variavel.replace(/[{}]/g, '');
       // Ignorar se for um loop ou variável já processada
       if (nomeVariavel === 'itens' || nomeVariavel === '#itens' || nomeVariavel === '/itens' || nomeVariavel.startsWith('#') || nomeVariavel.startsWith('/')) {
         return;
       }
-      const valor = dados[nomeVariavel] !== undefined ? String(dados[nomeVariavel]) : '';
-      html = html.replace(new RegExp(`\\{\\{${nomeVariavel}\\}\\}`, 'g'), valor);
+      // Converter array para string se necessário
+      let valor = dados[nomeVariavel];
+      if (valor === undefined || valor === null) {
+        valor = '';
+      } else if (Array.isArray(valor)) {
+        valor = valor.join(', ');
+      } else {
+        valor = String(valor);
+      }
+      const nomeEscapado = nomeVariavel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      html = html.replace(new RegExp(`\\{\\{${nomeEscapado}\\}\\}`, 'g'), valor);
     });
     
     return html;
@@ -226,7 +266,8 @@ class PdfTemplatesPDFController {
       
       // Usuário/Solicitante
       usuario_id: solicitacao.usuario_id || solicitacao.criado_por || '',
-      criado_por: solicitacao.criado_por || '',
+      criado_por: solicitacao.criado_por ? String(solicitacao.criado_por) : '',
+      criado_por_nome: solicitacao.usuario_nome_from_user || solicitacao.usuario_nome || '',
       solicitante_nome: solicitacao.usuario_nome_from_user || solicitacao.usuario_nome || solicitacao.solicitante || '',
       solicitante: solicitacao.solicitante || solicitacao.usuario_nome_from_user || solicitacao.usuario_nome || '',
       usuario_email: solicitacao.usuario_email || '',
@@ -275,7 +316,8 @@ class PdfTemplatesPDFController {
       
       // Estatísticas dos itens
       total_itens: itens.length,
-      total_quantidade: itens.reduce((sum, item) => sum + parseFloat(item.quantidade || 0), 0).toFixed(3).replace('.', ',')
+      total_quantidade: itens.reduce((sum, item) => sum + parseFloat(item.quantidade || 0), 0).toFixed(3).replace('.', ','),
+      valor_total: '0,00' // Campo não existe na tabela, mas mantido para compatibilidade
     };
   }
 
