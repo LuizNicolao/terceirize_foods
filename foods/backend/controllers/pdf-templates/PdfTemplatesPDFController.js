@@ -64,15 +64,32 @@ class PdfTemplatesPDFController {
   static renderizarTemplate(htmlTemplate, dados, variaveisDisponiveis = []) {
     let html = htmlTemplate;
     
-    // Debug: log inicial
+    // Debug: log inicial detalhado
+    console.log('[DEBUG Template] ========================================');
     console.log('[DEBUG Template] Iniciando renderização do template');
     console.log('[DEBUG Template] Tamanho do HTML:', html.length);
     console.log('[DEBUG Template] Número de itens nos dados:', dados.itens?.length || 0);
-    console.log('[DEBUG Template] Dados principais:', {
+    console.log('[DEBUG Template] Dados principais disponíveis:', {
       numero_solicitacao: dados.numero_solicitacao,
       total_itens: dados.total_itens,
-      valor_total: dados.valor_total
+      valor_total: dados.valor_total,
+      pedidos_vinculados: dados.pedidos_vinculados,
+      solicitante: dados.solicitante,
+      filial_nome: dados.filial_nome,
+      data_documento: dados.data_documento
     });
+    console.log('[DEBUG Template] Todas as chaves disponíveis nos dados:', Object.keys(dados).slice(0, 30));
+    if (dados.itens && dados.itens.length > 0) {
+      console.log('[DEBUG Template] Chaves do primeiro item:', Object.keys(dados.itens[0]));
+      console.log('[DEBUG Template] Primeiro item (amostra):', {
+        id: dados.itens[0].id,
+        produto_nome: dados.itens[0].produto_nome,
+        quantidade: dados.itens[0].quantidade,
+        quantidade_formatada: dados.itens[0].quantidade_formatada,
+        pedidos_vinculados: dados.itens[0].pedidos_vinculados
+      });
+    }
+    console.log('[DEBUG Template] ========================================');
     
     // Processar loops de itens ({{#itens}}...{{/itens}} ou {{{{#itens}}}}...{{{{/itens}}}})
     // Aceita tanto 2 quanto 4 chaves (devido ao escape do CKEditor)
@@ -130,9 +147,19 @@ class PdfTemplatesPDFController {
             id: item.id,
             produto_codigo: item.produto_codigo,
             produto_nome: item.produto_nome,
+            quantidade: item.quantidade,
+            quantidade_formatada: item.quantidade_formatada,
+            quantidade_utilizada: item.quantidade_utilizada,
+            quantidade_utilizada_formatada: item.quantidade_utilizada_formatada,
+            saldo_disponivel: item.saldo_disponivel,
+            saldo_disponivel_formatado: item.saldo_disponivel_formatado,
             pedidos_vinculados: item.pedidos_vinculados,
-            pedidos_vinculados_lista: item.pedidos_vinculados_lista
+            pedidos_vinculados_lista: item.pedidos_vinculados_lista,
+            unidade: item.unidade,
+            unidade_simbolo: item.unidade_simbolo,
+            observacao: item.observacao
           });
+          console.log('[DEBUG Template] Todas as chaves do primeiro item:', Object.keys(item));
         }
         
         // Substituir variáveis do item - processar TODAS as variáveis encontradas
@@ -276,10 +303,15 @@ class PdfTemplatesPDFController {
     // Debug: verificar se ainda há variáveis não substituídas
     const variaveisRestantes = html.match(/\{\{([^}]+)\}\}/g) || [];
     if (variaveisRestantes.length > 0) {
-      console.log('[DEBUG Template] Variáveis não substituídas após processamento:', variaveisRestantes.slice(0, 20));
+      const variaveisUnicasRestantes = [...new Set(variaveisRestantes.map(v => v.replace(/[{}]/g, '')))];
+      console.warn('[DEBUG Template] ⚠️ Variáveis não substituídas após processamento:', variaveisUnicasRestantes.slice(0, 30));
+      console.warn('[DEBUG Template] ⚠️ Isso pode indicar que a variável não existe nos dados ou foi escrita incorretamente');
+    } else {
+      console.log('[DEBUG Template] ✅ Todas as variáveis foram substituídas com sucesso');
     }
     
     console.log('[DEBUG Template] Renderização concluída. Tamanho final do HTML:', html.length);
+    console.log('[DEBUG Template] ========================================');
     
     return html;
   }
@@ -342,6 +374,17 @@ class PdfTemplatesPDFController {
    * Preparar dados para template de solicitação de compras
    */
   static prepararDadosSolicitacao(solicitacao, itens, pedidosVinculados) {
+    console.log('[DEBUG prepararDados] ========================================');
+    console.log('[DEBUG prepararDados] Preparando dados para template');
+    console.log('[DEBUG prepararDados] Solicitacao recebida:', {
+      id: solicitacao?.id,
+      numero_solicitacao: solicitacao?.numero_solicitacao,
+      justificativa: solicitacao?.justificativa?.substring(0, 50),
+      usuario_nome: solicitacao?.usuario_nome,
+      filial_nome: solicitacao?.filial_nome
+    });
+    console.log('[DEBUG prepararDados] Número de itens recebidos:', itens?.length || 0);
+    console.log('[DEBUG prepararDados] Pedidos vinculados:', pedidosVinculados?.map(p => p.numero_pedido) || []);
     return {
       // Campos principais da solicitação
       id: solicitacao.id || '',
