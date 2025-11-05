@@ -359,6 +359,24 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
     return numero.toFixed(3).replace('.', ',');
   };
 
+  const calcularPercentual = (total, pedido) => {
+    // Se pedido for 0 ou vazio, retornar vazio
+    if (!pedido || pedido === 0 || pedido === '' || isNaN(pedido)) {
+      return '-';
+    }
+    
+    // Se total for 0 ou vazio, retornar 100% (falta tudo)
+    if (!total || total === 0 || total === '' || isNaN(total)) {
+      return '100,00%';
+    }
+    
+    // Calcular: 1 - (TOTAL / PEDIDO)
+    const percentual = (1 - (total / pedido)) * 100;
+    
+    // Formatar com 2 casas decimais
+    return `${percentual.toFixed(2).replace('.', ',')}%`;
+  };
+
   return (
     <Modal
       isOpen={isOpen}
@@ -477,8 +495,11 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
                     <th rowSpan="2" className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-300">
                       TOTAL
                     </th>
-                    <th rowSpan="2" className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th rowSpan="2" className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-300">
                       PEDIDO
+                    </th>
+                    <th rowSpan="2" className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      %
                     </th>
                   </tr>
                   <tr>
@@ -678,7 +699,7 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
                       </td>
                       
                       {/* PEDIDO */}
-                      <td className="px-4 py-4 whitespace-nowrap text-center bg-yellow-50">
+                      <td className="px-4 py-4 whitespace-nowrap text-center bg-yellow-50 border-r border-gray-300">
                         <input
                           type="number"
                           step="0.001"
@@ -689,6 +710,11 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
                           className="w-20 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white"
                           disabled={necessidadesLoading || loading}
                         />
+                      </td>
+                      
+                      {/* % */}
+                      <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-center bg-gray-50">
+                        {calcularPercentual(produto.total, produto.ajuste)}
                       </td>
                     </tr>
                   ))}
