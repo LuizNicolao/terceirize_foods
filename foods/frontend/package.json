@@ -21,20 +21,7 @@
     "react-table": "^7.8.0",
     "styled-components": "^6.1.1",
     "xlsx": "^0.18.5",
-    "@ckeditor/ckeditor5-build-classic": "^41.4.2",
-    "@ckeditor/ckeditor5-editor-classic": "^41.4.2",
-    "@ckeditor/ckeditor5-essentials": "^41.4.2",
-    "@ckeditor/ckeditor5-table": "^41.4.2",
-    "@ckeditor/ckeditor5-heading": "^41.4.2",
-    "@ckeditor/ckeditor5-link": "^41.4.2",
-    "@ckeditor/ckeditor5-list": "^41.4.2",
-    "@ckeditor/ckeditor5-paragraph": "^41.4.2",
-    "@ckeditor/ckeditor5-block-quote": "^41.4.2",
-    "@ckeditor/ckeditor5-image": "^41.4.2",
-    "@ckeditor/ckeditor5-indent": "^41.4.2",
-    "@ckeditor/ckeditor5-undo": "^41.4.2",
-    "@ckeditor/ckeditor5-utils": "^41.4.2",
-    "@ckeditor/ckeditor5-basic-styles": "^41.4.2"
+    "@ckeditor/ckeditor5-build-classic": "^41.1.1"
   },
   "devDependencies": {
     "eslint": "^8.0.0",
@@ -62,4 +49,4 @@
     ]
   },
   "proxy": "http://82.29.57.43:3001"
-}
+} 

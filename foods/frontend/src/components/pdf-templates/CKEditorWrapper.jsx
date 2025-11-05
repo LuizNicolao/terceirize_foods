@@ -59,19 +59,11 @@ const CKEditorWrapper = ({ value, onChange, disabled, placeholder, editorRef: ex
           return;
         }
         
-        // Tentar primeiro usar o editor customizado com mais funcionalidades
-        let ClassicEditor;
-        try {
-          // Importar CSS do editor classic (necessário para o customizado também)
-          await import('@ckeditor/ckeditor5-build-classic/build/ckeditor.css').catch(() => {});
-          
-          const { createCustomEditor } = await import('../../utils/ckeditor-custom');
-          ClassicEditor = await createCustomEditor();
-        } catch (customError) {
-          // Fallback para o build classic se o customizado falhar
-          const CKEditorModule = await import('@ckeditor/ckeditor5-build-classic');
-          ClassicEditor = CKEditorModule.default || CKEditorModule.ClassicEditor || CKEditorModule;
-        }
+        // Importar CKEditor dinamicamente (CSS é incluído automaticamente pelo pacote)
+        const CKEditorModule = await import('@ckeditor/ckeditor5-build-classic');
+        
+        // Tentar diferentes formas de acessar o ClassicEditor
+        const ClassicEditor = CKEditorModule.default || CKEditorModule.ClassicEditor || CKEditorModule;
         
         if (!ClassicEditor || typeof ClassicEditor.create !== 'function') {
           throw new Error('ClassicEditor não encontrado ou não é uma função válida');
@@ -109,18 +101,8 @@ const CKEditorWrapper = ({ value, onChange, disabled, placeholder, editorRef: ex
             contentToolbar: [
               'tableColumn',
               'tableRow',
-              'mergeTableCells',
-              'tableProperties',
-              'tableCellProperties'
-            ],
-            tableProperties: {
-              borderColors: [],
-              backgroundColors: []
-            },
-            tableCellProperties: {
-              borderColors: [],
-              backgroundColors: []
-            }
+              'mergeTableCells'
+            ]
           },
           placeholder: placeholder || 'Digite o HTML do template aqui...',
           language: 'pt-br'
