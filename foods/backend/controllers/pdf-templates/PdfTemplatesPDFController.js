@@ -309,7 +309,11 @@ class PdfTemplatesPDFController {
       // Converter array para string se necessário
       let valor = dados[nomeVariavel];
       if (valor === undefined || valor === null) {
-        console.warn(`[DEBUG Template] ⚠️ Variável '${nomeVariavel}' não encontrada nos dados principais. Chaves disponíveis:`, Object.keys(dados).slice(0, 30));
+        // Variáveis que só existem nos itens não devem gerar warning se estiverem nos dados principais
+        const variaveisApenasItens = ['saldo_disponivel', 'quantidade_utilizada', 'quantidade_formatada', 'produto_codigo', 'produto_nome'];
+        if (!variaveisApenasItens.includes(nomeVariavel)) {
+          console.warn(`[DEBUG Template] ⚠️ Variável '${nomeVariavel}' não encontrada nos dados principais. Chaves disponíveis:`, Object.keys(dados).slice(0, 30));
+        }
         valor = '';
       } else if (Array.isArray(valor)) {
         valor = valor.join(', ');
@@ -445,7 +449,8 @@ class PdfTemplatesPDFController {
       
       // Pedidos vinculados
       pedidos_vinculados: pedidosVinculados.map(p => p.numero_pedido).join(', '),
-      pedidos_vinculados_lista: pedidosVinculados.map(p => p.numero_pedido),
+      // pedidos_vinculados_lista como string separada por vírgula (mesmo valor de pedidos_vinculados)
+      pedidos_vinculados_lista: pedidosVinculados.map(p => p.numero_pedido).join(', '),
       
       // Dados para itens (pode ser usado em loops no template)
       itens: itens.map((item, index) => {
