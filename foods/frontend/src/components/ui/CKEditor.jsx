@@ -131,8 +131,49 @@ const CKEditor = ({
         }
       }
       
-      // Se nenhum caminho funcionou
-      console.error('❌ CKEditor não encontrado em nenhum dos caminhos:', possiblePaths);
+      // Se nenhum caminho funcionou, tentar carregar mesmo assim (pode ser problema de CORS na verificação)
+      console.warn('⚠️ Verificação falhou, tentando carregar mesmo assim...');
+      const fallbackPath = `/foods/ckeditor/ckeditor.js`;
+      console.log(`🔄 Tentando carregar direto de: ${fallbackPath}`);
+      
+      window.CKEDITOR_BASEPATH = `/foods/ckeditor/`;
+      const script = document.createElement('script');
+      script.src = fallbackPath;
+      script.async = true;
+      
+      script.onload = () => {
+        setTimeout(() => {
+          if (typeof window.CKEDITOR !== 'undefined') {
+            window.CKEDITOR.basePath = window.CKEDITOR_BASEPATH;
+            const configScript = document.createElement('script');
+            configScript.src = `/foods/ckeditor/config.js`;
+            configScript.onerror = () => {
+              console.warn('config.js não encontrado, usando padrão');
+            };
+            document.head.appendChild(configScript);
+            setScriptLoaded(true);
+            console.log('✅ CKEditor carregado com sucesso!');
+          } else {
+            console.error('❌ CKEditor não encontrado em nenhum dos caminhos:', possiblePaths);
+            console.error('💡 SOLUÇÃO: Faça rebuild do frontend no servidor:');
+            console.error('   1. cd foods/frontend');
+            console.error('   2. npm run build');
+            console.error('   3. Reinicie o container/servidor');
+          }
+        }, 100);
+      };
+      
+      script.onerror = () => {
+        console.error('❌ CKEditor não encontrado em nenhum dos caminhos:', possiblePaths);
+        console.error('💡 SOLUÇÃO: Os arquivos do CKEditor precisam estar no build.');
+        console.error('   Execute no servidor:');
+        console.error('   1. cd ~/terceirize_foods/foods/frontend');
+        console.error('   2. git pull origin main');
+        console.error('   3. npm run build');
+        console.error('   4. Reinicie o container Docker (ou servidor)');
+      };
+      
+      document.head.appendChild(script);
     };
     
     // Detectar caminho base
