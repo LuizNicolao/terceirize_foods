@@ -296,9 +296,11 @@ class PdfTemplatesPDFController {
           nome_produto: item.produto_nome || item.nome_produto || '',
           quantidade: quantidade,
           quantidade_formatada: quantidade.toFixed(3).replace('.', ','),
-          quantidade_utilizada: quantidadeUtilizada,
+          // Para compatibilidade: quantidade_utilizada também formatada por padrão
+          quantidade_utilizada: quantidadeUtilizada.toFixed(3).replace('.', ','),
           quantidade_utilizada_formatada: quantidadeUtilizada.toFixed(3).replace('.', ','),
-          saldo_disponivel: saldoDisponivel,
+          // Para compatibilidade: saldo_disponivel também formatado por padrão
+          saldo_disponivel: saldoDisponivel.toFixed(3).replace('.', ','),
           saldo_disponivel_formatado: saldoDisponivel.toFixed(3).replace('.', ','),
           status: item.status_item || item.status || 'ABERTO',
           unidade_medida_id: item.unidade_medida_id || '',
@@ -307,9 +309,10 @@ class PdfTemplatesPDFController {
           unidade_nome: item.unidade_nome || '',
           observacao: item.observacao || item.observacao_item || '',
           pedidos_vinculados: pedidosNumeros,
+          // pedidos_vinculados_lista como string separada por vírgula para compatibilidade
           pedidos_vinculados_lista: Array.isArray(pedidosVinculadosItem) 
-            ? pedidosVinculadosItem.map(p => p.numero || p)
-            : [],
+            ? pedidosVinculadosItem.map(p => p.numero || p).join(', ')
+            : pedidosNumeros,
           item_criado_em: item.item_criado_em ? new Date(item.item_criado_em).toLocaleDateString('pt-BR') : ''
         };
       }),
