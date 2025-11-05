@@ -227,7 +227,7 @@ const CKEditor = ({
     }
 
     // Aguardar um pouco para garantir que o elemento está no DOM
-    setTimeout(() => {
+    const timeoutId = setTimeout(() => {
       if (!editorRef.current || !containerRef.current) {
         return;
       }
@@ -274,6 +274,7 @@ const CKEditor = ({
 
     // Limpar ao desmontar
     return () => {
+      clearTimeout(timeoutId);
       if (editorInstanceRef.current) {
         try {
           editorInstanceRef.current.destroy();
@@ -281,6 +282,11 @@ const CKEditor = ({
           console.warn('Erro ao destruir editor:', e);
         }
         editorInstanceRef.current = null;
+      }
+      // Remover textarea se existir
+      if (editorRef.current && editorRef.current.parentNode) {
+        editorRef.current.parentNode.removeChild(editorRef.current);
+        editorRef.current = null;
       }
     };
   }, [scriptLoaded]); // Recriar quando o script carregar
