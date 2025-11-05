@@ -6,8 +6,8 @@
  * - Componentes específicos: mantidos localmente
  */
 
-// Re-exportar TODOS os componentes compartilhados do Foods
-export * from '../../../foods/frontend/src/components/shared';
+// Re-exportar TODOS os componentes compartilhados do Foods usando alias
+export * from 'foods-frontend/src/components/shared';
 
 // Componentes específicos do Implantação (manter locais)
 export { default as ConsultaActions } from './ConsultaActions';
