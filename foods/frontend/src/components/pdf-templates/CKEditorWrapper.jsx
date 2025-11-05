@@ -121,14 +121,9 @@ const CKEditorWrapper = ({ value, onChange, disabled, placeholder, editorRef: ex
               'tableColumn',
               'tableRow',
               'mergeTableCells',
-              'tableProperties',
-              'tableCellProperties'
+              'tableProperties'
             ],
             tableProperties: {
-              borderColors: [],
-              backgroundColors: []
-            },
-            tableCellProperties: {
               borderColors: [],
               backgroundColors: []
             }

@@ -231,7 +231,7 @@ const PdfTemplatesModal = ({
           {/* HTML Template */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              HTML Template * <span className="text-xs text-gray-500">(Use variáveis com {'{{variavel}}'})</span>
+              HTML Template *
             </label>
             <CKEditorWrapper
               value={htmlContent}
@@ -249,7 +249,7 @@ const PdfTemplatesModal = ({
           {/* CSS Styles */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              CSS Styles <span className="text-xs text-gray-500">(Opcional - Estilos adicionais para o template)</span>
+              CSS Styles
             </label>
             <textarea
               name="css_styles"
