@@ -375,29 +375,6 @@ const SolicitacoesComprasModal = ({
                 />
               )}
 
-              {/* Pedidos Vinculados (se editando/visualizando) - ao lado de Solicitante */}
-              {solicitacao && solicitacao.pedidos_vinculados && solicitacao.pedidos_vinculados.length > 0 ? (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Pedidos Vinculados
-                  </label>
-                  <div className="bg-gray-50 border border-gray-200 rounded-md p-3 min-h-[42px] flex items-center">
-                    <div className="flex flex-wrap gap-2">
-                      {solicitacao.pedidos_vinculados.map((numeroPedido, index) => (
-                        <span
-                          key={index}
-                          className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 border border-blue-200"
-                        >
-                          {numeroPedido}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              ) : solicitacao ? (
-                <div></div>
-              ) : null}
-
               {/* Solicitante */}
               <Input
                 label="Solicitante"
@@ -406,6 +383,22 @@ const SolicitacoesComprasModal = ({
                 className="bg-gray-50"
                 readOnly
               />
+
+              {/* Pedidos Vinculados (se editando/visualizando) - ao lado de Solicitante */}
+              {solicitacao && solicitacao.pedidos_vinculados && solicitacao.pedidos_vinculados.length > 0 ? (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Pedidos Vinculados
+                  </label>
+                  <div className="bg-gray-50 border border-gray-200 rounded-md p-3 min-h-[42px] flex items-center">
+                    <span className="text-sm text-gray-900">
+                      {solicitacao.pedidos_vinculados.join(', ')}
+                    </span>
+                  </div>
+                </div>
+              ) : solicitacao ? (
+                <div></div>
+              ) : null}
             </div>
 
             {/* Observações Gerais */}
