@@ -87,9 +87,7 @@ const CKEditorWrapper = ({ value, onChange, disabled, placeholder, editorRef: ex
           toolbar: {
             items: [
               'heading', '|',
-              'bold', 'italic', 'underline', 'strikethrough', '|',
-              'fontSize', 'fontColor', 'fontBackgroundColor', '|',
-              'alignment', '|',
+              'bold', 'italic', '|',
               'link', '|',
               'bulletedList', 'numberedList', '|',
               'outdent', 'indent', '|',
@@ -103,13 +101,8 @@ const CKEditorWrapper = ({ value, onChange, disabled, placeholder, editorRef: ex
             contentToolbar: [
               'tableColumn',
               'tableRow',
-              'mergeTableCells',
-              'tableProperties'
-            ],
-            tableProperties: {
-              borderColors: [],
-              backgroundColors: []
-            }
+              'mergeTableCells'
+            ]
           },
           placeholder: placeholder || 'Digite o HTML do template aqui...',
           language: 'pt-br'

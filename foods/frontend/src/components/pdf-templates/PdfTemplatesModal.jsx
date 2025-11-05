@@ -61,9 +61,10 @@ const PdfTemplatesModal = ({
   useEffect(() => {
     if (template && isOpen) {
       // Preencher formulário com dados do template
+      reset();
       Object.keys(template).forEach(key => {
         if (template[key] !== null && template[key] !== undefined && key !== 'html_template' && key !== 'css_styles') {
-          setValue(key, template[key]);
+          setValue(key, template[key], { shouldValidate: false });
         }
       });
       // Aguardar um pouco para o editor carregar antes de definir o conteúdo
@@ -72,14 +73,19 @@ const PdfTemplatesModal = ({
       }, 300);
       
       // Converter campos booleanos
-      setValue('ativo', template.ativo === 1 || template.ativo === true ? '1' : '0');
-      setValue('padrao', template.padrao === 1 || template.padrao === true ? '1' : '0');
+      setValue('ativo', template.ativo === 1 || template.ativo === true ? '1' : '0', { shouldValidate: false });
+      setValue('padrao', template.padrao === 1 || template.padrao === true ? '1' : '0', { shouldValidate: false });
+      // Garantir que tela_vinculada seja setado
+      if (template.tela_vinculada) {
+        setValue('tela_vinculada', template.tela_vinculada, { shouldValidate: false });
+      }
     } else if (!template && isOpen) {
       // Resetar formulário para novo template
       reset();
       setHtmlContent('');
-      setValue('ativo', '1'); // Padrão: Ativo
-      setValue('padrao', '0'); // Padrão: Não é padrão
+      setValue('ativo', '1', { shouldValidate: false }); // Padrão: Ativo
+      setValue('padrao', '0', { shouldValidate: false }); // Padrão: Não é padrão
+      setValue('tela_vinculada', '', { shouldValidate: false });
     } else if (!isOpen) {
       // Limpar quando modal fechar
       setHtmlContent('');
@@ -166,7 +172,7 @@ const PdfTemplatesModal = ({
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit(handleFormSubmit)} className="p-6 space-y-6 flex flex-col" style={{ minHeight: 'calc(90vh - 120px)' }}>
+        <form onSubmit={handleSubmit(handleFormSubmit)} className="p-6 space-y-4 flex flex-col" style={{ minHeight: 'calc(90vh - 120px)' }}>
           {/* Informações Básicas */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
@@ -183,12 +189,13 @@ const PdfTemplatesModal = ({
             <SearchableSelect
               label="Tela Vinculada *"
               options={telasDisponiveis.map(tela => ({ value: tela.value, label: tela.label }))}
-              {...register('tela_vinculada', {
-                required: 'Tela vinculada é obrigatória'
-              })}
+              value={telaVinculada}
+              onChange={(selectedValue) => {
+                setValue('tela_vinculada', selectedValue || '', { shouldValidate: true });
+              }}
               error={errors.tela_vinculada?.message}
               disabled={isViewMode || saving}
-              onChange={(selected) => setValue('tela_vinculada', selected?.value || '')}
+              required
             />
           </div>
 
@@ -203,7 +210,7 @@ const PdfTemplatesModal = ({
 
           {/* Variáveis Disponíveis - Acima do Editor */}
           {telaVinculada && variaveisDisponiveis.length > 0 && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-2">
               <h3 className="text-sm font-semibold text-blue-900 mb-2">Variáveis Disponíveis</h3>
               <p className="text-xs text-blue-700 mb-3">
                 Use estas variáveis no HTML do template usando a sintaxe: {'{{'}<span className="font-mono">nome_variavel</span>{'}}'}
@@ -236,7 +243,7 @@ const PdfTemplatesModal = ({
           )}
 
           {/* Editor HTML/CSS */}
-          <div className="flex-1 min-h-[600px]">
+          <div className="flex-1 min-h-[600px] mt-0">
             <CKEditorWrapper
               value={htmlContent}
               onChange={setHtmlContent}
