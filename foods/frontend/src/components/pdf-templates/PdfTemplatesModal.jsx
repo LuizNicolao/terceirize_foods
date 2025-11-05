@@ -204,7 +204,7 @@ const PdfTemplatesModal = ({
             />
 
             <SearchableSelect
-              label="Tela Vinculada *"
+              label="Tela Vinculada"
               options={telasDisponiveis.map(tela => ({ value: tela.value, label: tela.label }))}
               value={telaVinculada}
               onChange={(selectedValue) => {
