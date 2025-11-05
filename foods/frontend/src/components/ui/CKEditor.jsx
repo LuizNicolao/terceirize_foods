@@ -451,14 +451,28 @@ const CKEditor = ({
               });
 
               editorInstanceRef.current.on('instanceReady', () => {
-                // Definir valor inicial
-                if (value && editorInstanceRef.current) {
-                  editorInstanceRef.current.setData(value);
-                }
-                // Expor instância globalmente para acesso externo usando o name como identificador
-                if (name && editorInstanceRef.current) {
-                  editorInstanceRef.current.name = name;
-                }
+                // Aguardar um pouco para garantir que o editor está completamente pronto
+                setTimeout(() => {
+                  if (editorInstanceRef.current && editorInstanceRef.current.status !== 'destroyed') {
+                    try {
+                      // Definir valor inicial (sempre, mesmo se vazio, para garantir sincronização)
+                      const valueToSet = value || '';
+                      const currentData = editorInstanceRef.current.getData() || '';
+                      
+                      // Só atualizar se o valor for diferente
+                      if (valueToSet !== currentData) {
+                        editorInstanceRef.current.setData(valueToSet);
+                      }
+                      
+                      // Expor instância globalmente para acesso externo usando o name como identificador
+                      if (name && editorInstanceRef.current) {
+                        editorInstanceRef.current.name = name;
+                      }
+                    } catch (e) {
+                      console.warn('Erro ao definir valor inicial no editor:', e);
+                    }
+                  }
+                }, 100);
               });
             }
         } catch (error) {
