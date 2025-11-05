@@ -1,6 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-// Importar CSS do CKEditor - necessário para o editor funcionar
-import '@ckeditor/ckeditor5-build-classic/build/ckeditor.css';
 
 /**
  * Componente wrapper para CKEditor 5
@@ -41,7 +39,7 @@ const CKEditorWrapper = ({ value, onChange, disabled, placeholder, editorRef: ex
           return;
         }
         
-        // Importar CKEditor dinamicamente
+        // Importar CKEditor dinamicamente (CSS é incluído automaticamente pelo pacote)
         console.log('Importando ClassicEditor...');
         const { ClassicEditor } = await import('@ckeditor/ckeditor5-build-classic');
         console.log('ClassicEditor importado com sucesso');
