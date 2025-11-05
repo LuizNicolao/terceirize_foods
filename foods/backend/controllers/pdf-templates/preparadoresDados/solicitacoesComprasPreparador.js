@@ -7,18 +7,6 @@ class SolicitacoesComprasPreparador {
    * Preparar dados para template de solicitação de compras
    */
   static preparar(solicitacao, itens, pedidosVinculados) {
-    console.log('[DEBUG prepararDados] ========================================');
-    console.log('[DEBUG prepararDados] Preparando dados para template - Solicitações de Compras');
-    console.log('[DEBUG prepararDados] Solicitacao recebida:', {
-      id: solicitacao?.id,
-      numero_solicitacao: solicitacao?.numero_solicitacao,
-      justificativa: solicitacao?.justificativa?.substring(0, 50),
-      usuario_nome: solicitacao?.usuario_nome,
-      filial_nome: solicitacao?.filial_nome
-    });
-    console.log('[DEBUG prepararDados] Número de itens recebidos:', itens?.length || 0);
-    console.log('[DEBUG prepararDados] Pedidos vinculados:', pedidosVinculados?.map(p => p.numero_pedido) || []);
-    
     const retorno = {
       // Campos principais da solicitação
       id: solicitacao.id || '',
@@ -118,25 +106,6 @@ class SolicitacoesComprasPreparador {
       total_quantidade: itens.reduce((sum, item) => sum + parseFloat(item.quantidade || 0), 0).toFixed(3).replace('.', ','),
       valor_total: '0,00' // Campo não existe na tabela solicitacoes_compras, mas mantido para compatibilidade
     };
-    
-    console.log('[DEBUG prepararDados] Dados preparados. Chaves principais:', Object.keys(retorno).slice(0, 30));
-    console.log('[DEBUG prepararDados] Valores principais:', {
-      numero_solicitacao: retorno.numero_solicitacao,
-      solicitante: retorno.solicitante,
-      pedidos_vinculados: retorno.pedidos_vinculados,
-      total_itens: retorno.total_itens,
-      valor_total: retorno.valor_total
-    });
-    console.log('[DEBUG prepararDados] Número de itens preparados:', retorno.itens?.length || 0);
-    if (retorno.itens && retorno.itens.length > 0) {
-      console.log('[DEBUG prepararDados] Primeiro item preparado:', {
-        produto_nome: retorno.itens[0].produto_nome,
-        quantidade_formatada: retorno.itens[0].quantidade_formatada,
-        pedidos_vinculados: retorno.itens[0].pedidos_vinculados
-      });
-      console.log('[DEBUG prepararDados] Todas as chaves do primeiro item:', Object.keys(retorno.itens[0]));
-    }
-    console.log('[DEBUG prepararDados] ========================================');
     
     return retorno;
   }

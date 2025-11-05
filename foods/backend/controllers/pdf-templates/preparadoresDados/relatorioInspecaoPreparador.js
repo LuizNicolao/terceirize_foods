@@ -10,15 +10,6 @@ class RelatorioInspecaoPreparador {
    * @param {Array} dadosAdicionais - Dados adicionais
    */
   static preparar(relatorio, itens = [], dadosAdicionais = []) {
-    console.log('[DEBUG prepararDados] ========================================');
-    console.log('[DEBUG prepararDados] Preparando dados para template - Relatório de Inspeção');
-    console.log('[DEBUG prepararDados] Relatório recebido:', {
-      id: relatorio?.id,
-      numero_rir: relatorio?.numero_rir || relatorio?.numero || '',
-      pedido_id: relatorio?.pedido_id
-    });
-    console.log('[DEBUG prepararDados] Número de itens recebidos:', itens?.length || 0);
-    
     const retorno = {
       // Campos principais do relatório
       id: relatorio.id || '',
@@ -73,15 +64,6 @@ class RelatorioInspecaoPreparador {
       // Estatísticas dos itens
       total_itens: itens.length
     };
-    
-    console.log('[DEBUG prepararDados] Dados preparados. Chaves principais:', Object.keys(retorno).slice(0, 30));
-    console.log('[DEBUG prepararDados] Valores principais:', {
-      numero_rir: retorno.numero_rir,
-      numero_pedido: retorno.numero_pedido,
-      data_inspecao: retorno.data_inspecao,
-      total_itens: retorno.total_itens
-    });
-    console.log('[DEBUG prepararDados] ========================================');
     
     return retorno;
   }

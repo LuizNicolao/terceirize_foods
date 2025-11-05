@@ -64,33 +64,6 @@ class PdfTemplatesPDFController {
   static renderizarTemplate(htmlTemplate, dados, variaveisDisponiveis = []) {
     let html = htmlTemplate;
     
-    // Debug: log inicial detalhado
-    console.log('[DEBUG Template] ========================================');
-    console.log('[DEBUG Template] Iniciando renderização do template');
-    console.log('[DEBUG Template] Tamanho do HTML:', html.length);
-    console.log('[DEBUG Template] Número de itens nos dados:', dados.itens?.length || 0);
-    console.log('[DEBUG Template] Dados principais disponíveis:', {
-      numero_solicitacao: dados.numero_solicitacao,
-      total_itens: dados.total_itens,
-      valor_total: dados.valor_total,
-      pedidos_vinculados: dados.pedidos_vinculados,
-      solicitante: dados.solicitante,
-      filial_nome: dados.filial_nome,
-      data_documento: dados.data_documento
-    });
-    console.log('[DEBUG Template] Todas as chaves disponíveis nos dados:', Object.keys(dados).slice(0, 30));
-    if (dados.itens && dados.itens.length > 0) {
-      console.log('[DEBUG Template] Chaves do primeiro item:', Object.keys(dados.itens[0]));
-      console.log('[DEBUG Template] Primeiro item (amostra):', {
-        id: dados.itens[0].id,
-        produto_nome: dados.itens[0].produto_nome,
-        quantidade: dados.itens[0].quantidade,
-        quantidade_formatada: dados.itens[0].quantidade_formatada,
-        pedidos_vinculados: dados.itens[0].pedidos_vinculados
-      });
-    }
-    console.log('[DEBUG Template] ========================================');
-    
     // Processar loops de itens ({{#itens}}...{{/itens}} ou {{{{#itens}}}}...{{{{/itens}}}})
     // Aceita tanto 2 quanto 4 chaves (devido ao escape do CKEditor)
     // Primeiro tenta com 4 chaves, depois com 2
@@ -111,15 +84,6 @@ class PdfTemplatesPDFController {
       const itens = dados.itens || [];
       const fullMatch = match[0];
       
-      console.log('[DEBUG Template] Loop encontrado:', {
-        matchLength: fullMatch.length,
-        contentLength: loopContent.length,
-        contentPreview: loopContent.substring(0, 100),
-        itensCount: itens.length,
-        matchStart: html.indexOf(fullMatch),
-        matchContent: fullMatch.substring(0, 50)
-      });
-      
       // Se o conteúdo do loop estiver vazio ou for apenas espaços, procurar pela tabela logo após
       let tableToReplace = null;
       if (!loopContent || loopContent.trim().length === 0) {
@@ -127,14 +91,11 @@ class PdfTemplatesPDFController {
         const loopIndex = html.indexOf(fullMatch);
         const afterLoop = html.substring(loopIndex + fullMatch.length);
         
-        console.log('[DEBUG Template] Loop vazio, procurando tabela após o loop. Texto após loop:', afterLoop.substring(0, 200));
-        
         // Procurar por <table...> até </table> completo
         // Usar regex não-guloso para capturar a primeira tabela completa
         const tableMatch = afterLoop.match(/(<table[^>]*>[\s\S]*?<\/table>)/i);
         if (tableMatch) {
           tableToReplace = tableMatch[0];
-          console.log('[DEBUG Template] Tabela encontrada após loop:', tableToReplace.substring(0, 200));
           
           // Encontrar o <tbody> e o <tr> dentro para usar como template
           const tbodyMatch = tableMatch[0].match(/<tbody[^>]*>([\s\S]*?)<\/tbody>/i);
@@ -142,62 +103,29 @@ class PdfTemplatesPDFController {
             const trMatch = tbodyMatch[1].match(/(<tr[^>]*>[\s\S]*?<\/tr>)/i);
             if (trMatch) {
               loopContent = trMatch[1]; // Usar o <tr> completo como conteúdo do loop
-              console.log('[DEBUG Template] <tr> extraído para usar como template:', loopContent.substring(0, 150));
             }
           }
-        } else {
-          console.warn('[DEBUG Template] ⚠️ Nenhuma tabela encontrada após loop vazio');
         }
       }
       
       let itemsHtml = '';
-      itens.forEach((item, index) => {
+      itens.forEach((item) => {
         let itemHtml = loopContent;
-        
-        // Debug: log primeiro item
-        if (index === 0) {
-          console.log('[DEBUG Template] Processando primeiro item:', {
-            id: item.id,
-            produto_codigo: item.produto_codigo,
-            produto_nome: item.produto_nome,
-            quantidade: item.quantidade,
-            quantidade_formatada: item.quantidade_formatada,
-            quantidade_utilizada: item.quantidade_utilizada,
-            quantidade_utilizada_formatada: item.quantidade_utilizada_formatada,
-            saldo_disponivel: item.saldo_disponivel,
-            saldo_disponivel_formatado: item.saldo_disponivel_formatado,
-            pedidos_vinculados: item.pedidos_vinculados,
-            pedidos_vinculados_lista: item.pedidos_vinculados_lista,
-            unidade: item.unidade,
-            unidade_simbolo: item.unidade_simbolo,
-            observacao: item.observacao
-          });
-          console.log('[DEBUG Template] Todas as chaves do primeiro item:', Object.keys(item));
-        }
         
         // Substituir variáveis do item - processar TODAS as variáveis encontradas
         // Primeiro tenta com 4 chaves ({{{{var}}}}), depois com 2 ({{var}})
         // Regex melhorado para pegar variáveis mesmo com caracteres especiais
         const itemVars4 = itemHtml.match(/\{\{\{\{([^}]+)\}\}\}\}/g) || [];
-        if (index === 0 && itemVars4.length > 0) {
-          console.log('[DEBUG Template] Variáveis com 4 chaves encontradas no item:', itemVars4.slice(0, 10));
-        }
         itemVars4.forEach(variavel => {
           const nomeVariavel = variavel.replace(/[{}]/g, '');
           // Converter array para string se necessário
           let valor = item[nomeVariavel];
           if (valor === undefined || valor === null) {
-            if (index === 0) {
-              console.warn(`[DEBUG Template] ⚠️ Item[${nomeVariavel}] não encontrado. Chaves disponíveis:`, Object.keys(item).slice(0, 20));
-            }
             valor = '';
           } else if (Array.isArray(valor)) {
             valor = valor.join(', ');
           } else {
             valor = String(valor);
-          }
-          if (index === 0) {
-            console.log(`[DEBUG Template] Item[${nomeVariavel}]:`, valor, `(tipo original: ${typeof item[nomeVariavel]})`);
           }
           // Escapar caracteres especiais para regex
           const nomeEscapado = nomeVariavel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -206,9 +134,6 @@ class PdfTemplatesPDFController {
         
         // Depois processa variáveis com 2 chaves
         const itemVars2 = itemHtml.match(/\{\{([^}]+)\}\}/g) || [];
-        if (index === 0 && itemVars2.length > 0) {
-          console.log('[DEBUG Template] Variáveis com 2 chaves encontradas no item:', itemVars2.slice(0, 10));
-        }
         itemVars2.forEach(variavel => {
           const nomeVariavel = variavel.replace(/[{}]/g, '');
           // Ignorar se já foi processado com 4 chaves ou se for #itens
@@ -218,17 +143,11 @@ class PdfTemplatesPDFController {
           // Converter array para string se necessário
           let valor = item[nomeVariavel];
           if (valor === undefined || valor === null) {
-            if (index === 0) {
-              console.warn(`[DEBUG Template] ⚠️ Item[${nomeVariavel}] não encontrado. Chaves disponíveis:`, Object.keys(item).slice(0, 20));
-            }
             valor = '';
           } else if (Array.isArray(valor)) {
             valor = valor.join(', ');
           } else {
             valor = String(valor);
-          }
-          if (index === 0) {
-            console.log(`[DEBUG Template] Item[${nomeVariavel}]:`, valor, `(tipo original: ${typeof item[nomeVariavel]})`);
           }
           // Escapar caracteres especiais para regex
           const nomeEscapado = nomeVariavel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -236,12 +155,6 @@ class PdfTemplatesPDFController {
         });
         
         itemsHtml += itemHtml;
-      });
-      
-      console.log('[DEBUG Template] HTML gerado para itens:', {
-        itemsCount: itens.length,
-        htmlLength: itemsHtml.length,
-        htmlPreview: itemsHtml.substring(0, 200)
       });
       
       // Se encontrou tabela para substituir (loop vazio), substituir a tabela inteira
@@ -265,16 +178,7 @@ class PdfTemplatesPDFController {
           // Montar nova tabela com thead + tbody com múltiplas linhas
           const newTable = tableStart + thead + tbodyStart + itemsHtml + tbodyEnd + tableEnd;
           
-          console.log('[DEBUG Template] Substituindo tabela:', {
-            oldLength: (fullMatch + tableToReplace).length,
-            newLength: newTable.length,
-            itemsInTable: itemsHtml.split('</tr>').length - 1,
-            fullMatchPreview: fullMatch.substring(0, 50),
-            tableToReplacePreview: tableToReplace.substring(0, 50)
-          });
-          
           // Substituir loop + tabela pelo conteúdo renderizado
-          // Usar replace apenas uma vez para evitar substituições múltiplas
           const toReplace = fullMatch + tableToReplace;
           const loopIndex = html.indexOf(fullMatch);
           if (loopIndex !== -1) {
@@ -290,32 +194,18 @@ class PdfTemplatesPDFController {
               const beforeReplace = html.substring(0, loopIndex);
               const afterReplace = html.substring(loopIndex + toReplace.length);
               html = beforeReplace + newTable + afterReplace;
-              console.log('[DEBUG Template] ✅ Substituição realizada com sucesso');
-              console.log('[DEBUG Template] Tamanhos:', {
-                before: beforeReplace.length,
-                newTable: newTable.length,
-                after: afterReplace.length,
-                total: html.length
-              });
             } else {
-              console.warn('[DEBUG Template] ⚠️ Tabela não está logo após o loop, usando fallback');
               html = html.replace(fullMatch, itemsHtml);
             }
           } else {
-            console.warn('[DEBUG Template] ⚠️ Loop não encontrado no HTML, usando fallback');
             html = html.replace(fullMatch, itemsHtml);
           }
         } else {
           // Fallback: apenas substituir o loop
-          console.warn('[DEBUG Template] ⚠️ Estrutura da tabela não encontrada, usando fallback');
           html = html.replace(fullMatch, itemsHtml);
         }
       } else {
         // Substituir o loop completo pelo conteúdo renderizado
-        console.log('[DEBUG Template] Substituindo loop sem tabela:', {
-          fullMatchLength: fullMatch.length,
-          itemsHtmlLength: itemsHtml.length
-        });
         html = html.replace(fullMatch, itemsHtml);
       }
       
@@ -337,7 +227,6 @@ class PdfTemplatesPDFController {
     // Substituir variáveis simples do formato {{variavel}} ou {{{{variavel}}}}
     // Primeiro tenta com 4 chaves, depois com 2
     const variaveis4 = html.match(/\{\{\{\{([^}]+)\}\}\}\}/g) || [];
-    console.log('[DEBUG Template] Variáveis com 4 chaves encontradas:', variaveis4.length);
     variaveis4.forEach(variavel => {
       const nomeVariavel = variavel.replace(/[{}]/g, '');
       if (nomeVariavel === '#itens' || nomeVariavel === '/itens' || nomeVariavel.startsWith('#') || nomeVariavel.startsWith('/')) {
@@ -357,10 +246,6 @@ class PdfTemplatesPDFController {
     });
     
     const variaveis2 = html.match(/\{\{([^}]+)\}\}/g) || [];
-    console.log('[DEBUG Template] Variáveis com 2 chaves encontradas:', variaveis2.length);
-    const variaveisUnicas = [...new Set(variaveis2.map(v => v.replace(/[{}]/g, '')))];
-    console.log('[DEBUG Template] Variáveis únicas encontradas (primeiras 20):', variaveisUnicas.slice(0, 20));
-    
     variaveis2.forEach(variavel => {
       const nomeVariavel = variavel.replace(/[{}]/g, '');
       // Ignorar se for um loop ou variável já processada
@@ -388,30 +273,15 @@ class PdfTemplatesPDFController {
       // Converter array para string se necessário
       let valor = dados[nomeVariavel];
       if (valor === undefined || valor === null) {
-        console.warn(`[DEBUG Template] ⚠️ Variável '${nomeVariavel}' não encontrada nos dados principais. Chaves disponíveis:`, Object.keys(dados).slice(0, 30));
         valor = '';
       } else if (Array.isArray(valor)) {
         valor = valor.join(', ');
       } else {
         valor = String(valor);
       }
-      console.log(`[DEBUG Template] Dados[${nomeVariavel}]:`, valor, `(tipo original: ${typeof dados[nomeVariavel]})`);
       const nomeEscapado = nomeVariavel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       html = html.replace(new RegExp(`\\{\\{${nomeEscapado}\\}\\}`, 'g'), valor);
     });
-    
-    // Debug: verificar se ainda há variáveis não substituídas
-    const variaveisRestantes = html.match(/\{\{([^}]+)\}\}/g) || [];
-    if (variaveisRestantes.length > 0) {
-      const variaveisUnicasRestantes = [...new Set(variaveisRestantes.map(v => v.replace(/[{}]/g, '')))];
-      console.warn('[DEBUG Template] ⚠️ Variáveis não substituídas após processamento:', variaveisUnicasRestantes.slice(0, 30));
-      console.warn('[DEBUG Template] ⚠️ Isso pode indicar que a variável não existe nos dados ou foi escrita incorretamente');
-    } else {
-      console.log('[DEBUG Template] ✅ Todas as variáveis foram substituídas com sucesso');
-    }
-    
-    console.log('[DEBUG Template] Renderização concluída. Tamanho final do HTML:', html.length);
-    console.log('[DEBUG Template] ========================================');
     
     return html;
   }

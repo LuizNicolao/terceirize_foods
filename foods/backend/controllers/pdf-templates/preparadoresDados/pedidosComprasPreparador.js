@@ -10,16 +10,6 @@ class PedidosComprasPreparador {
    * @param {Array} dadosAdicionais - Dados adicionais (ex: solicitação vinculada)
    */
   static preparar(pedido, itens, dadosAdicionais = []) {
-    console.log('[DEBUG prepararDados] ========================================');
-    console.log('[DEBUG prepararDados] Preparando dados para template - Pedidos de Compras');
-    console.log('[DEBUG prepararDados] Pedido recebido:', {
-      id: pedido?.id,
-      numero_pedido: pedido?.numero_pedido,
-      fornecedor_nome: pedido?.fornecedor_nome,
-      filial_nome: pedido?.filial_nome
-    });
-    console.log('[DEBUG prepararDados] Número de itens recebidos:', itens?.length || 0);
-    
     const solicitacao = dadosAdicionais.solicitacao || null;
     
     const retorno = {
@@ -111,23 +101,6 @@ class PedidosComprasPreparador {
       total_quantidade: itens.reduce((sum, item) => sum + parseFloat(item.quantidade_pedido || 0), 0).toFixed(3).replace('.', ','),
       valor_total: pedido.valor_total ? parseFloat(pedido.valor_total).toFixed(2).replace('.', ',') : '0,00'
     };
-    
-    console.log('[DEBUG prepararDados] Dados preparados. Chaves principais:', Object.keys(retorno).slice(0, 30));
-    console.log('[DEBUG prepararDados] Valores principais:', {
-      numero_pedido: retorno.numero_pedido,
-      fornecedor_nome: retorno.fornecedor_nome,
-      valor_total: retorno.valor_total,
-      total_itens: retorno.total_itens
-    });
-    console.log('[DEBUG prepararDados] Número de itens preparados:', retorno.itens?.length || 0);
-    if (retorno.itens && retorno.itens.length > 0) {
-      console.log('[DEBUG prepararDados] Primeiro item preparado:', {
-        produto_nome: retorno.itens[0].produto_nome,
-        quantidade_pedido_formatada: retorno.itens[0].quantidade_pedido_formatada,
-        valor_total_formatado: retorno.itens[0].valor_total_formatado
-      });
-    }
-    console.log('[DEBUG prepararDados] ========================================');
     
     return retorno;
   }
