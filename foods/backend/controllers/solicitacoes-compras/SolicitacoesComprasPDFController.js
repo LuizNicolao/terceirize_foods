@@ -93,18 +93,23 @@ class SolicitacoesComprasPDFController {
     // Buscar vínculos com pedidos para calcular quantidade_utilizada e saldo_disponivel
     const itensComPedidos = await Promise.all(
       itens.map(async (item) => {
-        // Buscar pedidos vinculados a este item
+        // Buscar pedidos vinculados a este item (todos os status, não apenas aprovados)
         const vinculos = await executeQuery(
           `SELECT 
             pci.quantidade_pedido,
             pc.numero_pedido,
-            pc.id as pedido_id
+            pc.id as pedido_id,
+            pc.status as pedido_status
           FROM pedido_compras_itens pci
           INNER JOIN pedidos_compras pc ON pci.pedido_id = pc.id
-          WHERE pci.solicitacao_item_id = ?
-            AND pc.status IN ('aprovado', 'parcial', 'finalizado')`,
+          WHERE pci.solicitacao_item_id = ?`,
           [item.id]
         );
+        
+        // Debug: log para verificar vínculos encontrados
+        if (itens.indexOf(item) === 0) {
+          console.log('[DEBUG] Item ID', item.id, '- vínculos encontrados:', JSON.stringify(vinculos));
+        }
 
         // Calcular quantidade utilizada e saldo disponível
         const quantidade_utilizada = vinculos.reduce((sum, v) => sum + parseFloat(v.quantidade_pedido || 0), 0);

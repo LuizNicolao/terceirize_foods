@@ -417,6 +417,7 @@ class PdfTemplatesPDFController {
     console.log('[DEBUG] pedidos_vinculados (solicitação):', dados.pedidos_vinculados);
     console.log('[DEBUG] pedidos_vinculados_lista (solicitação):', dados.pedidos_vinculados_lista);
     if (dados.itens && dados.itens.length > 0) {
+      console.log('[DEBUG] Primeiro item completo (raw):', JSON.stringify(dados.itens[0], null, 2));
       console.log('[DEBUG] Primeiro item - pedidos_vinculados:', dados.itens[0].pedidos_vinculados);
       console.log('[DEBUG] Primeiro item - pedidos_vinculados_lista:', dados.itens[0].pedidos_vinculados_lista);
     }

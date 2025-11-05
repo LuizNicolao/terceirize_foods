@@ -1,0 +1,37 @@
+MELHORIAS APLICADAS NO TEMPLATE OTIMIZADO:
+
+1. MARGENS AUMENTADAS:
+   ✅ Padding externo: 20px na tabela principal
+   ✅ Padding interno: 8px (antes 6px) nos campos
+   ✅ Espaçamento entre seções: 10px e 20px
+   ✅ Padding nas assinaturas: 20px
+
+2. LAYOUT EM COLUNAS (4 colunas):
+   ✅ Informações da Solicitação:
+      - Número | Valor | Status | Valor
+      - Data Criação | Valor | Data Entrega CD | Valor
+   
+   ✅ Filial:
+      - Nome | Valor | Código | Valor
+   
+   ✅ Totais:
+      - Valor Total | Valor | Total Itens | Valor
+      - Total Quantidade | Valor (ocupando 3 colunas)
+
+3. OTIMIZAÇÕES:
+   ✅ Tabela principal: 90% de largura (antes 80%)
+   ✅ Cabeçalho centralizado com fonte maior (16px)
+   ✅ Tabela de produtos com padding reduzido (5px) para mais espaço
+   ✅ Colunas da tabela de produtos otimizadas
+   ✅ Espaçamento vertical melhorado entre seções
+
+4. ESTRUTURA:
+   ✅ Mantém loop {{#itens}} dentro do <tbody>
+   ✅ Todas as variáveis corretas
+   ✅ Assinaturas com melhor espaçamento
+
+COMO USAR:
+1. Copie o conteúdo do arquivo template_otimizado.md
+2. Cole no CKEditor na tela de Templates PDF
+3. Salve o template
+4. Teste gerando o PDF novamente
