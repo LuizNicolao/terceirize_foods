@@ -64,8 +64,9 @@ class PdfTemplatesPDFController {
   static renderizarTemplate(htmlTemplate, dados, variaveisDisponiveis = []) {
     let html = htmlTemplate;
     
-    // Processar loops de itens ({{#itens}}...{{/itens}})
-    const itemLoopRegex = /\{\{#itens\}\}([\s\S]*?)\{\{\/itens\}\}/g;
+    // Processar loops de itens ({{#itens}}...{{/itens}} ou {{{{#itens}}}}...{{{{/itens}}}})
+    // Aceita tanto 2 quanto 4 chaves (devido ao escape do CKEditor)
+    const itemLoopRegex = /\{\{#{1,2}itens\}\}([\s\S]*?)\{\{\/{1,2}itens\}\}/g;
     let match;
     
     while ((match = itemLoopRegex.exec(html)) !== null) {
@@ -76,12 +77,18 @@ class PdfTemplatesPDFController {
       itens.forEach(item => {
         let itemHtml = loopContent;
         
-        // Substituir variáveis do item
-        const itemVars = itemHtml.match(/\{\{(\w+)\}\}/g) || [];
+        // Substituir variáveis do item (aceita tanto {{var}} quanto {{{{var}}}})
+        const itemVars = itemHtml.match(/\{\{{1,2}(\w+)\}{1,2}\}/g) || [];
         itemVars.forEach(variavel => {
+          // Remover todas as chaves para obter o nome da variável
           const nomeVariavel = variavel.replace(/[{}]/g, '');
           const valor = item[nomeVariavel] !== undefined ? item[nomeVariavel] : '';
-          const regex = new RegExp(`\\{\\{${nomeVariavel}\\}\\}`, 'g');
+          
+          // Substituir com o mesmo número de chaves que encontrou
+          const numChaves = (variavel.match(/\{/g) || []).length;
+          const chavesInicio = '{'.repeat(numChaves);
+          const chavesFim = '}'.repeat(numChaves);
+          const regex = new RegExp(`\\{\\{${numChaves > 2 ? '{' : ''}${nomeVariavel}${numChaves > 2 ? '}' : ''}\\}\\}`, 'g');
           itemHtml = itemHtml.replace(regex, valor);
         });
         
@@ -92,11 +99,14 @@ class PdfTemplatesPDFController {
       html = html.replace(match[0], itemsHtml);
     }
     
-    // Substituir variáveis simples do formato {{variavel}}
-    const variaveis = html.match(/\{\{(\w+)\}\}/g) || [];
+    // Substituir variáveis simples do formato {{variavel}} ou {{{{variavel}}}}
+    // Primeiro tenta com 4 chaves, depois com 2
+    const variaveis = html.match(/\{\{{1,2}(\w+)\}{1,2}\}/g) || [];
     
     variaveis.forEach(variavel => {
+      // Remover todas as chaves para obter o nome da variável
       const nomeVariavel = variavel.replace(/[{}]/g, '');
+      
       // Ignorar se for um loop ou variável já processada
       if (nomeVariavel === 'itens' || nomeVariavel.startsWith('#') || nomeVariavel.startsWith('/')) {
         return;
@@ -104,8 +114,9 @@ class PdfTemplatesPDFController {
       
       const valor = dados[nomeVariavel] !== undefined ? dados[nomeVariavel] : '';
       
-      // Substituir todas as ocorrências
-      const regex = new RegExp(`\\{\\{${nomeVariavel}\\}\\}`, 'g');
+      // Substituir com o mesmo número de chaves que encontrou
+      const numChaves = (variavel.match(/\{/g) || []).length;
+      const regex = new RegExp(`\\{\\{${numChaves > 2 ? '{' : ''}${nomeVariavel}${numChaves > 2 ? '}' : ''}\\}\\}`, 'g');
       html = html.replace(regex, valor);
     });
     
@@ -210,6 +221,13 @@ class PdfTemplatesPDFController {
       // Dados para itens (pode ser usado em loops no template)
       itens: itens.map(item => {
         const quantidade = parseFloat(item.quantidade || 0);
+        const quantidadeUtilizada = parseFloat(item.quantidade_utilizada || 0);
+        const saldoDisponivel = parseFloat(item.saldo_disponivel || 0);
+        const pedidosVinculadosItem = item.pedidos_vinculados || [];
+        const pedidosNumeros = Array.isArray(pedidosVinculadosItem) 
+          ? pedidosVinculadosItem.map(p => p.numero || p).join(', ')
+          : (typeof pedidosVinculadosItem === 'string' ? pedidosVinculadosItem : '');
+        
         return {
           id: item.id || '',
           solicitacao_id: item.solicitacao_id || '',
@@ -220,11 +238,20 @@ class PdfTemplatesPDFController {
           nome_produto: item.produto_nome || item.nome_produto || '',
           quantidade: quantidade,
           quantidade_formatada: quantidade.toFixed(3).replace('.', ','),
+          quantidade_utilizada: quantidadeUtilizada,
+          quantidade_utilizada_formatada: quantidadeUtilizada.toFixed(3).replace('.', ','),
+          saldo_disponivel: saldoDisponivel,
+          saldo_disponivel_formatado: saldoDisponivel.toFixed(3).replace('.', ','),
+          status: item.status_item || item.status || 'ABERTO',
           unidade_medida_id: item.unidade_medida_id || '',
           unidade: item.unidade_simbolo || item.unidade_medida || item.unidade_nome || '',
           unidade_simbolo: item.unidade_simbolo || item.unidade_medida || '',
           unidade_nome: item.unidade_nome || '',
           observacao: item.observacao || item.observacao_item || '',
+          pedidos_vinculados: pedidosNumeros,
+          pedidos_vinculados_lista: Array.isArray(pedidosVinculadosItem) 
+            ? pedidosVinculadosItem.map(p => p.numero || p)
+            : [],
           item_criado_em: item.item_criado_em ? new Date(item.item_criado_em).toLocaleDateString('pt-BR') : ''
         };
       }),
