@@ -67,8 +67,17 @@ const CKEditorWrapper = ({ value, onChange, disabled, placeholder, editorRef: ex
         
         // Importar CKEditor dinamicamente (CSS é incluído automaticamente pelo pacote)
         console.log('Importando ClassicEditor...');
-        const { ClassicEditor } = await import('@ckeditor/ckeditor5-build-classic');
-        console.log('ClassicEditor importado com sucesso');
+        const CKEditorModule = await import('@ckeditor/ckeditor5-build-classic');
+        console.log('Módulo importado:', CKEditorModule);
+        
+        // Tentar diferentes formas de acessar o ClassicEditor
+        const ClassicEditor = CKEditorModule.default || CKEditorModule.ClassicEditor || CKEditorModule;
+        
+        if (!ClassicEditor || typeof ClassicEditor.create !== 'function') {
+          throw new Error('ClassicEditor não encontrado ou não é uma função válida. Estrutura do módulo: ' + JSON.stringify(Object.keys(CKEditorModule)));
+        }
+        
+        console.log('ClassicEditor importado com sucesso', { hasCreate: typeof ClassicEditor.create === 'function' });
         
         // Aguardar um pouco mais para garantir que o DOM está totalmente pronto
         await new Promise(resolve => setTimeout(resolve, 150));
