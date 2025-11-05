@@ -12,7 +12,7 @@ const CKEditorWrapper = ({ value, onChange, disabled, placeholder, editorRef: ex
 
   useEffect(() => {
     // Só inicializar se o componente estiver aberto/visível
-    if (isOpen === false) {
+    if (isOpen === false || isOpen === undefined) {
       // Destruir editor se o modal fechar
       if (editorInstanceRef.current) {
         editorInstanceRef.current.destroy()
@@ -23,18 +23,44 @@ const CKEditorWrapper = ({ value, onChange, disabled, placeholder, editorRef: ex
         }
       }
       setIsLoading(true);
+      setError(null);
       return;
     }
 
     let mounted = true;
     let editorInstance = null;
+    let retryCount = 0;
+    const maxRetries = 10;
+    const retryDelay = 100;
+
+    const waitForContainer = () => {
+      return new Promise((resolve) => {
+        const checkContainer = () => {
+          if (containerRef.current) {
+            resolve(true);
+          } else if (retryCount < maxRetries) {
+            retryCount++;
+            setTimeout(checkContainer, retryDelay);
+          } else {
+            resolve(false);
+          }
+        };
+        checkContainer();
+      });
+    };
 
     const loadEditor = async () => {
       try {
-        // Verificar se o container existe
-        if (!containerRef.current) {
-          console.error('Container ref não está disponível');
-          setError('Erro: Container do editor não encontrado');
+        // Aguardar o container estar disponível
+        const containerAvailable = await waitForContainer();
+        
+        if (!mounted || !containerAvailable || !containerRef.current) {
+          console.error('Container não disponível após tentativas', {
+            containerExists: !!containerRef.current,
+            mounted,
+            retryCount
+          });
+          setError('Erro: Container do editor não encontrado. Verifique se o modal está totalmente aberto.');
           setIsLoading(false);
           return;
         }
@@ -44,8 +70,8 @@ const CKEditorWrapper = ({ value, onChange, disabled, placeholder, editorRef: ex
         const { ClassicEditor } = await import('@ckeditor/ckeditor5-build-classic');
         console.log('ClassicEditor importado com sucesso');
         
-        // Aguardar um pouco para garantir que o DOM está pronto
-        await new Promise(resolve => setTimeout(resolve, 100));
+        // Aguardar um pouco mais para garantir que o DOM está totalmente pronto
+        await new Promise(resolve => setTimeout(resolve, 150));
         
         if (!mounted || !containerRef.current) {
           console.warn('Componente desmontado após importação');
@@ -129,6 +155,7 @@ const CKEditorWrapper = ({ value, onChange, disabled, placeholder, editorRef: ex
         });
 
         setIsLoading(false);
+        console.log('Editor criado com sucesso!');
       } catch (err) {
         console.error('Erro ao carregar CKEditor:', err);
         console.error('Detalhes:', {
@@ -142,21 +169,16 @@ const CKEditorWrapper = ({ value, onChange, disabled, placeholder, editorRef: ex
     };
 
     // Aguardar um pouco para garantir que o DOM está montado
-    // Usar requestAnimationFrame para garantir que o DOM está renderizado
+    // Usar requestAnimationFrame múltiplos para garantir que o DOM está renderizado
     const timer = setTimeout(() => {
       requestAnimationFrame(() => {
-        if (containerRef.current && mounted) {
-          loadEditor();
-        } else {
-          console.error('Container não encontrado após timeout', { 
-            containerExists: !!containerRef.current,
-            mounted 
-          });
-          setError('Erro: Container do editor não encontrado. Verifique se o modal está aberto.');
-          setIsLoading(false);
-        }
+        requestAnimationFrame(() => {
+          if (mounted) {
+            loadEditor();
+          }
+        });
       });
-    }, 200);
+    }, 300);
 
     return () => {
       clearTimeout(timer);
@@ -194,31 +216,33 @@ const CKEditorWrapper = ({ value, onChange, disabled, placeholder, editorRef: ex
     }
   }, [disabled]);
 
-  if (error) {
-    return (
-      <div className="border border-red-300 rounded-md p-4 bg-red-50">
-        <p className="text-red-800 text-sm">{error}</p>
-        <p className="text-red-600 text-xs mt-2">
-          Execute: npm install @ckeditor/ckeditor5-build-classic
-        </p>
-      </div>
-    );
-  }
 
-  if (isLoading) {
-    return (
-      <div className="border border-gray-300 rounded-md p-4 bg-gray-50">
-        <div className="flex items-center justify-center">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-600"></div>
-          <span className="ml-2 text-gray-600">Carregando editor...</span>
-        </div>
-      </div>
-    );
-  }
-
+  // Sempre renderizar o container, mesmo quando loading ou erro
+  // Isso garante que o ref esteja disponível quando o modal abrir
   return (
     <div className="ckeditor-wrapper border border-gray-300 rounded-md overflow-hidden" style={{ minHeight: '400px' }}>
-      <div ref={containerRef} style={{ minHeight: '400px' }}></div>
+      <div 
+        ref={containerRef} 
+        style={{ minHeight: '400px', display: isLoading || error ? 'none' : 'block' }}
+      ></div>
+      {(isLoading || error) && (
+        <div style={{ minHeight: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          {isLoading && (
+            <div className="flex items-center justify-center">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-600"></div>
+              <span className="ml-2 text-gray-600">Carregando editor...</span>
+            </div>
+          )}
+          {error && (
+            <div className="text-center p-4">
+              <p className="text-red-800 text-sm">{error}</p>
+              <p className="text-red-600 text-xs mt-2">
+                Execute: npm install @ckeditor/ckeditor5-build-classic
+              </p>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
