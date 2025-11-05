@@ -411,10 +411,10 @@ class PdfTemplatesPDFController {
 
   /**
    * Preparar dados para template (método genérico que chama o preparador específico da tela)
-   * @param {string} tela - Nome da tela (ex: 'solicitacoes-compras')
+   * @param {string} tela - Nome da tela (ex: 'solicitacoes-compras', 'pedidos-compras', 'relatorio-inspecao')
    * @param {Object} dadosPrincipais - Dados principais da entidade
    * @param {Array} itens - Array de itens
-   * @param {Array} dadosAdicionais - Dados adicionais (ex: pedidos vinculados)
+   * @param {Array|Object} dadosAdicionais - Dados adicionais (varia por tela)
    * @returns {Object} - Dados preparados para o template
    */
   static prepararDados(tela, dadosPrincipais, itens, dadosAdicionais = []) {
@@ -428,13 +428,7 @@ class PdfTemplatesPDFController {
     const preparador = obterPreparador(tela);
     
     // Chamar método preparar do preparador específico
-    // Cada preparador pode ter assinatura diferente, mas tentamos padrão comum
-    if (tela === 'solicitacoes-compras') {
-      return preparador.preparar(dadosPrincipais, itens, dadosAdicionais);
-    }
-    
-    // Para outras telas, usar assinatura padrão
-    // preparador.preparar(dadosPrincipais, itens, dadosAdicionais)
+    // Todos os preparadores seguem a mesma assinatura: preparar(dadosPrincipais, itens, dadosAdicionais)
     return preparador.preparar(dadosPrincipais, itens, dadosAdicionais);
   }
 
