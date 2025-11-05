@@ -95,45 +95,58 @@ class PdfTemplatesPDFController {
     // Aceita tanto 2 quanto 4 chaves (devido ao escape do CKEditor)
     // Primeiro tenta com 4 chaves, depois com 2
     // Regex melhorado para aceitar espaços/whitespace entre as tags
+    // IMPORTANTE: Usar regex não-guloso para capturar conteúdo vazio ou mínimo
     let itemLoopRegex = /\{\{\{\{#itens\}\}\}\}\s*([\s\S]*?)\s*\{\{\{\{\/itens\}\}\}\}/g;
     let match = itemLoopRegex.exec(html);
     
     if (!match) {
       // Se não encontrou com 4 chaves, tenta com 2
+      // Usar regex não-guloso com ? para capturar conteúdo mínimo (incluindo vazio)
       itemLoopRegex = /\{\{#itens\}\}\s*([\s\S]*?)\s*\{\{\/itens\}\}/g;
       match = itemLoopRegex.exec(html);
     }
     
     while (match) {
-      let loopContent = match[1].trim(); // Remover espaços em branco do início/fim
+      let loopContent = match[1] ? match[1].trim() : ''; // Remover espaços em branco do início/fim
       const itens = dados.itens || [];
+      const fullMatch = match[0];
       
       console.log('[DEBUG Template] Loop encontrado:', {
-        matchLength: match[0].length,
+        matchLength: fullMatch.length,
         contentLength: loopContent.length,
         contentPreview: loopContent.substring(0, 100),
-        itensCount: itens.length
+        itensCount: itens.length,
+        matchStart: html.indexOf(fullMatch),
+        matchContent: fullMatch.substring(0, 50)
       });
       
       // Se o conteúdo do loop estiver vazio ou for apenas espaços, procurar pela tabela logo após
       let tableToReplace = null;
       if (!loopContent || loopContent.trim().length === 0) {
         // Tentar encontrar a tabela HTML logo após o loop
-        const loopIndex = html.indexOf(match[0]);
-        const afterLoop = html.substring(loopIndex + match[0].length);
+        const loopIndex = html.indexOf(fullMatch);
+        const afterLoop = html.substring(loopIndex + fullMatch.length);
+        
+        console.log('[DEBUG Template] Loop vazio, procurando tabela após o loop. Texto após loop:', afterLoop.substring(0, 200));
         
         // Procurar por <table...> até </table> completo
+        // Usar regex não-guloso para capturar a primeira tabela completa
         const tableMatch = afterLoop.match(/(<table[^>]*>[\s\S]*?<\/table>)/i);
         if (tableMatch) {
           tableToReplace = tableMatch[0];
+          console.log('[DEBUG Template] Tabela encontrada após loop:', tableToReplace.substring(0, 200));
+          
           // Encontrar o <tbody> e o <tr> dentro para usar como template
           const tbodyMatch = tableMatch[0].match(/<tbody[^>]*>([\s\S]*?)<\/tbody>/i);
           if (tbodyMatch) {
             const trMatch = tbodyMatch[1].match(/(<tr[^>]*>[\s\S]*?<\/tr>)/i);
             if (trMatch) {
               loopContent = trMatch[1]; // Usar o <tr> completo como conteúdo do loop
+              console.log('[DEBUG Template] <tr> extraído para usar como template:', loopContent.substring(0, 150));
             }
           }
+        } else {
+          console.warn('[DEBUG Template] ⚠️ Nenhuma tabela encontrada após loop vazio');
         }
       }
       
@@ -253,23 +266,47 @@ class PdfTemplatesPDFController {
           const newTable = tableStart + thead + tbodyStart + itemsHtml + tbodyEnd + tableEnd;
           
           console.log('[DEBUG Template] Substituindo tabela:', {
-            oldLength: (match[0] + tableToReplace).length,
+            oldLength: (fullMatch + tableToReplace).length,
             newLength: newTable.length,
-            itemsInTable: itemsHtml.split('</tr>').length - 1
+            itemsInTable: itemsHtml.split('</tr>').length - 1,
+            fullMatchPreview: fullMatch.substring(0, 50),
+            tableToReplacePreview: tableToReplace.substring(0, 50)
           });
           
           // Substituir loop + tabela pelo conteúdo renderizado
-          html = html.replace(match[0] + tableToReplace, newTable);
+          // Usar replace apenas uma vez para evitar substituições múltiplas
+          const toReplace = fullMatch + tableToReplace;
+          const loopIndex = html.indexOf(fullMatch);
+          if (loopIndex !== -1) {
+            // Verificar se a tabela está logo após o loop
+            const afterLoop = html.substring(loopIndex + fullMatch.length);
+            if (afterLoop.trim().startsWith(tableToReplace.trim().substring(0, 20))) {
+              html = html.substring(0, loopIndex) + newTable + html.substring(loopIndex + toReplace.length);
+              console.log('[DEBUG Template] ✅ Substituição realizada com sucesso');
+            } else {
+              console.warn('[DEBUG Template] ⚠️ Tabela não está logo após o loop, usando fallback');
+              html = html.replace(fullMatch, itemsHtml);
+            }
+          } else {
+            console.warn('[DEBUG Template] ⚠️ Loop não encontrado no HTML, usando fallback');
+            html = html.replace(fullMatch, itemsHtml);
+          }
         } else {
           // Fallback: apenas substituir o loop
-          html = html.replace(match[0], itemsHtml);
+          console.warn('[DEBUG Template] ⚠️ Estrutura da tabela não encontrada, usando fallback');
+          html = html.replace(fullMatch, itemsHtml);
         }
       } else {
         // Substituir o loop completo pelo conteúdo renderizado
-        html = html.replace(match[0], itemsHtml);
+        console.log('[DEBUG Template] Substituindo loop sem tabela:', {
+          fullMatchLength: fullMatch.length,
+          itemsHtmlLength: itemsHtml.length
+        });
+        html = html.replace(fullMatch, itemsHtml);
       }
       
-      // Continuar procurando por mais loops
+      // Continuar procurando por mais loops (resetar regex para nova busca)
+      itemLoopRegex.lastIndex = 0;
       match = itemLoopRegex.exec(html);
     }
     
