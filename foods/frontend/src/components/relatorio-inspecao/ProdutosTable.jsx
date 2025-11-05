@@ -288,6 +288,12 @@ const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = fal
           }
         }
       }
+      
+      // Validar avaliação sensorial
+      if (!produto.aval_sensorial || produto.aval_sensorial.trim() === '') {
+        newErrors[`${index}-aval_sensorial`] = 'Avaliação sensorial é obrigatória';
+        hasErrors = true;
+      }
     });
 
     setErrors(newErrors);
@@ -531,7 +537,7 @@ const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = fal
                   </tr>
                   <tr className="bg-gray-50">
                     <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Temp. (°C)</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Aval. Sensorial</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Aval. Sensorial *</th>
                     <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Tam. Lote</th>
                     <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">NQA</th>
                     <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Nº Amostras Aval.</th>
@@ -551,15 +557,30 @@ const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = fal
                       />
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
-                      <select
-                        value={produto.aval_sensorial || ''}
-                        onChange={(e) => handleFieldChange(index, 'aval_sensorial', e.target.value)}
-                        className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                      >
-                        <option value="">Selecione...</option>
-                        <option value="Conforme">Conforme</option>
-                        <option value="Não Conforme">Não Conforme</option>
-                      </select>
+                      <div>
+                        <select
+                          value={produto.aval_sensorial || ''}
+                          onChange={(e) => {
+                            handleFieldChange(index, 'aval_sensorial', e.target.value);
+                            // Remover erro quando preencher
+                            if (errors[`${index}-aval_sensorial`]) {
+                              const newErrors = { ...errors };
+                              delete newErrors[`${index}-aval_sensorial`];
+                              setErrors(newErrors);
+                            }
+                          }}
+                          className={`w-full px-2 py-1 text-sm border rounded focus:ring-2 focus:ring-green-500 focus:border-green-500 ${errors[`${index}-aval_sensorial`] ? 'border-red-500' : 'border-gray-300'}`}
+                          disabled={viewMode}
+                          required
+                        >
+                          <option value="">Selecione...</option>
+                          <option value="Conforme">Conforme</option>
+                          <option value="Não Conforme">Não Conforme</option>
+                        </select>
+                        {errors[`${index}-aval_sensorial`] && (
+                          <p className="text-xs text-red-600 mt-1">{errors[`${index}-aval_sensorial`]}</p>
+                        )}
+                      </div>
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       <Input
