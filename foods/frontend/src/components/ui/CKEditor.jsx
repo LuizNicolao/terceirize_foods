@@ -45,9 +45,26 @@ const CKEditor = ({
     // Função para verificar se um arquivo existe via fetch
     const checkFileExists = async (url) => {
       try {
-        const response = await fetch(url, { method: 'HEAD' });
-        return response.ok && response.headers.get('content-type')?.includes('javascript');
-      } catch {
+        // Tentar HEAD primeiro
+        const response = await fetch(url, { method: 'HEAD', cache: 'no-cache' });
+        if (response.ok) {
+          const contentType = response.headers.get('content-type');
+          // Aceitar javascript ou text/javascript ou application/javascript
+          return contentType?.includes('javascript') || contentType?.includes('text/plain');
+        }
+        // Se HEAD falhar, tentar GET (alguns servidores não suportam HEAD)
+        const getResponse = await fetch(url, { method: 'GET', cache: 'no-cache', signal: AbortSignal.timeout(2000) });
+        if (getResponse.ok) {
+          const contentType = getResponse.headers.get('content-type');
+          // Verificar se é JavaScript (mesmo que venha como text/plain)
+          const text = await getResponse.text();
+          // Verificar se começa com código JavaScript válido (não HTML)
+          return !text.trim().startsWith('<') && (contentType?.includes('javascript') || text.includes('CKEDITOR') || text.includes('function'));
+        }
+        return false;
+      } catch (error) {
+        // Se falhar, assumir que não existe (mas não é crítico)
+        console.warn(`Verificação de ${url} falhou:`, error.message);
         return false;
       }
     };
