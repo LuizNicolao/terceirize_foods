@@ -137,8 +137,8 @@ const PdfTemplatesModal = ({
         ativo: data.ativo === '1' || data.ativo === 1 || data.ativo === true,
         padrao: data.padrao === '1' || data.padrao === 1 || data.padrao === true,
         variaveis_disponiveis: Array.isArray(variaveisDisponiveis) 
-          ? JSON.stringify(variaveisDisponiveis) 
-          : variaveisDisponiveis
+          ? variaveisDisponiveis 
+          : (typeof variaveisDisponiveis === 'string' ? JSON.parse(variaveisDisponiveis) : [])
       };
 
       await onSubmit(formData);

@@ -200,47 +200,60 @@ const CKEditor = ({
       return;
     }
 
-    // Criar elemento textarea para o editor
-    if (!editorRef.current && containerRef.current) {
-      const textarea = document.createElement('textarea');
-      textarea.name = name || 'ckeditor';
-      textarea.id = `ckeditor-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-      
-      // Adicionar atributos necessários para o CKEditor
-      textarea.setAttribute('data-ckeditor', 'true');
-      
-      // Adicionar ao DOM
-      containerRef.current.appendChild(textarea);
-      editorRef.current = textarea;
-    }
-
-    if (!editorRef.current || !containerRef.current || !editorRef.current.parentNode) {
-      return;
-    }
-
-    // Verificar se já existe uma instância do CKEditor para este elemento
-    if (editorRef.current && window.CKEDITOR && window.CKEDITOR.instances) {
-      const existingInstance = window.CKEDITOR.instances[editorRef.current.id || editorRef.current.name];
-      if (existingInstance) {
-        existingInstance.destroy();
+    // Usar requestAnimationFrame para garantir que o DOM está pronto
+    const initEditor = () => {
+      // Criar elemento textarea para o editor
+      if (!editorRef.current && containerRef.current) {
+        const textarea = document.createElement('textarea');
+        textarea.name = name || 'ckeditor';
+        textarea.id = `ckeditor-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        
+        // Adicionar atributos necessários para o CKEditor
+        textarea.setAttribute('data-ckeditor', 'true');
+        
+        // Adicionar ao DOM
+        containerRef.current.appendChild(textarea);
+        editorRef.current = textarea;
       }
-    }
 
-    // Aguardar um pouco para garantir que o elemento está no DOM
-    const timeoutId = setTimeout(() => {
-      if (!editorRef.current || !containerRef.current) {
+      if (!editorRef.current || !containerRef.current || !editorRef.current.parentNode) {
         return;
       }
 
-      // Inicializar CKEditor
-      const editorConfig = {
-        language: 'pt-br',
-        height,
-        ...config
-      };
+      // Verificar se o elemento está realmente no DOM
+      if (!document.contains(editorRef.current)) {
+        return;
+      }
 
-      try {
-        editorInstanceRef.current = window.CKEDITOR.replace(editorRef.current, editorConfig);
+      // Verificar se já existe uma instância do CKEditor para este elemento
+      if (editorRef.current && window.CKEDITOR && window.CKEDITOR.instances) {
+        const existingInstance = window.CKEDITOR.instances[editorRef.current.id || editorRef.current.name];
+        if (existingInstance) {
+          try {
+            existingInstance.destroy();
+          } catch (e) {
+            console.warn('Erro ao destruir instância existente:', e);
+          }
+        }
+      }
+
+      // Aguardar um pouco mais para garantir que o elemento está completamente no DOM
+      setTimeout(() => {
+        if (!editorRef.current || !containerRef.current || !document.contains(editorRef.current)) {
+          return;
+        }
+
+        // Inicializar CKEditor
+        const editorConfig = {
+          language: 'pt-br',
+          height,
+          ...config
+        };
+
+        try {
+          // Verificar se o elemento ainda está no DOM antes de inicializar
+          if (editorRef.current && editorRef.current.parentNode && document.contains(editorRef.current)) {
+            editorInstanceRef.current = window.CKEDITOR.replace(editorRef.current, editorConfig);
 
         // Configurar evento de mudança
         if (onChange && editorInstanceRef.current) {
@@ -266,15 +279,21 @@ const CKEditor = ({
               editorInstanceRef.current.name = name;
             }
           });
+          }
+        } catch (error) {
+          console.error('Erro ao inicializar CKEditor:', error);
         }
-      } catch (error) {
-        console.error('Erro ao inicializar CKEditor:', error);
-      }
-    }, 50); // Pequeno delay para garantir que o DOM está pronto
+        }, 100); // Delay maior para garantir que o DOM está completamente pronto
+    };
+
+    // Usar requestAnimationFrame para garantir que o DOM está atualizado
+    const rafId = requestAnimationFrame(() => {
+      setTimeout(initEditor, 50);
+    });
 
     // Limpar ao desmontar
     return () => {
-      clearTimeout(timeoutId);
+      cancelAnimationFrame(rafId);
       if (editorInstanceRef.current) {
         try {
           editorInstanceRef.current.destroy();
@@ -285,7 +304,11 @@ const CKEditor = ({
       }
       // Remover textarea se existir
       if (editorRef.current && editorRef.current.parentNode) {
-        editorRef.current.parentNode.removeChild(editorRef.current);
+        try {
+          editorRef.current.parentNode.removeChild(editorRef.current);
+        } catch (e) {
+          console.warn('Erro ao remover textarea:', e);
+        }
         editorRef.current = null;
       }
     };
