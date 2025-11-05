@@ -192,13 +192,13 @@ const CKEditorWrapper = ({ value, onChange, disabled, placeholder, editorRef: ex
   // Sempre renderizar o container, mesmo quando loading ou erro
   // Isso garante que o ref esteja disponível quando o modal abrir
   return (
-    <div className="ckeditor-wrapper border border-gray-300 rounded-md overflow-hidden" style={{ minHeight: '600px' }}>
+    <div className="ckeditor-wrapper border border-gray-300 rounded-md overflow-hidden" style={{ minHeight: '500px', maxHeight: '600px' }}>
       <div 
         ref={containerRef} 
-        style={{ minHeight: '600px', display: isLoading || error ? 'none' : 'block' }}
+        style={{ minHeight: '500px', maxHeight: '600px', display: isLoading || error ? 'none' : 'block' }}
       ></div>
       {(isLoading || error) && (
-        <div style={{ minHeight: '600px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ minHeight: '500px', maxHeight: '600px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           {isLoading && (
             <div className="flex items-center justify-center">
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-600"></div>

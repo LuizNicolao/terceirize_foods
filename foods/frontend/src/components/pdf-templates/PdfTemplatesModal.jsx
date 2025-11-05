@@ -172,7 +172,7 @@ const PdfTemplatesModal = ({
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit(handleFormSubmit)} className="p-6 space-y-4 flex flex-col" style={{ minHeight: 'calc(90vh - 120px)' }}>
+        <form onSubmit={handleSubmit(handleFormSubmit)} className="p-6 space-y-4">
           {/* Informações Básicas */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
@@ -243,7 +243,7 @@ const PdfTemplatesModal = ({
           )}
 
           {/* Editor HTML/CSS */}
-          <div className="flex-1 min-h-[600px] mt-0">
+          <div className="min-h-[500px] max-h-[600px]">
             <CKEditorWrapper
               value={htmlContent}
               onChange={setHtmlContent}
@@ -258,7 +258,7 @@ const PdfTemplatesModal = ({
           </div>
 
           {/* Opções */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Status
