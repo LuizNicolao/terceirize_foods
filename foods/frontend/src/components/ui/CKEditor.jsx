@@ -205,46 +205,72 @@ const CKEditor = ({
       const textarea = document.createElement('textarea');
       textarea.name = name || 'ckeditor';
       textarea.id = `ckeditor-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      
+      // Adicionar atributos necessários para o CKEditor
+      textarea.setAttribute('data-ckeditor', 'true');
+      
+      // Adicionar ao DOM
       containerRef.current.appendChild(textarea);
       editorRef.current = textarea;
     }
 
-    if (!editorRef.current || !containerRef.current) {
+    if (!editorRef.current || !containerRef.current || !editorRef.current.parentNode) {
       return;
     }
 
-    // Inicializar CKEditor
-    const editorConfig = {
-      language: 'pt-br',
-      height,
-      ...config
-    };
-
-    editorInstanceRef.current = window.CKEDITOR.replace(editorRef.current, editorConfig);
-
-    // Configurar evento de mudança
-    if (onChange) {
-      editorInstanceRef.current.on('change', () => {
-        const data = editorInstanceRef.current.getData();
-        onChange({
-          target: {
-            name: name || 'ckeditor',
-            value: data
-          }
-        });
-      });
-
-      editorInstanceRef.current.on('instanceReady', () => {
-        // Definir valor inicial
-        if (value) {
-          editorInstanceRef.current.setData(value);
-        }
-        // Expor instância globalmente para acesso externo usando o name como identificador
-        if (name && editorInstanceRef.current) {
-          editorInstanceRef.current.name = name;
-        }
-      });
+    // Verificar se já existe uma instância do CKEditor para este elemento
+    if (editorRef.current && window.CKEDITOR && window.CKEDITOR.instances) {
+      const existingInstance = window.CKEDITOR.instances[editorRef.current.id || editorRef.current.name];
+      if (existingInstance) {
+        existingInstance.destroy();
+      }
     }
+
+    // Aguardar um pouco para garantir que o elemento está no DOM
+    setTimeout(() => {
+      if (!editorRef.current || !containerRef.current) {
+        return;
+      }
+
+      // Inicializar CKEditor
+      const editorConfig = {
+        language: 'pt-br',
+        height,
+        ...config
+      };
+
+      try {
+        editorInstanceRef.current = window.CKEDITOR.replace(editorRef.current, editorConfig);
+
+        // Configurar evento de mudança
+        if (onChange && editorInstanceRef.current) {
+          editorInstanceRef.current.on('change', () => {
+            if (editorInstanceRef.current) {
+              const data = editorInstanceRef.current.getData();
+              onChange({
+                target: {
+                  name: name || 'ckeditor',
+                  value: data
+                }
+              });
+            }
+          });
+
+          editorInstanceRef.current.on('instanceReady', () => {
+            // Definir valor inicial
+            if (value && editorInstanceRef.current) {
+              editorInstanceRef.current.setData(value);
+            }
+            // Expor instância globalmente para acesso externo usando o name como identificador
+            if (name && editorInstanceRef.current) {
+              editorInstanceRef.current.name = name;
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Erro ao inicializar CKEditor:', error);
+      }
+    }, 50); // Pequeno delay para garantir que o DOM está pronto
 
     // Limpar ao desmontar
     return () => {
