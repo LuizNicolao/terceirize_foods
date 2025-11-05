@@ -156,9 +156,12 @@ class PedidosComprasCRUDController {
       [valorTotal, pedidoId]
     );
 
-    // Atualizar status da solicitação baseado nos pedidos aprovados
-    // Não atualiza aqui porque o pedido está em 'em_digitacao', não 'aprovado'
-    // A atualização será feita quando o pedido for aprovado
+    // Atualizar status da solicitação baseado nos pedidos vinculados
+    // Atualiza imediatamente ao criar o pedido, mesmo em digitação,
+    // pois o pedido já está vinculado e usando saldo da solicitação
+    if (solicitacao_compras_id) {
+      await PedidosComprasHelpers.atualizarStatusSolicitacao(solicitacao_compras_id);
+    }
 
     // Buscar pedido criado com todos os dados
     const pedidoCriado = await PedidosComprasHelpers.buscarPedidoCompleto(pedidoId);
@@ -323,6 +326,12 @@ class PedidosComprasCRUDController {
         'UPDATE pedidos_compras SET valor_total = ? WHERE id = ?',
         [valorTotal, id]
       );
+
+      // Atualizar status da solicitação após atualizar itens do pedido
+      // Pois as quantidades podem ter mudado, afetando o saldo utilizado
+      if (pedidoExistente.solicitacao_compras_id) {
+        await PedidosComprasHelpers.atualizarStatusSolicitacao(pedidoExistente.solicitacao_compras_id);
+      }
     }
 
     // Buscar pedido atualizado

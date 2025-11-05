@@ -177,16 +177,17 @@ class PedidosComprasHelpers {
   }
 
   /**
-   * Atualizar status da solicitação baseado nos pedidos aprovados
-   * Considera apenas pedidos com status 'aprovado' ou superior
+   * Atualizar status da solicitação baseado nos pedidos vinculados
+   * Considera todos os pedidos (incluindo em_digitacao), pois eles já estão usando saldo da solicitação
    */
   static async atualizarStatusSolicitacao(solicitacaoId) {
-    // Buscar todos os itens da solicitação com quantidades utilizadas em pedidos aprovados
+    // Buscar todos os itens da solicitação com quantidades utilizadas em pedidos
+    // Considera todos os status (incluindo em_digitacao) pois o pedido já está vinculado e usando saldo
     const itens = await executeQuery(
       `SELECT 
         sci.id,
         sci.quantidade as quantidade_solicitada,
-        COALESCE(SUM(CASE WHEN pc.status IN ('aprovado', 'enviado', 'confirmado', 'em_transito', 'entregue', 'parcial', 'finalizado') 
+        COALESCE(SUM(CASE WHEN pc.status IN ('em_digitacao', 'aprovado', 'enviado', 'confirmado', 'em_transito', 'entregue', 'parcial', 'finalizado') 
           THEN pci.quantidade_pedido ELSE 0 END), 0) as quantidade_utilizada
       FROM solicitacao_compras_itens sci
       LEFT JOIN pedido_compras_itens pci ON pci.solicitacao_item_id = sci.id
