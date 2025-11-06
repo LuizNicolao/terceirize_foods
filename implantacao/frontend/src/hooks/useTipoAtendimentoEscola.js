@@ -97,8 +97,46 @@ export const useTipoAtendimentoEscola = () => {
    */
   const criar = useCallback(async (dados) => {
     try {
-      // Se recebeu array de tipos, criar múltiplos vínculos
-      if (dados.tipos_atendimento && Array.isArray(dados.tipos_atendimento) && dados.tipos_atendimento.length > 0) {
+      // Se recebeu array de vínculos (novo formato do modal matriz)
+      if (dados.vinculos && Array.isArray(dados.vinculos) && dados.vinculos.length > 0) {
+        const vinculos = dados.vinculos;
+        let sucessos = 0;
+        let erros = 0;
+        const errosDetalhes = [];
+
+        // Criar cada vínculo
+        for (const vinculo of vinculos) {
+          try {
+            const result = await TipoAtendimentoEscolaService.criar(vinculo);
+            if (result.success) {
+              sucessos++;
+            } else {
+              erros++;
+              errosDetalhes.push(`Escola ${vinculo.escola_id} - ${vinculo.tipo_atendimento}: ${result.error || 'Erro desconhecido'}`);
+            }
+          } catch (err) {
+            erros++;
+            const errorMessage = err.response?.data?.message || 'Erro ao criar vínculo';
+            errosDetalhes.push(`Escola ${vinculo.escola_id} - ${vinculo.tipo_atendimento}: ${errorMessage}`);
+          }
+        }
+
+        // Mensagem consolidada
+        if (sucessos > 0 && erros === 0) {
+          toast.success(`${sucessos} vínculo(s) criado(s) com sucesso!`);
+        } else if (sucessos > 0 && erros > 0) {
+          toast.success(`${sucessos} vínculo(s) criado(s) com sucesso. ${erros} erro(s).`);
+          console.error('Erros ao criar vínculos:', errosDetalhes);
+        } else {
+          toast.error(`Erro ao criar vínculos: ${errosDetalhes.join('; ')}`);
+        }
+
+        await carregarVinculos();
+        setShowModal(false);
+        return { success: sucessos > 0, data: { sucessos, erros } };
+      }
+      // Se recebeu array de tipos (formato antigo)
+      else if (dados.tipos_atendimento && Array.isArray(dados.tipos_atendimento) && dados.tipos_atendimento.length > 0) {
         const tipos = dados.tipos_atendimento;
         let sucessos = 0;
         let erros = 0;

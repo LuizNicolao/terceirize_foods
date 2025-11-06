@@ -163,7 +163,6 @@ const TipoAtendimentoEscola = () => {
         isOpen={showModal}
         onClose={handleCloseModal}
         onSave={handleSave}
-        escolas={escolas}
         tiposAtendimento={tiposAtendimento}
         editingItem={editingItem}
         viewMode={viewMode}
