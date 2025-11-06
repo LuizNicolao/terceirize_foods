@@ -41,9 +41,11 @@ const TipoAtendimentoEscolaModal = ({
   // Carregar escolas quando filial mudar
   useEffect(() => {
     if (filialId && isOpen && !editingItem) {
-      carregarEscolas(filialId, escolasPage);
+      carregarEscolas(filialId, escolasPage, escolasItemsPerPage);
     } else {
       setEscolas([]);
+      setEscolasTotalPages(1);
+      setEscolasTotalItems(0);
     }
   }, [filialId, escolasPage, escolasItemsPerPage, isOpen, editingItem]);
 
@@ -80,14 +82,14 @@ const TipoAtendimentoEscolaModal = ({
     }
   };
 
-  const carregarEscolas = async (filialIdParam, page = 1) => {
+  const carregarEscolas = async (filialIdParam, page = 1, limit = escolasItemsPerPage) => {
     setLoadingEscolas(true);
     try {
       const response = await escolasService.listar(
         { 
           filial_id: filialIdParam,
           page,
-          limit: escolasItemsPerPage,
+          limit,
           search: buscaEscola || undefined
         },
         user
@@ -96,8 +98,21 @@ const TipoAtendimentoEscolaModal = ({
         setEscolas(response.data || []);
         // Se a resposta tiver paginação, usar ela
         if (response.pagination) {
-          setEscolasTotalPages(response.pagination.totalPages || 1);
-          setEscolasTotalItems(response.pagination.totalItems || 0);
+          const {
+            totalItems: paginatedTotalItems,
+            totalPages: paginatedTotalPages,
+            itemsPerPage: paginatedItemsPerPage,
+            total,
+            last_page,
+            per_page
+          } = response.pagination;
+
+          const resolvedItemsPerPage = paginatedItemsPerPage || per_page || limit || escolasItemsPerPage;
+          const resolvedTotalItems = paginatedTotalItems ?? total ?? response.data?.length ?? 0;
+          const resolvedTotalPages = paginatedTotalPages || last_page || Math.max(1, Math.ceil((resolvedTotalItems || 0) / (resolvedItemsPerPage || 1)));
+
+          setEscolasTotalPages(resolvedTotalPages);
+          setEscolasTotalItems(resolvedTotalItems);
         } else {
           // Fallback: calcular paginação básica
           setEscolasTotalPages(1);
@@ -116,6 +131,7 @@ const TipoAtendimentoEscolaModal = ({
     setFilialId(value);
     setEscolasPage(1);
     setVinculosSelecionados({});
+    setErrors(prev => ({ ...prev, filial_id: undefined }));
   };
 
   const handleTipoToggle = (escolaId, tipoValue) => {
@@ -129,7 +145,7 @@ const TipoAtendimentoEscolaModal = ({
         ...prev,
         [escolaId]: novosVinculos.length > 0 ? novosVinculos : undefined
       };
-    });
+      });
   };
 
   const isTipoSelecionado = (escolaId, tipoValue) => {
@@ -200,7 +216,16 @@ const TipoAtendimentoEscolaModal = ({
 
   const handleBuscaEscolaSubmit = () => {
     if (filialId) {
-      carregarEscolas(filialId, 1);
+      carregarEscolas(filialId, 1, escolasItemsPerPage);
+    }
+  };
+
+  const handleItemsPerPageChange = (event) => {
+    const value = parseInt(event.target.value, 10);
+    setEscolasItemsPerPage(value);
+    setEscolasPage(1);
+    if (filialId) {
+      carregarEscolas(filialId, 1, value);
     }
   };
 
@@ -212,6 +237,13 @@ const TipoAtendimentoEscolaModal = ({
         (escola.cidade || '').toLowerCase().includes(buscaEscola.toLowerCase())
       )
     : escolas;
+  const inicioItem = escolasTotalItems === 0
+    ? 0
+    : (escolasPage - 1) * escolasItemsPerPage + 1;
+  const fimItem = escolasTotalItems === 0
+    ? 0
+    : Math.min(escolasPage * escolasItemsPerPage, escolasTotalItems);
+  const possuiEscolasListadas = filialId && escolasTotalItems > 0;
 
   const handleStatusChange = (e) => {
     setStatusAtivo(e.target.value === 'ativo');
@@ -227,7 +259,7 @@ const TipoAtendimentoEscolaModal = ({
         tipo_atendimento: editingItem.tipo_atendimento,
         ativo: statusAtivo
       });
-    };
+  };
 
     return (
       <Modal
@@ -316,7 +348,7 @@ const TipoAtendimentoEscolaModal = ({
 
         {/* Busca de Escola */}
         {filialId && (
-          <div>
+        <div>
             <div className="flex gap-2">
               <input
                 type="text"
@@ -335,6 +367,43 @@ const TipoAtendimentoEscolaModal = ({
               >
                 Buscar
               </Button>
+            </div>
+          </div>
+        )}
+
+        {filialId && (
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600">Itens por página</span>
+              <select
+                value={escolasItemsPerPage}
+                onChange={handleItemsPerPageChange}
+                className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                disabled={loadingEscolas}
+              >
+                {[10, 20, 30, 50].map(opcao => (
+                  <option key={opcao} value={opcao}>
+                    {opcao}
+                  </option>
+                ))}
+              </select>
+        </div>
+
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-2 text-sm text-gray-600">
+              {possuiEscolasListadas && (
+                <span>
+                  Exibindo {inicioItem}-{fimItem} de {escolasTotalItems}
+                </span>
+              )}
+              {escolasTotalPages > 1 && (
+                <Pagination
+                  currentPage={escolasPage}
+                  totalPages={escolasTotalPages}
+                  totalItems={escolasTotalItems}
+                  itemsPerPage={escolasItemsPerPage}
+                  onPageChange={setEscolasPage}
+                />
+              )}
             </div>
           </div>
         )}
@@ -404,45 +473,6 @@ const TipoAtendimentoEscolaModal = ({
                 </tbody>
               </table>
             </div>
-          </div>
-        )}
-
-        {/* Paginação */}
-        {filialId && (
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-gray-200">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-700">Itens por página:</span>
-              <select
-                value={escolasItemsPerPage}
-                onChange={(e) => {
-                  setEscolasItemsPerPage(parseInt(e.target.value));
-                  setEscolasPage(1);
-                }}
-                className="text-sm border border-gray-300 rounded-md px-2 py-1 focus:ring-2 focus:ring-green-500 focus:border-green-500"
-              >
-                <option value={10}>10</option>
-                <option value={20}>20</option>
-                <option value={50}>50</option>
-                <option value={100}>100</option>
-              </select>
-            </div>
-            
-            {escolasTotalPages > 1 && (
-              <Pagination
-                currentPage={escolasPage}
-                totalPages={escolasTotalPages}
-                totalItems={escolasTotalItems}
-                itemsPerPage={escolasItemsPerPage}
-                onPageChange={setEscolasPage}
-                showInfo={true}
-              />
-            )}
-            
-            {escolasTotalPages <= 1 && escolasTotalItems > 0 && (
-              <div className="text-sm text-gray-700">
-                Mostrando {escolasTotalItems} resultado(s)
-              </div>
-            )}
           </div>
         )}
 

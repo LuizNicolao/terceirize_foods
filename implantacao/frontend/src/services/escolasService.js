@@ -5,8 +5,19 @@ const escolasService = {
   // Listar escolas com filtros (usando endpoint específico para necessidades)
   listar: async (filtros = {}, user = null) => {
     try {
+      const possuiFiltrosAvancados = Boolean(
+        filtros &&
+        (
+          filtros.filial_id !== undefined ||
+          filtros.search ||
+          filtros.page ||
+          filtros.limit ||
+          filtros.rota_id
+        )
+      );
+
       // Usar endpoint específico de necessidades (igual ao recebimentos-escolas)
-      if (user && user.id) {
+      if (user && user.id && !possuiFiltrosAvancados) {
         const response = await api.get(`/necessidades/escolas-nutricionista/${user.id}`);
         if (response.data && response.data.success) {
           return {
@@ -35,7 +46,8 @@ const escolasService = {
       
       return {
         success: true,
-        data: escolasFormatadas
+        data: escolasFormatadas,
+        pagination: response.pagination
       };
     } catch (error) {
       return {
