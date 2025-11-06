@@ -144,6 +144,8 @@ class TipoAtendimentoEscolaCRUDController {
       tiposArray = [...new Set(tiposArray)];
 
       // Verificar se já existe registro para esta escola
+      console.log('[TipoAtendimentoEscola][criar] Iniciando criação de vínculo', { escola_id, tiposArray, ativo, userId });
+
       const vinculoExistente = await executeQuery(
         'SELECT id, tipos_atendimento FROM tipos_atendimento_escola WHERE escola_id = ?',
         [escola_id]
@@ -154,7 +156,15 @@ class TipoAtendimentoEscolaCRUDController {
         const registro = vinculoExistente[0];
         const tiposExistentes = parseTiposAtendimento(registro.tipos_atendimento);
         const tiposCombinados = [...new Set([...tiposExistentes, ...tiposArray])];
-        
+
+        console.log('[TipoAtendimentoEscola][criar] Atualizando vínculo existente', {
+          registroId: registro.id,
+          tiposExistentes,
+          tiposNovos: tiposArray,
+          tiposCombinados,
+          ativo
+        });
+
         await executeQuery(
           `UPDATE tipos_atendimento_escola 
            SET tipos_atendimento = ?, ativo = ?, atualizado_por = ?, atualizado_em = NOW()
@@ -180,6 +190,11 @@ class TipoAtendimentoEscolaCRUDController {
         // Buscar informações da escola via API do Foods
         const authToken = req.headers.authorization;
         const escolaInfo = await buscarInfoEscola(escola_id, authToken);
+        console.log('[TipoAtendimentoEscola][criar] Escola Foods retornada', {
+          escola_id,
+          escolaInfo
+        });
+
         const resultado = {
           ...vinculoAtualizado[0],
           tipos_atendimento: parseTiposAtendimento(vinculoAtualizado[0].tipos_atendimento),
@@ -205,6 +220,12 @@ class TipoAtendimentoEscolaCRUDController {
       }
 
       // Criar novo registro
+      console.log('[TipoAtendimentoEscola][criar] Criando novo vínculo', {
+        escola_id,
+        tiposArray,
+        ativo
+      });
+
       const result = await executeQuery(
         `INSERT INTO tipos_atendimento_escola (escola_id, tipos_atendimento, ativo, criado_por, criado_em)
          VALUES (?, ?, ?, ?, NOW())`,
@@ -229,6 +250,11 @@ class TipoAtendimentoEscolaCRUDController {
       // Buscar informações da escola via API do Foods
       const authToken = req.headers.authorization;
       const escolaInfo = await buscarInfoEscola(escola_id, authToken);
+      console.log('[TipoAtendimentoEscola][criar] Escola Foods retornada (novo vínculo)', {
+        escola_id,
+        escolaInfo
+      });
+
       const novoVinculo = {
         ...novoVinculoQuery[0],
         tipos_atendimento: parseTiposAtendimento(novoVinculoQuery[0].tipos_atendimento),
@@ -254,6 +280,13 @@ class TipoAtendimentoEscolaCRUDController {
     } catch (error) {
       console.error('Erro ao criar vínculo tipo atendimento-escola:', error);
       const errorMessage = error.response?.data?.message || error.sqlMessage || error.message || 'Erro ao criar vínculo tipo atendimento-escola';
+      console.error('[TipoAtendimentoEscola][criar] Falha ao criar vínculo', {
+        escola_id: req.body?.escola_id,
+        tipos_atendimento: req.body?.tipos_atendimento || req.body?.tipo_atendimento,
+        userId: req.user?.id,
+        errorMessage,
+        stack: error.stack
+      });
       res.status(500).json({
         success: false,
         error: 'Erro interno do servidor',
