@@ -8,7 +8,8 @@ class NecessidadesLogisticaController {
         escola_id, 
         semana_consumo, 
         semana_abastecimento,
-        nutricionista_id 
+        nutricionista_id,
+        grupo
       } = req.query;
 
       let whereConditions = ["n.status = 'NEC LOG'"];
@@ -32,6 +33,18 @@ class NecessidadesLogisticaController {
       if (nutricionista_id) {
         whereConditions.push("n.usuario_id = ?");
         queryParams.push(nutricionista_id);
+      }
+
+      if (grupo) {
+        const grupoParsed = parseInt(grupo, 10);
+        if (!isNaN(grupoParsed)) {
+          // Se for ID numérico
+          whereConditions.push("(n.grupo_id = ? OR n.grupo = ?)");
+          queryParams.push(grupoParsed, grupo);
+        } else {
+          whereConditions.push("n.grupo = ?");
+          queryParams.push(grupo);
+        }
       }
 
       const query = `
