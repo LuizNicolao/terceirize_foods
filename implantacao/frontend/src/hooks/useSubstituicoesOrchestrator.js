@@ -4,7 +4,7 @@ import { useSemanasAbastecimento } from '../../../hooks/useSemanasAbastecimento'
 import { useSemanasConsumo } from '../../../hooks/useSemanasConsumo';
 import { useAuth } from '../../../contexts/AuthContext';
 import { usePermissions } from '../../../contexts/PermissionsContext';
-import necessidadesService from '../../../services/necessidadesService';
+import SubstituicoesNecessidadesService from '../../../services/substituicoesNecessidades';
 
 export const useSubstituicoesOrchestrator = () => {
   const { user } = useAuth();
@@ -47,20 +47,25 @@ export const useSubstituicoesOrchestrator = () => {
   const carregarGrupos = useCallback(async () => {
     setLoadingGrupos(true);
     try {
-      const response = await necessidadesService.buscarGruposComPercapita();
-      if (response.success) {
+      const response = await SubstituicoesNecessidadesService.buscarGruposDisponiveis(
+        activeTab,
+        filtros.tipo_rota_id || null,
+        filtros.semana_abastecimento || null
+      );
+
+      if (response?.success) {
         setGrupos(response.data || []);
       } else {
-        console.error('Erro ao carregar grupos:', response.message);
+        console.error('Erro ao carregar grupos disponíveis para substituição:', response?.message);
         setGrupos([]);
       }
     } catch (error) {
-      console.error('Erro ao carregar grupos:', error);
+      console.error('Erro ao carregar grupos disponíveis para substituição:', error);
       setGrupos([]);
     } finally {
       setLoadingGrupos(false);
     }
-  }, []);
+  }, [activeTab, filtros.tipo_rota_id, filtros.semana_abastecimento]);
 
   // Verificar se ajustes estão ativados baseado nas necessidades
   useEffect(() => {
