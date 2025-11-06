@@ -88,6 +88,8 @@ const AjusteNecessidades = () => {
   const canViewAjuste = canView('analise_necessidades') || tiposComAcesso.includes(user.tipo_de_acesso);
   const canEditAjuste = canEdit('analise_necessidades') || tiposComAcesso.includes(user.tipo_de_acesso);
 
+  const grupoObrigatorioSelecionado = activeTab !== 'coordenacao' || Boolean(filtros.grupo);
+
   // Verificar se pode visualizar
   if (permissionsLoading) {
     return <NecessidadesLoading />;
@@ -160,14 +162,20 @@ const AjusteNecessidades = () => {
                 size="sm"
                 variant="outline"
                 showLabels={true}
-                disabled={necessidadesFiltradas.length === 0}
+                disabled={!grupoObrigatorioSelecionado || necessidadesFiltradas.length === 0}
               />
             </div>
           </div>
         </div>
 
+        {activeTab === 'coordenacao' && !filtros.grupo && (
+          <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mb-6 text-sm text-blue-800">
+            Selecionar um grupo de produtos é obrigatório para visualizar e liberar necessidades na aba de Coordenação.
+          </div>
+        )}
+
         {/* Lista de Necessidades */}
-        {necessidades.length > 0 ? (
+        {grupoObrigatorioSelecionado && necessidades.length > 0 ? (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
             <AjusteActions
               buscaProduto={buscaProduto}
@@ -179,6 +187,8 @@ const AjusteNecessidades = () => {
               activeTab={activeTab}
               statusAtual={statusAtual}
               filtros={filtros}
+              disabledSalvar={!grupoObrigatorioSelecionado}
+              disabledLiberar={!grupoObrigatorioSelecionado || necessidadesFiltradas.length === 0}
               titleIncluir={activeTab === 'coordenacao' && !filtros.escola_id ? 'Selecione uma escola e clique em Filtrar antes de incluir produtos' : undefined}
             />
             
@@ -209,7 +219,7 @@ const AjusteNecessidades = () => {
               />
             )}
           </div>
-        ) : !loading && (
+        ) : !loading && grupoObrigatorioSelecionado && (
           <AjusteEmptyStates
             type="empty"
             message="Nenhuma necessidade encontrada"
