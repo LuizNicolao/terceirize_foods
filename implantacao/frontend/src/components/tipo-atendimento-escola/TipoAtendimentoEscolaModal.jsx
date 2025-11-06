@@ -371,43 +371,6 @@ const TipoAtendimentoEscolaModal = ({
           </div>
         )}
 
-        {filialId && (
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600">Itens por página</span>
-              <select
-                value={escolasItemsPerPage}
-                onChange={handleItemsPerPageChange}
-                className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                disabled={loadingEscolas}
-              >
-                {[10, 20, 30, 50].map(opcao => (
-                  <option key={opcao} value={opcao}>
-                    {opcao}
-                  </option>
-                ))}
-              </select>
-        </div>
-
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-2 text-sm text-gray-600">
-              {possuiEscolasListadas && (
-                <span>
-                  Exibindo {inicioItem}-{fimItem} de {escolasTotalItems}
-                </span>
-              )}
-              {escolasTotalPages > 1 && (
-                <Pagination
-                  currentPage={escolasPage}
-                  totalPages={escolasTotalPages}
-                  totalItems={escolasTotalItems}
-                  itemsPerPage={escolasItemsPerPage}
-                  onPageChange={setEscolasPage}
-                />
-              )}
-            </div>
-          </div>
-        )}
-
         {/* Tabela Matriz */}
         {filialId && (
           <div className="border border-gray-300 rounded-lg overflow-hidden">
@@ -418,14 +381,34 @@ const TipoAtendimentoEscolaModal = ({
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider sticky left-0 bg-gray-50 z-10">
                       Escola
                     </th>
-                    {tiposAtendimento.map(tipo => (
+                    {tiposAtendimento
+                      .slice()
+                      .sort((a, b) => {
+                        const ordem = [
+                          'lanche_manha',
+                          'parcial_manha',
+                          'almoco',
+                          'lanche_tarde',
+                          'parcial_tarde',
+                          'eja'
+                        ];
+                        const indexA = ordem.indexOf(a.value);
+                        const indexB = ordem.indexOf(b.value);
+                        const posA = indexA === -1 ? ordem.length : indexA;
+                        const posB = indexB === -1 ? ordem.length : indexB;
+                        return posA - posB;
+                      })
+                      .map(tipo => (
                       <th
                         key={tipo.value}
                         className="px-3 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider min-w-[120px]"
                       >
                         <div className="flex flex-col items-center">
                           <span className="text-lg mb-1">{tipo.icon}</span>
-                          <span className="text-xs">{tipo.label.replace(/[🌅🍽️🌆🥗🌙]/g, '').trim()}</span>
+                          <span className="text-xs">
+                            {tipo.label.replace(/[🌅🍽️🌆🥗🌙]/g, '').trim()}
+                            {tipo.value === 'eja' ? ' (Noturno)' : ''}
+                          </span>
                         </div>
                       </th>
                     ))}
@@ -456,7 +439,24 @@ const TipoAtendimentoEscolaModal = ({
                             <div className="text-xs text-gray-500">{escola.cidade}</div>
                           )}
                         </td>
-                        {tiposAtendimento.map(tipo => (
+                        {tiposAtendimento
+                          .slice()
+                          .sort((a, b) => {
+                            const ordem = [
+                              'lanche_manha',
+                              'parcial_manha',
+                              'almoco',
+                              'lanche_tarde',
+                              'parcial_tarde',
+                              'eja'
+                            ];
+                            const indexA = ordem.indexOf(a.value);
+                            const indexB = ordem.indexOf(b.value);
+                            const posA = indexA === -1 ? ordem.length : indexA;
+                            const posB = indexB === -1 ? ordem.length : indexB;
+                            return posA - posB;
+                          })
+                          .map(tipo => (
                           <td key={tipo.value} className="px-3 py-3 text-center">
                             <input
                               type="checkbox"
@@ -472,6 +472,44 @@ const TipoAtendimentoEscolaModal = ({
                   )}
                 </tbody>
               </table>
+            </div>
+          </div>
+        )}
+
+        {/* Paginação e estatísticas */}
+        {filialId && (
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-2">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600">Itens por página</span>
+              <select
+                value={escolasItemsPerPage}
+                onChange={handleItemsPerPageChange}
+                className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                disabled={loadingEscolas}
+              >
+                {[10, 20, 30, 50].map(opcao => (
+                  <option key={opcao} value={opcao}>
+                    {opcao}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-2 text-sm text-gray-600">
+              {possuiEscolasListadas && (
+                <span>
+                  Exibindo {inicioItem}-{fimItem} de {escolasTotalItems}
+                </span>
+              )}
+              {escolasTotalPages > 1 && (
+                <Pagination
+                  currentPage={escolasPage}
+                  totalPages={escolasTotalPages}
+                  totalItems={escolasTotalItems}
+                  itemsPerPage={escolasItemsPerPage}
+                  onPageChange={setEscolasPage}
+                />
+              )}
             </div>
           </div>
         )}
