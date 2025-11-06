@@ -37,6 +37,44 @@ async function buscarInfoEscolas(escolaIds, authToken) {
   return escolasMap;
 }
 
+function parseTiposAtendimento(rawTipos) {
+  if (!rawTipos) {
+    return [];
+  }
+
+  if (Array.isArray(rawTipos)) {
+    return rawTipos;
+  }
+
+  if (typeof rawTipos !== 'string') {
+    return [];
+  }
+
+  const trimmed = rawTipos.trim();
+  if (trimmed === '') {
+    return [];
+  }
+
+  try {
+    if ((trimmed.startsWith('[') && trimmed.endsWith(']')) || (trimmed.startsWith('"') && trimmed.endsWith('"'))) {
+      const parsed = JSON.parse(trimmed);
+      if (Array.isArray(parsed)) {
+        return parsed;
+      }
+      if (typeof parsed === 'string') {
+        return [parsed];
+      }
+    }
+  } catch (error) {
+    // fallback abaixo
+  }
+
+  return trimmed
+    .split(',')
+    .map(item => item.trim())
+    .filter(Boolean);
+}
+
 /**
  * Controller de Listagem para Tipo de Atendimento por Escola
  * Segue padrão de excelência do sistema
@@ -105,7 +143,7 @@ class TipoAtendimentoEscolaListController {
       // Expandir JSON em múltiplas linhas (uma linha por tipo) para compatibilidade com frontend
       let vinculosExpandidos = [];
       todosVinculos.forEach(vinculo => {
-        const tipos = JSON.parse(vinculo.tipos_atendimento || '[]');
+        const tipos = parseTiposAtendimento(vinculo.tipos_atendimento);
         tipos.forEach(tipo => {
           vinculosExpandidos.push({
             id: vinculo.id,
@@ -220,7 +258,7 @@ class TipoAtendimentoEscolaListController {
       }
 
       // Expandir JSON em array de tipos
-      const tiposArray = JSON.parse(vinculo[0].tipos_atendimento || '[]');
+      const tiposArray = parseTiposAtendimento(vinculo[0].tipos_atendimento);
       const tipos = tiposArray.map(tipo => ({
         id: vinculo[0].id,
         escola_id: vinculo[0].escola_id,
@@ -231,7 +269,7 @@ class TipoAtendimentoEscolaListController {
       // Buscar informações da escola via API do Foods
       const authToken = req.headers.authorization;
       const escolasMap = await buscarInfoEscolas([escola_id], authToken);
-      const escolaInfo = escolasMap.get(parseInt(escola_id)) || {};
+        const escolaInfo = escolasMap.get(parseInt(escola_id, 10)) || {};
 
       // Enriquecer tipos com informações da escola
       const tiposEnriquecidos = tipos.map(tipo => ({

@@ -38,6 +38,49 @@ async function buscarInfoEscola(escolaId, authToken) {
 }
 
 /**
+ * Normaliza campo tipos_atendimento vindo do banco
+ * Aceita JSON, string simples ou nulo
+ */
+function parseTiposAtendimento(rawTipos) {
+  if (!rawTipos) {
+    return [];
+  }
+
+  if (Array.isArray(rawTipos)) {
+    return rawTipos;
+  }
+
+  if (typeof rawTipos !== 'string') {
+    return [];
+  }
+
+  const trimmed = rawTipos.trim();
+  if (trimmed === '') {
+    return [];
+  }
+
+  try {
+    if ((trimmed.startsWith('[') && trimmed.endsWith(']')) || (trimmed.startsWith('"') && trimmed.endsWith('"'))) {
+      const parsed = JSON.parse(trimmed);
+      if (Array.isArray(parsed)) {
+        return parsed;
+      }
+      if (typeof parsed === 'string') {
+        return [parsed];
+      }
+    }
+  } catch (error) {
+    // Se falhar, cai no fallback abaixo
+  }
+
+  // Fallback: tratar como lista separada por vírgula
+  return trimmed
+    .split(',')
+    .map(item => item.trim())
+    .filter(Boolean);
+}
+
+/**
  * Controller CRUD para Tipo de Atendimento por Escola
  * Segue padrão de excelência do sistema
  */
@@ -105,7 +148,7 @@ class TipoAtendimentoEscolaCRUDController {
       if (vinculoExistente.length > 0) {
         // Atualizar tipos existentes (adicionar novos tipos sem duplicar)
         const registro = vinculoExistente[0];
-        const tiposExistentes = JSON.parse(registro.tipos_atendimento || '[]');
+        const tiposExistentes = parseTiposAtendimento(registro.tipos_atendimento);
         const tiposCombinados = [...new Set([...tiposExistentes, ...tiposArray])];
         
         await executeQuery(
@@ -135,7 +178,7 @@ class TipoAtendimentoEscolaCRUDController {
         const escolaInfo = await buscarInfoEscola(escola_id, authToken);
         const resultado = {
           ...vinculoAtualizado[0],
-          tipos_atendimento: JSON.parse(vinculoAtualizado[0].tipos_atendimento),
+          tipos_atendimento: parseTiposAtendimento(vinculoAtualizado[0].tipos_atendimento),
           nome_escola: escolaInfo.nome_escola,
           rota: escolaInfo.rota,
           cidade: escolaInfo.cidade
@@ -182,7 +225,7 @@ class TipoAtendimentoEscolaCRUDController {
       const escolaInfo = await buscarInfoEscola(escola_id, authToken);
       const novoVinculo = {
         ...novoVinculoQuery[0],
-        tipos_atendimento: JSON.parse(novoVinculoQuery[0].tipos_atendimento),
+        tipos_atendimento: parseTiposAtendimento(novoVinculoQuery[0].tipos_atendimento),
         nome_escola: escolaInfo.nome_escola,
         rota: escolaInfo.rota,
         cidade: escolaInfo.cidade
@@ -239,7 +282,7 @@ class TipoAtendimentoEscolaCRUDController {
       }
 
       const vinculoAntigo = vinculoExistente[0];
-      const tiposAntigos = JSON.parse(vinculoAntigo.tipos_atendimento || '[]');
+      const tiposAntigos = parseTiposAtendimento(vinculoAntigo.tipos_atendimento);
 
       // Validar tipos se fornecidos
       if (tipos_atendimento && Array.isArray(tipos_atendimento)) {
@@ -288,7 +331,7 @@ class TipoAtendimentoEscolaCRUDController {
       const escolaInfo = await buscarInfoEscola(vinculoAntigo.escola_id, authToken);
       const vinculoAtualizado = {
         ...vinculoAtualizadoQuery[0],
-        tipos_atendimento: JSON.parse(vinculoAtualizadoQuery[0].tipos_atendimento),
+        tipos_atendimento: parseTiposAtendimento(vinculoAtualizadoQuery[0].tipos_atendimento),
         nome_escola: escolaInfo.nome_escola,
         rota: escolaInfo.rota,
         cidade: escolaInfo.cidade
@@ -399,7 +442,7 @@ class TipoAtendimentoEscolaCRUDController {
       const escolaInfo = await buscarInfoEscola(vinculoQuery[0].escola_id, authToken);
       const vinculo = {
         ...vinculoQuery[0],
-        tipos_atendimento: JSON.parse(vinculoQuery[0].tipos_atendimento || '[]'),
+        tipos_atendimento: parseTiposAtendimento(vinculoQuery[0].tipos_atendimento),
         nome_escola: escolaInfo.nome_escola,
         rota: escolaInfo.rota,
         cidade: escolaInfo.cidade
