@@ -31,11 +31,7 @@ const liberarCoordenacao = async (req, res) => {
       WHERE escola_id = ? 
         AND status = 'NEC'
         AND (ajuste_nutricionista IS NULL OR ajuste_nutricionista = 0)
-        AND produto_id IN (
-          SELECT DISTINCT ppc.produto_id 
-          FROM produtos_per_capita ppc
-          WHERE ppc.grupo = ?
-        )
+        AND grupo = ?
     `, [escola_id, grupo]);
 
     // Segundo: copiar ajuste_logistica para ajuste_conf_nutri quando status = 'CONF NUTRI'
