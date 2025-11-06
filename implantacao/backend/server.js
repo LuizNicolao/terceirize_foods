@@ -21,6 +21,7 @@ const consultaStatusRoute = require('./routes/consulta-status-necessidade/consul
 const necessidadesPadroesRoute = require('./routes/necessidades-padroes/necessidadesPadroesRoute');
 const auditoriaRoute = require('./routes/auditoria/auditoriaRoute');
 const calendarioRoute = require('./routes/calendario/calendarioRoute');
+const tipoAtendimentoEscolaRoute = require('./routes/tipo-atendimento-escola');
 
 // Definir rotas com seus middlewares
 const routes = [
@@ -43,7 +44,8 @@ const routes = [
   { path: '/consulta-status-necessidade', router: consultaStatusRoute },
   { path: '/necessidades-padroes', router: necessidadesPadroesRoute },
   { path: '/auditoria', router: auditoriaRoute },
-  { path: '/calendario', router: calendarioRoute }
+  { path: '/calendario', router: calendarioRoute },
+  { path: '/tipo-atendimento-escola', router: tipoAtendimentoEscolaRoute }
 ];
 
 // Aplicar rotas com prefixos automaticamente (desenvolvimento e produção)
@@ -68,7 +70,8 @@ app.get('/', (req, res) => {
       substituicoes: `${basePath}/necessidades-substituicoes`,
       consultaStatus: `${basePath}/consulta-status-necessidade`,
       necessidadesPadroes: `${basePath}/necessidades-padroes`,
-      calendario: `${basePath}/calendario`
+      calendario: `${basePath}/calendario`,
+      tipoAtendimentoEscola: `${basePath}/tipo-atendimento-escola`
     }
   });
 });

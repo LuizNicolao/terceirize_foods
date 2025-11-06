@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaClipboardList } from 'react-icons/fa';
 import { usePermissions } from '../../contexts/PermissionsContext';
-import { useNecessidades } from '../../hooks/useNecessidades';
-import { useNecessidadesFilters } from '../../hooks/useNecessidadesFilters';
+import { useNecessidades, useNecessidadesFilters } from '../../hooks/necessidades';
 import {
   NecessidadesLayout,
   NecessidadesActions,

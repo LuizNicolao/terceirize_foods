@@ -145,6 +145,7 @@ export const usePermissoes = () => {
         'subgrupos',
         'classes',
         'produtos_per_capita',
+        'tipo_atendimento_escola',
         'recebimentos_escolas',
         'registros_diarios',
         'necessidades',

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { FaShoppingCart, FaPlus, FaSave, FaFilter, FaCog } from 'react-icons/fa';
 import { usePermissions } from '../../contexts/PermissionsContext';
-import { useNecessidadesPadroes } from '../../hooks/useNecessidadesPadroes';
+import { useNecessidadesPadroes } from '../../hooks/necessidades';
 import {
   PedidoMensalTable,
   AdicionarProdutoModal,

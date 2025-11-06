@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Button, Input, SearchableSelect } from '../ui';
 import { FaCalculator, FaSave, FaTimes } from 'react-icons/fa';
-import { useNecessidades } from '../../hooks/useNecessidades';
+import { useNecessidades } from '../../hooks/necessidades';
 import { useSemanasConsumo } from '../../hooks/useSemanasConsumo';
 import { calcularSemanaAbastecimento } from '../../utils/semanasAbastecimentoUtils';
+import TipoAtendimentoEscolaService from '../../services/tipoAtendimentoEscolaService';
 import toast from 'react-hot-toast';
 
 // Função para obter a data atual no formato YYYY-MM-DD (sem problemas de fuso horário)
@@ -50,6 +51,8 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
   }, [obterValorPadraoConsumo]);
 
   const [produtosTabela, setProdutosTabela] = useState([]);
+  const [tiposAtendimentoEscola, setTiposAtendimentoEscola] = useState([]);
+  const [loadingTiposAtendimento, setLoadingTiposAtendimento] = useState(false);
 
   // Limpar dados quando modal é fechado
   useEffect(() => {
@@ -64,8 +67,38 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
         data: semanaAtual || ''
       });
       setProdutosTabela([]);
+      setTiposAtendimentoEscola([]);
     }
   }, [isOpen, obterValorPadraoConsumo]);
+
+  // Buscar tipos de atendimento quando escola for selecionada
+  useEffect(() => {
+    const buscarTiposAtendimento = async () => {
+      if (formData.escola_id) {
+        setLoadingTiposAtendimento(true);
+        try {
+          const result = await TipoAtendimentoEscolaService.buscarPorEscola(formData.escola_id);
+          if (result.success) {
+            const tipos = result.data.map(item => item.tipo_atendimento);
+            setTiposAtendimentoEscola(tipos);
+          } else {
+            setTiposAtendimentoEscola([]);
+          }
+        } catch (error) {
+          console.error('Erro ao buscar tipos de atendimento:', error);
+          setTiposAtendimentoEscola([]);
+        } finally {
+          setLoadingTiposAtendimento(false);
+        }
+      } else {
+        setTiposAtendimentoEscola([]);
+      }
+    };
+
+    if (isOpen && formData.escola_id) {
+      buscarTiposAtendimento();
+    }
+  }, [isOpen, formData.escola_id]);
 
 
   // Carregar produtos quando grupo mudar
@@ -82,16 +115,86 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
     }
   }, [isOpen, formData.escola_id, formData.data, calcularMediasPorPeriodo]);
 
+  // Função auxiliar para verificar se um tipo de atendimento está disponível
+  const tipoDisponivel = (tipo) => {
+    // Se não há tipos vinculados (escola não selecionada ou sem vínculos), mostrar todos
+    if (!tiposAtendimentoEscola || tiposAtendimentoEscola.length === 0) {
+      return true;
+    }
+    // Mapear tipos para os valores do banco
+    const mapeamentoTipos = {
+      'lanche_manha': 'lanche_manha',
+      'almoco': 'almoco',
+      'lanche_tarde': 'lanche_tarde',
+      'parcial': 'parcial_manha', // Parcial pode ser parcial_manha ou parcial_tarde
+      'eja': 'eja'
+    };
+    const tipoMapeado = mapeamentoTipos[tipo];
+    // Verificar se o tipo está na lista ou se é parcial (pode ser parcial_manha ou parcial_tarde)
+    return tiposAtendimentoEscola.includes(tipoMapeado) || 
+           (tipo === 'parcial' && (tiposAtendimentoEscola.includes('parcial_manha') || tiposAtendimentoEscola.includes('parcial_tarde')));
+  };
+
+  // Configuração dos tipos de atendimento para renderização dinâmica
+  const tiposConfig = [
+    { 
+      key: 'lanche_manha', 
+      label: '🌅 LANCHE DA MANHA', 
+      bgColor: 'bg-green-600', 
+      bgCellColor: 'bg-green-50',
+      icon: '🌅'
+    },
+    { 
+      key: 'almoco', 
+      label: '🍽️ ALMOÇO', 
+      bgColor: 'bg-blue-600', 
+      bgCellColor: 'bg-blue-50',
+      icon: '🍽️'
+    },
+    { 
+      key: 'lanche_tarde', 
+      label: '🌆 LANCHE DA TARDE', 
+      bgColor: 'bg-orange-600', 
+      bgCellColor: 'bg-orange-50',
+      icon: '🌆'
+    },
+    { 
+      key: 'parcial', 
+      label: '🥗 PARCIAL', 
+      bgColor: 'bg-purple-600', 
+      bgCellColor: 'bg-purple-50',
+      icon: '🥗',
+      // Parcial pode ser parcial_manha ou parcial_tarde
+      checkFunction: () => tiposAtendimentoEscola.includes('parcial_manha') || tiposAtendimentoEscola.includes('parcial_tarde')
+    },
+    { 
+      key: 'eja', 
+      label: '🌙 EJA', 
+      bgColor: 'bg-indigo-600', 
+      bgCellColor: 'bg-indigo-50',
+      icon: '🌙'
+    }
+  ];
+
+  // Filtrar tipos disponíveis
+  const tiposDisponiveis = tiposConfig.filter(tipo => {
+    if (tipo.checkFunction) {
+      return tipo.checkFunction();
+    }
+    return tipoDisponivel(tipo.key);
+  });
+
   // Inicializar tabela quando produtos estiverem carregados
   useEffect(() => {
     if (isOpen && produtos.length > 0 && formData.grupo_id && formData.escola_id && formData.data) {
       // Verificar se as médias foram carregadas corretamente
-      const mediasCarregadas = Object.keys(mediasPeriodo).length > 0 && 
-        mediasPeriodo.almoco?.media !== undefined && 
-        mediasPeriodo.lanche_manha?.media !== undefined && 
-        mediasPeriodo.lanche_tarde?.media !== undefined && 
-        mediasPeriodo.parcial?.media !== undefined && 
-        mediasPeriodo.eja?.media !== undefined;
+      // Agora verificar apenas os tipos disponíveis
+      const mediasCarregadas = Object.keys(mediasPeriodo).length > 0;
+      
+      // Aguardar tipos de atendimento serem carregados se escola estiver selecionada
+      if (formData.escola_id && loadingTiposAtendimento) {
+        return; // Aguardar carregamento dos tipos
+      }
       
       if (mediasCarregadas) {
         inicializarTabelaProdutos();
@@ -106,7 +209,7 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
         return () => clearTimeout(timer);
       }
     }
-  }, [isOpen, produtos, percapitas, mediasPeriodo, formData.grupo_id, formData.escola_id, formData.data]);
+  }, [isOpen, produtos, percapitas, mediasPeriodo, formData.grupo_id, formData.escola_id, formData.data, tiposAtendimentoEscola, loadingTiposAtendimento]);
 
   const inicializarTabelaProdutos = () => {
     // Preservar ajustes existentes
@@ -145,9 +248,18 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
       const qtdParcial = 0;
       const qtdEja = 0;
 
-
-      // Total
-      const total = Number(qtdLancheManha + qtdAlmoco + qtdLancheTarde + qtdParcial + qtdEja);
+      // Total - considerar apenas tipos disponíveis
+      const qtds = {
+        qtd_lanche_manha: qtdLancheManha,
+        qtd_almoco: qtdAlmoco,
+        qtd_lanche_tarde: qtdLancheTarde,
+        qtd_parcial: qtdParcial,
+        qtd_eja: qtdEja
+      };
+      const total = tiposDisponiveis.reduce((sum, tipo) => {
+        const qtdKey = `qtd_${tipo.key}`;
+        return sum + (qtds[qtdKey] || 0);
+      }, 0);
 
       return {
         id: produto.produto_id,
@@ -210,14 +322,12 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
           updated[`frequencia_${tipo}`] = '';
           updated[`qtd_${tipo}`] = 0;
           
-          // Recalcular total
-          updated.total = Number(
-            updated.qtd_lanche_manha + 
-            updated.qtd_almoco + 
-            updated.qtd_lanche_tarde + 
-            updated.qtd_parcial + 
-            updated.qtd_eja
-          );
+          // Recalcular total considerando apenas tipos disponíveis
+          const total = tiposDisponiveis.reduce((sum, tipoDisponivel) => {
+            const qtdKey = `qtd_${tipoDisponivel.key}`;
+            return sum + (updated[qtdKey] || 0);
+          }, 0);
+          updated.total = Number(total);
           
           return updated;
         }
@@ -238,14 +348,12 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
         // Se frequência for 0 ou vazia, qtd deve ser 0
         updated[`qtd_${tipo}`] = (novaFrequencia === 0 || novaFrequencia === '') ? 0 : Number((percapita * media) * novaFrequencia);
         
-        // Recalcular total
-        updated.total = Number(
-          updated.qtd_lanche_manha + 
-          updated.qtd_almoco + 
-          updated.qtd_lanche_tarde + 
-          updated.qtd_parcial + 
-          updated.qtd_eja
-        );
+        // Recalcular total considerando apenas tipos disponíveis
+        const total = tiposDisponiveis.reduce((sum, tipoDisponivel) => {
+          const qtdKey = `qtd_${tipoDisponivel.key}`;
+          return sum + (updated[qtdKey] || 0);
+        }, 0);
+        updated.total = Number(total);
         
         return updated;
       }
@@ -482,21 +590,11 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
                     <th rowSpan="2" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-300">
                       Produtos
                     </th>
-                    <th colSpan="4" className="px-2 py-3 text-center text-xs font-medium text-white uppercase tracking-wider bg-green-600 border-r border-gray-300">
-                      🌅 LANCHE DA MANHA
-                    </th>
-                    <th colSpan="4" className="px-2 py-3 text-center text-xs font-medium text-white uppercase tracking-wider bg-blue-600 border-r border-gray-300">
-                      🍽️ ALMOÇO
-                    </th>
-                    <th colSpan="4" className="px-2 py-3 text-center text-xs font-medium text-white uppercase tracking-wider bg-orange-600 border-r border-gray-300">
-                      🌆 LANCHE DA TARDE
-                    </th>
-                    <th colSpan="4" className="px-2 py-3 text-center text-xs font-medium text-white uppercase tracking-wider bg-purple-600 border-r border-gray-300">
-                      🥗 PARCIAL
-                    </th>
-                    <th colSpan="4" className="px-2 py-3 text-center text-xs font-medium text-white uppercase tracking-wider bg-indigo-600 border-r border-gray-300">
-                      🌙 EJA
-                    </th>
+                    {tiposDisponiveis.map((tipo) => (
+                      <th key={tipo.key} colSpan="4" className={`px-2 py-3 text-center text-xs font-medium text-white uppercase tracking-wider ${tipo.bgColor} border-r border-gray-300`}>
+                        {tipo.label}
+                      </th>
+                    ))}
                     <th rowSpan="2" className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-300">
                       TOTAL
                     </th>
@@ -508,71 +606,22 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
                     </th>
                   </tr>
                   <tr>
-                    {/* LANCHE DA MANHA */}
-                    <th className="px-2 py-2 text-center text-xs font-medium text-gray-600 uppercase tracking-wider bg-green-50 border-r border-gray-200">
-                      Percapta
-                    </th>
-                    <th className="px-2 py-2 text-center text-xs font-medium text-gray-600 uppercase tracking-wider bg-green-50 border-r border-gray-200">
-                      Média
-                    </th>
-                    <th className="px-2 py-2 text-center text-xs font-medium text-gray-600 uppercase tracking-wider bg-green-50 border-r border-gray-200">
-                      Frequência <span className="text-blue-600">*</span>
-                    </th>
-                    <th className="px-2 py-2 text-center text-xs font-medium text-gray-600 uppercase tracking-wider bg-green-50 border-r border-gray-300">
-                      QTD
-                    </th>
-                    {/* ALMOÇO */}
-                    <th className="px-2 py-2 text-center text-xs font-medium text-gray-600 uppercase tracking-wider bg-blue-50 border-r border-gray-200">
-                      Percapta
-                    </th>
-                    <th className="px-2 py-2 text-center text-xs font-medium text-gray-600 uppercase tracking-wider bg-blue-50 border-r border-gray-200">
-                      Média
-                    </th>
-                    <th className="px-2 py-2 text-center text-xs font-medium text-gray-600 uppercase tracking-wider bg-blue-50 border-r border-gray-200">
-                      Frequência <span className="text-blue-600">*</span>
-                    </th>
-                    <th className="px-2 py-2 text-center text-xs font-medium text-gray-600 uppercase tracking-wider bg-blue-50 border-r border-gray-300">
-                      QTD
-                    </th>
-                    {/* LANCHE DA TARDE */}
-                    <th className="px-2 py-2 text-center text-xs font-medium text-gray-600 uppercase tracking-wider bg-orange-50 border-r border-gray-200">
-                      Percapta
-                    </th>
-                    <th className="px-2 py-2 text-center text-xs font-medium text-gray-600 uppercase tracking-wider bg-orange-50 border-r border-gray-200">
-                      Média
-                    </th>
-                    <th className="px-2 py-2 text-center text-xs font-medium text-gray-600 uppercase tracking-wider bg-orange-50 border-r border-gray-200">
-                      Frequência <span className="text-blue-600">*</span>
-                    </th>
-                    <th className="px-2 py-2 text-center text-xs font-medium text-gray-600 uppercase tracking-wider bg-orange-50 border-r border-gray-300">
-                      QTD
-                    </th>
-                    {/* PARCIAL */}
-                    <th className="px-2 py-2 text-center text-xs font-medium text-gray-600 uppercase tracking-wider bg-purple-50 border-r border-gray-200">
-                      Percapta
-                    </th>
-                    <th className="px-2 py-2 text-center text-xs font-medium text-gray-600 uppercase tracking-wider bg-purple-50 border-r border-gray-200">
-                      Média
-                    </th>
-                    <th className="px-2 py-2 text-center text-xs font-medium text-gray-600 uppercase tracking-wider bg-purple-50 border-r border-gray-200">
-                      Frequência <span className="text-blue-600">*</span>
-                    </th>
-                    <th className="px-2 py-2 text-center text-xs font-medium text-gray-600 uppercase tracking-wider bg-purple-50 border-r border-gray-300">
-                      QTD
-                    </th>
-                    {/* EJA */}
-                    <th className="px-2 py-2 text-center text-xs font-medium text-gray-600 uppercase tracking-wider bg-indigo-50 border-r border-gray-200">
-                      Percapta
-                    </th>
-                    <th className="px-2 py-2 text-center text-xs font-medium text-gray-600 uppercase tracking-wider bg-indigo-50 border-r border-gray-200">
-                      Média
-                    </th>
-                    <th className="px-2 py-2 text-center text-xs font-medium text-gray-600 uppercase tracking-wider bg-indigo-50 border-r border-gray-200">
-                      Frequência <span className="text-blue-600">*</span>
-                    </th>
-                    <th className="px-2 py-2 text-center text-xs font-medium text-gray-600 uppercase tracking-wider bg-indigo-50 border-r border-gray-300">
-                      QTD
-                    </th>
+                    {tiposDisponiveis.map((tipo) => (
+                      <React.Fragment key={tipo.key}>
+                        <th className={`px-2 py-2 text-center text-xs font-medium text-gray-600 uppercase tracking-wider ${tipo.bgCellColor} border-r border-gray-200`}>
+                          Percapta
+                        </th>
+                        <th className={`px-2 py-2 text-center text-xs font-medium text-gray-600 uppercase tracking-wider ${tipo.bgCellColor} border-r border-gray-200`}>
+                          Média
+                        </th>
+                        <th className={`px-2 py-2 text-center text-xs font-medium text-gray-600 uppercase tracking-wider ${tipo.bgCellColor} border-r border-gray-200`}>
+                          Frequência <span className="text-blue-600">*</span>
+                        </th>
+                        <th className={`px-2 py-2 text-center text-xs font-medium text-gray-600 uppercase tracking-wider ${tipo.bgCellColor} border-r border-gray-300`}>
+                          QTD
+                        </th>
+                      </React.Fragment>
+                    ))}
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -583,120 +632,40 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
                         <div className="text-sm text-gray-500">({produto.unidade_medida})</div>
                       </td>
                       
-                      {/* LANCHE DA MANHA */}
-                      <td className="px-2 py-4 whitespace-nowrap text-sm text-gray-900 text-center bg-green-50 border-r border-gray-200">
-                        {formatarNumero(produto.percapita_lanche_manha)}
-                      </td>
-                      <td className="px-2 py-4 whitespace-nowrap text-sm text-gray-900 text-center bg-green-50 border-r border-gray-200">
-                        {produto.media_lanche_manha}
-                      </td>
-                      <td className="px-2 py-4 whitespace-nowrap text-sm text-gray-900 text-center bg-green-50 border-r border-gray-200">
-                        <input
-                          type="number"
-                          value={produto.frequencia_lanche_manha}
-                          onChange={(e) => handleFrequenciaChange(produto.id, 'lanche_manha', e.target.value)}
-                          min="0"
-                          step="1"
-                          placeholder=""
-                          className="w-16 text-center border border-gray-300 rounded px-1 py-1 text-xs bg-white"
-                          disabled={loading}
-                        />
-                      </td>
-                      <td className="px-2 py-4 whitespace-nowrap text-sm text-gray-900 text-center bg-green-50 border-r border-gray-300">
-                        {formatarNumero(produto.qtd_lanche_manha)}
-                      </td>
-                      
-                      {/* ALMOÇO */}
-                      <td className="px-2 py-4 whitespace-nowrap text-sm text-gray-900 text-center bg-blue-50 border-r border-gray-200">
-                        {formatarNumero(produto.percapita_almoco)}
-                      </td>
-                      <td className="px-2 py-4 whitespace-nowrap text-sm text-gray-900 text-center bg-blue-50 border-r border-gray-200">
-                        {produto.media_almoco}
-                      </td>
-                      <td className="px-2 py-4 whitespace-nowrap text-sm text-gray-900 text-center bg-blue-50 border-r border-gray-200">
-                        <input
-                          type="number"
-                          value={produto.frequencia_almoco}
-                          onChange={(e) => handleFrequenciaChange(produto.id, 'almoco', e.target.value)}
-                          min="0"
-                          step="1"
-                          placeholder=""
-                          className="w-16 text-center border border-gray-300 rounded px-1 py-1 text-xs bg-white"
-                          disabled={loading}
-                        />
-                      </td>
-                      <td className="px-2 py-4 whitespace-nowrap text-sm text-gray-900 text-center bg-blue-50 border-r border-gray-300">
-                        {formatarNumero(produto.qtd_almoco)}
-                      </td>
-                      
-                      {/* LANCHE DA TARDE */}
-                      <td className="px-2 py-4 whitespace-nowrap text-sm text-gray-900 text-center bg-orange-50 border-r border-gray-200">
-                        {formatarNumero(produto.percapita_lanche_tarde)}
-                      </td>
-                      <td className="px-2 py-4 whitespace-nowrap text-sm text-gray-900 text-center bg-orange-50 border-r border-gray-200">
-                        {produto.media_lanche_tarde}
-                      </td>
-                      <td className="px-2 py-4 whitespace-nowrap text-sm text-gray-900 text-center bg-orange-50 border-r border-gray-200">
-                        <input
-                          type="number"
-                          value={produto.frequencia_lanche_tarde}
-                          onChange={(e) => handleFrequenciaChange(produto.id, 'lanche_tarde', e.target.value)}
-                          min="0"
-                          step="1"
-                          placeholder=""
-                          className="w-16 text-center border border-gray-300 rounded px-1 py-1 text-xs bg-white"
-                          disabled={loading}
-                        />
-                      </td>
-                      <td className="px-2 py-4 whitespace-nowrap text-sm text-gray-900 text-center bg-orange-50 border-r border-gray-300">
-                        {formatarNumero(produto.qtd_lanche_tarde)}
-                      </td>
-                      
-                      {/* PARCIAL */}
-                      <td className="px-2 py-4 whitespace-nowrap text-sm text-gray-900 text-center bg-purple-50 border-r border-gray-200">
-                        {formatarNumero(produto.percapita_parcial)}
-                      </td>
-                      <td className="px-2 py-4 whitespace-nowrap text-sm text-gray-900 text-center bg-purple-50 border-r border-gray-200">
-                        {produto.media_parcial}
-                      </td>
-                      <td className="px-2 py-4 whitespace-nowrap text-sm text-gray-900 text-center bg-purple-50 border-r border-gray-200">
-                        <input
-                          type="number"
-                          value={produto.frequencia_parcial}
-                          onChange={(e) => handleFrequenciaChange(produto.id, 'parcial', e.target.value)}
-                          min="0"
-                          step="1"
-                          placeholder=""
-                          className="w-16 text-center border border-gray-300 rounded px-1 py-1 text-xs bg-white"
-                          disabled={loading}
-                        />
-                      </td>
-                      <td className="px-2 py-4 whitespace-nowrap text-sm text-gray-900 text-center bg-purple-50 border-r border-gray-300">
-                        {formatarNumero(produto.qtd_parcial)}
-                      </td>
-                      
-                      {/* EJA */}
-                      <td className="px-2 py-4 whitespace-nowrap text-sm text-gray-900 text-center bg-indigo-50 border-r border-gray-200">
-                        {formatarNumero(produto.percapita_eja)}
-                      </td>
-                      <td className="px-2 py-4 whitespace-nowrap text-sm text-gray-900 text-center bg-indigo-50 border-r border-gray-200">
-                        {produto.media_eja}
-                      </td>
-                      <td className="px-2 py-4 whitespace-nowrap text-sm text-gray-900 text-center bg-indigo-50 border-r border-gray-200">
-                        <input
-                          type="number"
-                          value={produto.frequencia_eja}
-                          onChange={(e) => handleFrequenciaChange(produto.id, 'eja', e.target.value)}
-                          min="0"
-                          step="1"
-                          placeholder=""
-                          className="w-16 text-center border border-gray-300 rounded px-1 py-1 text-xs bg-white"
-                          disabled={loading}
-                        />
-                      </td>
-                      <td className="px-2 py-4 whitespace-nowrap text-sm text-gray-900 text-center bg-indigo-50 border-r border-gray-300">
-                        {formatarNumero(produto.qtd_eja)}
-                      </td>
+                      {/* Renderizar células dinamicamente baseado nos tipos disponíveis */}
+                      {tiposDisponiveis.map((tipo) => {
+                        const tipoKey = tipo.key;
+                        const percapitaKey = `percapita_${tipoKey}`;
+                        const mediaKey = `media_${tipoKey}`;
+                        const frequenciaKey = `frequencia_${tipoKey}`;
+                        const qtdKey = `qtd_${tipoKey}`;
+                        
+                        return (
+                          <React.Fragment key={tipoKey}>
+                            <td className={`px-2 py-4 whitespace-nowrap text-sm text-gray-900 text-center ${tipo.bgCellColor} border-r border-gray-200`}>
+                              {formatarNumero(produto[percapitaKey] || 0)}
+                            </td>
+                            <td className={`px-2 py-4 whitespace-nowrap text-sm text-gray-900 text-center ${tipo.bgCellColor} border-r border-gray-200`}>
+                              {produto[mediaKey] || 0}
+                            </td>
+                            <td className={`px-2 py-4 whitespace-nowrap text-sm text-gray-900 text-center ${tipo.bgCellColor} border-r border-gray-200`}>
+                              <input
+                                type="number"
+                                value={produto[frequenciaKey] || ''}
+                                onChange={(e) => handleFrequenciaChange(produto.id, tipoKey, e.target.value)}
+                                min="0"
+                                step="1"
+                                placeholder=""
+                                className="w-16 text-center border border-gray-300 rounded px-1 py-1 text-xs bg-white"
+                                disabled={loading}
+                              />
+                            </td>
+                            <td className={`px-2 py-4 whitespace-nowrap text-sm text-gray-900 text-center ${tipo.bgCellColor} border-r border-gray-300`}>
+                              {formatarNumero(produto[qtdKey] || 0)}
+                            </td>
+                          </React.Fragment>
+                        );
+                      })}
                       
                       {/* TOTAL */}
                       <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-center bg-gray-50 border-r border-gray-300">

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { FaClipboardList, FaQuestionCircle } from 'react-icons/fa';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { useAuth } from '../../contexts/AuthContext';
-import { useConsultaStatusNecessidade } from '../../hooks/useConsultaStatusNecessidade';
+import { useConsultaStatusNecessidade } from '../../hooks/necessidades';
 import { 
   ConsultaStatusLayout,
   ConsultaStatusLoading,

@@ -29,6 +29,7 @@ import CalendarioDashboard from './pages/calendario/CalendarioDashboard';
 import CalendarioVisualizacao from './pages/calendario/CalendarioVisualizacao';
 import CalendarioConfiguracao from './pages/calendario/CalendarioConfiguracao';
 import CalendarioRelatorios from './pages/calendario/CalendarioRelatorios';
+import TipoAtendimentoEscola from './pages/tipo-atendimento-escola';
 
 // Componente para rotas protegidas com autenticação
 const AuthenticatedRoute = ({ children }) => {
@@ -191,6 +192,15 @@ function App() {
                 element={
                   <AuthenticatedRoute>
                     <ProdutosPerCapita />
+                  </AuthenticatedRoute>
+                } 
+              />
+
+              <Route 
+                path="/tipo-atendimento-escola" 
+                element={
+                  <AuthenticatedRoute>
+                    <TipoAtendimentoEscola />
                   </AuthenticatedRoute>
                 } 
               />

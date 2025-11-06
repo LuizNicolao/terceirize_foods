@@ -41,16 +41,16 @@ const AjusteFiltros = ({
               <FaTimes className="mr-2" />
               Limpar Filtros
             </Button>
-            <Button
-              onClick={onFiltrar}
-              variant="primary"
-              size="sm"
-              disabled={isFiltrarDisabled}
-              className="flex items-center"
-            >
-              <FaSearch className="mr-2" />
-              Filtrar
-            </Button>
+          <Button
+            onClick={onFiltrar}
+            variant="primary"
+            size="sm"
+            disabled={isFiltrarDisabled}
+            className="flex items-center"
+          >
+            <FaSearch className="mr-2" />
+            Filtrar
+          </Button>
           </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

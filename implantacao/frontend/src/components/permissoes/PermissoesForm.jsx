@@ -26,6 +26,7 @@ const PermissoesForm = ({
       { key: 'subgrupos', label: 'Subgrupos' },
       { key: 'classes', label: 'Classes' },
       { key: 'produtos_per_capita', label: 'Produtos Per Capita' },
+      { key: 'tipo_atendimento_escola', label: 'Tipo de Atendimento por Escola' },
       { key: 'recebimentos_escolas', label: 'Recebimentos Escolas' },
       { key: 'registros_diarios', label: 'Quantidade Servida' },
       { key: 'necessidades', label: 'Gerar Necessidades' },

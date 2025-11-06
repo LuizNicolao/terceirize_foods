@@ -475,15 +475,15 @@ const RelatorioInspecaoModal = ({ isOpen, onClose, onSubmit, rir, viewMode, grup
                 </button>
               )}
             </div>
-            <ProdutosTable
+          <ProdutosTable
               ref={produtosTableRef}
-              produtos={produtos}
-              onChange={handleProdutosChange}
-              onRemove={handleRemoveProduto}
-              viewMode={isViewMode}
+            produtos={produtos}
+            onChange={handleProdutosChange}
+            onRemove={handleRemoveProduto}
+            viewMode={isViewMode}
               pedidoIdAtual={pedidoIdAtual}
               onDesvincularSelecionados={handleDesvincularSelecionados}
-            />
+          />
           </div>
 
           {/* SEÇÃO D: Ocorrências e Responsáveis */}

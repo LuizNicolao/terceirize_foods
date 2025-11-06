@@ -209,7 +209,7 @@ const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = fal
       );
       // Atualizar controle_validade no produto
         produto.controle_validade = controleValidade;
-    }
+      }
 
     // Sempre recalcular resultado final quando:
     // - Mudar reprovadas ou RE (amostragem)
@@ -636,9 +636,9 @@ const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = fal
                   <tr className="bg-gray-50 hover:bg-gray-100">
                     <td className="px-4 py-3 whitespace-nowrap">
                       <div>
-                        <Input
-                          type="number"
-                          value={produto.temperatura || ''}
+                      <Input
+                        type="number"
+                        value={produto.temperatura || ''}
                           onChange={(e) => {
                             handleFieldChange(index, 'temperatura', e.target.value);
                             // Remover erro quando preencher
@@ -648,11 +648,11 @@ const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = fal
                               setErrors(newErrors);
                             }
                           }}
-                          placeholder="°C"
+                        placeholder="°C"
                           className={`w-20 text-sm ${errors[`${index}-temperatura`] ? 'border-red-500' : ''}`}
                           disabled={viewMode}
                           required={produto.grupo_nome && produto.grupo_nome.toLowerCase() === 'frios'}
-                        />
+                      />
                         {errors[`${index}-temperatura`] && (
                           <p className="text-xs text-red-600 mt-1">{errors[`${index}-temperatura`]}</p>
                         )}
@@ -660,8 +660,8 @@ const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = fal
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       <div>
-                        <select
-                          value={produto.aval_sensorial || ''}
+                      <select
+                        value={produto.aval_sensorial || ''}
                           onChange={(e) => {
                             handleFieldChange(index, 'aval_sensorial', e.target.value);
                             // Remover erro quando preencher
@@ -674,11 +674,11 @@ const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = fal
                           className={`w-full px-2 py-1 text-sm border rounded focus:ring-2 focus:ring-green-500 focus:border-green-500 ${errors[`${index}-aval_sensorial`] ? 'border-red-500' : 'border-gray-300'}`}
                           disabled={viewMode}
                           required
-                        >
-                          <option value="">Selecione...</option>
-                          <option value="Conforme">Conforme</option>
-                          <option value="Não Conforme">Não Conforme</option>
-                        </select>
+                      >
+                        <option value="">Selecione...</option>
+                        <option value="Conforme">Conforme</option>
+                        <option value="Não Conforme">Não Conforme</option>
+                      </select>
                         {errors[`${index}-aval_sensorial`] && (
                           <p className="text-xs text-red-600 mt-1">{errors[`${index}-aval_sensorial`]}</p>
                         )}
@@ -729,18 +729,18 @@ const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = fal
                   </tr>
                   {/* Linha de ações */}
                   {!viewMode && (
-                    <tr className="bg-gray-100">
+                  <tr className="bg-gray-100">
                       <td colSpan={pedidoIdAtual && !viewMode ? 9 : 8} className="px-4 py-2 text-right">
-                        <button
-                          onClick={() => onRemove(index)}
-                          className="text-red-600 hover:text-red-900 p-1 rounded transition-colors text-sm"
+                      <button
+                        onClick={() => onRemove(index)}
+                        className="text-red-600 hover:text-red-900 p-1 rounded transition-colors text-sm"
                           title={produto.pedido_item_id ? "Desvincular produto do pedido" : "Remover produto"}
-                        >
-                          <FaTrash className="w-4 h-4 inline mr-1" />
+                      >
+                        <FaTrash className="w-4 h-4 inline mr-1" />
                           {produto.pedido_item_id ? "Desvincular" : "Remover"}
-                        </button>
-                      </td>
-                    </tr>
+                      </button>
+                    </td>
+                  </tr>
                   )}
                 </React.Fragment>
               );

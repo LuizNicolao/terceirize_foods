@@ -5,7 +5,7 @@ class NecessidadesCoordenacaoController {
   static async listarParaCoordenacao(req, res) {
     try {
       const { 
-        escola_id,
+        escola_id, 
         grupo,
         semana_consumo, 
         semana_abastecimento,

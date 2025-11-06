@@ -328,66 +328,66 @@ export const useAjusteNecessidadesOrchestrator = () => {
   }, [activeTab, filtros, exportarPDFNutricionista, exportarPDFCoordenacao]);
 
 
-  return {
-    // Estados
-    activeTab,
-    setActiveTab,
-    modalProdutoExtraAberto,
-    setModalProdutoExtraAberto,
-    produtosDisponiveis,
-    produtosSelecionados,
-    searchProduto,
-    ajustesLocais,
-    necessidadeAtual,
-    buscaProduto,
-    setBuscaProduto,
-    necessidades,
-    filtros,
-    loading,
-    error,
-    necessidadesFiltradas,
-    
-    // Contagens por aba (temporário para debug)
-    contagemRegistros: {
-      nutricionista: necessidadesNutricionista.length,
-      coordenacao: necessidadesCoordenacao.length,
-      logistica: necessidadesLogistica.length
-    },
-    
-    // Estados de exclusão
-    showDeleteConfirmModal,
-    produtoToDelete,
-    
-    // Dados
-    escolas: activeTab === 'nutricionista' ? escolas : activeTab === 'coordenacao' ? escolasCoordenacao : activeTab === 'logistica' ? escolasLogistica : [],
-    grupos: activeTab === 'nutricionista' ? grupos : activeTab === 'coordenacao' ? gruposCoordenacao : activeTab === 'logistica' ? gruposLogistica : [],
-    nutricionistas,
-    opcoesSemanasAbastecimento,
-    opcoesSemanasConsumo,
-    loadingSemanaAbastecimento,
-    statusAtual: necessidades.length > 0 ? necessidades[0].status : 'NEC',
-    
-    // Handlers
-    handleCarregarNecessidades,
-    handleFiltroChange,
-    handleLimparFiltros,
-    handleAjusteChange,
-    handleExcluirNecessidade,
-    handleConfirmDelete,
-    handleCloseDeleteModal,
-    handleSalvarAjustes,
-    handleLiberarCoordenacao,
-    handleAbrirModalProdutoExtra,
-    handleIncluirProdutosExtra,
-    handleToggleProduto,
-    handleSelecionarTodos,
-    handleDesmarcarTodos,
-    handleExportarExcel,
-    handleExportarPDF,
-    handleSearchProduto,
-    
-    // Modal helpers
+      return {
+      // Estados
+      activeTab,
+      setActiveTab,
+      modalProdutoExtraAberto,
+      setModalProdutoExtraAberto,
+      produtosDisponiveis,
+      produtosSelecionados,
+      searchProduto,
+      ajustesLocais,
+      necessidadeAtual,
+      buscaProduto,
+      setBuscaProduto,
+      necessidades,
+      filtros,
+      loading,
+      error,
+      necessidadesFiltradas,
+      
+      // Contagens por aba (temporário para debug)
+      contagemRegistros: {
+        nutricionista: necessidadesNutricionista.length,
+        coordenacao: necessidadesCoordenacao.length,
+        logistica: necessidadesLogistica.length
+      },
+      
+      // Estados de exclusão
+      showDeleteConfirmModal,
+      produtoToDelete,
+      
+      // Dados
+      escolas: activeTab === 'nutricionista' ? escolas : activeTab === 'coordenacao' ? escolasCoordenacao : activeTab === 'logistica' ? escolasLogistica : [],
+      grupos: activeTab === 'nutricionista' ? grupos : activeTab === 'coordenacao' ? gruposCoordenacao : activeTab === 'logistica' ? gruposLogistica : [],
+      nutricionistas,
+      opcoesSemanasAbastecimento,
+      opcoesSemanasConsumo,
+      loadingSemanaAbastecimento,
+      statusAtual: necessidades.length > 0 ? necessidades[0].status : 'NEC',
+      
+      // Handlers
+      handleCarregarNecessidades,
+      handleFiltroChange,
+      handleLimparFiltros,
+      handleAjusteChange,
+      handleExcluirNecessidade,
+      handleConfirmDelete,
+      handleCloseDeleteModal,
+      handleSalvarAjustes,
+      handleLiberarCoordenacao,
+      handleAbrirModalProdutoExtra,
+      handleIncluirProdutosExtra,
+      handleToggleProduto,
+      handleSelecionarTodos,
+      handleDesmarcarTodos,
+      handleExportarExcel,
+      handleExportarPDF,
+      handleSearchProduto,
+      
+      // Modal helpers
     handleCloseModalProdutoExtra: handleFecharModal,
-    handleClearSearch: () => setBuscaProduto('')
+      handleClearSearch: () => setBuscaProduto('')
+    };
   };
-};

@@ -79,8 +79,8 @@ const SubstituicoesFilters = ({
             options={[
               { value: 'todos', label: 'Todos os grupos' },
               ...grupos.map(grupo => ({
-                value: grupo.nome,
-                label: grupo.nome
+              value: grupo.nome,
+              label: grupo.nome
               }))
             ]}
             placeholder="Todos os grupos"
