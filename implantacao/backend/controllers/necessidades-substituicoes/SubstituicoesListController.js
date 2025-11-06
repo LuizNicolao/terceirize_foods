@@ -714,6 +714,12 @@ class SubstituicoesListController {
     try {
       const { aba, tipo_rota_id, semana_abastecimento } = req.query;
       
+      console.log('[Substituições] buscarGruposDisponiveisParaSubstituicao - filtros recebidos:', {
+        aba,
+        tipo_rota_id,
+        semana_abastecimento
+      });
+      
       let grupos;
       let params = [];
       let whereConditions = [];
@@ -808,7 +814,9 @@ class SubstituicoesListController {
         }
 
         const whereClause = baseConditions.join(' AND ');
-        const queryParams = tipo_rota_id ? [tipo_rota_id, ...params.slice(1)] : params;
+
+        console.log('[Substituições] Montando consulta de grupos (aba nutricionista) com whereClause:', whereClause);
+        console.log('[Substituições] Parâmetros:', params);
 
         grupos = await executeQuery(`
           SELECT DISTINCT 
@@ -817,7 +825,9 @@ class SubstituicoesListController {
           FROM necessidades n
           WHERE ${whereClause}
           ORDER BY n.grupo
-        `, queryParams);
+        `, params);
+
+        console.log('[Substituições] Grupos encontrados (aba nutricionista):', grupos);
       }
 
       res.json({
@@ -826,6 +836,7 @@ class SubstituicoesListController {
       });
     } catch (error) {
       console.error('Erro ao buscar grupos disponíveis para substituição:', error);
+      console.error('Stack trace:', error.stack);
       res.status(500).json({
         success: false,
         message: 'Erro ao buscar grupos disponíveis'
