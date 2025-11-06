@@ -2,7 +2,15 @@ const TipoAtendimentoEscolaCRUDController = require('./TipoAtendimentoEscolaCRUD
 const TipoAtendimentoEscolaListController = require('./TipoAtendimentoEscolaListController');
 
 module.exports = {
-  ...TipoAtendimentoEscolaCRUDController,
-  ...TipoAtendimentoEscolaListController
+  // CRUD Operations
+  criar: TipoAtendimentoEscolaCRUDController.criar,
+  atualizar: TipoAtendimentoEscolaCRUDController.atualizar,
+  deletar: TipoAtendimentoEscolaCRUDController.deletar,
+  buscarPorId: TipoAtendimentoEscolaCRUDController.buscarPorId,
+  
+  // List Operations
+  listar: TipoAtendimentoEscolaListController.listar,
+  buscarPorEscola: TipoAtendimentoEscolaListController.buscarPorEscola,
+  buscarEscolasPorTipo: TipoAtendimentoEscolaListController.buscarEscolasPorTipo
 };
 

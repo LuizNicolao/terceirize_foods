@@ -28,8 +28,8 @@ router.get('/por-tipo/:tipo_atendimento',
 // ===== ROTAS CRUD =====
 router.get('/',
   checkScreenPermission('tipo_atendimento_escola', 'visualizar'),
-  commonValidations.pagination,
   commonValidations.search,
+  commonValidations.pagination,
   TipoAtendimentoEscolaController.listar
 );
 
