@@ -22,7 +22,9 @@ async function buscarInfoEscola(escolaId, authToken) {
         id: unidade.id,
         nome_escola: unidade.nome_escola || unidade.nome || '',
         rota: unidade.rota_nome || unidade.rota || '',
-        cidade: unidade.cidade || ''
+        cidade: unidade.cidade || '',
+        filial_id: unidade.filial_id || null,
+        filial_nome: unidade.filial_nome || unidade.filial || unidade.nome_filial || ''
       };
     }
   } catch (error) {
@@ -33,7 +35,9 @@ async function buscarInfoEscola(escolaId, authToken) {
     id: escolaId,
     nome_escola: '',
     rota: '',
-    cidade: ''
+    cidade: '',
+    filial_id: null,
+    filial_nome: ''
   };
 }
 
@@ -181,7 +185,9 @@ class TipoAtendimentoEscolaCRUDController {
           tipos_atendimento: parseTiposAtendimento(vinculoAtualizado[0].tipos_atendimento),
           nome_escola: escolaInfo.nome_escola,
           rota: escolaInfo.rota,
-          cidade: escolaInfo.cidade
+          cidade: escolaInfo.cidade,
+          filial_id: escolaInfo.filial_id,
+          filial_nome: escolaInfo.filial_nome
         };
 
         // Registrar auditoria
@@ -228,7 +234,9 @@ class TipoAtendimentoEscolaCRUDController {
         tipos_atendimento: parseTiposAtendimento(novoVinculoQuery[0].tipos_atendimento),
         nome_escola: escolaInfo.nome_escola,
         rota: escolaInfo.rota,
-        cidade: escolaInfo.cidade
+        cidade: escolaInfo.cidade,
+        filial_id: escolaInfo.filial_id,
+        filial_nome: escolaInfo.filial_nome
       };
 
       // Registrar auditoria
@@ -334,7 +342,9 @@ class TipoAtendimentoEscolaCRUDController {
         tipos_atendimento: parseTiposAtendimento(vinculoAtualizadoQuery[0].tipos_atendimento),
         nome_escola: escolaInfo.nome_escola,
         rota: escolaInfo.rota,
-        cidade: escolaInfo.cidade
+        cidade: escolaInfo.cidade,
+        filial_id: escolaInfo.filial_id,
+        filial_nome: escolaInfo.filial_nome
       };
 
       // Registrar auditoria
@@ -445,7 +455,9 @@ class TipoAtendimentoEscolaCRUDController {
         tipos_atendimento: parseTiposAtendimento(vinculoQuery[0].tipos_atendimento),
         nome_escola: escolaInfo.nome_escola,
         rota: escolaInfo.rota,
-        cidade: escolaInfo.cidade
+        cidade: escolaInfo.cidade,
+        filial_id: escolaInfo.filial_id,
+        filial_nome: escolaInfo.filial_nome
       };
 
       res.json({

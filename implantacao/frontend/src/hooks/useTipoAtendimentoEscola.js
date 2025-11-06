@@ -123,6 +123,10 @@ export const useTipoAtendimentoEscola = () => {
         for (const escolaId in vinculosPorEscola) {
           try {
             const vinculo = vinculosPorEscola[escolaId];
+            const vinculoModificado = {
+              ...vinculo,
+              filial_nome: result.data?.filial_nome || vinculo.filial_nome || ''
+            };
             const result = await TipoAtendimentoEscolaService.criar(vinculo);
             if (result.success) {
               sucessos += vinculo.tipos_atendimento.length; // Contar tipos, não escolas

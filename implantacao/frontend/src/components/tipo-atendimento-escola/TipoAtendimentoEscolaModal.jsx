@@ -14,7 +14,8 @@ const TipoAtendimentoEscolaModal = ({
   tiposAtendimento = [],
   editingItem = null,
   viewMode = false,
-  loading = false
+  loading = false,
+  buscarPorEscola = async () => []
 }) => {
   const { user } = useAuth();
   const [filialId, setFilialId] = useState('');
@@ -30,42 +31,93 @@ const TipoAtendimentoEscolaModal = ({
   const [buscaEscola, setBuscaEscola] = useState('');
   const [errors, setErrors] = useState({});
   const [statusAtivo, setStatusAtivo] = useState(true);
+  const isEditing = Boolean(editingItem);
+  const isViewMode = viewMode;
 
   // Carregar filiais
   useEffect(() => {
-    if (isOpen && !editingItem) {
+    if (isOpen) {
       carregarFiliais();
     }
-  }, [isOpen, editingItem]);
+  }, [isOpen]);
 
-  // Carregar escolas quando filial mudar
+  // Carregar escolas quando filial mudar (apenas criação)
   useEffect(() => {
-    if (filialId && isOpen && !editingItem) {
+    if (!isOpen || isEditing) {
+      return;
+    }
+
+    if (filialId) {
       carregarEscolas(filialId, escolasPage, escolasItemsPerPage);
     } else {
       setEscolas([]);
       setEscolasTotalPages(1);
       setEscolasTotalItems(0);
     }
-  }, [filialId, escolasPage, escolasItemsPerPage, isOpen, editingItem]);
+  }, [filialId, escolasPage, escolasItemsPerPage, isOpen, isEditing]);
 
-  // Carregar vínculos existentes quando estiver editando
+  // Preparar estado quando abrir modal (criação ou edição)
   useEffect(() => {
-    if (editingItem && isOpen) {
-      // Modo edição: mostrar apenas o vínculo atual
-      setVinculosSelecionados({
-        [editingItem.escola_id]: [editingItem.tipo_atendimento]
-      });
-      setStatusAtivo(editingItem.ativo !== undefined ? editingItem.ativo : true);
-    } else if (isOpen) {
-      // Modo criação: limpar seleções
+    if (!isOpen) {
+      return;
+    }
+
+    if (isEditing && editingItem) {
+      const escolaId = editingItem.escola_id;
+      const filialIdItem = editingItem.filial_id ? String(editingItem.filial_id) : '';
+
+      setFilialId(filialIdItem);
+      setBuscaEscola('');
+      setEscolasPage(1);
+      setStatusAtivo(editingItem.ativo !== undefined ? Boolean(editingItem.ativo) : true);
+
+      const escolaSelecionada = {
+        id: escolaId,
+        nome_escola: editingItem.nome_escola || '',
+        rota: editingItem.rota || '',
+        cidade: editingItem.cidade || '',
+        filial_id: editingItem.filial_id || null,
+        filial_nome: editingItem.filial_nome || ''
+      };
+
+      setEscolas([escolaSelecionada]);
+      setEscolasTotalItems(1);
+      setEscolasTotalPages(1);
+
+      const carregarTiposEscola = async () => {
+        try {
+          const tiposExistentes = await buscarPorEscola(escolaId);
+          const tiposSelecionados = Array.isArray(tiposExistentes) && tiposExistentes.length > 0
+            ? tiposExistentes
+                .filter(item => item && item.tipo_atendimento)
+                .map(item => item.tipo_atendimento)
+            : editingItem.tipo_atendimento
+              ? [editingItem.tipo_atendimento]
+              : [];
+
+          setVinculosSelecionados({
+            [escolaId]: tiposSelecionados
+          });
+        } catch (error) {
+          console.error('Erro ao carregar tipos da escola para edição:', error);
+          setVinculosSelecionados({
+            [escolaId]: editingItem.tipo_atendimento ? [editingItem.tipo_atendimento] : []
+          });
+        }
+      };
+
+      carregarTiposEscola();
+    } else {
       setVinculosSelecionados({});
       setFilialId('');
       setBuscaEscola('');
       setEscolasPage(1);
       setStatusAtivo(true);
+      setEscolas([]);
+      setEscolasTotalItems(0);
+      setEscolasTotalPages(1);
     }
-  }, [editingItem, isOpen]);
+  }, [isOpen, isEditing, editingItem, buscarPorEscola]);
 
   const carregarFiliais = async () => {
     setLoadingFiliais(true);
@@ -128,6 +180,9 @@ const TipoAtendimentoEscolaModal = ({
   };
 
   const handleFilialChange = (value) => {
+    if (isEditing) {
+      return;
+    }
     setFilialId(value);
     setEscolasPage(1);
     setVinculosSelecionados({});
@@ -165,7 +220,7 @@ const TipoAtendimentoEscolaModal = ({
       0
     );
 
-    if (totalVinculos === 0) {
+    if (!isEditing && totalVinculos === 0) {
       newErrors.vinculos = 'Selecione ao menos um tipo de atendimento para uma escola';
     }
 
@@ -181,12 +236,12 @@ const TipoAtendimentoEscolaModal = ({
       return;
     }
 
-    // Se estiver editando, manter formato antigo
-    if (editingItem) {
+    // Se estiver editando, atualizar tipos desta escola
+    if (isEditing && editingItem) {
       await onSave({
         escola_id: editingItem.escola_id,
-        tipo_atendimento: vinculosSelecionados[editingItem.escola_id]?.[0],
-        ativo: editingItem.ativo
+        tipos_atendimento: vinculosSelecionados[editingItem.escola_id] || [],
+        ativo: statusAtivo
       });
     } else {
       // Criar array de vínculos para salvar
@@ -225,6 +280,15 @@ const TipoAtendimentoEscolaModal = ({
 
   const handleItemsPerPageChange = (event) => {
     const value = parseInt(event.target.value, 10);
+    if (Number.isNaN(value)) {
+      return;
+    }
+
+    if (isEditing) {
+      setEscolasItemsPerPage(value);
+      return;
+    }
+
     setEscolasItemsPerPage(value);
     setEscolasPage(1);
     if (filialId) {
@@ -246,82 +310,15 @@ const TipoAtendimentoEscolaModal = ({
   };
 
   // Modo edição: mostrar formulário simples
-  if (editingItem) {
+  const modalTitle = isEditing
+    ? (isViewMode ? 'Visualizar Vínculo' : 'Editar Vínculo')
+    : 'Vincular Tipos de Atendimento às Escolas';
 
-    const handleEditSubmit = async (e) => {
-      e.preventDefault();
-      await onSave({
-        escola_id: editingItem.escola_id,
-        tipo_atendimento: editingItem.tipo_atendimento,
-        ativo: statusAtivo
-      });
-  };
-
-    return (
-      <Modal
-        isOpen={isOpen}
-        onClose={onClose}
-        title={viewMode ? 'Visualizar Vínculo' : 'Editar Vínculo'}
-        size="md"
-      >
-        <form onSubmit={handleEditSubmit} className="space-y-6">
-          <div className="text-sm text-gray-600 p-4 bg-gray-50 rounded-lg">
-            <p className="font-medium mb-2">Escola:</p>
-            <p>{editingItem.nome_escola || `ID: ${editingItem.escola_id}`}</p>
-            <p className="font-medium mt-4 mb-2">Tipo de Atendimento:</p>
-            <p>{tiposAtendimento.find(t => t.value === editingItem.tipo_atendimento)?.label || editingItem.tipo_atendimento}</p>
-          </div>
-
-          {!viewMode && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Status
-              </label>
-              <select
-                value={statusAtivo ? 'ativo' : 'inativo'}
-                onChange={handleStatusChange}
-                disabled={loading || viewMode}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 ${
-                  loading || viewMode ? 'bg-gray-100 cursor-not-allowed' : ''
-                }`}
-              >
-                <option value="ativo">Ativo</option>
-                <option value="inativo">Inativo</option>
-              </select>
-            </div>
-          )}
-
-          <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
-            <Button
-              type="button"
-              onClick={onClose}
-              variant="ghost"
-              disabled={loading}
-            >
-              <FaTimes className="mr-2" />
-              {viewMode ? 'Fechar' : 'Cancelar'}
-            </Button>
-            {!viewMode && (
-              <Button
-                type="submit"
-                disabled={loading}
-              >
-                <FaSave className="mr-2" />
-                {loading ? 'Salvando...' : 'Atualizar'}
-              </Button>
-            )}
-          </div>
-        </form>
-      </Modal>
-    );
-  }
-
-  // Modo criação: mostrar matriz
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Vincular Tipos de Atendimento às Escolas"
+      title={modalTitle}
       size="full"
     >
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -332,19 +329,61 @@ const TipoAtendimentoEscolaModal = ({
             value={filialId}
             onChange={handleFilialChange}
             options={filiais.map(filial => ({
-              value: filial.id,
+              value: String(filial.id),
               label: filial.filial || filial.nome || `Filial ${filial.id}`
             }))}
             placeholder="Selecione uma filial..."
-            disabled={loading || loadingFiliais || viewMode}
-            required
+            disabled={loading || loadingFiliais || isViewMode || isEditing}
+            required={!isEditing}
             error={errors.filial_id}
           />
         </div>
 
+        {isEditing && (
+          <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg space-y-2">
+            <div>
+              <span className="text-xs font-semibold text-gray-500 uppercase">Filial</span>
+              <p className="text-sm text-gray-900">
+                {editingItem?.filial_nome || 'Não informada'}
+              </p>
+            </div>
+            <div>
+              <span className="text-xs font-semibold text-gray-500 uppercase">Escola</span>
+              <p className="text-sm text-gray-900">
+                {editingItem?.nome_escola || `ID: ${editingItem?.escola_id}`}
+              </p>
+              <p className="text-xs text-gray-500">
+                {[editingItem?.rota, editingItem?.cidade].filter(Boolean).join(' • ')}
+              </p>
+            </div>
+            <div className="flex items-center gap-3 pt-2">
+              <span className="text-xs font-semibold text-gray-500 uppercase">Status</span>
+              {isViewMode ? (
+                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                  statusAtivo ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                }`}>
+                  {statusAtivo ? 'Ativo' : 'Inativo'}
+                </span>
+              ) : (
+                <select
+                  value={statusAtivo ? 'ativo' : 'inativo'}
+                  onChange={handleStatusChange}
+                  disabled={loading}
+                  className={`px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 ${
+                    loading ? 'bg-gray-100 cursor-not-allowed' : ''
+                  }`}
+                >
+                  <option value="ativo">Ativo</option>
+                  <option value="inativo">Inativo</option>
+                </select>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Busca de Escola */}
-        {filialId && (
-        <div>
+        {!isEditing && filialId && (
+          <div>
             <div className="flex gap-2">
               <input
                 type="text"
@@ -363,6 +402,43 @@ const TipoAtendimentoEscolaModal = ({
               >
                 Buscar
               </Button>
+            </div>
+          </div>
+        )}
+
+        {!isEditing && filialId && (
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600">Itens por página</span>
+              <select
+                value={escolasItemsPerPage}
+                onChange={handleItemsPerPageChange}
+                className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                disabled={loadingEscolas}
+              >
+                {[10, 20, 30, 50].map(opcao => (
+                  <option key={opcao} value={opcao}>
+                    {opcao}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-2 text-sm text-gray-600">
+              {possuiEscolasListadas && (
+                <span>
+                  Exibindo {inicioItem}-{fimItem} de {escolasTotalItems}
+                </span>
+              )}
+              {escolasTotalPages > 1 && (
+                <Pagination
+                  currentPage={escolasPage}
+                  totalPages={escolasTotalPages}
+                  totalItems={escolasTotalItems}
+                  itemsPerPage={escolasItemsPerPage}
+                  onPageChange={setEscolasPage}
+                />
+              )}
             </div>
           </div>
         )}
@@ -473,7 +549,7 @@ const TipoAtendimentoEscolaModal = ({
         )}
 
         {/* Paginação e estatísticas */}
-        {filialId && (
+        {!isEditing && filialId && (
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-2">
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-600">Itens por página</span>
@@ -531,10 +607,14 @@ const TipoAtendimentoEscolaModal = ({
             </Button>
             <Button
               type="submit"
-              disabled={loading || loadingEscolas}
+              disabled={loading || (!isEditing && loadingEscolas)}
             >
               <FaSave className="mr-2" />
-              {loading ? 'Salvando...' : 'Salvar Vínculos'}
+              {loading
+                ? 'Salvando...'
+                : isEditing
+                  ? 'Salvar alterações'
+                  : 'Salvar Vínculos'}
             </Button>
           </div>
         )}

@@ -25,7 +25,9 @@ async function buscarInfoEscolas(escolaIds, authToken) {
             id: unidade.id,
             nome_escola: unidade.nome_escola || unidade.nome || '',
             rota: unidade.rota_nome || unidade.rota || '',
-            cidade: unidade.cidade || ''
+            cidade: unidade.cidade || '',
+            filial_id: unidade.filial_id || null,
+            filial_nome: unidade.filial_nome || unidade.filial || unidade.nome_filial || ''
           });
         }
       });
@@ -175,7 +177,9 @@ class TipoAtendimentoEscolaListController {
           ...vinculo,
           nome_escola: escolaInfo.nome_escola || '',
           rota: escolaInfo.rota || '',
-          cidade: escolaInfo.cidade || ''
+          cidade: escolaInfo.cidade || '',
+          filial_id: escolaInfo.filial_id || null,
+          filial_nome: escolaInfo.filial_nome || ''
         };
       });
       

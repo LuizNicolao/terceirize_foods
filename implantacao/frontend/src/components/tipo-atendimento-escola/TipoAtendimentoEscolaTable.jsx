@@ -64,6 +64,9 @@ const TipoAtendimentoEscolaTable = ({
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Filial
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Escola
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -86,6 +89,11 @@ const TipoAtendimentoEscolaTable = ({
             <tbody className="bg-white divide-y divide-gray-200">
               {vinculos.map((vinculo) => (
                 <tr key={vinculo.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm font-medium text-gray-900">
+                      {vinculo.filial_nome || '-'}
+                    </div>
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">
                       {vinculo.nome_escola || '-'}
@@ -134,6 +142,9 @@ const TipoAtendimentoEscolaTable = ({
           <div key={vinculo.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
             <div className="flex justify-between items-start mb-3">
               <div className="flex-1">
+                <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">
+                  {vinculo.filial_nome || 'Filial não informada'}
+                </p>
                 <h3 className="text-sm font-medium text-gray-900 mb-1">
                   {vinculo.nome_escola || '-'}
                 </h3>

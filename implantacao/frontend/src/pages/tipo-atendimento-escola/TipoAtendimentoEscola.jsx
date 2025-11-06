@@ -167,6 +167,7 @@ const TipoAtendimentoEscola = () => {
         editingItem={editingItem}
         viewMode={viewMode}
         loading={loading}
+        buscarPorEscola={buscarPorEscola}
       />
 
       {/* Modal de Confirmação de Exclusão */}
