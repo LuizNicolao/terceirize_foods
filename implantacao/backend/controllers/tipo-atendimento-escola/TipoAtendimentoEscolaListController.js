@@ -1,6 +1,43 @@
 const { executeQuery } = require('../../config/database');
 
 /**
+ * Função auxiliar para buscar informações de escolas via API do Foods
+ */
+async function buscarInfoEscolas(escolaIds, authToken) {
+  const axios = require('axios');
+  const foodsApiUrl = process.env.FOODS_API_URL || 'http://localhost:3001';
+  const escolasMap = new Map();
+
+  try {
+    // Buscar todas as escolas de uma vez (ou em lotes se necessário)
+    const response = await axios.get(`${foodsApiUrl}/unidades-escolares?limit=10000`, {
+      headers: {
+        'Authorization': `Bearer ${authToken?.replace('Bearer ', '') || ''}`
+      },
+      timeout: 5000
+    });
+
+    if (response.data && response.data.success) {
+      const unidadesEscolares = response.data.data || [];
+      unidadesEscolares.forEach(unidade => {
+        if (escolaIds.includes(unidade.id)) {
+          escolasMap.set(unidade.id, {
+            id: unidade.id,
+            nome_escola: unidade.nome_escola || unidade.nome || '',
+            rota: unidade.rota_nome || unidade.rota || '',
+            cidade: unidade.cidade || ''
+          });
+        }
+      });
+    }
+  } catch (error) {
+    console.error('Erro ao buscar informações das escolas do Foods:', error);
+  }
+
+  return escolasMap;
+}
+
+/**
  * Controller de Listagem para Tipo de Atendimento por Escola
  * Segue padrão de excelência do sistema
  */
@@ -25,12 +62,7 @@ class TipoAtendimentoEscolaListController {
       let whereClause = 'WHERE 1=1';
       let params = [];
 
-      // Filtro de busca (busca em nome da escola, rota, cidade)
-      if (search && search.trim()) {
-        whereClause += ' AND (e.nome_escola LIKE ? OR e.rota LIKE ? OR e.cidade LIKE ?)';
-        const searchTerm = `%${search.trim()}%`;
-        params.push(searchTerm, searchTerm, searchTerm);
-      }
+      // Filtro de busca será aplicado após buscar dados das escolas
 
       // Filtro por escola
       if (escola_id) {
@@ -57,42 +89,65 @@ class TipoAtendimentoEscolaListController {
       const validLimitNum = isNaN(limitNum) || limitNum < 1 ? 50 : limitNum;
       const offset = (validPageNum - 1) * validLimitNum;
 
-      // Query para contar total
-      const countQuery = `
-        SELECT COUNT(*) as total
-        FROM tipos_atendimento_escola tae
-        LEFT JOIN escolas e ON tae.escola_id = e.id
-        ${whereClause}
-      `;
-      
-      const countResult = await executeQuery(countQuery, params);
-      const totalItems = countResult && countResult.length > 0 && countResult[0] ? countResult[0].total : 0;
-      const totalPages = Math.ceil(totalItems / validLimitNum);
-
-      // Query principal com paginação
-      const vinculos = await executeQuery(
-        `SELECT 
+      // Query para buscar todos os vínculos (sem JOIN com escolas)
+      const vinculosQuery = `
+        SELECT 
           tae.id,
           tae.escola_id,
           tae.tipo_atendimento,
           tae.ativo,
           tae.criado_por,
           tae.criado_em,
-          tae.atualizado_em,
-          e.nome_escola,
-          e.rota,
-          e.cidade
+          tae.atualizado_em
         FROM tipos_atendimento_escola tae
-        LEFT JOIN escolas e ON tae.escola_id = e.id
         ${whereClause}
-        ORDER BY e.nome_escola ASC, tae.tipo_atendimento ASC
-        LIMIT ${validLimitNum} OFFSET ${offset}`,
-        params
-      );
+        ORDER BY tae.escola_id ASC, tae.tipo_atendimento ASC
+      `;
+      
+      const todosVinculos = await executeQuery(vinculosQuery, params);
+      
+      // Buscar informações das escolas via API do Foods
+      const escolaIds = [...new Set(todosVinculos.map(v => v.escola_id))];
+      const authToken = req.headers.authorization;
+      const escolasMap = await buscarInfoEscolas(escolaIds, authToken);
+      
+      // Enriquecer vínculos com informações das escolas
+      let vinculosEnriquecidos = todosVinculos.map(vinculo => {
+        const escolaInfo = escolasMap.get(vinculo.escola_id) || {};
+        return {
+          ...vinculo,
+          nome_escola: escolaInfo.nome_escola || '',
+          rota: escolaInfo.rota || '',
+          cidade: escolaInfo.cidade || ''
+        };
+      });
+      
+      // Aplicar filtro de busca se fornecido
+      if (search && search.trim()) {
+        const searchTerm = search.trim().toLowerCase();
+        vinculosEnriquecidos = vinculosEnriquecidos.filter(v => 
+          (v.nome_escola || '').toLowerCase().includes(searchTerm) ||
+          (v.rota || '').toLowerCase().includes(searchTerm) ||
+          (v.cidade || '').toLowerCase().includes(searchTerm)
+        );
+      }
+      
+      // Aplicar paginação
+      const totalItems = vinculosEnriquecidos.length;
+      const totalPages = Math.ceil(totalItems / validLimitNum);
+      const vinculosPaginados = vinculosEnriquecidos.slice(offset, offset + validLimitNum);
+      
+      // Ordenar por nome da escola e tipo de atendimento
+      vinculosPaginados.sort((a, b) => {
+        const nomeA = (a.nome_escola || '').toLowerCase();
+        const nomeB = (b.nome_escola || '').toLowerCase();
+        if (nomeA !== nomeB) return nomeA.localeCompare(nomeB);
+        return (a.tipo_atendimento || '').localeCompare(b.tipo_atendimento || '');
+      });
 
       res.json({
         success: true,
-        data: vinculos,
+        data: vinculosPaginados,
         pagination: {
           currentPage: validPageNum,
           totalPages,
@@ -132,18 +187,27 @@ class TipoAtendimentoEscolaListController {
           tae.id,
           tae.escola_id,
           tae.tipo_atendimento,
-          tae.ativo,
-          e.nome_escola
+          tae.ativo
         FROM tipos_atendimento_escola tae
-        LEFT JOIN escolas e ON tae.escola_id = e.id
         WHERE tae.escola_id = ? AND tae.ativo = 1
         ORDER BY tae.tipo_atendimento ASC`,
         [escola_id]
       );
 
+      // Buscar informações da escola via API do Foods
+      const authToken = req.headers.authorization;
+      const escolasMap = await buscarInfoEscolas([escola_id], authToken);
+      const escolaInfo = escolasMap.get(parseInt(escola_id)) || {};
+
+      // Enriquecer tipos com informações da escola
+      const tiposEnriquecidos = tipos.map(tipo => ({
+        ...tipo,
+        nome_escola: escolaInfo.nome_escola || ''
+      }));
+
       res.json({
         success: true,
-        data: tipos
+        data: tiposEnriquecidos
       });
     } catch (error) {
       console.error('Erro ao buscar tipos de atendimento por escola:', error);
@@ -170,17 +234,21 @@ class TipoAtendimentoEscolaListController {
         });
       }
 
-      const escolas = await executeQuery(
-        `SELECT DISTINCT
-          e.id,
-          e.nome_escola,
-          e.rota,
-          e.cidade
+      const vinculos = await executeQuery(
+        `SELECT DISTINCT tae.escola_id
         FROM tipos_atendimento_escola tae
-        LEFT JOIN escolas e ON tae.escola_id = e.id
-        WHERE tae.tipo_atendimento = ? AND tae.ativo = 1
-        ORDER BY e.nome_escola ASC`,
+        WHERE tae.tipo_atendimento = ? AND tae.ativo = 1`,
         [tipo_atendimento]
+      );
+
+      // Buscar informações das escolas via API do Foods
+      const escolaIds = vinculos.map(v => v.escola_id);
+      const authToken = req.headers.authorization;
+      const escolasMap = await buscarInfoEscolas(escolaIds, authToken);
+      
+      // Converter map para array e ordenar
+      const escolas = Array.from(escolasMap.values()).sort((a, b) => 
+        (a.nome_escola || '').localeCompare(b.nome_escola || '')
       );
 
       res.json({
