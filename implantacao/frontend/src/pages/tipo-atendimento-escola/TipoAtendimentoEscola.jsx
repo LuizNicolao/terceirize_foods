@@ -102,7 +102,7 @@ const TipoAtendimentoEscola = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="p-3 sm:p-6">
       {/* Header */}
       <TipoAtendimentoEscolaHeader
         canCreate={canCreateVinculos}
@@ -128,7 +128,7 @@ const TipoAtendimentoEscola = () => {
 
       {/* Error Message */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-md p-4">
+        <div className="bg-red-50 border border-red-200 rounded-md p-4 mb-4">
           <p className="text-red-800">{error}</p>
         </div>
       )}
@@ -148,16 +148,14 @@ const TipoAtendimentoEscola = () => {
 
       {/* Paginação */}
       {totalPages > 1 && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalItems={totalItems}
-            itemsPerPage={itemsPerPage}
-            onPageChange={handlePageChange}
-            onItemsPerPageChange={handleItemsPerPageChange}
-          />
-        </div>
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          itemsPerPage={itemsPerPage}
+          onPageChange={handlePageChange}
+          onItemsPerPageChange={handleItemsPerPageChange}
+        />
       )}
 
       {/* Modal de Criação/Edição */}

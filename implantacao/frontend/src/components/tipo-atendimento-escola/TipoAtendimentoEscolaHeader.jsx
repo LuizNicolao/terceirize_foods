@@ -9,35 +9,29 @@ const TipoAtendimentoEscolaHeader = ({
   loading = false
 }) => {
   return (
-    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">
-          Tipo de Atendimento por Escola
-        </h1>
-        <p className="text-sm text-gray-600 mt-1">
-          Gerencie os tipos de atendimento vinculados às unidades escolares
-        </p>
-      </div>
-      <div className="flex items-center gap-2">
+    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3 sm:gap-4">
+      <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Tipo de Atendimento por Escola</h1>
+      <div className="flex gap-2 sm:gap-3">
         {onShowHelp && (
           <Button
             onClick={onShowHelp}
             variant="ghost"
             size="sm"
-            className="text-gray-500 hover:text-gray-700"
+            className="text-xs"
           >
-            <FaQuestionCircle className="mr-1" />
-            Ajuda
+            <FaQuestionCircle className="mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Auditoria</span>
           </Button>
         )}
         {canCreate && (
           <Button
             onClick={onAdd}
             disabled={loading}
-            className="bg-green-600 hover:bg-green-700 text-white"
+            size="sm"
           >
-            <FaPlus className="mr-2" />
-            Adicionar Vínculo
+            <FaPlus className="mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Adicionar Vínculo</span>
+            <span className="sm:hidden">Adicionar</span>
           </Button>
         )}
       </div>

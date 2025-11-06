@@ -19,8 +19,8 @@ const TipoAtendimentoEscolaFilters = ({
   const hasActiveFilters = searchTerm || escolaFilter || tipoAtendimentoFilter || ativoFilter !== 'todos';
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 mb-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
         <h2 className="text-lg font-semibold text-gray-900 flex items-center">
           <FaFilter className="mr-2" />
           Filtros

@@ -84,74 +84,80 @@ const TipoAtendimentoEscolaModal = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={editingItem ? (viewMode ? '👁️ Visualizar Vínculo' : '✏️ Editar Vínculo') : '➕ Novo Vínculo'}
+      title={editingItem ? (viewMode ? 'Visualizar Vínculo' : 'Editar Vínculo') : 'Novo Vínculo'}
       size="md"
     >
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Escola */}
-        <div>
-          <SearchableSelect
-            label="Escola *"
-            value={formData.escola_id}
-            onChange={(value) => handleInputChange('escola_id', value)}
-            options={escolas.map(escola => ({
-              value: escola.id,
-              label: `${escola.nome_escola}${escola.rota ? ` - ${escola.rota}` : ''}`,
-              description: escola.cidade
-            }))}
-            placeholder="Selecione uma escola..."
-            disabled={loading || viewMode}
-            required
-            error={errors.escola_id}
-            filterBy={(option, searchTerm) => {
-              const label = option.label.toLowerCase();
-              const description = option.description?.toLowerCase() || '';
-              const term = searchTerm.toLowerCase();
-              return label.includes(term) || description.includes(term);
-            }}
-            renderOption={(option) => (
-              <div className="flex flex-col">
-                <span className="font-medium text-gray-900">{option.label}</span>
-                {option.description && (
-                  <span className="text-xs text-gray-500 mt-1">{option.description}</span>
-                )}
-              </div>
-            )}
-          />
-        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Escola */}
+          <div>
+            <SearchableSelect
+              label="Escola *"
+              value={formData.escola_id}
+              onChange={(value) => handleInputChange('escola_id', value)}
+              options={escolas.map(escola => ({
+                value: escola.id,
+                label: `${escola.nome_escola}${escola.rota ? ` - ${escola.rota}` : ''}`,
+                description: escola.cidade
+              }))}
+              placeholder="Selecione uma escola..."
+              disabled={loading || viewMode}
+              required
+              error={errors.escola_id}
+              filterBy={(option, searchTerm) => {
+                const label = option.label.toLowerCase();
+                const description = option.description?.toLowerCase() || '';
+                const term = searchTerm.toLowerCase();
+                return label.includes(term) || description.includes(term);
+              }}
+              renderOption={(option) => (
+                <div className="flex flex-col">
+                  <span className="font-medium text-gray-900">{option.label}</span>
+                  {option.description && (
+                    <span className="text-xs text-gray-500 mt-1">{option.description}</span>
+                  )}
+                </div>
+              )}
+            />
+          </div>
 
-        {/* Tipo de Atendimento */}
-        <div>
-          <SearchableSelect
-            label="Tipo de Atendimento *"
-            value={formData.tipo_atendimento}
-            onChange={(value) => handleInputChange('tipo_atendimento', value)}
-            options={tiposAtendimento.map(tipo => ({
-              value: tipo.value,
-              label: tipo.label
-            }))}
-            placeholder="Selecione um tipo de atendimento..."
-            disabled={loading || viewMode}
-            required
-            error={errors.tipo_atendimento}
-          />
+          {/* Tipo de Atendimento */}
+          <div>
+            <SearchableSelect
+              label="Tipo de Atendimento *"
+              value={formData.tipo_atendimento}
+              onChange={(value) => handleInputChange('tipo_atendimento', value)}
+              options={tiposAtendimento.map(tipo => ({
+                value: tipo.value,
+                label: tipo.label
+              }))}
+              placeholder="Selecione um tipo de atendimento..."
+              disabled={loading || viewMode}
+              required
+              error={errors.tipo_atendimento}
+            />
+          </div>
         </div>
 
         {/* Status Ativo */}
         {editingItem && (
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Status
-            </label>
-            <SearchableSelect
-              value={formData.ativo ? 'ativo' : 'inativo'}
-              onChange={(value) => handleInputChange('ativo', value === 'ativo')}
-              options={[
-                { value: 'ativo', label: 'Ativo' },
-                { value: 'inativo', label: 'Inativo' }
-              ]}
-              disabled={loading || viewMode}
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Status
+              </label>
+              <select
+                value={formData.ativo ? 'ativo' : 'inativo'}
+                onChange={(e) => handleInputChange('ativo', e.target.value === 'ativo')}
+                disabled={loading || viewMode}
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 ${
+                  loading || viewMode ? 'bg-gray-100 cursor-not-allowed' : ''
+                }`}
+              >
+                <option value="ativo">Ativo</option>
+                <option value="inativo">Inativo</option>
+              </select>
+            </div>
           </div>
         )}
 
@@ -170,7 +176,6 @@ const TipoAtendimentoEscolaModal = ({
             <Button
               type="submit"
               disabled={loading}
-              className="bg-green-600 hover:bg-green-700 text-white"
             >
               <FaSave className="mr-2" />
               {loading ? 'Salvando...' : editingItem ? 'Atualizar' : 'Salvar'}
@@ -183,7 +188,6 @@ const TipoAtendimentoEscolaModal = ({
             <Button
               type="button"
               onClick={onClose}
-              className="bg-gray-600 hover:bg-gray-700 text-white"
             >
               Fechar
             </Button>
