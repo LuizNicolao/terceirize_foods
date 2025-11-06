@@ -12,7 +12,7 @@ const {
   liberarCoordenacao,
   buscarProdutosParaModal,
   excluirProdutoAjuste
-} = require('../../controllers/necessidades/NecessidadesAjusteController');
+} = require('../../controllers/necessidades');
 
 // Middleware para verificar se tem acesso à funcionalidade
 const hasAccessToAdjustment = (req, res, next) => {

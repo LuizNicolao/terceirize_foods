@@ -35,16 +35,8 @@ const listar = async (req, res) => {
     }
 
     if (grupo) {
-      // Aceitar tanto ID (numérico) quanto nome do grupo
-      if (!isNaN(grupo)) {
-        // Se for numérico, tratar como grupo_id
-        whereClause += ' AND n.grupo_id = ?';
-        params.push(parseInt(grupo));
-      } else {
-        // Se for string, tratar como nome do grupo
-        whereClause += ' AND n.grupo = ?';
-        params.push(grupo);
-      }
+      whereClause += ' AND n.grupo_id = ?';
+      params.push(grupo);
     }
 
     if (data) {
