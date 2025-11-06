@@ -76,7 +76,10 @@ const AjusteNecessidades = () => {
     showDeleteConfirmModal,
     produtoToDelete,
     handleConfirmDelete,
-    handleCloseDeleteModal
+    handleCloseDeleteModal,
+    
+    // Contagens por aba (temporário)
+    contagemRegistros
   } = useAjusteNecessidadesOrchestrator();
 
   // Verificar permissões específicas
@@ -119,6 +122,7 @@ const AjusteNecessidades = () => {
           activeTab={activeTab} 
           setActiveTab={setActiveTab}
           userType={user?.tipo_de_acesso}
+          contagemRegistros={contagemRegistros}
         />
 
         {/* Filtros */}

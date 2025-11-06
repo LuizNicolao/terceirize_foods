@@ -515,16 +515,29 @@ export const useAjusteNecessidadesOrchestrator = () => {
       
       if (resultado.success) {
         let mensagem;
+        const quantidade = resultado.data?.affectedRows || resultado.data?.sucessos || resultado.sucessos || necessidades.length;
+        const erros = resultado.data?.erros || resultado.erros || 0;
+        
         if (activeTab === 'nutricionista') {
-          mensagem = 'Necessidades liberadas para coordenação (NEC COORD)!';
+          mensagem = `${quantidade} necessidade(s) liberada(s) para coordenação (NEC COORD)!`;
         } else if (activeTab === 'logistica') {
-          mensagem = 'Enviado para Confirmação Nutri (CONF NUTRI)!';
+          mensagem = `${quantidade} necessidade(s) enviada(s) para Confirmação Nutri (CONF NUTRI)!`;
         } else {
           const status = necessidades[0]?.status;
-          mensagem = status === 'NEC COORD'
-            ? 'Enviado para Logística (NEC LOG)!'
-            : (status === 'CONF COORD' ? 'Necessidades confirmadas (CONF)!' : 'Necessidades liberadas!');
+          if (status === 'NEC COORD') {
+            mensagem = `${quantidade} necessidade(s) enviada(s) para Logística (NEC LOG)!`;
+          } else if (status === 'CONF COORD') {
+            mensagem = `${quantidade} necessidade(s) confirmada(s) (CONF)!`;
+          } else {
+            mensagem = `${quantidade} necessidade(s) liberada(s)!`;
+          }
         }
+        
+        // Se houver erros, incluir na mensagem
+        if (erros > 0) {
+          mensagem += ` (${erros} erro(s))`;
+        }
+        
         toast.success(mensagem);
         
         // Limpar filtros da aba atual após avançar
@@ -755,6 +768,13 @@ export const useAjusteNecessidadesOrchestrator = () => {
       loading,
       error,
       necessidadesFiltradas,
+      
+      // Contagens por aba (temporário para debug)
+      contagemRegistros: {
+        nutricionista: necessidadesNutricionista.length,
+        coordenacao: necessidadesCoordenacao.length,
+        logistica: necessidadesLogistica.length
+      },
       
       // Estados de exclusão
       showDeleteConfirmModal,

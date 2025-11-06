@@ -3,23 +3,27 @@ import React from 'react';
 const NecessidadesTabs = ({ 
   activeTab, 
   setActiveTab, 
-  userType 
+  userType,
+  contagemRegistros = {} // { nutricionista: 0, coordenacao: 0, logistica: 0 }
 }) => {
   const tabs = [
     {
       id: 'nutricionista',
       label: '👩‍⚕️ Ajuste Nutricionista',
-      visible: ['nutricionista', 'supervisor', 'administrador'].includes(userType)
+      visible: ['nutricionista', 'supervisor', 'administrador'].includes(userType),
+      contagem: contagemRegistros.nutricionista || 0
     },
     {
       id: 'coordenacao',
       label: '👨‍💼 Ajuste Coordenação',
-      visible: ['coordenador', 'supervisor', 'administrador'].includes(userType)
+      visible: ['coordenador', 'supervisor', 'administrador'].includes(userType),
+      contagem: contagemRegistros.coordenacao || 0
     },
     {
       id: 'logistica',
       label: '🚚 Ajuste Logística',
-      visible: ['logistica', 'coordenador', 'supervisor', 'administrador'].includes(userType)
+      visible: ['logistica', 'coordenador', 'supervisor', 'administrador'].includes(userType),
+      contagem: contagemRegistros.logistica || 0
     }
   ];
 
@@ -38,6 +42,15 @@ const NecessidadesTabs = ({
               }`}
             >
               {tab.label}
+              {tab.contagem > 0 && (
+                <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-semibold ${
+                  activeTab === tab.id
+                    ? 'bg-green-100 text-green-700'
+                    : 'bg-gray-100 text-gray-600'
+                }`}>
+                  {tab.contagem}
+                </span>
+              )}
             </button>
           ))}
         </nav>
