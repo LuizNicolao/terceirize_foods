@@ -714,12 +714,6 @@ class SubstituicoesListController {
     try {
       const { aba, tipo_rota_id, semana_abastecimento } = req.query;
       
-      console.log('[Substituições] buscarGruposDisponiveisParaSubstituicao - filtros recebidos:', {
-        aba,
-        tipo_rota_id,
-        semana_abastecimento
-      });
-      
       let grupos;
       let params = [];
       let whereConditions = [];
@@ -815,8 +809,6 @@ class SubstituicoesListController {
 
         const whereClause = baseConditions.join(' AND ');
 
-        console.log('[Substituições] Montando consulta de grupos (aba nutricionista) com whereClause:', whereClause);
-        console.log('[Substituições] Parâmetros:', params);
 
         grupos = await executeQuery(`
           SELECT DISTINCT 
@@ -827,7 +819,6 @@ class SubstituicoesListController {
           ORDER BY n.grupo
         `, params);
 
-        console.log('[Substituições] Grupos encontrados (aba nutricionista):', grupos);
       }
 
       res.json({

@@ -12,7 +12,9 @@ const ModalProdutoExtra = ({
   onDesmarcarTodos,
   onIncluirProdutos,
   searchProduto,
-  onSearchChange
+  onSearchChange,
+  grupoSelecionado,
+  gruposDisponiveis = []
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
@@ -37,6 +39,11 @@ const ModalProdutoExtra = ({
   };
 
   const handleIncluirProdutos = () => {
+    if (!grupoSelecionado || grupoSelecionado === 'todos' || grupoSelecionado === '') {
+      alert('Selecione um grupo nos filtros principais antes de incluir produtos extras.');
+      return;
+    }
+
     // Validar se todos os produtos selecionados têm quantidade > 0
     const produtosSemQuantidade = produtosSelecionados.filter(p => {
       const qtd = quantidades[p.produto_id];

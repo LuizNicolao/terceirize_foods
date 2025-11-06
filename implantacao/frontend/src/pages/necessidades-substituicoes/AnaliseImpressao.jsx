@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { FaPrint } from 'react-icons/fa';
 import { useSubstituicoesNecessidades } from '../../hooks/useSubstituicoesNecessidades';
 import { SubstituicoesFilters } from './components';
@@ -27,6 +27,31 @@ const AnaliseImpressao = () => {
 
   // Validar se os filtros obrigatórios estão preenchidos
   const filtrosValidos = filtros.tipo_rota_id && filtros.rota_id && filtros.semana_abastecimento;
+
+  // Agrupar produtos por grupo quando nenhum grupo específico for selecionado
+  const gruposRomaneio = useMemo(() => {
+    if (!dadosImpressao || !Array.isArray(dadosImpressao.produtos) || filtros.grupo) {
+      return [];
+    }
+
+    const agrupados = dadosImpressao.produtos.reduce((acc, produto) => {
+      const grupoProduto = produto.grupo || 'Sem Grupo';
+      if (!acc.has(grupoProduto)) {
+        acc.set(grupoProduto, []);
+      }
+      acc.get(grupoProduto).push(produto);
+      return acc;
+    }, new Map());
+
+    return Array.from(agrupados.entries()).map(([grupoNome, produtosDoGrupo]) => ({
+      grupo: grupoNome,
+      dados: {
+        ...dadosImpressao,
+        produtos: produtosDoGrupo,
+        total_produtos: produtosDoGrupo.length
+      }
+    }));
+  }, [dadosImpressao, filtros.grupo]);
 
   const handleBuscarDados = async () => {
     if (!filtrosValidos) {
@@ -121,6 +146,12 @@ const AnaliseImpressao = () => {
               top: 0;
               width: 100%;
             }
+            .print-content .romaneio-group {
+              page-break-after: always;
+            }
+            .print-content .romaneio-group:last-of-type {
+              page-break-after: auto;
+            }
             @page {
               size: A4 landscape;
               margin: 0.5cm;
@@ -197,7 +228,20 @@ const AnaliseImpressao = () => {
       {/* Dados para Impressão - deve aparecer apenas na impressão */}
       {dadosImpressao && (
         <div ref={printRef} className="print-content">
-          <RomaneioPrint dados={dadosImpressao} grupo={filtros.grupo || dadosImpressao.produtos[0]?.grupo} />
+          {filtros.grupo ? (
+            <div className="romaneio-group">
+              <RomaneioPrint
+                dados={dadosImpressao}
+                grupo={filtros.grupo || dadosImpressao.produtos[0]?.grupo || 'Sem Grupo'}
+              />
+            </div>
+          ) : (
+            gruposRomaneio.map(({ grupo, dados }) => (
+              <div key={grupo} className="romaneio-group">
+                <RomaneioPrint dados={dados} grupo={grupo || 'Sem Grupo'} />
+              </div>
+            ))
+          )}
         </div>
       )}
 
