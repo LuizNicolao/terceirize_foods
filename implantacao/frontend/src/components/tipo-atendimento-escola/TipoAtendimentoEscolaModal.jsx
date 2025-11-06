@@ -125,7 +125,7 @@ const TipoAtendimentoEscolaModal = ({
       isOpen={isOpen}
       onClose={onClose}
       title={editingItem ? (viewMode ? 'Visualizar Vínculo' : 'Editar Vínculo') : 'Novo Vínculo'}
-      size="md"
+      size="lg"
     >
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Escola */}
@@ -180,7 +180,7 @@ const TipoAtendimentoEscolaModal = ({
               </div>
               
               {/* Lista de tipos filtrados */}
-              <div className="p-2 max-h-56 overflow-y-auto">
+              <div className="p-2 max-h-80 overflow-y-auto">
                 {tiposFiltrados.length === 0 ? (
                   <div className="text-sm text-gray-500 text-center py-4">
                     Nenhum tipo encontrado com "{buscaTipo}"
