@@ -51,7 +51,8 @@ const TipoAtendimentoEscola = () => {
     setSearchTerm,
     setEscolaFilter,
     setTipoAtendimentoFilter,
-    setAtivoFilter
+    setAtivoFilter,
+    buscarPorEscola
   } = useTipoAtendimentoEscola();
 
   // Verificar permissões específicas
