@@ -15,10 +15,11 @@ const TipoAtendimentoEscolaModal = ({
 }) => {
   const [formData, setFormData] = useState({
     escola_id: '',
-    tipo_atendimento: '',
+    tipos_selecionados: [],
     ativo: true
   });
 
+  const [buscaTipo, setBuscaTipo] = useState('');
   const [errors, setErrors] = useState({});
 
   // Preencher formulário quando estiver editando
@@ -26,16 +27,17 @@ const TipoAtendimentoEscolaModal = ({
     if (editingItem) {
       setFormData({
         escola_id: editingItem.escola_id || '',
-        tipo_atendimento: editingItem.tipo_atendimento || '',
+        tipos_selecionados: editingItem.tipo_atendimento ? [editingItem.tipo_atendimento] : [],
         ativo: editingItem.ativo !== undefined ? editingItem.ativo : true
       });
     } else {
       setFormData({
         escola_id: '',
-        tipo_atendimento: '',
+        tipos_selecionados: [],
         ativo: true
       });
     }
+    setBuscaTipo('');
     setErrors({});
   }, [editingItem, isOpen]);
 
@@ -54,6 +56,26 @@ const TipoAtendimentoEscolaModal = ({
     }
   };
 
+  const handleTipoToggle = (tipoValue) => {
+    const novosTipos = formData.tipos_selecionados.includes(tipoValue)
+      ? formData.tipos_selecionados.filter(t => t !== tipoValue)
+      : [...formData.tipos_selecionados, tipoValue];
+    
+    setFormData(prev => ({
+      ...prev,
+      tipos_selecionados: novosTipos
+    }));
+
+    // Limpar erro quando selecionar um tipo
+    if (errors.tipos_selecionados) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors.tipos_selecionados;
+        return newErrors;
+      });
+    }
+  };
+
   const validateForm = () => {
     const newErrors = {};
 
@@ -61,8 +83,8 @@ const TipoAtendimentoEscolaModal = ({
       newErrors.escola_id = 'Escola é obrigatória';
     }
 
-    if (!formData.tipo_atendimento) {
-      newErrors.tipo_atendimento = 'Tipo de atendimento é obrigatório';
+    if (!formData.tipos_selecionados || formData.tipos_selecionados.length === 0) {
+      newErrors.tipos_selecionados = 'Selecione ao menos um tipo de atendimento';
     }
 
     setErrors(newErrors);
@@ -77,8 +99,26 @@ const TipoAtendimentoEscolaModal = ({
       return;
     }
 
-    await onSave(formData);
+    // Se estiver editando, manter o formato antigo para compatibilidade
+    if (editingItem) {
+      await onSave({
+        ...formData,
+        tipo_atendimento: formData.tipos_selecionados[0] // Para edição, manter apenas o primeiro
+      });
+    } else {
+      // Para criação, enviar array de tipos para criar múltiplos vínculos
+      await onSave({
+        escola_id: formData.escola_id,
+        tipos_atendimento: formData.tipos_selecionados,
+        ativo: formData.ativo
+      });
+    }
   };
+
+  // Filtrar tipos de atendimento pela busca
+  const tiposFiltrados = tiposAtendimento.filter(tipo =>
+    tipo.label.toLowerCase().includes(buscaTipo.toLowerCase())
+  );
 
   return (
     <Modal
@@ -88,55 +128,100 @@ const TipoAtendimentoEscolaModal = ({
       size="md"
     >
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Escola */}
-          <div>
-            <SearchableSelect
-              label="Escola"
-              value={formData.escola_id}
-              onChange={(value) => handleInputChange('escola_id', value)}
-              options={escolas.map(escola => ({
-                value: escola.id,
-                label: `${escola.nome_escola}${escola.rota ? ` - ${escola.rota}` : ''}`,
-                description: escola.cidade
-              }))}
-              placeholder="Selecione uma escola..."
-              disabled={loading || viewMode}
-              required
-              error={errors.escola_id}
-              filterBy={(option, searchTerm) => {
-                const label = option.label.toLowerCase();
-                const description = option.description?.toLowerCase() || '';
-                const term = searchTerm.toLowerCase();
-                return label.includes(term) || description.includes(term);
-              }}
-              renderOption={(option) => (
-                <div className="flex flex-col">
-                  <span className="font-medium text-gray-900">{option.label}</span>
-                  {option.description && (
-                    <span className="text-xs text-gray-500 mt-1">{option.description}</span>
-                  )}
-                </div>
-              )}
-            />
-          </div>
+        {/* Escola */}
+        <div>
+          <SearchableSelect
+            label="Escola"
+            value={formData.escola_id}
+            onChange={(value) => handleInputChange('escola_id', value)}
+            options={escolas.map(escola => ({
+              value: escola.id,
+              label: `${escola.nome_escola}${escola.rota ? ` - ${escola.rota}` : ''}`,
+              description: escola.cidade
+            }))}
+            placeholder="Selecione uma escola..."
+            disabled={loading || viewMode || !!editingItem}
+            required
+            error={errors.escola_id}
+            filterBy={(option, searchTerm) => {
+              const label = option.label.toLowerCase();
+              const description = option.description?.toLowerCase() || '';
+              const term = searchTerm.toLowerCase();
+              return label.includes(term) || description.includes(term);
+            }}
+            renderOption={(option) => (
+              <div className="flex flex-col">
+                <span className="font-medium text-gray-900">{option.label}</span>
+                {option.description && (
+                  <span className="text-xs text-gray-500 mt-1">{option.description}</span>
+                )}
+              </div>
+            )}
+          />
+        </div>
 
-          {/* Tipo de Atendimento */}
-          <div>
-            <SearchableSelect
-              label="Tipo de Atendimento"
-              value={formData.tipo_atendimento}
-              onChange={(value) => handleInputChange('tipo_atendimento', value)}
-              options={tiposAtendimento.map(tipo => ({
-                value: tipo.value,
-                label: tipo.label
-              }))}
-              placeholder="Selecione um tipo de atendimento..."
-              disabled={loading || viewMode}
-              required
-              error={errors.tipo_atendimento}
-            />
-          </div>
+        {/* Tipos de Atendimento - Checkboxes */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Tipos de Atendimento * <span className="text-gray-500 text-xs">({formData.tipos_selecionados.length} selecionado{formData.tipos_selecionados.length !== 1 ? 's' : ''})</span>
+          </label>
+          {!editingItem ? (
+            <div className="border border-gray-300 rounded-lg bg-white">
+              {/* Campo de busca */}
+              <div className="p-2 border-b border-gray-200">
+                <input
+                  type="text"
+                  placeholder="Buscar tipo de atendimento..."
+                  value={buscaTipo}
+                  onChange={(e) => setBuscaTipo(e.target.value)}
+                  disabled={viewMode || loading}
+                  className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                />
+              </div>
+              
+              {/* Lista de tipos filtrados */}
+              <div className="p-2 max-h-56 overflow-y-auto">
+                {tiposFiltrados.length === 0 ? (
+                  <div className="text-sm text-gray-500 text-center py-4">
+                    Nenhum tipo encontrado com "{buscaTipo}"
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 gap-1">
+                    {tiposFiltrados.map(tipo => {
+                      const isSelected = formData.tipos_selecionados.includes(tipo.value);
+                      return (
+                        <label
+                          key={tipo.value}
+                          className={`flex items-center gap-2 px-3 py-2 rounded cursor-pointer hover:bg-gray-50 ${
+                            isSelected ? 'bg-green-50' : ''
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => handleTipoToggle(tipo.value)}
+                            disabled={viewMode || loading}
+                            className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded flex-shrink-0"
+                          />
+                          <span className="text-sm text-gray-700">{tipo.label}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : (
+            // Modo edição: mostrar apenas o tipo atual (compatibilidade)
+            <div className="border border-gray-300 rounded-lg bg-gray-50 p-3">
+              <span className="text-sm text-gray-700">
+                {tiposAtendimento.find(t => t.value === formData.tipos_selecionados[0])?.label || 'N/A'}
+              </span>
+            </div>
+          )}
+          {errors.tipos_selecionados && (
+            <p className="mt-1 text-sm text-red-600">{errors.tipos_selecionados}</p>
+          )}
         </div>
 
         {/* Status Ativo */}

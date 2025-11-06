@@ -93,19 +93,63 @@ export const useTipoAtendimentoEscola = () => {
   }, [currentPage, itemsPerPage, searchTerm, escolaFilter, tipoAtendimentoFilter, ativoFilter]);
 
   /**
-   * Criar novo vínculo
+   * Criar novo vínculo (ou múltiplos vínculos)
    */
   const criar = useCallback(async (dados) => {
     try {
-      const result = await TipoAtendimentoEscolaService.criar(dados);
-      if (result.success) {
-        toast.success('Vínculo criado com sucesso!');
+      // Se recebeu array de tipos, criar múltiplos vínculos
+      if (dados.tipos_atendimento && Array.isArray(dados.tipos_atendimento) && dados.tipos_atendimento.length > 0) {
+        const tipos = dados.tipos_atendimento;
+        let sucessos = 0;
+        let erros = 0;
+        const errosDetalhes = [];
+
+        // Criar cada vínculo
+        for (const tipo of tipos) {
+          try {
+            const result = await TipoAtendimentoEscolaService.criar({
+              escola_id: dados.escola_id,
+              tipo_atendimento: tipo,
+              ativo: dados.ativo !== undefined ? dados.ativo : true
+            });
+            if (result.success) {
+              sucessos++;
+            } else {
+              erros++;
+              errosDetalhes.push(`${tipo}: ${result.error || 'Erro desconhecido'}`);
+            }
+          } catch (err) {
+            erros++;
+            const errorMessage = err.response?.data?.message || 'Erro ao criar vínculo';
+            errosDetalhes.push(`${tipo}: ${errorMessage}`);
+          }
+        }
+
+        // Mensagem consolidada
+        if (sucessos > 0 && erros === 0) {
+          toast.success(`${sucessos} vínculo(s) criado(s) com sucesso!`);
+        } else if (sucessos > 0 && erros > 0) {
+          toast.success(`${sucessos} vínculo(s) criado(s) com sucesso. ${erros} erro(s).`);
+          console.error('Erros ao criar vínculos:', errosDetalhes);
+        } else {
+          toast.error(`Erro ao criar vínculos: ${errosDetalhes.join('; ')}`);
+        }
+
         await carregarVinculos();
         setShowModal(false);
-        return { success: true, data: result.data };
+        return { success: sucessos > 0, data: { sucessos, erros } };
       } else {
-        toast.error(result.error || 'Erro ao criar vínculo');
-        return { success: false, error: result.error };
+        // Formato antigo (um único vínculo)
+        const result = await TipoAtendimentoEscolaService.criar(dados);
+        if (result.success) {
+          toast.success('Vínculo criado com sucesso!');
+          await carregarVinculos();
+          setShowModal(false);
+          return { success: true, data: result.data };
+        } else {
+          toast.error(result.error || 'Erro ao criar vínculo');
+          return { success: false, error: result.error };
+        }
       }
     } catch (err) {
       const errorMessage = err.response?.data?.message || 'Erro ao criar vínculo';
