@@ -46,11 +46,7 @@ const liberarCoordenacao = async (req, res) => {
       WHERE escola_id = ? 
         AND status = 'CONF NUTRI'
         AND (ajuste_conf_nutri IS NULL OR ajuste_conf_nutri = 0)
-        AND produto_id IN (
-          SELECT DISTINCT ppc.produto_id 
-          FROM produtos_per_capita ppc
-          WHERE ppc.grupo = ?
-        )
+        AND grupo = ?
     `, [escola_id, grupo]);
 
     // Terceiro: atualizar status
@@ -65,11 +61,7 @@ const liberarCoordenacao = async (req, res) => {
         data_atualizacao = CURRENT_TIMESTAMP
       WHERE escola_id = ? 
         AND status IN ('NEC', 'NEC NUTRI', 'CONF NUTRI')
-        AND produto_id IN (
-          SELECT DISTINCT ppc.produto_id 
-          FROM produtos_per_capita ppc
-          WHERE ppc.grupo = ?
-        )
+        AND grupo = ?
     `;
 
     const params = [escola_id, grupo];
