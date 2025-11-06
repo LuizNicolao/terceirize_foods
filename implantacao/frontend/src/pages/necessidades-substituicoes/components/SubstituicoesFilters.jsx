@@ -39,11 +39,14 @@ const SubstituicoesFilters = ({
           <SearchableSelect
             value={filtros.tipo_rota_id || ''}
             onChange={(value) => onFiltroChange({ tipo_rota_id: value })}
-            options={tiposRota.map(tipo => ({
-              value: tipo.id.toString(),
-              label: tipo.nome
-            }))}
-            placeholder="Todos os tipos"
+            options={[
+              { value: '', label: 'Todos os tipos' },
+              ...tiposRota.map(tipo => ({
+                value: tipo.id?.toString() || '',
+                label: tipo.nome || tipo.descricao || `Tipo ${tipo.id}`
+              }))
+            ]}
+            placeholder="Selecione o tipo de rota"
             disabled={loading}
           />
         </div>
@@ -56,11 +59,14 @@ const SubstituicoesFilters = ({
           <SearchableSelect
             value={filtros.rota_id || ''}
             onChange={(value) => onFiltroChange({ rota_id: value })}
-            options={rotas.map(rota => ({
-              value: rota.id.toString(),
-              label: rota.nome
-            }))}
-            placeholder="Todas as rotas"
+            options={[
+              { value: '', label: 'Todas as rotas' },
+              ...rotas.map(rota => ({
+                value: rota.id?.toString() || '',
+                label: rota.nome || rota.descricao || `Rota ${rota.id}`
+              }))
+            ]}
+            placeholder="Selecione a rota"
             disabled={loading}
           />
         </div>
@@ -71,20 +77,27 @@ const SubstituicoesFilters = ({
             Grupo de Produtos
           </label>
           <SearchableSelect
-            value={filtros.grupo || 'todos'}
+            value={filtros.grupo || ''}
             onChange={(value) => {
-              // Se o valor for vazio ou 'todos', limpar o filtro (não enviar grupo)
-              onFiltroChange({ grupo: value && value !== 'todos' && value !== '' ? value : null });
+              onFiltroChange({ grupo: value || null });
             }}
             options={[
-              { value: 'todos', label: 'Todos os grupos' },
-              ...grupos.map(grupo => ({
-              value: grupo.nome,
-              label: grupo.nome
-              }))
+              { value: '', label: 'Todos os grupos' },
+              ...grupos.map(grupo => {
+                const valor =
+                  grupo.nome ??
+                  grupo.id ??
+                  grupo.label ??
+                  grupo.descricao ??
+                  '';
+                return {
+                  value: valor?.toString() || '',
+                  label: grupo.nome || grupo.label || grupo.descricao || `Grupo ${valor}`
+                };
+              })
             ]}
-            placeholder="Todos os grupos"
-            disabled={loading}
+            placeholder="Selecione o grupo"
+            disabled={loading || grupos.length === 0}
           />
         </div>
 
