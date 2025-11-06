@@ -46,6 +46,7 @@ export const useAjusteNecessidadesOrchestrator = () => {
     liberarCoordenacao,
     buscarProdutosParaModal: buscarProdutosParaModalNutricionista,
     atualizarFiltros: atualizarFiltrosNutricionista,
+    limparFiltros: limparFiltrosNutricionista,
     carregarEscolas: carregarEscolasNutricionista,
     carregarGrupos: carregarGruposNutricionista,
     exportarXLSX: exportarXLSXNutricionista,
@@ -70,6 +71,7 @@ export const useAjusteNecessidadesOrchestrator = () => {
     buscarProdutosParaModal: buscarProdutosParaModalCoordenacao,
     incluirProdutoExtra: incluirProdutoExtraCoordenacao,
     atualizarFiltros: atualizarFiltrosCoordenacao,
+    limparFiltros: limparFiltrosCoordenacao,
     carregarEscolas: carregarEscolasCoordenacao,
     carregarGrupos: carregarGruposCoordenacao,
     exportarXLSX: exportarXLSXCoordenacao,
@@ -90,6 +92,7 @@ export const useAjusteNecessidadesOrchestrator = () => {
     buscarProdutosParaModal: buscarProdutosParaModalLogistica,
     incluirProdutoExtra: incluirProdutoExtraLogistica,
     atualizarFiltros: atualizarFiltrosLogistica,
+    limparFiltros: limparFiltrosLogistica,
     carregarEscolas: carregarEscolasLogistica,
     carregarGrupos: carregarGruposLogistica
   } = useNecessidadesLogistica();
@@ -788,6 +791,26 @@ export const useAjusteNecessidadesOrchestrator = () => {
     }
   }, [activeTab, filtros, buscarProdutosParaModalNutricionista, buscarProdutosParaModalCoordenacao, buscarProdutosParaModalLogistica]);
 
+  const handleLimparFiltros = useCallback(() => {
+    // Limpar filtros da aba atual
+    if (activeTab === 'nutricionista') {
+      limparFiltrosNutricionista();
+      // Recarregar escolas e grupos sem filtros
+      carregarEscolasNutricionista();
+      carregarGruposNutricionista();
+    } else if (activeTab === 'coordenacao') {
+      limparFiltrosCoordenacao();
+      // Recarregar escolas e grupos sem filtros
+      carregarEscolasCoordenacao();
+      carregarGruposCoordenacao();
+    } else if (activeTab === 'logistica') {
+      limparFiltrosLogistica();
+      // Recarregar escolas e grupos sem filtros
+      carregarEscolasLogistica();
+      carregarGruposLogistica();
+    }
+  }, [activeTab, limparFiltrosNutricionista, limparFiltrosCoordenacao, limparFiltrosLogistica, carregarEscolasNutricionista, carregarGruposNutricionista, carregarEscolasCoordenacao, carregarGruposCoordenacao, carregarEscolasLogistica, carregarGruposLogistica]);
+
       return {
       // Estados
       activeTab,
@@ -830,6 +853,7 @@ export const useAjusteNecessidadesOrchestrator = () => {
       // Handlers
       handleCarregarNecessidades,
       handleFiltroChange,
+      handleLimparFiltros,
       handleAjusteChange,
       handleExcluirNecessidade,
       handleConfirmDelete,

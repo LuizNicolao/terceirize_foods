@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaSearch } from 'react-icons/fa';
+import { FaSearch, FaTimes } from 'react-icons/fa';
 import { Button, SearchableSelect } from '../../ui';
 
 const AjusteFiltros = ({
@@ -13,7 +13,8 @@ const AjusteFiltros = ({
   loading,
   loadingSemanaAbastecimento = false,
   onFiltroChange,
-  onFiltrar
+  onFiltrar,
+  onLimparFiltros
 }) => {
   // Garantir que escolas e grupos são arrays
   const escolasArray = Array.isArray(escolas) ? escolas : [];
@@ -29,16 +30,28 @@ const AjusteFiltros = ({
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
           <h3 className="text-lg font-semibold text-gray-900">Filtros</h3>
-          <Button
-            onClick={onFiltrar}
-            variant="primary"
-            size="sm"
-            disabled={isFiltrarDisabled}
-            className="flex items-center"
-          >
-            <FaSearch className="mr-2" />
-            Filtrar
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              onClick={onLimparFiltros}
+              variant="secondary"
+              size="sm"
+              disabled={loading}
+              className="flex items-center"
+            >
+              <FaTimes className="mr-2" />
+              Limpar Filtros
+            </Button>
+            <Button
+              onClick={onFiltrar}
+              variant="primary"
+              size="sm"
+              disabled={isFiltrarDisabled}
+              className="flex items-center"
+            >
+              <FaSearch className="mr-2" />
+              Filtrar
+            </Button>
+          </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>

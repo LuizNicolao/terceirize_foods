@@ -157,6 +157,16 @@ export const useNecessidadesLogistica = () => {
     setFiltros(prev => ({ ...prev, ...novosFiltros }));
   }, []);
 
+  // Limpar filtros
+  const limparFiltros = useCallback(() => {
+    setFiltros({
+      escola_id: null,
+      grupo: null,
+      semana_consumo: null,
+      semana_abastecimento: null
+    });
+  }, []);
+
   // Carregar dados iniciais
   useEffect(() => {
     carregarEscolas();
@@ -179,6 +189,7 @@ export const useNecessidadesLogistica = () => {
     enviarParaNutricionista,
     buscarProdutosParaModal,
     atualizarFiltros,
+    limparFiltros,
 
     // Dados auxiliares
     carregarEscolas,

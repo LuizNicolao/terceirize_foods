@@ -50,6 +50,7 @@ const AjusteNecessidades = () => {
     // Handlers
     handleCarregarNecessidades,
     handleFiltroChange,
+    handleLimparFiltros,
     handleAjusteChange,
     handleExcluirNecessidade,
     handleSalvarAjustes,
@@ -138,6 +139,7 @@ const AjusteNecessidades = () => {
           loadingSemanaAbastecimento={loadingSemanaAbastecimento}
           onFiltroChange={handleFiltroChange}
           onFiltrar={handleCarregarNecessidades}
+          onLimparFiltros={handleLimparFiltros}
         />
 
         {/* Error Message */}

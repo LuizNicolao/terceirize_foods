@@ -161,6 +161,16 @@ export const useNecessidadesAjuste = () => {
     setFiltros(prev => ({ ...prev, ...novosFiltros }));
   }, []);
 
+  // Limpar filtros
+  const limparFiltros = useCallback(() => {
+    setFiltros({
+      escola_id: null,
+      grupo: null,
+      semana_consumo: null,
+      semana_abastecimento: null
+    });
+  }, []);
+
   // Hook de exportação padronizado
   const { handleExportXLSX, handleExportPDF } = useExport(necessidadesService);
 
@@ -186,6 +196,7 @@ export const useNecessidadesAjuste = () => {
     liberarCoordenacao,
     buscarProdutosParaModal,
     atualizarFiltros,
+    limparFiltros,
 
     // Dados auxiliares
     carregarEscolas,
