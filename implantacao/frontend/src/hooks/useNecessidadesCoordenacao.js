@@ -135,7 +135,15 @@ const useNecessidadesCoordenacao = () => {
       const response = await necessidadesCoordenacaoService.liberarParaLogistica(necessidadeIds);
       
       if (response.success) {
-        toast.success(response.message);
+        const quantidade = response.sucessos || necessidadeIds.length;
+        const erros = response.erros || 0;
+        let mensagem = `${quantidade} necessidade(s) enviada(s) para Logística (NEC LOG)!`;
+        
+        if (erros > 0) {
+          mensagem += ` (${erros} erro(s))`;
+        }
+        
+        toast.success(mensagem);
         // Recarregar necessidades após liberar
         await carregarNecessidades();
         return true;
@@ -158,7 +166,9 @@ const useNecessidadesCoordenacao = () => {
     try {
       const response = await necessidadesCoordenacaoService.confirmarNutri(dados);
       if (response.success) {
-        toast.success(response.message || 'Enviado para Nutri (CONF NUTRI)');
+        const quantidade = response.affectedRows || 1;
+        const mensagem = `${quantidade} necessidade(s) enviada(s) para Confirmação Nutri (CONF NUTRI)!`;
+        toast.success(mensagem);
         await carregarNecessidades();
         return true;
       } else {
@@ -180,7 +190,15 @@ const useNecessidadesCoordenacao = () => {
     try {
       const response = await necessidadesCoordenacaoService.confirmarFinal(necessidadeIds);
       if (response.success) {
-        toast.success(response.message || 'Necessidades confirmadas');
+        const quantidade = response.sucessos || necessidadeIds.length;
+        const erros = response.erros || 0;
+        let mensagem = `${quantidade} necessidade(s) confirmada(s) (CONF)!`;
+        
+        if (erros > 0) {
+          mensagem += ` (${erros} erro(s))`;
+        }
+        
+        toast.success(mensagem);
         await carregarNecessidades();
         return true;
       } else {

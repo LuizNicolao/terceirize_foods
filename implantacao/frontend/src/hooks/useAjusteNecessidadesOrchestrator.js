@@ -502,11 +502,6 @@ export const useAjusteNecessidadesOrchestrator = () => {
   }, [activeTab, ajustesLocais, filtros, necessidadeAtual, necessidades, salvarAjustesNutricionista, salvarAjustesCoordenacao, salvarAjustesLogistica, handleCarregarNecessidades]);
 
   const handleLiberarCoordenacao = useCallback(async () => {
-    if (!necessidadeAtual) {
-      toast.error('Nenhuma necessidade selecionada');
-      return;
-    }
-
     try {
       const dadosParaLiberar = {
         escola_id: filtros.escola_id,
@@ -527,14 +522,70 @@ export const useAjusteNecessidadesOrchestrator = () => {
         resultado = await liberarCoordenacao(dadosParaLiberar);
       } else if (activeTab === 'logistica') {
         // Logística: NEC LOG -> CONF NUTRI
-        if (!necessidadeAtual?.necessidade_id) {
-          toast.error('Nenhuma necessidade selecionada');
+        if (!filtros.escola_id) {
+          toast.error('Selecione uma escola para enviar');
           return;
         }
-        resultado = await enviarParaNutricionista({
-          necessidade_id: necessidadeAtual.necessidade_id,
-          escola_id: filtros.escola_id
-        });
+        
+        // Coletar todos os necessidade_id únicos dos registros filtrados
+        const necessidadeIdsUnicos = [...new Set(necessidades.map(n => n.necessidade_id).filter(Boolean))];
+        
+        if (necessidadeIdsUnicos.length === 0) {
+          toast.error('Nenhuma necessidade encontrada para enviar');
+          return;
+        }
+        
+        // Se houver grupo, enviar apenas os IDs desse grupo
+        // Se não houver grupo, enviar todos os IDs da escola
+        if (filtros.grupo) {
+          // Filtrar por grupo também
+          const idsDoGrupo = necessidades
+            .filter(n => n.grupo === filtros.grupo || n.grupo_id === filtros.grupo)
+            .map(n => n.necessidade_id)
+            .filter(Boolean);
+          const idsUnicosDoGrupo = [...new Set(idsDoGrupo)];
+          
+          if (idsUnicosDoGrupo.length === 0) {
+            toast.error('Nenhuma necessidade encontrada para o grupo selecionado');
+            return;
+          }
+          
+          // Enviar todos os IDs do grupo
+          const resultados = await Promise.all(
+            idsUnicosDoGrupo.map(id => enviarParaNutricionista({
+              necessidade_id: id,
+              escola_id: filtros.escola_id
+            }))
+          );
+          
+          const sucessos = resultados.filter(r => r.success).length;
+          const erros = resultados.filter(r => !r.success).length;
+          
+          resultado = {
+            success: sucessos > 0,
+            data: { sucessos, erros },
+            sucessos,
+            erros
+          };
+        } else {
+          // Enviar todos os IDs da escola (sem filtro de grupo)
+          const resultados = await Promise.all(
+            necessidadeIdsUnicos.map(id => enviarParaNutricionista({
+              necessidade_id: id,
+              escola_id: filtros.escola_id
+            }))
+          );
+          
+          const sucessos = resultados.filter(r => r.success).length;
+          const erros = resultados.filter(r => !r.success).length;
+          
+          resultado = {
+            success: sucessos > 0,
+            data: { sucessos, erros },
+            sucessos,
+            erros
+          };
+        }
       } else {
         // Coordenação: NEC COORD -> NEC LOG; CONF COORD -> CONF
         const status = necessidades[0]?.status;
@@ -542,44 +593,68 @@ export const useAjusteNecessidadesOrchestrator = () => {
           toast.error('Selecione uma escola para liberar na coordenação');
           return;
         }
-        if (!filtros.grupo) {
-          toast.error('Selecione um grupo para liberar na coordenação');
+        
+        // Coletar todos os necessidade_id únicos dos registros filtrados
+        const necessidadeIdsUnicos = [...new Set(necessidades.map(n => n.necessidade_id).filter(Boolean))];
+        
+        if (necessidadeIdsUnicos.length === 0) {
+          toast.error('Nenhuma necessidade encontrada para enviar');
           return;
         }
+        
+        // Se houver grupo, filtrar por grupo também
+        let idsParaEnviar = necessidadeIdsUnicos;
+        if (filtros.grupo) {
+          idsParaEnviar = necessidades
+            .filter(n => n.grupo === filtros.grupo || n.grupo_id === filtros.grupo)
+            .map(n => n.necessidade_id)
+            .filter(Boolean);
+          idsParaEnviar = [...new Set(idsParaEnviar)];
+          
+          if (idsParaEnviar.length === 0) {
+            toast.error('Nenhuma necessidade encontrada para o grupo selecionado');
+            return;
+          }
+        }
+        
         if (status === 'NEC COORD') {
           // NEC COORD vai para NEC LOG (não mais para CONF NUTRI)
-          resultado = await liberarParaLogistica([necessidadeAtual.necessidade_id]);
+          resultado = await liberarParaLogistica(idsParaEnviar);
         } else if (status === 'CONF COORD') {
-          resultado = await confirmarFinal([necessidadeAtual.necessidade_id]);
+          resultado = await confirmarFinal(idsParaEnviar);
         }
       }
       
       if (resultado.success) {
-        let mensagem;
-        const quantidade = resultado.data?.affectedRows || resultado.data?.sucessos || resultado.sucessos || necessidades.length;
-        const erros = resultado.data?.erros || resultado.erros || 0;
-        
-        if (activeTab === 'nutricionista') {
-          mensagem = `${quantidade} necessidade(s) liberada(s) para coordenação (NEC COORD)!`;
-        } else if (activeTab === 'logistica') {
-          mensagem = `${quantidade} necessidade(s) enviada(s) para Confirmação Nutri (CONF NUTRI)!`;
-        } else {
-          const status = necessidades[0]?.status;
-          if (status === 'NEC COORD') {
-            mensagem = `${quantidade} necessidade(s) enviada(s) para Logística (NEC LOG)!`;
-          } else if (status === 'CONF COORD') {
-            mensagem = `${quantidade} necessidade(s) confirmada(s) (CONF)!`;
+        // Na aba de coordenação, os hooks já formatam e mostram o toast corretamente
+        // Então não precisamos mostrar toast novamente aqui
+        if (activeTab !== 'coordenacao') {
+          let mensagem;
+          const quantidade = resultado.data?.affectedRows || resultado.data?.sucessos || resultado.sucessos || necessidades.length;
+          const erros = resultado.data?.erros || resultado.erros || 0;
+          
+          if (activeTab === 'nutricionista') {
+            mensagem = `${quantidade} necessidade(s) liberada(s) para coordenação (NEC COORD)!`;
+          } else if (activeTab === 'logistica') {
+            mensagem = `${quantidade} necessidade(s) enviada(s) para Confirmação Nutri (CONF NUTRI)!`;
           } else {
-            mensagem = `${quantidade} necessidade(s) liberada(s)!`;
+            const status = necessidades[0]?.status;
+            if (status === 'NEC COORD') {
+              mensagem = `${quantidade} necessidade(s) enviada(s) para Logística (NEC LOG)!`;
+            } else if (status === 'CONF COORD') {
+              mensagem = `${quantidade} necessidade(s) confirmada(s) (CONF)!`;
+            } else {
+              mensagem = `${quantidade} necessidade(s) liberada(s)!`;
+            }
           }
+          
+          // Se houver erros, incluir na mensagem
+          if (erros > 0) {
+            mensagem += ` (${erros} erro(s))`;
+          }
+          
+          toast.success(mensagem);
         }
-        
-        // Se houver erros, incluir na mensagem
-        if (erros > 0) {
-          mensagem += ` (${erros} erro(s))`;
-        }
-        
-        toast.success(mensagem);
         
         // Limpar filtros da aba atual após avançar
         if (activeTab === 'nutricionista') {
