@@ -15,6 +15,15 @@ class NecessidadesPadroesGeracaoController {
       const { filial_id, escola_id, semana_abastecimento, semana_consumo, grupo_id } = req.body;
       const usuario_id = req.user.id;
 
+      console.log('[NecessidadesPadroes] Requisição para gerar necessidades padrão:', {
+        filial_id,
+        escola_id,
+        semana_abastecimento,
+        semana_consumo,
+        grupo_id,
+        usuario_id
+      });
+
       // Validar dados obrigatórios
       if (!filial_id || !semana_consumo || !grupo_id) {
         return errorResponse(res, 'Filial, Semana de Consumo e Grupo de Produtos são obrigatórios', 400);
@@ -78,6 +87,8 @@ class NecessidadesPadroesGeracaoController {
         WHERE ${whereConditions.join(' AND ')}
         ORDER BY np.escola_id, np.produto_nome
       `, params);
+
+      console.log('[NecessidadesPadroes] Total de padrões encontrados:', padroes.length);
 
       if (padroes.length === 0) {
         return errorResponse(res, 'Nenhum dado padrão encontrado para os filtros selecionados', 404);

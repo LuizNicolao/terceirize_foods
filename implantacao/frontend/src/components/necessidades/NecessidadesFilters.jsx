@@ -123,7 +123,7 @@ const NecessidadesFilters = ({
     
     buscarGrupos();
   }, [filtros.escola, onFilterChange]);
-
+  
   // Buscar semana de abastecimento quando semana de consumo mudar
   useEffect(() => {
     const buscarSemanaAbastecimento = async (semanaConsumo) => {
