@@ -15,9 +15,115 @@ const NecessidadesFilters = ({
   // Hook para semanas de consumo da tabela necessidades (não do calendário)
   const { opcoes: opcoesSemanasConsumo } = useSemanasConsumo(null, false, {});
   
+  // Estados para opções filtradas da tabela necessidades
+  const [opcoesEscolas, setOpcoesEscolas] = useState([]);
+  const [opcoesGrupos, setOpcoesGrupos] = useState([]);
   const [opcoesSemanasAbastecimento, setOpcoesSemanasAbastecimento] = useState([]);
+  const [loadingEscolas, setLoadingEscolas] = useState(false);
+  const [loadingGrupos, setLoadingGrupos] = useState(false);
   const [loadingSemanaAbastecimento, setLoadingSemanaAbastecimento] = useState(false);
   
+  // Buscar escolas disponíveis na tabela necessidades
+  useEffect(() => {
+    const buscarEscolas = async () => {
+      setLoadingEscolas(true);
+      try {
+        const filtrosParaBusca = {
+          aba: 'nutricionista' // Esta tela lista status 'CONF'
+        };
+        
+        // Se grupo está selecionado, filtrar escolas por grupo
+        if (filtros.grupo) {
+          const grupoNome = typeof filtros.grupo === 'object' ? filtros.grupo.nome : filtros.grupo;
+          filtrosParaBusca.grupo = grupoNome;
+        }
+        
+        const response = await necessidadesService.buscarEscolasDisponiveis(filtrosParaBusca);
+        if (response.success && response.data) {
+          const escolasFormatadas = response.data.map(escola => ({
+            value: escola.id,
+            label: escola.nome || escola.nome_escola || '',
+            description: escola.cidade || '',
+            ...escola
+          }));
+          setOpcoesEscolas(escolasFormatadas);
+          
+          // Se há escola selecionada mas ela não está mais na lista, limpar
+          if (filtros.escola) {
+            const escolaId = typeof filtros.escola === 'object' ? filtros.escola.id : filtros.escola;
+            const escolaEncontrada = escolasFormatadas.find(e => e.id == escolaId || e.value == escolaId);
+            if (!escolaEncontrada) {
+              onFilterChange({ escola: null });
+            }
+          }
+        } else {
+          setOpcoesEscolas([]);
+          // Limpar escola selecionada se não há opções
+          if (filtros.escola) {
+            onFilterChange({ escola: null });
+          }
+        }
+      } catch (error) {
+        console.error('Erro ao buscar escolas disponíveis:', error);
+        setOpcoesEscolas([]);
+      } finally {
+        setLoadingEscolas(false);
+      }
+    };
+    
+    buscarEscolas();
+  }, [filtros.grupo, onFilterChange]);
+
+  // Buscar grupos disponíveis na tabela necessidades
+  useEffect(() => {
+    const buscarGrupos = async () => {
+      setLoadingGrupos(true);
+      try {
+        const filtrosParaBusca = {
+          aba: 'nutricionista' // Esta tela lista status 'CONF'
+        };
+        
+        // Se escola está selecionada, filtrar grupos por escola
+        if (filtros.escola) {
+          const escolaId = typeof filtros.escola === 'object' ? filtros.escola.id : filtros.escola;
+          filtrosParaBusca.escola_id = escolaId;
+        }
+        
+        const response = await necessidadesService.buscarGruposDisponiveis(filtrosParaBusca);
+        if (response.success && response.data) {
+          const gruposFormatados = response.data.map(grupo => ({
+            value: grupo.id || grupo.grupo_id,
+            label: grupo.nome || grupo.grupo,
+            ...grupo
+          }));
+          setOpcoesGrupos(gruposFormatados);
+          
+          // Se há grupo selecionado mas ele não está mais na lista, limpar
+          if (filtros.grupo) {
+            const grupoId = typeof filtros.grupo === 'object' ? (filtros.grupo.id || filtros.grupo.grupo_id) : filtros.grupo;
+            const grupoEncontrado = gruposFormatados.find(g => (g.id == grupoId || g.grupo_id == grupoId || g.value == grupoId));
+            if (!grupoEncontrado) {
+              onFilterChange({ grupo: null });
+            }
+          }
+        } else {
+          setOpcoesGrupos([]);
+          // Limpar grupo selecionado se não há opções
+          if (filtros.grupo) {
+            onFilterChange({ grupo: null });
+          }
+        }
+      } catch (error) {
+        console.error('Erro ao buscar grupos disponíveis:', error);
+        setOpcoesGrupos([]);
+      } finally {
+        setLoadingGrupos(false);
+      }
+    };
+    
+    buscarGrupos();
+  }, [filtros.escola, onFilterChange]);
+
   // Buscar semana de abastecimento quando semana de consumo mudar
   useEffect(() => {
     const buscarSemanaAbastecimento = async (semanaConsumo) => {
@@ -126,16 +232,17 @@ const NecessidadesFilters = ({
             label="Escola"
             value={filtros.escola?.id || ''}
             onChange={(value) => {
-              const escola = escolas.find(e => e.id == value);
+              const escola = opcoesEscolas.find(e => e.id == value || e.value == value);
               handleEscolaChange(escola);
             }}
-            options={escolas.map(escola => ({
-              value: escola.id,
-              label: `${escola.nome_escola} - ${escola.rota}`,
-              description: escola.cidade
+            options={opcoesEscolas.map(escola => ({
+              value: escola.id || escola.value,
+              label: escola.label || escola.nome || escola.nome_escola || '',
+              description: escola.description || escola.cidade || ''
             }))}
-            placeholder="Digite para buscar uma escola..."
-            disabled={loading}
+            placeholder={loadingEscolas ? "Carregando escolas..." : "Digite para buscar uma escola..."}
+            disabled={loading || loadingEscolas}
+            loading={loadingEscolas}
             required
             filterBy={(option, searchTerm) => {
               const label = option.label.toLowerCase();
@@ -158,17 +265,18 @@ const NecessidadesFilters = ({
         <div>
           <SearchableSelect
             label="Grupo de Produtos"
-            value={filtros.grupo?.id || ''}
+            value={filtros.grupo?.id || filtros.grupo?.grupo_id || ''}
             onChange={(value) => {
-              const grupo = grupos.find(g => g.id == value);
+              const grupo = opcoesGrupos.find(g => (g.id == value || g.grupo_id == value || g.value == value));
               handleGrupoChange(grupo);
             }}
-            options={grupos.map(grupo => ({
-              value: grupo.id,
-              label: grupo.nome
+            options={opcoesGrupos.map(grupo => ({
+              value: grupo.id || grupo.grupo_id || grupo.value,
+              label: grupo.label || grupo.nome || grupo.grupo
             }))}
-            placeholder="Digite para buscar um grupo..."
-            disabled={loading}
+            placeholder={loadingGrupos ? "Carregando grupos..." : "Digite para buscar um grupo..."}
+            disabled={loading || loadingGrupos}
+            loading={loadingGrupos}
             required
           />
         </div>
