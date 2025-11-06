@@ -275,6 +275,10 @@ const useNecessidadesCoordenacao = () => {
     atualizarFiltros,
     limparFiltros,
 
+    // Dados auxiliares
+    carregarEscolas,
+    carregarGrupos,
+
     // Exportação
     exportarXLSX: handleExportXLSX,
     exportarPDF: handleExportPDF
