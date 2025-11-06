@@ -215,9 +215,12 @@ const TipoAtendimentoEscolaModal = ({
   };
 
   const handleBuscaEscolaSubmit = () => {
-    if (filialId) {
-      carregarEscolas(filialId, 1, escolasItemsPerPage);
+    if (!filialId) {
+      toast.error('Selecione uma filial antes de buscar escolas');
+      return;
     }
+
+    carregarEscolas(filialId, 1, escolasItemsPerPage);
   };
 
   const handleItemsPerPageChange = (event) => {
@@ -229,14 +232,7 @@ const TipoAtendimentoEscolaModal = ({
     }
   };
 
-  // Filtrar escolas localmente se necessário (fallback)
-  const escolasExibidas = buscaEscola && escolas.length > 0
-    ? escolas.filter(escola =>
-        (escola.nome_escola || '').toLowerCase().includes(buscaEscola.toLowerCase()) ||
-        (escola.rota || '').toLowerCase().includes(buscaEscola.toLowerCase()) ||
-        (escola.cidade || '').toLowerCase().includes(buscaEscola.toLowerCase())
-      )
-    : escolas;
+  const escolasExibidas = escolas;
   const inicioItem = escolasTotalItems === 0
     ? 0
     : (escolasPage - 1) * escolasItemsPerPage + 1;
