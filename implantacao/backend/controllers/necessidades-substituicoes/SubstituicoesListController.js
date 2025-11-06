@@ -777,67 +777,47 @@ class SubstituicoesListController {
           `, params);
         }
       } else {
-        if (tipo_rota_id) {
-          // Buscar grupos que:
-          // 1. Estão vinculados ao tipo_rota_id (no grupo_id do tipo_rota)
-          // 2. Existem na tabela necessidades com status CONF
-          // 3. Se semana_abastecimento for fornecido, filtrar por essa semana
-          whereConditions = [
-            "ppc.ativo = 1",
-            "ppc.grupo IS NOT NULL",
-            "ppc.grupo != ''",
-            "n.status = 'CONF'",
-            "(n.substituicao_processada = 0 OR n.substituicao_processada IS NULL)",
-            "tr.grupo_id IS NOT NULL",
-            "tr.grupo_id != ''"
-          ];
-          params = [tipo_rota_id];
+        // Aba nutricionista: buscar diretamente na tabela necessidades (status CONF)
+        const baseConditions = [
+          "n.status = 'CONF'",
+          "(n.substituicao_processada = 0 OR n.substituicao_processada IS NULL)",
+          "n.grupo IS NOT NULL",
+          "n.grupo != ''"
+        ];
+        params = [];
 
-          if (semana_abastecimento) {
-            whereConditions.push("n.semana_abastecimento = ?");
-            params.push(semana_abastecimento);
-          }
-
-          grupos = await executeQuery(`
-            SELECT DISTINCT 
-              ppc.grupo as id,
-              ppc.grupo as nome
-            FROM produtos_per_capita ppc
-            INNER JOIN necessidades n ON n.produto_id = ppc.produto_id
-            INNER JOIN foods_db.grupos g ON g.nome COLLATE utf8mb4_unicode_ci = ppc.grupo COLLATE utf8mb4_unicode_ci
-            INNER JOIN foods_db.tipo_rota tr ON tr.id = ?
-            WHERE ${whereConditions.join(' AND ')}
-              -- Validar se o grupo existe no grupo_id do tipo_rota
-              AND FIND_IN_SET(g.id, tr.grupo_id) > 0
-            ORDER BY ppc.grupo
-          `, params);
-        } else {
-          // Buscar grupos da tabela necessidades com status CONF (padrão: nutricionista)
-          // Se semana_abastecimento for fornecido, filtrar por essa semana
-          whereConditions = [
-            "ppc.ativo = 1",
-            "ppc.grupo IS NOT NULL",
-            "ppc.grupo != ''",
-            "n.status = 'CONF'",
-            "(n.substituicao_processada = 0 OR n.substituicao_processada IS NULL)"
-          ];
-          params = [];
-
-          if (semana_abastecimento) {
-            whereConditions.push("n.semana_abastecimento = ?");
-            params.push(semana_abastecimento);
-          }
-
-          grupos = await executeQuery(`
-            SELECT DISTINCT 
-              ppc.grupo as id,
-              ppc.grupo as nome
-            FROM produtos_per_capita ppc
-            INNER JOIN necessidades n ON n.produto_id = ppc.produto_id
-            WHERE ${whereConditions.join(' AND ')}
-            ORDER BY ppc.grupo
-          `, params);
+        if (semana_abastecimento) {
+          baseConditions.push("n.semana_abastecimento = ?");
+          params.push(semana_abastecimento);
         }
+
+        if (tipo_rota_id) {
+          // Filtrar por tipo de rota utilizando unidades_escolares e rotas do Foods
+          baseConditions.push(`
+            n.escola_id IN (
+              SELECT DISTINCT ue.id
+              FROM foods_db.unidades_escolares ue
+              INNER JOIN foods_db.rotas r ON FIND_IN_SET(r.id, ue.rota_id) > 0
+              WHERE r.tipo_rota_id = ?
+                AND ue.status = 'ativo'
+                AND ue.rota_id IS NOT NULL
+                AND ue.rota_id != ''
+            )
+          `);
+          params.unshift(tipo_rota_id); // garantir ordem correta (tipo_rota_id primeiro)
+        }
+
+        const whereClause = baseConditions.join(' AND ');
+        const queryParams = tipo_rota_id ? [tipo_rota_id, ...params.slice(1)] : params;
+
+        grupos = await executeQuery(`
+          SELECT DISTINCT 
+            n.grupo AS id,
+            n.grupo AS nome
+          FROM necessidades n
+          WHERE ${whereClause}
+          ORDER BY n.grupo
+        `, queryParams);
       }
 
       res.json({
