@@ -810,7 +810,7 @@ class SubstituicoesListController {
                 AND ue.rota_id != ''
             )
           `);
-          params.unshift(tipo_rota_id); // garantir ordem correta (tipo_rota_id primeiro)
+          params.push(tipo_rota_id);
         }
 
         const whereClause = baseConditions.join(' AND ');
