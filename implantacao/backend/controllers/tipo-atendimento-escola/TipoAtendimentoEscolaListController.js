@@ -268,11 +268,12 @@ class TipoAtendimentoEscolaListController {
         });
       }
 
+      // Buscar escolas que contêm o tipo de atendimento no JSON
       const vinculos = await executeQuery(
         `SELECT DISTINCT tae.escola_id
         FROM tipos_atendimento_escola tae
-        WHERE JSON_CONTAINS(tae.tipos_atendimento, ?) AND tae.ativo = 1`,
-        [JSON.stringify(tipo_atendimento)]
+        WHERE JSON_SEARCH(tae.tipos_atendimento, 'one', ?) IS NOT NULL AND tae.ativo = 1`,
+        [tipo_atendimento]
       );
 
       // Buscar informações das escolas via API do Foods
