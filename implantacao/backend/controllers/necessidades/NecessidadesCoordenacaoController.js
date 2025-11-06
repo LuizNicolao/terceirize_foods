@@ -5,7 +5,8 @@ class NecessidadesCoordenacaoController {
   static async listarParaCoordenacao(req, res) {
     try {
       const { 
-        escola_id, 
+        escola_id,
+        grupo,
         semana_consumo, 
         semana_abastecimento,
         nutricionista_id 
@@ -19,8 +20,20 @@ class NecessidadesCoordenacaoController {
         queryParams.push(escola_id);
       }
 
-      // Nota: A tabela necessidades não possui coluna 'grupo'
-      // O filtro por grupo deve ser aplicado via produtos_per_capita se necessário
+      if (grupo) {
+        // Usar filtro direto por grupo ou grupo_id (já salvos na tabela necessidades)
+        // Tenta primeiro por grupo (nome) e depois por grupo_id (caso seja um ID)
+        const grupoId = parseInt(grupo);
+        if (!isNaN(grupoId)) {
+          // Se grupo for um número, filtrar por grupo_id
+          whereConditions.push("n.grupo_id = ?");
+          queryParams.push(grupoId);
+        } else {
+          // Se grupo for texto, filtrar por grupo (nome)
+          whereConditions.push("n.grupo = ?");
+          queryParams.push(grupo);
+        }
+      }
 
       if (semana_consumo) {
         whereConditions.push("n.semana_consumo = ?");
