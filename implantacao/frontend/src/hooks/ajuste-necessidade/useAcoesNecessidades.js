@@ -145,39 +145,55 @@ export const useAcoesNecessidades = ({
         resultado = await liberarCoordenacao(dadosParaLiberar);
       } else if (activeTab === 'logistica') {
         // Logística: NEC LOG -> CONF NUTRI
-        if (!filtros.escola_id) {
-          toast.error('Selecione uma escola para enviar');
+        const possuiFiltroLogistica = Boolean(
+          filtros.escola_id ||
+          filtros.grupo ||
+          filtros.semana_consumo ||
+          filtros.semana_abastecimento
+        );
+
+        if (!possuiFiltroLogistica) {
+          toast.error('Selecione ao menos um filtro para enviar');
           return;
         }
         
         // Coletar todos os necessidade_id únicos dos registros filtrados
-        const necessidadeIdsUnicos = [...new Set(necessidades.map(n => n.necessidade_id).filter(Boolean))];
-        
-        if (necessidadeIdsUnicos.length === 0) {
+        const necessidadesComEscola = necessidades
+          .filter(n => n && n.necessidade_id)
+          .map(n => ({ necessidade_id: n.necessidade_id, escola_id: n.escola_id, grupo: n.grupo, grupo_id: n.grupo_id }));
+
+        if (necessidadesComEscola.length === 0) {
           toast.error('Nenhuma necessidade encontrada para enviar');
           return;
         }
+
+        const registrosPorNecessidade = new Map();
+        necessidadesComEscola.forEach(item => {
+          if (!registrosPorNecessidade.has(item.necessidade_id)) {
+            registrosPorNecessidade.set(item.necessidade_id, item);
+          }
+        });
+        
+        const todosRegistros = Array.from(registrosPorNecessidade.values());
         
         // Se houver grupo, enviar apenas os IDs desse grupo
-        // Se não houver grupo, enviar todos os IDs da escola
+        // Se não houver grupo, enviar todos os IDs retornados
         if (filtros.grupo) {
           // Filtrar por grupo também
-          const idsDoGrupo = necessidades
-            .filter(n => n.grupo === filtros.grupo || n.grupo_id === filtros.grupo)
-            .map(n => n.necessidade_id)
-            .filter(Boolean);
-          const idsUnicosDoGrupo = [...new Set(idsDoGrupo)];
+          const registrosDoGrupo = todosRegistros.filter(item =>
+            item.grupo === filtros.grupo || item.grupo_id === filtros.grupo
+          );
           
-          if (idsUnicosDoGrupo.length === 0) {
+          if (registrosDoGrupo.length === 0) {
             toast.error('Nenhuma necessidade encontrada para o grupo selecionado');
             return;
           }
           
           // Enviar todos os IDs do grupo
           const resultados = await Promise.all(
-            idsUnicosDoGrupo.map(id => enviarParaNutricionista({
-              necessidade_id: id,
-              escola_id: filtros.escola_id
+            registrosDoGrupo.map(registro => enviarParaNutricionista({
+              necessidade_id: registro.necessidade_id,
+              escola_id: registro.escola_id
             }))
           );
           
@@ -191,11 +207,11 @@ export const useAcoesNecessidades = ({
             erros
           };
         } else {
-          // Enviar todos os IDs da escola (sem filtro de grupo)
+          // Enviar todos os IDs retornados (sem filtro de grupo)
           const resultados = await Promise.all(
-            necessidadeIdsUnicos.map(id => enviarParaNutricionista({
-              necessidade_id: id,
-              escola_id: filtros.escola_id
+            todosRegistros.map(registro => enviarParaNutricionista({
+              necessidade_id: registro.necessidade_id,
+              escola_id: registro.escola_id
             }))
           );
           
@@ -212,8 +228,16 @@ export const useAcoesNecessidades = ({
       } else {
         // Coordenação: NEC COORD -> NEC LOG; CONF COORD -> CONF
         const status = necessidades[0]?.status;
-        if (!filtros.escola_id) {
-          toast.error('Selecione uma escola para liberar na coordenação');
+        const possuiFiltroCoordenacao = Boolean(
+          filtros.escola_id ||
+          filtros.nutricionista_id ||
+          filtros.grupo ||
+          filtros.semana_consumo ||
+          filtros.semana_abastecimento
+        );
+
+        if (!possuiFiltroCoordenacao) {
+          toast.error('Selecione ao menos um filtro para liberar na coordenação');
           return;
         }
         
