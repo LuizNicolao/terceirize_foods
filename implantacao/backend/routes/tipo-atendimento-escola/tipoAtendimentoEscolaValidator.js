@@ -32,7 +32,19 @@ const tipoAtendimentoEscolaValidations = {
       .isInt({ min: 1 })
       .withMessage('ID da escola é obrigatório e deve ser um número inteiro positivo'),
     
+    // Aceitar tipos_atendimento (array) ou tipo_atendimento (string) para compatibilidade
+    body('tipos_atendimento')
+      .optional()
+      .isArray()
+      .withMessage('tipos_atendimento deve ser um array'),
+    
+    body('tipos_atendimento.*')
+      .optional()
+      .isIn(['lanche_manha', 'almoco', 'lanche_tarde', 'parcial_manha', 'eja', 'parcial_tarde'])
+      .withMessage('Cada tipo de atendimento deve ser: lanche_manha, almoco, lanche_tarde, parcial_manha, eja ou parcial_tarde'),
+    
     body('tipo_atendimento')
+      .optional()
       .isIn(['lanche_manha', 'almoco', 'lanche_tarde', 'parcial_manha', 'eja', 'parcial_tarde'])
       .withMessage('Tipo de atendimento deve ser: lanche_manha, almoco, lanche_tarde, parcial_manha, eja ou parcial_tarde'),
     
@@ -43,6 +55,16 @@ const tipoAtendimentoEscolaValidations = {
   ],
   
   atualizar: [
+    body('tipos_atendimento')
+      .optional()
+      .isArray()
+      .withMessage('tipos_atendimento deve ser um array'),
+    
+    body('tipos_atendimento.*')
+      .optional()
+      .isIn(['lanche_manha', 'almoco', 'lanche_tarde', 'parcial_manha', 'eja', 'parcial_tarde'])
+      .withMessage('Cada tipo de atendimento deve ser: lanche_manha, almoco, lanche_tarde, parcial_manha, eja ou parcial_tarde'),
+    
     body('ativo')
       .optional()
       .isBoolean()

@@ -70,11 +70,7 @@ class TipoAtendimentoEscolaListController {
         params.push(escola_id);
       }
 
-      // Filtro por tipo de atendimento
-      if (tipo_atendimento) {
-        whereClause += ' AND tae.tipo_atendimento = ?';
-        params.push(tipo_atendimento);
-      }
+      // Filtro por tipo de atendimento será aplicado após expandir JSON
 
       // Filtro por status ativo
       if (ativo !== undefined) {
@@ -94,25 +90,48 @@ class TipoAtendimentoEscolaListController {
         SELECT 
           tae.id,
           tae.escola_id,
-          tae.tipo_atendimento,
+          tae.tipos_atendimento,
           tae.ativo,
           tae.criado_por,
           tae.criado_em,
           tae.atualizado_em
         FROM tipos_atendimento_escola tae
         ${whereClause}
-        ORDER BY tae.escola_id ASC, tae.tipo_atendimento ASC
+        ORDER BY tae.escola_id ASC
       `;
       
       const todosVinculos = await executeQuery(vinculosQuery, params);
       
+      // Expandir JSON em múltiplas linhas (uma linha por tipo) para compatibilidade com frontend
+      let vinculosExpandidos = [];
+      todosVinculos.forEach(vinculo => {
+        const tipos = JSON.parse(vinculo.tipos_atendimento || '[]');
+        tipos.forEach(tipo => {
+          vinculosExpandidos.push({
+            id: vinculo.id,
+            escola_id: vinculo.escola_id,
+            tipo_atendimento: tipo,
+            tipos_atendimento: tipos, // Manter array completo também
+            ativo: vinculo.ativo,
+            criado_por: vinculo.criado_por,
+            criado_em: vinculo.criado_em,
+            atualizado_em: vinculo.atualizado_em
+          });
+        });
+      });
+      
+      // Aplicar filtro por tipo de atendimento se fornecido
+      if (tipo_atendimento) {
+        vinculosExpandidos = vinculosExpandidos.filter(v => v.tipo_atendimento === tipo_atendimento);
+      }
+      
       // Buscar informações das escolas via API do Foods
-      const escolaIds = [...new Set(todosVinculos.map(v => v.escola_id))];
+      const escolaIds = [...new Set(vinculosExpandidos.map(v => v.escola_id))];
       const authToken = req.headers.authorization;
       const escolasMap = await buscarInfoEscolas(escolaIds, authToken);
       
       // Enriquecer vínculos com informações das escolas
-      let vinculosEnriquecidos = todosVinculos.map(vinculo => {
+      let vinculosEnriquecidos = vinculosExpandidos.map(vinculo => {
         const escolaInfo = escolasMap.get(vinculo.escola_id) || {};
         return {
           ...vinculo,
@@ -182,17 +201,32 @@ class TipoAtendimentoEscolaListController {
         });
       }
 
-      const tipos = await executeQuery(
+      const vinculo = await executeQuery(
         `SELECT 
           tae.id,
           tae.escola_id,
-          tae.tipo_atendimento,
+          tae.tipos_atendimento,
           tae.ativo
         FROM tipos_atendimento_escola tae
-        WHERE tae.escola_id = ? AND tae.ativo = 1
-        ORDER BY tae.tipo_atendimento ASC`,
+        WHERE tae.escola_id = ? AND tae.ativo = 1`,
         [escola_id]
       );
+
+      if (vinculo.length === 0) {
+        return res.json({
+          success: true,
+          data: []
+        });
+      }
+
+      // Expandir JSON em array de tipos
+      const tiposArray = JSON.parse(vinculo[0].tipos_atendimento || '[]');
+      const tipos = tiposArray.map(tipo => ({
+        id: vinculo[0].id,
+        escola_id: vinculo[0].escola_id,
+        tipo_atendimento: tipo,
+        ativo: vinculo[0].ativo
+      }));
 
       // Buscar informações da escola via API do Foods
       const authToken = req.headers.authorization;
@@ -237,8 +271,8 @@ class TipoAtendimentoEscolaListController {
       const vinculos = await executeQuery(
         `SELECT DISTINCT tae.escola_id
         FROM tipos_atendimento_escola tae
-        WHERE tae.tipo_atendimento = ? AND tae.ativo = 1`,
-        [tipo_atendimento]
+        WHERE JSON_CONTAINS(tae.tipos_atendimento, ?) AND tae.ativo = 1`,
+        [JSON.stringify(tipo_atendimento)]
       );
 
       // Buscar informações das escolas via API do Foods

@@ -44,12 +44,14 @@ async function buscarInfoEscola(escolaId, authToken) {
 class TipoAtendimentoEscolaCRUDController {
   /**
    * Criar novo vínculo de tipo de atendimento com escola
+   * Aceita array de tipos ou um único tipo (compatibilidade)
    */
   static async criar(req, res) {
     try {
       const {
         escola_id,
-        tipo_atendimento,
+        tipos_atendimento, // Array de tipos (novo formato)
+        tipo_atendimento,  // Tipo único (compatibilidade)
         ativo = 1
       } = req.body;
 
@@ -64,43 +66,100 @@ class TipoAtendimentoEscolaCRUDController {
         });
       }
 
-      if (!tipo_atendimento) {
+      // Normalizar tipos: aceitar array ou tipo único
+      let tiposArray = [];
+      if (tipos_atendimento && Array.isArray(tipos_atendimento)) {
+        tiposArray = tipos_atendimento;
+      } else if (tipo_atendimento) {
+        tiposArray = [tipo_atendimento];
+      }
+
+      if (tiposArray.length === 0) {
         return res.status(400).json({
           success: false,
           error: 'Campos obrigatórios',
-          message: 'Tipo de atendimento é obrigatório'
+          message: 'Ao menos um tipo de atendimento é obrigatório'
         });
       }
 
-      // Validar tipo de atendimento
+      // Validar tipos de atendimento
       const tiposValidos = ['lanche_manha', 'almoco', 'lanche_tarde', 'parcial_manha', 'eja', 'parcial_tarde'];
-      if (!tiposValidos.includes(tipo_atendimento)) {
+      const tiposInvalidos = tiposArray.filter(t => !tiposValidos.includes(t));
+      if (tiposInvalidos.length > 0) {
         return res.status(400).json({
           success: false,
           error: 'Tipo inválido',
-          message: `Tipo de atendimento deve ser um dos seguintes: ${tiposValidos.join(', ')}`
+          message: `Tipos inválidos: ${tiposInvalidos.join(', ')}. Tipos válidos: ${tiposValidos.join(', ')}`
         });
       }
 
-      // Verificar se já existe vínculo ativo para esta escola e tipo
+      // Remover duplicatas
+      tiposArray = [...new Set(tiposArray)];
+
+      // Verificar se já existe registro para esta escola
       const vinculoExistente = await executeQuery(
-        'SELECT id FROM tipos_atendimento_escola WHERE escola_id = ? AND tipo_atendimento = ? AND ativo = 1',
-        [escola_id, tipo_atendimento]
+        'SELECT id, tipos_atendimento FROM tipos_atendimento_escola WHERE escola_id = ?',
+        [escola_id]
       );
 
       if (vinculoExistente.length > 0) {
-        return res.status(400).json({
-          success: false,
-          error: 'Vínculo já existe',
-          message: 'Já existe vínculo ativo para esta escola e tipo de atendimento'
+        // Atualizar tipos existentes (adicionar novos tipos sem duplicar)
+        const registro = vinculoExistente[0];
+        const tiposExistentes = JSON.parse(registro.tipos_atendimento || '[]');
+        const tiposCombinados = [...new Set([...tiposExistentes, ...tiposArray])];
+        
+        await executeQuery(
+          `UPDATE tipos_atendimento_escola 
+           SET tipos_atendimento = ?, ativo = ?, atualizado_por = ?, atualizado_em = NOW()
+           WHERE id = ?`,
+          [JSON.stringify(tiposCombinados), ativo, userId, registro.id]
+        );
+
+        // Buscar dados atualizados
+        const vinculoAtualizado = await executeQuery(
+          `SELECT 
+            tae.id,
+            tae.escola_id,
+            tae.tipos_atendimento,
+            tae.ativo,
+            tae.criado_por,
+            tae.criado_em,
+            tae.atualizado_em
+          FROM tipos_atendimento_escola tae
+          WHERE tae.id = ?`,
+          [registro.id]
+        );
+
+        // Buscar informações da escola via API do Foods
+        const authToken = req.headers.authorization;
+        const escolaInfo = await buscarInfoEscola(escola_id, authToken);
+        const resultado = {
+          ...vinculoAtualizado[0],
+          tipos_atendimento: JSON.parse(vinculoAtualizado[0].tipos_atendimento),
+          nome_escola: escolaInfo.nome_escola,
+          rota: escolaInfo.rota,
+          cidade: escolaInfo.cidade
+        };
+
+        // Registrar auditoria
+        await auditMiddleware(AUDIT_ACTIONS.UPDATE, req, {
+          entity: 'tipos_atendimento_escola',
+          entityId: registro.id,
+          changes: { tipos_atendimento: tiposCombinados, ativo }
+        });
+
+        return res.status(200).json({
+          success: true,
+          message: 'Tipos de atendimento atualizados com sucesso',
+          data: resultado
         });
       }
 
-      // Inserir novo vínculo
+      // Criar novo registro
       const result = await executeQuery(
-        `INSERT INTO tipos_atendimento_escola (escola_id, tipo_atendimento, ativo, criado_por, criado_em)
+        `INSERT INTO tipos_atendimento_escola (escola_id, tipos_atendimento, ativo, criado_por, criado_em)
          VALUES (?, ?, ?, ?, NOW())`,
-        [escola_id, tipo_atendimento, ativo, userId]
+        [escola_id, JSON.stringify(tiposArray), ativo, userId]
       );
 
       // Buscar dados completos do vínculo criado
@@ -108,7 +167,7 @@ class TipoAtendimentoEscolaCRUDController {
         `SELECT 
           tae.id,
           tae.escola_id,
-          tae.tipo_atendimento,
+          tae.tipos_atendimento,
           tae.ativo,
           tae.criado_por,
           tae.criado_em,
@@ -121,24 +180,25 @@ class TipoAtendimentoEscolaCRUDController {
       // Buscar informações da escola via API do Foods
       const authToken = req.headers.authorization;
       const escolaInfo = await buscarInfoEscola(escola_id, authToken);
-      const novoVinculo = novoVinculoQuery.map(v => ({
-        ...v,
+      const novoVinculo = {
+        ...novoVinculoQuery[0],
+        tipos_atendimento: JSON.parse(novoVinculoQuery[0].tipos_atendimento),
         nome_escola: escolaInfo.nome_escola,
         rota: escolaInfo.rota,
         cidade: escolaInfo.cidade
-      }));
+      };
 
       // Registrar auditoria
       await auditMiddleware(AUDIT_ACTIONS.CREATE, req, {
         entity: 'tipos_atendimento_escola',
         entityId: result.insertId,
-        changes: { escola_id, tipo_atendimento, ativo }
+        changes: { escola_id, tipos_atendimento: tiposArray, ativo }
       });
 
       res.status(201).json({
         success: true,
-        message: 'Tipo de atendimento vinculado à escola com sucesso',
-        data: novoVinculo.length > 0 ? novoVinculo[0] : null
+        message: 'Tipos de atendimento vinculados à escola com sucesso',
+        data: novoVinculo
       });
     } catch (error) {
       console.error('Erro ao criar vínculo tipo atendimento-escola:', error);
@@ -152,11 +212,13 @@ class TipoAtendimentoEscolaCRUDController {
 
   /**
    * Atualizar vínculo de tipo de atendimento com escola
+   * Aceita atualizar tipos_atendimento (array) ou apenas status
    */
   static async atualizar(req, res) {
     try {
       const { id } = req.params;
       const {
+        tipos_atendimento,
         ativo
       } = req.body;
 
@@ -177,13 +239,33 @@ class TipoAtendimentoEscolaCRUDController {
       }
 
       const vinculoAntigo = vinculoExistente[0];
+      const tiposAntigos = JSON.parse(vinculoAntigo.tipos_atendimento || '[]');
+
+      // Validar tipos se fornecidos
+      if (tipos_atendimento && Array.isArray(tipos_atendimento)) {
+        const tiposValidos = ['lanche_manha', 'almoco', 'lanche_tarde', 'parcial_manha', 'eja', 'parcial_tarde'];
+        const tiposInvalidos = tipos_atendimento.filter(t => !tiposValidos.includes(t));
+        if (tiposInvalidos.length > 0) {
+          return res.status(400).json({
+            success: false,
+            error: 'Tipo inválido',
+            message: `Tipos inválidos: ${tiposInvalidos.join(', ')}`
+          });
+        }
+      }
+
+      // Preparar dados para atualização
+      const novosTipos = tipos_atendimento && Array.isArray(tipos_atendimento) 
+        ? [...new Set(tipos_atendimento)] 
+        : tiposAntigos;
+      const novoAtivo = ativo !== undefined ? ativo : vinculoAntigo.ativo;
 
       // Atualizar vínculo
       await executeQuery(
         `UPDATE tipos_atendimento_escola 
-         SET ativo = ?, atualizado_por = ?, atualizado_em = NOW()
+         SET tipos_atendimento = ?, ativo = ?, atualizado_por = ?, atualizado_em = NOW()
          WHERE id = ?`,
-        [ativo !== undefined ? ativo : vinculoAntigo.ativo, userId, id]
+        [JSON.stringify(novosTipos), novoAtivo, userId, id]
       );
 
       // Buscar dados atualizados
@@ -191,7 +273,7 @@ class TipoAtendimentoEscolaCRUDController {
         `SELECT 
           tae.id,
           tae.escola_id,
-          tae.tipo_atendimento,
+          tae.tipos_atendimento,
           tae.ativo,
           tae.criado_por,
           tae.criado_em,
@@ -204,25 +286,26 @@ class TipoAtendimentoEscolaCRUDController {
       // Buscar informações da escola via API do Foods
       const authToken = req.headers.authorization;
       const escolaInfo = await buscarInfoEscola(vinculoAntigo.escola_id, authToken);
-      const vinculoAtualizado = vinculoAtualizadoQuery.map(v => ({
-        ...v,
+      const vinculoAtualizado = {
+        ...vinculoAtualizadoQuery[0],
+        tipos_atendimento: JSON.parse(vinculoAtualizadoQuery[0].tipos_atendimento),
         nome_escola: escolaInfo.nome_escola,
         rota: escolaInfo.rota,
         cidade: escolaInfo.cidade
-      }));
+      };
 
       // Registrar auditoria
       await auditMiddleware(AUDIT_ACTIONS.UPDATE, req, {
         entity: 'tipos_atendimento_escola',
         entityId: id,
-        changes: { ativo },
-        previous: vinculoAntigo
+        changes: { tipos_atendimento: novosTipos, ativo: novoAtivo },
+        previous: { ...vinculoAntigo, tipos_atendimento: tiposAntigos }
       });
 
       res.json({
         success: true,
         message: 'Vínculo tipo atendimento-escola atualizado com sucesso',
-        data: vinculoAtualizado.length > 0 ? vinculoAtualizado[0] : null
+        data: vinculoAtualizado
       });
     } catch (error) {
       console.error('Erro ao atualizar vínculo tipo atendimento-escola:', error);
@@ -293,7 +376,7 @@ class TipoAtendimentoEscolaCRUDController {
         `SELECT 
           tae.id,
           tae.escola_id,
-          tae.tipo_atendimento,
+          tae.tipos_atendimento,
           tae.ativo,
           tae.criado_por,
           tae.criado_em,
@@ -316,6 +399,7 @@ class TipoAtendimentoEscolaCRUDController {
       const escolaInfo = await buscarInfoEscola(vinculoQuery[0].escola_id, authToken);
       const vinculo = {
         ...vinculoQuery[0],
+        tipos_atendimento: JSON.parse(vinculoQuery[0].tipos_atendimento || '[]'),
         nome_escola: escolaInfo.nome_escola,
         rota: escolaInfo.rota,
         cidade: escolaInfo.cidade

@@ -99,33 +99,49 @@ export const useTipoAtendimentoEscola = () => {
     try {
       // Se recebeu array de vínculos (novo formato do modal matriz)
       if (dados.vinculos && Array.isArray(dados.vinculos) && dados.vinculos.length > 0) {
-        const vinculos = dados.vinculos;
+        // Agrupar vínculos por escola_id
+        const vinculosPorEscola = {};
+        dados.vinculos.forEach(vinculo => {
+          const escolaId = vinculo.escola_id;
+          if (!vinculosPorEscola[escolaId]) {
+            vinculosPorEscola[escolaId] = {
+              escola_id: escolaId,
+              tipos_atendimento: [],
+              ativo: vinculo.ativo !== undefined ? vinculo.ativo : true
+            };
+          }
+          if (!vinculosPorEscola[escolaId].tipos_atendimento.includes(vinculo.tipo_atendimento)) {
+            vinculosPorEscola[escolaId].tipos_atendimento.push(vinculo.tipo_atendimento);
+          }
+        });
+
         let sucessos = 0;
         let erros = 0;
         const errosDetalhes = [];
 
-        // Criar cada vínculo
-        for (const vinculo of vinculos) {
+        // Criar/atualizar um registro por escola com todos os tipos
+        for (const escolaId in vinculosPorEscola) {
           try {
+            const vinculo = vinculosPorEscola[escolaId];
             const result = await TipoAtendimentoEscolaService.criar(vinculo);
             if (result.success) {
-              sucessos++;
+              sucessos += vinculo.tipos_atendimento.length; // Contar tipos, não escolas
             } else {
-              erros++;
-              errosDetalhes.push(`Escola ${vinculo.escola_id} - ${vinculo.tipo_atendimento}: ${result.error || 'Erro desconhecido'}`);
+              erros += vinculo.tipos_atendimento.length;
+              errosDetalhes.push(`Escola ${escolaId}: ${result.error || 'Erro desconhecido'}`);
             }
           } catch (err) {
-            erros++;
+            erros += vinculosPorEscola[escolaId].tipos_atendimento.length;
             const errorMessage = err.response?.data?.message || 'Erro ao criar vínculo';
-            errosDetalhes.push(`Escola ${vinculo.escola_id} - ${vinculo.tipo_atendimento}: ${errorMessage}`);
+            errosDetalhes.push(`Escola ${escolaId}: ${errorMessage}`);
           }
         }
 
         // Mensagem consolidada
         if (sucessos > 0 && erros === 0) {
-          toast.success(`${sucessos} vínculo(s) criado(s) com sucesso!`);
+          toast.success(`${sucessos} tipo(s) de atendimento vinculado(s) com sucesso!`);
         } else if (sucessos > 0 && erros > 0) {
-          toast.success(`${sucessos} vínculo(s) criado(s) com sucesso. ${erros} erro(s).`);
+          toast.success(`${sucessos} tipo(s) vinculado(s) com sucesso. ${erros} erro(s).`);
           console.error('Erros ao criar vínculos:', errosDetalhes);
         } else {
           toast.error(`Erro ao criar vínculos: ${errosDetalhes.join('; ')}`);
@@ -201,7 +217,14 @@ export const useTipoAtendimentoEscola = () => {
    */
   const atualizar = useCallback(async (id, dados) => {
     try {
-      const result = await TipoAtendimentoEscolaService.atualizar(id, dados);
+      // Se recebeu tipo_atendimento (formato antigo), converter para tipos_atendimento
+      let dadosAtualizados = { ...dados };
+      if (dados.tipo_atendimento && !dados.tipos_atendimento) {
+        dadosAtualizados.tipos_atendimento = [dados.tipo_atendimento];
+        delete dadosAtualizados.tipo_atendimento;
+      }
+
+      const result = await TipoAtendimentoEscolaService.atualizar(id, dadosAtualizados);
       if (result.success) {
         toast.success('Vínculo atualizado com sucesso!');
         await carregarVinculos();
