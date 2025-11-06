@@ -50,12 +50,10 @@ export const useNecessidadesData = () => {
         paramsComPaginacao.data = filtros.data;
       }
       
-      // Se não há nenhum filtro selecionado (nem escola, nem grupo, nem search, nem data), 
-      // passar limit alto para mostrar mais registros
-      if (!temEscola && !temGrupo && !temSearch && !filtros.data) {
-        paramsComPaginacao.limit = 1000;
-        paramsComPaginacao.page = 1;
-      }
+      // Sempre passar limit alto para mostrar todos os registros (filtrados ou não)
+      // Isso evita a limitação de 10 registros do backend quando há filtros
+      paramsComPaginacao.limit = 1000;
+      paramsComPaginacao.page = 1;
       
       const response = await necessidadesService.listar(paramsComPaginacao);
       
