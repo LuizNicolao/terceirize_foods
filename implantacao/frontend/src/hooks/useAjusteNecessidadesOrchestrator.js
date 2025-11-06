@@ -526,13 +526,42 @@ export const useAjusteNecessidadesOrchestrator = () => {
             : (status === 'CONF COORD' ? 'Necessidades confirmadas (CONF)!' : 'Necessidades liberadas!');
         }
         toast.success(mensagem);
-        handleCarregarNecessidades();
+        
+        // Limpar filtros da aba atual após avançar
+        if (activeTab === 'nutricionista') {
+          atualizarFiltrosNutricionista({
+            escola_id: null,
+            grupo: null,
+            semana_consumo: null,
+            semana_abastecimento: null
+          });
+        } else if (activeTab === 'coordenacao') {
+          atualizarFiltrosCoordenacao({
+            escola_id: null,
+            grupo: null,
+            semana_consumo: null,
+            semana_abastecimento: null,
+            nutricionista_id: null
+          });
+        } else if (activeTab === 'logistica') {
+          atualizarFiltrosLogistica({
+            escola_id: null,
+            grupo: null,
+            semana_consumo: null,
+            semana_abastecimento: null
+          });
+        }
+        
+        // Recarregar a página para consultar registros atualizados
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000); // Aguardar 1 segundo para o toast aparecer
       }
     } catch (error) {
       console.error('Erro ao liberar:', error);
       toast.error('Erro ao liberar');
     }
-  }, [activeTab, filtros, necessidadeAtual, liberarCoordenacao, confirmarFinal, liberarParaLogistica, enviarParaNutricionista, handleCarregarNecessidades, necessidades]);
+  }, [activeTab, filtros, necessidadeAtual, liberarCoordenacao, confirmarFinal, liberarParaLogistica, enviarParaNutricionista, handleCarregarNecessidades, necessidades, atualizarFiltrosNutricionista, atualizarFiltrosCoordenacao, atualizarFiltrosLogistica]);
 
   const handleAbrirModalProdutoExtra = useCallback(async () => {
     if (activeTab === 'coordenacao' || activeTab === 'logistica') {
