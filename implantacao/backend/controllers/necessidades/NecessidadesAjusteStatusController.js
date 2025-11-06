@@ -31,8 +31,15 @@ const liberarCoordenacao = async (req, res) => {
       WHERE escola_id = ? 
         AND status = 'NEC'
         AND (ajuste_nutricionista IS NULL OR ajuste_nutricionista = 0)
-        AND grupo = ?
-    `, [escola_id, grupo]);
+        AND (
+          grupo = ?
+          OR produto_id IN (
+            SELECT DISTINCT ppc.produto_id 
+            FROM produtos_per_capita ppc
+            WHERE ppc.grupo = ?
+          )
+        )
+    `, [escola_id, grupo, grupo]);
 
     // Segundo: copiar ajuste_logistica para ajuste_conf_nutri quando status = 'CONF NUTRI'
     // Isso preserva o valor da logística antes de liberar para coordenação
@@ -42,8 +49,15 @@ const liberarCoordenacao = async (req, res) => {
       WHERE escola_id = ? 
         AND status = 'CONF NUTRI'
         AND (ajuste_conf_nutri IS NULL OR ajuste_conf_nutri = 0)
-        AND grupo = ?
-    `, [escola_id, grupo]);
+        AND (
+          grupo = ?
+          OR produto_id IN (
+            SELECT DISTINCT ppc.produto_id 
+            FROM produtos_per_capita ppc
+            WHERE ppc.grupo = ?
+          )
+        )
+    `, [escola_id, grupo, grupo]);
 
     // Terceiro: atualizar status
     let query = `
@@ -57,10 +71,17 @@ const liberarCoordenacao = async (req, res) => {
         data_atualizacao = CURRENT_TIMESTAMP
       WHERE escola_id = ? 
         AND status IN ('NEC', 'NEC NUTRI', 'CONF NUTRI')
-        AND grupo = ?
+        AND (
+          grupo = ?
+          OR produto_id IN (
+            SELECT DISTINCT ppc.produto_id 
+            FROM produtos_per_capita ppc
+            WHERE ppc.grupo = ?
+          )
+        )
     `;
 
-    const params = [escola_id, grupo];
+    const params = [escola_id, grupo, grupo];
 
     // Aplicar filtros de período se fornecidos
     if (periodo && periodo.consumo_de && periodo.consumo_ate) {
