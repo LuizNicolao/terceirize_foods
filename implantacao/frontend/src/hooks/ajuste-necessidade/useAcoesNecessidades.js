@@ -299,6 +299,11 @@ export const useAcoesNecessidades = ({
 
           idsParaEnviar = [...new Set(idsParaEnviar)];
 
+          if (idsParaEnviar.length === 0 && necessidades.length > 0) {
+            // Fallback: se a API já retornou apenas o grupo filtrado, usa todos os IDs carregados
+            idsParaEnviar = necessidadeIdsUnicos;
+          }
+
           if (idsParaEnviar.length === 0) {
             toast.error('Nenhuma necessidade encontrada para o grupo selecionado');
             return;
