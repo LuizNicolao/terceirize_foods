@@ -92,7 +92,7 @@ const TipoAtendimentoEscolaModal = ({
           {/* Escola */}
           <div>
             <SearchableSelect
-              label="Escola *"
+              label="Escola"
               value={formData.escola_id}
               onChange={(value) => handleInputChange('escola_id', value)}
               options={escolas.map(escola => ({
@@ -124,7 +124,7 @@ const TipoAtendimentoEscolaModal = ({
           {/* Tipo de Atendimento */}
           <div>
             <SearchableSelect
-              label="Tipo de Atendimento *"
+              label="Tipo de Atendimento"
               value={formData.tipo_atendimento}
               onChange={(value) => handleInputChange('tipo_atendimento', value)}
               options={tiposAtendimento.map(tipo => ({
