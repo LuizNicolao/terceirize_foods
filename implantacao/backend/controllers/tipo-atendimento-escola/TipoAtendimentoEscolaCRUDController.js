@@ -253,10 +253,12 @@ class TipoAtendimentoEscolaCRUDController {
       });
     } catch (error) {
       console.error('Erro ao criar vínculo tipo atendimento-escola:', error);
+      const errorMessage = error.response?.data?.message || error.sqlMessage || error.message || 'Erro ao criar vínculo tipo atendimento-escola';
       res.status(500).json({
         success: false,
         error: 'Erro interno do servidor',
-        message: 'Erro ao criar vínculo tipo atendimento-escola'
+        message: errorMessage,
+        detalhes: error.stack
       });
     }
   }
