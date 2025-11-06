@@ -2,7 +2,7 @@ import React from 'react';
 import { FaClipboardList } from 'react-icons/fa';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { useAuth } from '../../contexts/AuthContext';
-import { useAjusteNecessidadesOrchestrator } from '../../hooks/useAjusteNecessidadesOrchestrator';
+import { useAjusteNecessidadesOrchestrator } from '../../hooks/ajuste-necessidade';
 import {
   NecessidadesLayout,
   NecessidadesLoading
