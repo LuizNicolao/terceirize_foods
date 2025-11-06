@@ -178,53 +178,79 @@ export const useAcoesNecessidades = ({
         
         // Se houver grupo, enviar apenas os IDs desse grupo
         // Se não houver grupo, enviar todos os IDs retornados
+        let registrosSelecionados = todosRegistros;
         if (filtros.grupo) {
-          // Filtrar por grupo também
-          const registrosDoGrupo = todosRegistros.filter(item =>
-            item.grupo === filtros.grupo || item.grupo_id === filtros.grupo
-          );
-          
-          if (registrosDoGrupo.length === 0) {
+          const normalizarGrupo = (valor) => {
+            if (valor === null || valor === undefined) return null;
+            if (typeof valor === 'object') {
+              return (
+                valor.nome ??
+                valor.label ??
+                valor.value ??
+                valor.id ??
+                valor.nome_grupo ??
+                null
+              );
+            }
+            return valor;
+          };
+
+          const grupoFiltroBruto = normalizarGrupo(filtros.grupo);
+          const grupoFiltroTexto = grupoFiltroBruto
+            ? String(grupoFiltroBruto).trim().toLowerCase()
+            : null;
+          const grupoFiltroNumero = !Number.isNaN(Number(grupoFiltroBruto))
+            ? Number(grupoFiltroBruto)
+            : null;
+
+          registrosSelecionados = todosRegistros.filter((item) => {
+            const grupoItemTexto = item.grupo ? String(item.grupo).trim().toLowerCase() : null;
+            const grupoItemNumero =
+              item.grupo_id !== undefined && item.grupo_id !== null
+                ? Number(item.grupo_id)
+                : null;
+
+            const matchTexto =
+              grupoFiltroTexto && grupoItemTexto
+                ? grupoItemTexto === grupoFiltroTexto
+                : false;
+            const matchNumero =
+              grupoFiltroNumero !== null && grupoItemNumero !== null
+                ? grupoItemNumero === grupoFiltroNumero
+                : false;
+
+            return matchTexto || matchNumero;
+          });
+
+          if (registrosSelecionados.length === 0 && todosRegistros.length > 0) {
+            // Fallback: se o backend já aplicou o filtro, reaproveita todos os registros retornados
+            registrosSelecionados = todosRegistros;
+          }
+
+          if (registrosSelecionados.length === 0) {
             toast.error('Nenhuma necessidade encontrada para o grupo selecionado');
             return;
           }
-          
-          // Enviar todos os IDs do grupo
-          const resultados = await Promise.all(
-            registrosDoGrupo.map(registro => enviarParaNutricionista({
-              necessidade_id: registro.necessidade_id,
-              escola_id: registro.escola_id
-            }))
-          );
-          
-          const sucessos = resultados.filter(r => r.success).length;
-          const erros = resultados.filter(r => !r.success).length;
-          
-          resultado = {
-            success: sucessos > 0,
-            data: { sucessos, erros },
-            sucessos,
-            erros
-          };
-        } else {
-          // Enviar todos os IDs retornados (sem filtro de grupo)
-          const resultados = await Promise.all(
-            todosRegistros.map(registro => enviarParaNutricionista({
-              necessidade_id: registro.necessidade_id,
-              escola_id: registro.escola_id
-            }))
-          );
-          
-          const sucessos = resultados.filter(r => r.success).length;
-          const erros = resultados.filter(r => !r.success).length;
-          
-          resultado = {
-            success: sucessos > 0,
-            data: { sucessos, erros },
-            sucessos,
-            erros
-          };
         }
+
+        const resultados = await Promise.all(
+          registrosSelecionados.map(registro =>
+            enviarParaNutricionista({
+              necessidade_id: registro.necessidade_id,
+              escola_id: registro.escola_id
+            })
+          )
+        );
+        
+        const sucessos = resultados.filter(r => r.success).length;
+        const erros = resultados.filter(r => !r.success).length;
+        
+        resultado = {
+          success: sucessos > 0,
+          data: { sucessos, erros },
+          sucessos,
+          erros
+        };
       } else {
         // Coordenação: NEC COORD -> NEC LOG; CONF COORD -> CONF
         const status = necessidades[0]?.status;
