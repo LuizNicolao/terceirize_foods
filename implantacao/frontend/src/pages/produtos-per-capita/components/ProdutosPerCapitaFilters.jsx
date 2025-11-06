@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { FaSearch, FaTimes } from 'react-icons/fa';
 import FoodsApiService from '../../../services/FoodsApiService';
+import { SearchableSelect } from '../../../components/ui';
 
 /**
  * Componente de filtros avançados para Produtos Per Capita
@@ -43,7 +44,7 @@ const ProdutosPerCapitaFilters = ({
    * Lidar com mudança de grupo
    */
   const handleGrupoChange = (grupoId) => {
-    onGrupoFilterChange(grupoId);
+    onGrupoFilterChange(grupoId || '');
   };
 
   /**
@@ -66,6 +67,39 @@ const ProdutosPerCapitaFilters = ({
   useEffect(() => {
     carregarGrupos();
   }, [carregarGrupos]);
+
+  const grupoOptions = useMemo(() => {
+    if (!Array.isArray(grupos)) {
+      return [];
+    }
+
+    const normalizados = new Map();
+
+    grupos.forEach(grupo => {
+      if (!grupo) return;
+
+      const rawId = grupo.id ?? grupo.value ?? grupo.codigo ?? grupo.codigo_grupo ?? grupo.slug ?? null;
+      const rawNome = grupo.nome ?? grupo.label ?? grupo.descricao ?? grupo.nome_grupo ?? grupo.descricao_grupo ?? (typeof grupo === 'string' ? grupo : null);
+
+      const value = rawId !== null && rawId !== undefined
+        ? String(rawId)
+        : rawNome
+          ? String(rawNome)
+          : null;
+
+      if (!value) return;
+
+      const label = rawNome
+        ? String(rawNome)
+        : `Grupo ${value}`;
+
+      if (!normalizados.has(value)) {
+        normalizados.set(value, { value, label });
+      }
+    });
+
+    return Array.from(normalizados.values()).sort((a, b) => a.label.localeCompare(b.label));
+  }, [grupos]);
 
   return (
     <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
@@ -98,19 +132,20 @@ const ProdutosPerCapitaFilters = ({
 
         {/* Filtro de grupo */}
         <div>
-          <select 
-            value={grupoFilter} 
-            onChange={e => handleGrupoChange(e.target.value)}
+          <SearchableSelect
+            value={grupoFilter || ''}
+            onChange={handleGrupoChange}
+            options={[
+              { value: '', label: 'Todos os grupos' },
+              ...grupoOptions
+            ]}
+            placeholder={loadingGrupos ? 'Carregando grupos...' : 'Selecione um grupo'}
             disabled={loadingGrupos}
-            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-gray-500 transition-colors bg-white disabled:bg-gray-100"
-          >
-            <option value="">Todos os grupos</option>
-            {grupos.map(grupo => (
-              <option key={grupo.id} value={grupo.id}>
-                {grupo.nome}
-              </option>
-            ))}
-          </select>
+            filterBy={(option, term) => {
+              const label = option.label?.toLowerCase() || '';
+              return label.includes(term.toLowerCase());
+            }}
+          />
         </div>
 
       </div>
