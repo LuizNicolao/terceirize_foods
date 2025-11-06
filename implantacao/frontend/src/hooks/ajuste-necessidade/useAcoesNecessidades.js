@@ -249,15 +249,56 @@ export const useAcoesNecessidades = ({
           return;
         }
         
-        // Se houver grupo, filtrar por grupo também
+        // Se houver grupo, filtrar por grupo também (aceitando variações de formato)
         let idsParaEnviar = necessidadeIdsUnicos;
         if (filtros.grupo) {
+          const normalizarGrupo = (valor) => {
+            if (valor === null || valor === undefined) return null;
+            if (typeof valor === 'object') {
+              return (
+                valor.nome ??
+                valor.label ??
+                valor.value ??
+                valor.id ??
+                valor.nome_grupo ??
+                null
+              );
+            }
+            return valor;
+          };
+
+          const grupoFiltroBruto = normalizarGrupo(filtros.grupo);
+          const grupoFiltroTexto = grupoFiltroBruto
+            ? String(grupoFiltroBruto).trim().toLowerCase()
+            : null;
+          const grupoFiltroNumero = !Number.isNaN(Number(grupoFiltroBruto))
+            ? Number(grupoFiltroBruto)
+            : null;
+
           idsParaEnviar = necessidades
-            .filter(n => n.grupo === filtros.grupo || n.grupo_id === filtros.grupo)
-            .map(n => n.necessidade_id)
+            .filter((n) => {
+              const grupoNecTexto = n.grupo ? String(n.grupo).trim().toLowerCase() : null;
+              const grupoNecNumero =
+                n.grupo_id !== undefined && n.grupo_id !== null
+                  ? Number(n.grupo_id)
+                  : null;
+
+              const matchTexto =
+                grupoFiltroTexto && grupoNecTexto
+                  ? grupoNecTexto === grupoFiltroTexto
+                  : false;
+              const matchNumero =
+                grupoFiltroNumero !== null && grupoNecNumero !== null
+                  ? grupoNecNumero === grupoFiltroNumero
+                  : false;
+
+              return matchTexto || matchNumero;
+            })
+            .map((n) => n.necessidade_id)
             .filter(Boolean);
+
           idsParaEnviar = [...new Set(idsParaEnviar)];
-          
+
           if (idsParaEnviar.length === 0) {
             toast.error('Nenhuma necessidade encontrada para o grupo selecionado');
             return;

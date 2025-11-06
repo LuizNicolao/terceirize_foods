@@ -262,10 +262,6 @@ const useNecessidadesCoordenacao = () => {
     });
   }, []);
 
-  const limparNecessidades = useCallback(() => {
-    setNecessidades([]);
-  }, []);
-
   // Hook de exportação padronizado
   const { handleExportXLSX, handleExportPDF } = useExport(necessidadesCoordenacaoService);
 
@@ -296,7 +292,6 @@ const useNecessidadesCoordenacao = () => {
     incluirProdutoExtra,
     atualizarFiltros,
     limparFiltros,
-    limparNecessidades,
 
     // Dados auxiliares
     carregarEscolas,

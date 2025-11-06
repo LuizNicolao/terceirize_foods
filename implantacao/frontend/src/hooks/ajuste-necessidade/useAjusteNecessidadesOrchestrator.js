@@ -71,7 +71,6 @@ export const useAjusteNecessidadesOrchestrator = () => {
     limparFiltros: limparFiltrosCoordenacao,
     carregarEscolas: carregarEscolasCoordenacao,
     carregarGrupos: carregarGruposCoordenacao,
-    limparNecessidades: limparNecessidadesCoordenacao,
     exportarXLSX: exportarXLSXCoordenacao,
     exportarPDF: exportarPDFCoordenacao
   } = useNecessidadesCoordenacao();
@@ -164,12 +163,6 @@ export const useAjusteNecessidadesOrchestrator = () => {
     carregarEscolasLogistica
   );
 
-  useEffect(() => {
-    if (activeTab === 'coordenacao' && !filtros.grupo) {
-      limparNecessidadesCoordenacao();
-    }
-  }, [activeTab, filtros.grupo, limparNecessidadesCoordenacao]);
-
   // Hook para exclusão
   const handleCarregarNecessidades = useCallback(() => {
     if (activeTab === 'nutricionista') {
@@ -179,9 +172,8 @@ export const useAjusteNecessidadesOrchestrator = () => {
       }
       carregarNecessidadesNutricionista();
     } else if (activeTab === 'coordenacao') {
-      if (!filtros.grupo) {
-        toast.error('Selecione um grupo para buscar as necessidades da coordenação');
-        limparNecessidadesCoordenacao();
+      if (!filtros.escola_id && !filtros.nutricionista_id && !filtros.grupo && !filtros.semana_consumo && !filtros.semana_abastecimento) {
+        toast.error('Selecione ao menos um filtro para buscar');
         return;
       }
       carregarNecessidadesCoordenacao();

@@ -12,15 +12,6 @@ class NecessidadesCoordenacaoController {
         nutricionista_id 
       } = req.query;
 
-      if (!grupo) {
-        return res.json({
-          success: true,
-          data: [],
-          total: 0,
-          message: 'Selecione um grupo para listar as necessidades da coordenação'
-        });
-      }
-
       let whereConditions = ["n.status IN ('NEC COORD','CONF COORD')"];
       let queryParams = [];
 
@@ -29,14 +20,19 @@ class NecessidadesCoordenacaoController {
         queryParams.push(escola_id);
       }
 
-      // Usar filtro direto por grupo (nome) ou grupo_id
-      const grupoId = parseInt(grupo);
-      if (!isNaN(grupoId)) {
-        whereConditions.push("(n.grupo_id = ? OR n.grupo = ?)");
-        queryParams.push(grupoId, grupo);
-      } else {
-        whereConditions.push("n.grupo = ?");
-        queryParams.push(grupo);
+      if (grupo) {
+        // Usar filtro direto por grupo ou grupo_id (já salvos na tabela necessidades)
+        // Tenta primeiro por grupo (nome) e depois por grupo_id (caso seja um ID)
+        const grupoId = parseInt(grupo);
+        if (!isNaN(grupoId)) {
+          // Se grupo for um número, filtrar por grupo_id
+          whereConditions.push("n.grupo_id = ?");
+          queryParams.push(grupoId);
+        } else {
+          // Se grupo for texto, filtrar por grupo (nome)
+          whereConditions.push("n.grupo = ?");
+          queryParams.push(grupo);
+        }
       }
 
       if (semana_consumo) {
