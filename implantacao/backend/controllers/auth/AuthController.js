@@ -30,6 +30,11 @@ class AuthController {
 
       // Verificar se está bloqueado temporariamente
       if (loginAttempts[email].blockedUntil && now < loginAttempts[email].blockedUntil) {
+        console.log('[AuthController] Usuário ainda bloqueado por tentativas inválidas', {
+          email,
+          blockedUntil: new Date(loginAttempts[email].blockedUntil).toISOString(),
+          secondsRemaining: Math.ceil((loginAttempts[email].blockedUntil - now) / 1000)
+        });
         return res.status(403).json({ error: `Usuário temporariamente bloqueado por tentativas inválidas. Tente novamente em alguns minutos.` });
       }
 
@@ -45,8 +50,16 @@ class AuthController {
         console.log('[AuthController] Usuário não encontrado', { email });
         loginAttempts[email].count++;
         loginAttempts[email].lastAttempt = now;
+        console.log('[AuthController] Tentativas acumuladas (usuário não encontrado)', {
+          email,
+          attempts: loginAttempts[email].count
+        });
         if (loginAttempts[email].count >= MAX_ATTEMPTS) {
           loginAttempts[email].blockedUntil = now + BLOCK_TIME_MINUTES * 60 * 1000;
+          console.log('[AuthController] Usuário temporariamente bloqueado (usuário inexistente)', {
+            email,
+            blockedUntil: new Date(loginAttempts[email].blockedUntil).toISOString()
+          });
         }
         return res.status(401).json({ error: 'Email ou senha incorretos' });
       }
@@ -75,13 +88,28 @@ class AuthController {
       // Verificar senha
       const isValidPassword = await bcrypt.compare(senha, usuario.senha);
 
+      console.log('[AuthController] Resultado verificação de senha', {
+        email,
+        isValidPassword,
+        hashPrefix: usuario.senha ? usuario.senha.slice(0, 10) : null,
+        hashLength: usuario.senha ? usuario.senha.length : null
+      });
+
       if (!isValidPassword) {
         console.log('[AuthController] Senha inválida', { email });
         loginAttempts[email].count++;
         loginAttempts[email].lastAttempt = now;
+        console.log('[AuthController] Tentativas acumuladas (senha inválida)', {
+          email,
+          attempts: loginAttempts[email].count
+        });
         if (loginAttempts[email].count >= MAX_ATTEMPTS) {
           // Bloquear apenas temporariamente em memória (não no banco)
           loginAttempts[email].blockedUntil = now + BLOCK_TIME_MINUTES * 60 * 1000;
+          console.log('[AuthController] Usuário temporariamente bloqueado por senha incorreta', {
+            email,
+            blockedUntil: new Date(loginAttempts[email].blockedUntil).toISOString()
+          });
           return res.status(403).json({ error: 'Usuário temporariamente bloqueado por tentativas inválidas. Tente novamente em alguns minutos.' });
         }
         return res.status(401).json({ error: 'Email ou senha incorretos' });
@@ -89,6 +117,7 @@ class AuthController {
 
       // Login bem-sucedido: resetar tentativas
       loginAttempts[email] = { count: 0, lastAttempt: now, blockedUntil: null };
+      console.log('[AuthController] Tentativas resetadas após sucesso de login', { email });
 
       // Gerar token com duração baseada na opção "Mantenha-me conectado"
       const tokenExpiration = rememberMe ? '30d' : '24h'; // 30 dias se "lembrar", 24h se não
