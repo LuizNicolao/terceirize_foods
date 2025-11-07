@@ -25,7 +25,7 @@ class ProdutosPerCapitaListController {
     const pagination = req.pagination;
 
     // Query base - usando todos os campos da tabela produtos_per_capita
-    const queryBase = `
+    let queryBase = `
       SELECT 
         ppc.id,
         ppc.produto_id,
