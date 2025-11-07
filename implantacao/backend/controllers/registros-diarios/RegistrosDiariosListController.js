@@ -307,6 +307,49 @@ class RegistrosDiariosListController {
       // Remover chave legada 'parcial' se não houver necessidade
       delete mediasOrganizadas.parcial;
 
+      const temMediaReal = Object.values(mediasOrganizadas).some(
+        item => item && typeof item.media === 'number' && item.media > 0
+      );
+
+      if (!temMediaReal) {
+        const mediasLegadas = await executeQuery(
+          `SELECT 
+            media_lanche_manha,
+            media_parcial_manha,
+            media_parcial,
+            media_parcial_tarde,
+            media_almoco,
+            media_lanche_tarde,
+            media_eja
+          FROM media_escolas
+          WHERE escola_id = ?
+          ORDER BY data_atualizacao DESC
+          LIMIT 1`,
+          [escola_id]
+        );
+
+        if (mediasLegadas.length > 0) {
+          const legada = mediasLegadas[0];
+          const obterMedia = (valor, fallback = 0) => {
+            const numero = parseInt(valor);
+            return Number.isFinite(numero) ? numero : fallback;
+          };
+
+          mediasOrganizadas.lanche_manha.media = obterMedia(legada.media_lanche_manha);
+          mediasOrganizadas.parcial_manha.media = obterMedia(
+            legada.media_parcial_manha,
+            legada.media_parcial
+          );
+          mediasOrganizadas.almoco.media = obterMedia(legada.media_almoco);
+          mediasOrganizadas.lanche_tarde.media = obterMedia(legada.media_lanche_tarde);
+          mediasOrganizadas.parcial_tarde.media = obterMedia(
+            legada.media_parcial_tarde,
+            legada.media_parcial
+          );
+          mediasOrganizadas.eja.media = obterMedia(legada.media_eja);
+        }
+      }
+
       res.json({
         success: true,
         data: mediasOrganizadas
