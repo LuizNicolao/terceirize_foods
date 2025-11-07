@@ -17,23 +17,22 @@ const hasAccessToLogistica = (req, res, next) => {
   next();
 };
 
-// Aplicar autenticação e verificação de acesso em todas as rotas
+// Aplicar autenticação em todas as rotas
 router.use(authenticateToken);
-router.use(hasAccessToLogistica);
 
 // Listar necessidades para logística
-router.get('/logistica', NecessidadesLogisticaController.listarParaLogistica);
+router.get('/logistica', hasAccessToLogistica, NecessidadesLogisticaController.listarParaLogistica);
 
 // Salvar ajustes da logística
-router.put('/logistica/ajustes', NecessidadesLogisticaController.salvarAjustesLogistica);
+router.put('/logistica/ajustes', hasAccessToLogistica, NecessidadesLogisticaController.salvarAjustesLogistica);
 
 // Enviar para confirmação da nutricionista
-router.post('/logistica/enviar-nutri', NecessidadesLogisticaController.enviarParaNutricionista);
+router.post('/logistica/enviar-nutri', hasAccessToLogistica, NecessidadesLogisticaController.enviarParaNutricionista);
 
 // Buscar produtos para modal
-router.get('/logistica/produtos-modal', NecessidadesLogisticaController.buscarProdutosParaModal);
+router.get('/logistica/produtos-modal', hasAccessToLogistica, NecessidadesLogisticaController.buscarProdutosParaModal);
 
 // Incluir produto extra
-router.post('/logistica/produto-extra', NecessidadesLogisticaController.incluirProdutoExtra);
+router.post('/logistica/produto-extra', hasAccessToLogistica, NecessidadesLogisticaController.incluirProdutoExtra);
 
 module.exports = router;
