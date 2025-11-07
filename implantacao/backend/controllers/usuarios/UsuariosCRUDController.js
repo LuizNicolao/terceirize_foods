@@ -80,7 +80,7 @@ class UsuariosCRUDController {
    */
   static atualizarUsuario = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const { nome, email, nivel_de_acesso, tipo_de_acesso, status } = req.body;
+    const { nome, email, nivel_de_acesso, tipo_de_acesso, status, senha } = req.body;
     // const { filiais } = req.body; // TODO: Implementar quando a tabela filiais for criada
 
     // Verificar se usuário existe
@@ -132,6 +132,13 @@ class UsuariosCRUDController {
     if (status !== undefined) {
       updateFields.push('status = ?');
       updateParams.push(status);
+    }
+
+    if (senha !== undefined && senha !== null && String(senha).trim() !== '') {
+      const saltRounds = 12;
+      const senhaCriptografada = await bcrypt.hash(String(senha), saltRounds);
+      updateFields.push('senha = ?');
+      updateParams.push(senhaCriptografada);
     }
 
     if (updateFields.length === 0) {

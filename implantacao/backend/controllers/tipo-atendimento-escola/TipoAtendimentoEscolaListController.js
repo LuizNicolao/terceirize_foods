@@ -142,36 +142,44 @@ class TipoAtendimentoEscolaListController {
       
       const todosVinculos = await executeQuery(vinculosQuery, params);
       
-      // Expandir JSON em múltiplas linhas (uma linha por tipo) para compatibilidade com frontend
-      let vinculosExpandidos = [];
+      // Agrupar tipos por escola (uma linha por escola)
+      const agrupadosPorEscola = new Map();
       todosVinculos.forEach(vinculo => {
         const tipos = parseTiposAtendimento(vinculo.tipos_atendimento);
-        tipos.forEach(tipo => {
-          vinculosExpandidos.push({
+
+        if (!agrupadosPorEscola.has(vinculo.escola_id)) {
+          agrupadosPorEscola.set(vinculo.escola_id, {
             id: vinculo.id,
             escola_id: vinculo.escola_id,
-            tipo_atendimento: tipo,
-            tipos_atendimento: tipos, // Manter array completo também
+            tipos_atendimento: new Set(),
             ativo: vinculo.ativo,
             criado_por: vinculo.criado_por,
             criado_em: vinculo.criado_em,
             atualizado_em: vinculo.atualizado_em
           });
-        });
+        }
+
+        const registroEscola = agrupadosPorEscola.get(vinculo.escola_id);
+        tipos.forEach(tipo => registroEscola.tipos_atendimento.add(tipo));
       });
-      
+
+      let vinculosAgrupados = Array.from(agrupadosPorEscola.values()).map(vinculo => ({
+        ...vinculo,
+        tipos_atendimento: Array.from(vinculo.tipos_atendimento)
+      }));
+
       // Aplicar filtro por tipo de atendimento se fornecido
       if (tipo_atendimento) {
-        vinculosExpandidos = vinculosExpandidos.filter(v => v.tipo_atendimento === tipo_atendimento);
+        vinculosAgrupados = vinculosAgrupados.filter(v => v.tipos_atendimento.includes(tipo_atendimento));
       }
-      
+
       // Buscar informações das escolas via API do Foods
-      const escolaIds = [...new Set(vinculosExpandidos.map(v => v.escola_id))];
+      const escolaIds = vinculosAgrupados.map(v => v.escola_id);
       const authToken = req.headers.authorization;
       const escolasMap = await buscarInfoEscolas(escolaIds, authToken);
       
       // Enriquecer vínculos com informações das escolas
-      let vinculosEnriquecidos = vinculosExpandidos.map(vinculo => {
+      let vinculosEnriquecidos = vinculosAgrupados.map(vinculo => {
         const escolaInfo = escolasMap.get(vinculo.escola_id) || {};
         return {
           ...vinculo,
@@ -196,15 +204,9 @@ class TipoAtendimentoEscolaListController {
       // Aplicar paginação
       const totalItems = vinculosEnriquecidos.length;
       const totalPages = Math.ceil(totalItems / validLimitNum);
-      const vinculosPaginados = vinculosEnriquecidos.slice(offset, offset + validLimitNum);
-      
-      // Ordenar por nome da escola e tipo de atendimento
-      vinculosPaginados.sort((a, b) => {
-        const nomeA = (a.nome_escola || '').toLowerCase();
-        const nomeB = (b.nome_escola || '').toLowerCase();
-        if (nomeA !== nomeB) return nomeA.localeCompare(nomeB);
-        return (a.tipo_atendimento || '').localeCompare(b.tipo_atendimento || '');
-      });
+      const vinculosPaginados = vinculosEnriquecidos
+        .sort((a, b) => (a.nome_escola || '').localeCompare(b.nome_escola || ''))
+        .slice(offset, offset + validLimitNum);
 
       res.json({
         success: true,
