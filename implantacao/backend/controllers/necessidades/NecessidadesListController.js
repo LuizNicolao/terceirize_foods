@@ -1,24 +1,32 @@
 const { executeQuery } = require('../../config/database');
+const { buscarEscolasIdsDaNutricionista } = require('./utils/ajusteUtils');
 
 const listar = async (req, res) => {
   try {
     const { page = 1, limit = 10, search, escola, grupo, data, semana_abastecimento } = req.query;
-    const userId = req.user.id;
     const userType = req.user.tipo_de_acesso;
-    
+    const isNutricionista = userType === 'nutricionista';
+
     let whereClause = 'WHERE 1=1';
     let params = [];
 
-    // Lógica de permissões por tipo de usuário
-    if (userType === 'nutricionista') {
-      // Nutricionista: apenas registros criados por ela
-      whereClause += ' AND n.usuario_email = ?';
-      params.push(req.user.email);
-    } else if (userType === 'coordenador' || userType === 'supervisor' || userType === 'administrador') {
-      // Coordenador, Supervisor e Administrador: acesso a todas as escolas
-      // Não adiciona filtro adicional
-    } else {
-      // Outros tipos: apenas registros criados por eles
+    if (isNutricionista) {
+      try {
+        const authToken = req.headers.authorization?.replace('Bearer ', '');
+        const escolasIds = await buscarEscolasIdsDaNutricionista(req.user.email, authToken);
+
+        if (escolasIds.length > 0) {
+          const placeholders = escolasIds.map(() => '?').join(',');
+          whereClause += ` AND n.escola_id IN (${placeholders})`;
+          params.push(...escolasIds);
+        } else {
+          whereClause += ' AND 1=0';
+        }
+      } catch (error) {
+        console.error('[NecessidadesList] Erro ao buscar escolas da nutricionista:', error);
+        whereClause += ' AND 1=0';
+      }
+    } else if (!['coordenador', 'supervisor', 'administrador', 'logistica'].includes(userType)) {
       whereClause += ' AND n.usuario_email = ?';
       params.push(req.user.email);
     }
@@ -106,22 +114,29 @@ const listar = async (req, res) => {
 const listarTodas = async (req, res) => {
   try {
     const { search, escola } = req.query;
-    const userId = req.user.id;
     const userType = req.user.tipo_de_acesso;
-    
+    const isNutricionista = userType === 'nutricionista';
+
     let whereClause = 'WHERE 1=1';
     let params = [];
 
-    // Lógica de permissões por tipo de usuário
-    if (userType === 'nutricionista') {
-      // Nutricionista: apenas registros criados por ela
-      whereClause += ' AND n.usuario_email = ?';
-      params.push(req.user.email);
-    } else if (userType === 'coordenador' || userType === 'supervisor' || userType === 'administrador') {
-      // Coordenador, Supervisor e Administrador: acesso a todas as escolas
-      // Não adiciona filtro adicional
-    } else {
-      // Outros tipos: apenas registros criados por eles
+    if (isNutricionista) {
+      try {
+        const authToken = req.headers.authorization?.replace('Bearer ', '');
+        const escolasIds = await buscarEscolasIdsDaNutricionista(req.user.email, authToken);
+
+        if (escolasIds.length > 0) {
+          const placeholders = escolasIds.map(() => '?').join(',');
+          whereClause += ` AND n.escola_id IN (${placeholders})`;
+          params.push(...escolasIds);
+        } else {
+          whereClause += ' AND 1=0';
+        }
+      } catch (error) {
+        console.error('[NecessidadesList] Erro ao buscar escolas da nutricionista (listarTodas):', error);
+        whereClause += ' AND 1=0';
+      }
+    } else if (!['coordenador', 'supervisor', 'administrador', 'logistica'].includes(userType)) {
       whereClause += ' AND n.usuario_email = ?';
       params.push(req.user.email);
     }
@@ -161,9 +176,53 @@ const listarTodas = async (req, res) => {
 
 const listarEscolasNutricionista = async (req, res) => {
   try {
-    const { usuarioId } = req.params;
     const userType = req.user.tipo_de_acesso;
-    
+    const authToken = req.headers.authorization?.replace('Bearer ', '');
+
+    if (userType === 'nutricionista') {
+      console.log('[NecessidadesList] listarEscolasNutricionista - nutricionista solicitante', {
+        userId: req.user.id,
+        email: req.user.email
+      });
+
+      try {
+        const axios = require('axios');
+        const foodsApiUrl = process.env.FOODS_API_URL || 'http://localhost:3001';
+
+        const response = await axios.get(`${foodsApiUrl}/unidades-escolares?limit=10000`, {
+          headers: {
+            'Authorization': `Bearer ${authToken}`
+          },
+          timeout: 5000
+        });
+
+        if (response.data && response.data.success) {
+          const unidadesEscolares = response.data.data || [];
+          console.log('[NecessidadesList] Escolas retornadas pelo Foods para nutricionista', { total: unidadesEscolares.length });
+
+          const escolas = unidadesEscolares.map(unidade => ({
+            id: unidade.id,
+            nome_escola: unidade.nome_escola || unidade.nome,
+            rota: unidade.rota_nome || unidade.rota || 'N/A',
+            cidade: unidade.cidade || '',
+            codigo_teknisa: unidade.codigo_teknisa || unidade.codigo || '',
+            filial_id: unidade.filial_id
+          }));
+
+          return res.json({
+            success: true,
+            data: escolas
+          });
+        }
+
+        console.log('[NecessidadesList] Foods não retornou sucesso para nutricionista');
+        return res.json({ success: true, data: [] });
+      } catch (apiError) {
+        console.error('[NecessidadesList] Erro ao buscar escolas do Foods para nutricionista:', apiError.message);
+        return res.json({ success: true, data: [] });
+      }
+    }
+
     // Se não for nutricionista, buscar todas as unidades escolares do Foods
     if (userType !== 'nutricionista') {
       try {
@@ -208,48 +267,6 @@ const listarEscolasNutricionista = async (req, res) => {
           data: []
         });
       }
-    }
-
-    // Buscar escolas da nutricionista via API do foods (mesmo endpoint usado em Unidades Escolares)
-    try {
-      const axios = require('axios');
-      const foodsApiUrl = process.env.FOODS_API_URL || 'http://localhost:3001';
-      
-      // Buscar unidades escolares do foods (que já aplica filtro por nutricionista)
-      const response = await axios.get(`${foodsApiUrl}/unidades-escolares?limit=10000`, {
-        headers: {
-          'Authorization': `Bearer ${req.headers.authorization?.replace('Bearer ', '')}`
-        }
-      });
-
-      if (response.data && response.data.success) {
-        const unidadesEscolares = response.data.data || [];
-        
-        // Converter unidades escolares para o formato esperado pelo dropdown
-        const escolas = unidadesEscolares.map(unidade => ({
-          id: unidade.id,
-          nome_escola: unidade.nome_escola || unidade.nome,
-          rota: unidade.rota || 'N/A',
-          cidade: unidade.cidade || '',
-          codigo_teknisa: unidade.codigo_teknisa || unidade.codigo || ''
-        }));
-
-        return res.json({
-          success: true,
-          data: escolas
-        });
-      } else {
-        return res.json({
-          success: true,
-          data: []
-        });
-      }
-    } catch (apiError) {
-      console.error('Erro ao buscar unidades escolares do foods:', apiError);
-      return res.json({
-        success: true,
-        data: []
-      });
     }
   } catch (error) {
     console.error('Erro ao buscar escolas da nutricionista:', error);
