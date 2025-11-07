@@ -1,4 +1,5 @@
 const { executeQuery } = require('../../config/database');
+const { buscarEscolasIdsDaNutricionista } = require('../necessidades/utils/ajusteUtils');
 const { calcularPeriodoDiasUteis } = require('../../utils/diasUteisUtils');
 
 /**
@@ -26,8 +27,16 @@ class RegistrosDiariosListController {
       
       // Filtro por tipo de usuário (nutricionista vê apenas suas escolas)
       if (userType === 'nutricionista') {
-        whereClause += ' AND rd.nutricionista_id = ?';
-        params.push(userId);
+        const authToken = req.headers.authorization?.replace('Bearer ', '');
+        const escolasIds = await buscarEscolasIdsDaNutricionista(req.user.email, authToken);
+
+        if (escolasIds.length > 0) {
+          const placeholders = escolasIds.map(() => '?').join(',');
+          whereClause += ` AND rd.escola_id IN (${placeholders})`;
+          params.push(...escolasIds);
+        } else {
+          whereClause += ' AND 1=0';
+        }
       }
       
       // Filtro por escola
@@ -132,8 +141,16 @@ class RegistrosDiariosListController {
       
       // Filtro por tipo de usuário
       if (userType === 'nutricionista') {
-        whereClause += ' AND me.nutricionista_id = ?';
-        params.push(userId);
+        const authToken = req.headers.authorization?.replace('Bearer ', '');
+        const escolasIds = await buscarEscolasIdsDaNutricionista(req.user.email, authToken);
+
+        if (escolasIds.length > 0) {
+          const placeholders = escolasIds.map(() => '?').join(',');
+          whereClause += ` AND me.escola_id IN (${placeholders})`;
+          params.push(...escolasIds);
+        } else {
+          whereClause += ' AND 1=0';
+        }
       }
       
       // Filtro por escola
@@ -255,8 +272,16 @@ class RegistrosDiariosListController {
 
       // Se for nutricionista, filtrar apenas escolas associadas
       if (userType === 'nutricionista') {
-        whereClause += ' AND rd.nutricionista_id = ?';
-        params.push(userId);
+        const authToken = req.headers.authorization?.replace('Bearer ', '');
+        const escolasIds = await buscarEscolasIdsDaNutricionista(req.user.email, authToken);
+
+        if (escolasIds.length > 0) {
+          const placeholders = escolasIds.map(() => '?').join(',');
+          whereClause += ` AND rd.escola_id IN (${placeholders})`;
+          params.push(...escolasIds);
+        } else {
+          whereClause += ' AND 1=0';
+        }
       }
 
       // Buscar registros dos últimos 20 dias úteis e calcular média

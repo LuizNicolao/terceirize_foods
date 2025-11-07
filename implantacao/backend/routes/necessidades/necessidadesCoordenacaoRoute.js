@@ -19,30 +19,29 @@ const hasAccessToCoordenacao = (req, res, next) => {
 
 // Aplicar autenticação e verificação de acesso em todas as rotas
 router.use(authenticateToken);
-router.use(hasAccessToCoordenacao);
 
 // Listar necessidades para coordenação
-router.get('/coordenacao', NecessidadesCoordenacaoController.listarParaCoordenacao);
+router.get('/coordenacao', hasAccessToCoordenacao, NecessidadesCoordenacaoController.listarParaCoordenacao);
 
 // Salvar ajustes da coordenação
-router.put('/coordenacao/ajustes', NecessidadesCoordenacaoController.salvarAjustesCoordenacao);
+router.put('/coordenacao/ajustes', hasAccessToCoordenacao, NecessidadesCoordenacaoController.salvarAjustesCoordenacao);
 
 // Liberar para logística
-router.post('/coordenacao/liberar-logistica', NecessidadesCoordenacaoController.liberarParaLogistica);
+router.post('/coordenacao/liberar-logistica', hasAccessToCoordenacao, NecessidadesCoordenacaoController.liberarParaLogistica);
 
 // Novo: NEC COORD -> CONF NUTRI (devolver para Nutri confirmar)
-router.post('/coordenacao/confirmar-nutri', NecessidadesCoordenacaoController.confirmarNutri);
+router.post('/coordenacao/confirmar-nutri', hasAccessToCoordenacao, NecessidadesCoordenacaoController.confirmarNutri);
 
 // Novo: CONF COORD -> CONF (confirmação final)
-router.post('/coordenacao/confirmar-final', NecessidadesCoordenacaoController.confirmarFinal);
+router.post('/coordenacao/confirmar-final', hasAccessToCoordenacao, NecessidadesCoordenacaoController.confirmarFinal);
 
 // Buscar produtos para modal
-router.get('/coordenacao/produtos-modal', NecessidadesCoordenacaoController.buscarProdutosParaModal);
+router.get('/coordenacao/produtos-modal', hasAccessToCoordenacao, NecessidadesCoordenacaoController.buscarProdutosParaModal);
 
 // Incluir produto extra
-router.post('/coordenacao/produto-extra', NecessidadesCoordenacaoController.incluirProdutoExtra);
+router.post('/coordenacao/produto-extra', hasAccessToCoordenacao, NecessidadesCoordenacaoController.incluirProdutoExtra);
 
 // Listar nutricionistas para filtro
-router.get('/coordenacao/nutricionistas', NecessidadesCoordenacaoController.listarNutricionistas);
+router.get('/coordenacao/nutricionistas', hasAccessToCoordenacao, NecessidadesCoordenacaoController.listarNutricionistas);
 
 module.exports = router;
