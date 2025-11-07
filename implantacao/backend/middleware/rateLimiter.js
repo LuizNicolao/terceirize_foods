@@ -141,11 +141,12 @@ const reportsLimiter = createRateLimiter(RATE_LIMIT_CONFIG.reports);
 const routeBasedRateLimit = (req, res, next) => {
   const path = req.path;
   
-  // Aplicar rate limiting específico baseado na rota
+  // Desativar temporariamente o rate limit específico de autenticação
   if (path.includes('/auth/') || path.includes('/login')) {
-    return authLimiter(req, res, next);
+    return next();
   }
   
+  // Aplicar rate limiting específico baseado na rota
   if (path.includes('/upload') || path.includes('/anexos')) {
     return uploadLimiter(req, res, next);
   }

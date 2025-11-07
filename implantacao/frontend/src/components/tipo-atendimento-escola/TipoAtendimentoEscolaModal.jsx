@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Modal, Button, SearchableSelect } from '../ui';
+import { Modal, Button, SearchableSelect, ConfirmModal } from '../ui';
 import { FaSave, FaTimes } from 'react-icons/fa';
 import { Pagination } from '../ui';
 import toast from 'react-hot-toast';
@@ -31,6 +31,7 @@ const TipoAtendimentoEscolaModal = ({
   const [buscaEscola, setBuscaEscola] = useState('');
   const [errors, setErrors] = useState({});
   const [statusAtivo, setStatusAtivo] = useState(true);
+  const [confirmacao, setConfirmacao] = useState({ aberto: false, acao: null });
   const isEditing = Boolean(editingItem);
   const isViewMode = viewMode;
 
@@ -207,41 +208,91 @@ const TipoAtendimentoEscolaModal = ({
     return vinculosSelecionados[escolaId]?.includes(tipoValue) || false;
   };
 
-  const selecionarTodos = useCallback(async () => {
+  const buscarTodasEscolasDaFilial = useCallback(async () => {
     if (!filialId) {
+      return [];
+    }
+
+    try {
+      let pagina = 1;
+      const limite = 200;
+      let todas = [];
+      let continuar = true;
+
+      while (continuar) {
+        const response = await escolasService.listar(
+          {
+            filial_id: filialId,
+            page: pagina,
+            limit: limite
+          },
+          user
+        );
+
+        const dados = response?.data || [];
+        todas = todas.concat(dados);
+
+        if (dados.length < limite) {
+          continuar = false;
+        } else {
+          pagina += 1;
+        }
+      }
+
+      return todas;
+    } catch (erro) {
+      console.error('Erro ao buscar todas as escolas da filial:', erro);
+      toast.error('Erro ao buscar instituições da filial selecionada');
+      return [];
+    }
+  }, [filialId, user]);
+
+  const confirmarAcaoMassa = useCallback((acao) => {
+    if (isViewMode) {
+      return;
+    }
+
+    if (acao === 'selecionar' && !filialId) {
       toast.error('Selecione uma filial para marcar as escolas');
       return;
     }
-    if (isViewMode) {
-      return;
-    }
-    if (!window.confirm('Deseja marcar todas as escolas e todos os tipos de atendimento?')) {
-      return;
-    }
 
-    const todasEscolas = escolas.map(escola => escola.id);
-    const tiposDisponiveis = tiposAtendimento.map(tipo => tipo.value);
+    setConfirmacao({ aberto: true, acao });
+  }, [filialId, isViewMode]);
 
-    setVinculosSelecionados(prev => {
-      const novos = { ...prev };
-      todasEscolas.forEach(escolaId => {
-        novos[escolaId] = [...tiposDisponiveis];
+  const executarAcaoMassa = useCallback(async () => {
+    if (confirmacao.acao === 'selecionar') {
+      const todasEscolas = await buscarTodasEscolasDaFilial();
+
+      if (!todasEscolas || todasEscolas.length === 0) {
+        toast.error('Nenhuma escola encontrada para a filial selecionada');
+        setConfirmacao({ aberto: false, acao: null });
+        return;
+      }
+
+      const tiposDisponiveis = tiposAtendimento.map(tipo => tipo.value);
+
+      setVinculosSelecionados(prev => {
+        const novos = { ...prev };
+        todasEscolas.forEach(escola => {
+          novos[escola.id] = [...tiposDisponiveis];
+        });
+        return novos;
       });
-      return novos;
-    });
-    toast.success('Todos os tipos marcados para todas as escolas listadas.');
-  }, [filialId, isViewMode, escolas, tiposAtendimento]);
+      toast.success('Todos os tipos marcados para as escolas da filial selecionada.');
+    }
 
-  const desmarcarTodos = useCallback(() => {
-    if (isViewMode) {
-      return;
+    if (confirmacao.acao === 'desmarcar') {
+      setVinculosSelecionados({});
+      toast.success('Todos os tipos foram desmarcados.');
     }
-    if (!window.confirm('Deseja desmarcar todos os tipos de atendimento?')) {
-      return;
-    }
-    setVinculosSelecionados({});
-    toast.success('Todos os tipos foram desmarcados.');
-  }, [isViewMode]);
+
+    setConfirmacao({ aberto: false, acao: null });
+  }, [confirmacao, buscarTodasEscolasDaFilial, tiposAtendimento]);
+
+  const fecharConfirmacao = useCallback(() => {
+    setConfirmacao({ aberto: false, acao: null });
+  }, []);
 
   const validateForm = () => {
     const newErrors = {};
@@ -480,7 +531,7 @@ const TipoAtendimentoEscolaModal = ({
                   type="button"
                   variant="ghost"
                   disabled={loadingEscolas || loading}
-                  onClick={selecionarTodos}
+                  onClick={() => confirmarAcaoMassa('selecionar')}
                   className="text-xs"
                 >
                   Marcar todos
@@ -489,7 +540,7 @@ const TipoAtendimentoEscolaModal = ({
                   type="button"
                   variant="ghost"
                   disabled={loadingEscolas || loading}
-                  onClick={desmarcarTodos}
+                  onClick={() => confirmarAcaoMassa('desmarcar')}
                   className="text-xs text-red-600 hover:text-red-700"
                 >
                   Desmarcar todos
@@ -675,6 +726,19 @@ const TipoAtendimentoEscolaModal = ({
           </div>
         )}
       </form>
+
+      <ConfirmModal
+        isOpen={confirmacao.aberto}
+        onClose={fecharConfirmacao}
+        onConfirm={executarAcaoMassa}
+        title={confirmacao.acao === 'selecionar' ? 'Marcar todos os tipos?' : 'Desmarcar todos os tipos?'}
+        message={confirmacao.acao === 'selecionar'
+          ? 'Deseja marcar todos os tipos de atendimento para todas as escolas listadas?'
+          : 'Deseja desmarcar todos os tipos de atendimento?'}
+        confirmText={confirmacao.acao === 'selecionar' ? 'Marcar todos' : 'Desmarcar todos'}
+        cancelText="Cancelar"
+        variant={confirmacao.acao === 'desmarcar' ? 'danger' : 'primary'}
+      />
     </Modal>
   );
 };
