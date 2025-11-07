@@ -66,8 +66,10 @@ class RegistrosDiariosListController {
           rd.data,
           rd.nutricionista_id,
           MAX(CASE WHEN rd.tipo_refeicao = 'lanche_manha' THEN rd.valor ELSE 0 END) as lanche_manha,
+          MAX(CASE WHEN rd.tipo_refeicao IN ('parcial_manha','parcial') THEN rd.valor ELSE 0 END) as parcial_manha,
           MAX(CASE WHEN rd.tipo_refeicao = 'almoco' THEN rd.valor ELSE 0 END) as almoco,
           MAX(CASE WHEN rd.tipo_refeicao = 'lanche_tarde' THEN rd.valor ELSE 0 END) as lanche_tarde,
+          MAX(CASE WHEN rd.tipo_refeicao = 'parcial_tarde' THEN rd.valor ELSE 0 END) as parcial_tarde,
           MAX(CASE WHEN rd.tipo_refeicao = 'parcial' THEN rd.valor ELSE 0 END) as parcial,
           MAX(CASE WHEN rd.tipo_refeicao = 'eja' THEN rd.valor ELSE 0 END) as eja,
           MIN(rd.data_cadastro) as data_cadastro,
@@ -180,8 +182,10 @@ class RegistrosDiariosListController {
           rd.data,
           rd.nutricionista_id,
           MAX(CASE WHEN rd.tipo_refeicao = 'lanche_manha' THEN rd.valor ELSE 0 END) as lanche_manha,
+          MAX(CASE WHEN rd.tipo_refeicao IN ('parcial_manha','parcial') THEN rd.valor ELSE 0 END) as parcial_manha,
           MAX(CASE WHEN rd.tipo_refeicao = 'almoco' THEN rd.valor ELSE 0 END) as almoco,
           MAX(CASE WHEN rd.tipo_refeicao = 'lanche_tarde' THEN rd.valor ELSE 0 END) as lanche_tarde,
+          MAX(CASE WHEN rd.tipo_refeicao = 'parcial_tarde' THEN rd.valor ELSE 0 END) as parcial_tarde,
           MAX(CASE WHEN rd.tipo_refeicao = 'parcial' THEN rd.valor ELSE 0 END) as parcial,
           MAX(CASE WHEN rd.tipo_refeicao = 'eja' THEN rd.valor ELSE 0 END) as eja,
           MIN(rd.data_cadastro) as data_cadastro,
@@ -267,9 +271,9 @@ class RegistrosDiariosListController {
         ${whereClause}
         GROUP BY rd.tipo_refeicao
       `, params);
-
+      
       // Organizar as médias por tipo
-      const tiposPermitidos = ['lanche_manha', 'almoco', 'lanche_tarde', 'parcial', 'eja'];
+      const tiposPermitidos = ['lanche_manha', 'parcial_manha', 'almoco', 'lanche_tarde', 'parcial_tarde', 'eja', 'parcial'];
       const mediasOrganizadas = {};
       
       // Inicializar todos os tipos com valores padrão
@@ -283,14 +287,25 @@ class RegistrosDiariosListController {
 
       // Preencher com os dados encontrados
       medias.forEach(media => {
-        if (tiposPermitidos.includes(media.tipo_refeicao)) {
-          mediasOrganizadas[media.tipo_refeicao] = {
+        const tipoOriginal = media.tipo_refeicao;
+        let tipoRef = tipoOriginal;
+
+        // Mapear registros legados "parcial" para parcial_manha
+        if (tipoOriginal === 'parcial') {
+          tipoRef = 'parcial_manha';
+        }
+
+        if (tiposPermitidos.includes(tipoRef)) {
+          mediasOrganizadas[tipoRef] = {
             media: parseInt(media.media_correta) || 0,
             quantidade_registros: media.quantidade_registros,
             dias_com_registro: media.dias_com_registro
           };
         }
       });
+
+      // Remover chave legada 'parcial' se não houver necessidade
+      delete mediasOrganizadas.parcial;
 
       res.json({
         success: true,

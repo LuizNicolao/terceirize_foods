@@ -32,18 +32,21 @@ const RegistrosDiariosModal = ({
     return `${ano}-${mes}-${dia}`;
   };
   
-  const [formData, setFormData] = useState({
+  const criarEstadoInicial = () => ({
     escola_id: '',
     nutricionista_id: user?.id || '',
     data: getDataAtual(),
     quantidades: {
       lanche_manha: 0,
+      parcial_manha: 0,
       almoco: 0,
       lanche_tarde: 0,
-      parcial: 0,
+      parcial_tarde: 0,
       eja: 0
     }
   });
+
+  const [formData, setFormData] = useState(criarEstadoInicial());
   
   // Carregar TODAS as escolas quando modal abrir
   useEffect(() => {
@@ -107,27 +110,17 @@ const RegistrosDiariosModal = ({
         data: registro.data || new Date().toISOString().split('T')[0],
         quantidades: {
           lanche_manha: registro.lanche_manha || 0,
+          parcial_manha: (registro.parcial_manha ?? registro.parcial) || 0,
           almoco: registro.almoco || 0,
           lanche_tarde: registro.lanche_tarde || 0,
-          parcial: registro.parcial || 0,
+          parcial_tarde: registro.parcial_tarde || 0,
           eja: registro.eja || 0
         }
       });
       setDadosIniciaisCarregados(true);
     } else if (!registro && isOpen) {
       // Resetar para novo registro com data atual
-      setFormData({
-        escola_id: '',
-        nutricionista_id: user?.id || '',
-        data: getDataAtual(),
-        quantidades: {
-          lanche_manha: 0,
-          almoco: 0,
-          lanche_tarde: 0,
-          parcial: 0,
-          eja: 0
-        }
-      });
+      setFormData(criarEstadoInicial());
       setDadosIniciaisCarregados(false);
     }
   }, [registro, isOpen, user]);
@@ -164,9 +157,18 @@ const RegistrosDiariosModal = ({
           );
           
           if (result.success && result.data?.quantidades) {
+            const quantidades = result.data.quantidades;
+            const quantidadesNormalizadas = {
+              lanche_manha: quantidades.lanche_manha || 0,
+              parcial_manha: quantidades.parcial_manha ?? quantidades.parcial ?? 0,
+              almoco: quantidades.almoco || 0,
+              lanche_tarde: quantidades.lanche_tarde || 0,
+              parcial_tarde: quantidades.parcial_tarde || 0,
+              eja: quantidades.eja || 0
+            };
             setFormData(prev => ({
               ...prev,
-              quantidades: result.data.quantidades
+              quantidades: quantidadesNormalizadas
             }));
           }
         }
@@ -396,11 +398,12 @@ const RegistrosDiariosModal = ({
           
           <div className="space-y-3">
             {[
-              { key: 'lanche_manha', label: 'Lanche Manhã', icon: '🥐' },
+              { key: 'lanche_manha', label: 'Lanche da Manhã', icon: '🌅' },
+              { key: 'parcial_manha', label: 'Parcial Manhã', icon: '🥗' },
               { key: 'almoco', label: 'Almoço', icon: '🍽️' },
-              { key: 'lanche_tarde', label: 'Lanche Tarde', icon: '🥤' },
-              { key: 'parcial', label: 'Parcial', icon: '🍲' },
-              { key: 'eja', label: 'EJA', icon: '📚' }
+              { key: 'lanche_tarde', label: 'Lanche da Tarde', icon: '🌆' },
+              { key: 'parcial_tarde', label: 'Parcial Tarde', icon: '🌇' },
+              { key: 'eja', label: 'EJA (Noturno)', icon: '🌙' }
             ].map(refeicao => (
               <div key={refeicao.key} className="flex items-center gap-3">
                 <span className="text-2xl">{refeicao.icon}</span>

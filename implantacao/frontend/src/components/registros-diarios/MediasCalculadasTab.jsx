@@ -32,9 +32,10 @@ const MediasCalculadasTab = ({ medias, loading }) => {
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Escola</th>
                 <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Lanche Manhã</th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Parcial Manhã</th>
                 <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Almoço</th>
                 <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Lanche Tarde</th>
-                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Parcial</th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Parcial Tarde</th>
                 <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">EJA</th>
                 <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Dias</th>
                 <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Última Atualização</th>
@@ -53,27 +54,32 @@ const MediasCalculadasTab = ({ medias, loading }) => {
                   </td>
                   <td className="px-6 py-4 text-center">
                     <span className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
-                      {parseFloat(media.media_lanche_manha).toFixed(2)}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-center">
-                    <span className="inline-flex items-center px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
-                      {parseFloat(media.media_almoco).toFixed(2)}
+                      {parseFloat(media.media_lanche_manha ?? 0).toFixed(2)}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-center">
                     <span className="inline-flex items-center px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-medium">
-                      {parseFloat(media.media_lanche_tarde).toFixed(2)}
+                      {parseFloat(media.media_parcial_manha ?? media.media_parcial ?? 0).toFixed(2)}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-center">
-                    <span className="inline-flex items-center px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm font-medium">
-                      {parseFloat(media.media_parcial).toFixed(2)}
+                    <span className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                      {parseFloat(media.media_almoco ?? 0).toFixed(2)}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-center">
+                    <span className="inline-flex items-center px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                      {parseFloat(media.media_lanche_tarde ?? 0).toFixed(2)}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-center">
+                    <span className="inline-flex items-center px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-medium">
+                      {parseFloat(media.media_parcial_tarde ?? 0).toFixed(2)}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-center">
                     <span className="inline-flex items-center px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium">
-                      {parseFloat(media.media_eja).toFixed(2)}
+                      {parseFloat(media.media_eja ?? 0).toFixed(2)}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-center">
@@ -105,31 +111,37 @@ const MediasCalculadasTab = ({ medias, loading }) => {
               <div className="flex justify-between items-center">
                 <span className="text-gray-500">Lanche Manhã:</span>
                 <span className="px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full font-medium">
-                  {parseFloat(media.media_lanche_manha).toFixed(2)}
+                  {parseFloat(media.media_lanche_manha ?? 0).toFixed(2)}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-500">Parcial Manhã:</span>
+                <span className="px-2 py-0.5 bg-purple-100 text-purple-800 rounded-full font-medium">
+                  {parseFloat(media.media_parcial_manha ?? media.media_parcial ?? 0).toFixed(2)}
                 </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-500">Almoço:</span>
                 <span className="px-2 py-0.5 bg-green-100 text-green-800 rounded-full font-medium">
-                  {parseFloat(media.media_almoco).toFixed(2)}
+                  {parseFloat(media.media_almoco ?? 0).toFixed(2)}
                 </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-500">Lanche Tarde:</span>
                 <span className="px-2 py-0.5 bg-purple-100 text-purple-800 rounded-full font-medium">
-                  {parseFloat(media.media_lanche_tarde).toFixed(2)}
+                  {parseFloat(media.media_lanche_tarde ?? 0).toFixed(2)}
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-gray-500">Parcial:</span>
-                <span className="px-2 py-0.5 bg-orange-100 text-orange-800 rounded-full font-medium">
-                  {parseFloat(media.media_parcial).toFixed(2)}
+                <span className="text-gray-500">Parcial Tarde:</span>
+                <span className="px-2 py-0.5 bg-purple-100 text-purple-800 rounded-full font-medium">
+                  {parseFloat(media.media_parcial_tarde ?? 0).toFixed(2)}
                 </span>
               </div>
               <div className="flex justify-between items-center col-span-2">
                 <span className="text-gray-500">EJA:</span>
                 <span className="px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded-full font-medium">
-                  {parseFloat(media.media_eja).toFixed(2)}
+                  {parseFloat(media.media_eja ?? 0).toFixed(2)}
                 </span>
               </div>
             </div>

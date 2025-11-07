@@ -42,9 +42,10 @@ const RegistrosDiariosTable = ({
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Escola</th>
                 <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Data</th>
                 <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Lanche Manhã</th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Parcial Manhã</th>
                 <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Almoço</th>
                 <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Lanche Tarde</th>
-                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Parcial</th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Parcial Tarde</th>
                 <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">EJA</th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Ações</th>
               </tr>
@@ -62,18 +63,23 @@ const RegistrosDiariosTable = ({
                     </span>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-900 text-center">
+                    <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-medium">
+                      {registro.parcial_manha ?? registro.parcial ?? 0}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-900 text-center">
                     <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
                       {registro.almoco}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-900 text-center">
-                    <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-medium">
+                    <span className="px-2 py-1 bg-orange-100 text-orange-800 rounded-full text-xs font-medium">
                       {registro.lanche_tarde}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-900 text-center">
-                    <span className="px-2 py-1 bg-orange-100 text-orange-800 rounded-full text-xs font-medium">
-                      {registro.parcial}
+                    <span className="px-2 py-1 bg-rose-100 text-rose-800 rounded-full text-xs font-medium">
+                      {registro.parcial_tarde ?? 0}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-900 text-center">
@@ -128,16 +134,20 @@ const RegistrosDiariosTable = ({
                 <span className="px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full font-medium">{registro.lanche_manha}</span>
               </div>
               <div className="flex justify-between items-center">
+                <span className="text-gray-500">Parcial Manhã:</span>
+                <span className="px-2 py-0.5 bg-purple-100 text-purple-800 rounded-full font-medium">{registro.parcial_manha ?? registro.parcial ?? 0}</span>
+              </div>
+              <div className="flex justify-between items-center">
                 <span className="text-gray-500">Almoço:</span>
                 <span className="px-2 py-0.5 bg-green-100 text-green-800 rounded-full font-medium">{registro.almoco}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-500">Lanche Tarde:</span>
-                <span className="px-2 py-0.5 bg-purple-100 text-purple-800 rounded-full font-medium">{registro.lanche_tarde}</span>
+                <span className="px-2 py-0.5 bg-orange-100 text-orange-800 rounded-full font-medium">{registro.lanche_tarde}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-gray-500">Parcial:</span>
-                <span className="px-2 py-0.5 bg-orange-100 text-orange-800 rounded-full font-medium">{registro.parcial}</span>
+                <span className="text-gray-500">Parcial Tarde:</span>
+                <span className="px-2 py-0.5 bg-rose-100 text-rose-800 rounded-full font-medium">{registro.parcial_tarde ?? 0}</span>
               </div>
               <div className="flex justify-between items-center col-span-2">
                 <span className="text-gray-500">EJA:</span>

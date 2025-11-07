@@ -10,15 +10,48 @@ class RegistrosDiariosCRUDController {
    */
   static async criar(req, res) {
     try {
-      const { escola_id, nutricionista_id, data, quantidades, escola_nome } = req.body;
+      const { escola_id, nutricionista_id, data, quantidades = {}, escola_nome } = req.body;
       
-      // quantidades = { lanche_manha: 80, almoco: 250, lanche_tarde: 75, parcial: 30, eja: 20 }
-      
-      const tiposRefeicao = ['lanche_manha', 'almoco', 'lanche_tarde', 'parcial', 'eja'];
+      // Normalizar quantidades recebidas (aceitar formatos antigos e novos)
+      const quantidadesNormalizadas = {
+        lanche_manha: Number(quantidades.lanche_manha) || 0,
+        parcial_manha: Number(
+          quantidades.parcial_manha ??
+          quantidades['parcial-manha'] ??
+          quantidades.parcial ?? 0
+        ),
+        almoco: Number(quantidades.almoco) || 0,
+        lanche_tarde: Number(quantidades.lanche_tarde) || 0,
+        parcial_tarde: Number(
+          quantidades.parcial_tarde ??
+          quantidades['parcial-tarde'] ??
+          0
+        ),
+        eja: Number(quantidades.eja) || 0
+      };
+
+      // Caso o formato antigo tenha enviado apenas "parcial", replicar para tarde se não houver valor específico
+      if (
+        quantidades.parcial !== undefined &&
+        quantidadesNormalizadas.parcial_manha === 0 &&
+        quantidadesNormalizadas.parcial_tarde === 0
+      ) {
+        quantidadesNormalizadas.parcial_manha = Number(quantidades.parcial) || 0;
+      }
+
+      // Incluir chave de compatibilidade para manter histórico antigos
+      const tiposRefeicao = [
+        'lanche_manha',
+        'parcial_manha',
+        'almoco',
+        'lanche_tarde',
+        'parcial_tarde',
+        'eja'
+      ];
       const registrosInseridos = [];
       
       for (const tipo of tiposRefeicao) {
-        const valor = quantidades[tipo] || 0;
+        const valor = quantidadesNormalizadas[tipo] || 0;
         
         // Verificar se já existe registro para essa data/escola/tipo
         const existente = await executeQuery(
@@ -91,14 +124,32 @@ class RegistrosDiariosCRUDController {
       // Transformar em objeto com chaves por tipo de refeição
       const quantidades = {
         lanche_manha: 0,
+        parcial_manha: 0,
         almoco: 0,
         lanche_tarde: 0,
-        parcial: 0,
-        eja: 0
+        parcial_tarde: 0,
+        eja: 0,
+        // Campo legado para compatibilidade
+        parcial: 0
       };
       
       registros.forEach(reg => {
-        quantidades[reg.tipo_refeicao] = reg.valor;
+        switch (reg.tipo_refeicao) {
+          case 'parcial_manha':
+            quantidades.parcial_manha = reg.valor;
+            break;
+          case 'parcial_tarde':
+            quantidades.parcial_tarde = reg.valor;
+            break;
+          case 'parcial':
+            quantidades.parcial = reg.valor;
+            if (quantidades.parcial_manha === 0) {
+              quantidades.parcial_manha = reg.valor;
+            }
+            break;
+          default:
+            quantidades[reg.tipo_refeicao] = reg.valor;
+        }
       });
       
       res.json({
