@@ -14,37 +14,53 @@ export const useNecessidadesCalculos = () => {
     
     try {
       let dataFormatada;
-      
+      if (!dataFormatada) {
+        dataFormatada = new Date().toISOString().split('T')[0];
+      }
+
       // Se a data for uma string da semana (ex: "06/01 a 12/01"), converter para data
-      if (typeof data === 'string' && data.includes(' a ')) {
-        // Remover parênteses se existirem
-        const dataLimpa = data.replace(/[()]/g, '');
-        // Extrair a primeira data da string (ex: "06/01" de "06/01 a 12/01")
-        const primeiraData = dataLimpa.split(' a ')[0];
-        const [dia, mes] = primeiraData.split('/');
-        
-        // Determinar o ano baseado na data atual
-        // Para janeiro, usar uma data que existe na tabela (outubro 2025)
-        const agora = new Date();
-        const anoAtual = agora.getFullYear();
-        const mesAtual = agora.getMonth() + 1; // 0-11 -> 1-12
-        const mesData = parseInt(mes);
-        
-        let ano;
-        if (mesData === 1 && mesAtual >= 10) {
-          // Janeiro do próximo ano, mas usar outubro do ano atual (onde há dados)
-          ano = anoAtual;
-          // Usar outubro em vez de janeiro para encontrar registros existentes
-          const mesFormatado = '10';
-          const diaFormatado = '24'; // Usar uma data que existe
-          dataFormatada = `${ano}-${mesFormatado}-${diaFormatado}`;
+      if (typeof data === 'string') {
+        const dataLimpa = data.replace(/[()]/g, '').trim();
+
+        if (dataLimpa.includes(' a ')) {
+          const [inicioRaw, fimRaw] = dataLimpa.split(' a ');
+          const [diaInicioStr, mesInicioStr] = inicioRaw.split('/');
+
+          if (diaInicioStr && mesInicioStr) {
+            const fimPartes = fimRaw.split('/');
+            let anoFimStr = fimPartes.length >= 3 ? fimPartes[2] : '';
+
+            let anoFim = anoFimStr ? parseInt(anoFimStr, 10) : new Date().getFullYear();
+
+            if (!Number.isFinite(anoFim)) {
+              anoFim = new Date().getFullYear();
+            }
+
+            if (anoFim < 100) {
+              anoFim += 2000;
+            }
+
+            const mesInicio = parseInt(mesInicioStr, 10);
+            const mesFim = fimPartes.length >= 2 ? parseInt(fimPartes[1], 10) : mesInicio;
+
+            let anoInicio = anoFim;
+            if (Number.isFinite(mesInicio) && Number.isFinite(mesFim) && mesInicio > mesFim) {
+              anoInicio -= 1;
+            }
+
+            const diaInicio = parseInt(diaInicioStr, 10);
+            const diaFormatado = String(Number.isFinite(diaInicio) ? diaInicio : 1).padStart(2, '0');
+            const mesFormatado = String(Number.isFinite(mesInicio) ? mesInicio : 1).padStart(2, '0');
+
+            dataFormatada = `${anoInicio}-${mesFormatado}-${diaFormatado}`;
+          }
+        } else if (/^\d{4}-\d{2}-\d{2}$/.test(data.trim())) {
+          dataFormatada = data.trim();
         } else {
-          // Mesmo ano
-          ano = anoAtual;
-          // Garantir que dia e mês tenham 2 dígitos
-          const diaFormatado = String(dia).padStart(2, '0');
-          const mesFormatado = String(mes).padStart(2, '0');
-          dataFormatada = `${ano}-${mesFormatado}-${diaFormatado}`;
+          const tentativa = new Date(data);
+          if (!isNaN(tentativa)) {
+            dataFormatada = tentativa.toISOString().split('T')[0];
+          }
         }
       } else if (data instanceof Date) {
         dataFormatada = data.toISOString().split('T')[0];

@@ -159,13 +159,20 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
       icon: '🌆'
     },
     { 
-      key: 'parcial', 
-      label: '🥗 PARCIAL', 
+      key: 'parcial_manha', 
+      label: '🥗 PARCIAL MANHÃ', 
       bgColor: 'bg-purple-600', 
       bgCellColor: 'bg-purple-50',
       icon: '🥗',
-      // Parcial pode ser parcial_manha ou parcial_tarde
-      checkFunction: () => tiposAtendimentoEscola.includes('parcial_manha') || tiposAtendimentoEscola.includes('parcial_tarde')
+      checkFunction: () => tiposAtendimentoEscola.includes('parcial_manha')
+    },
+    { 
+      key: 'parcial_tarde', 
+      label: '🥗 PARCIAL TARDE', 
+      bgColor: 'bg-purple-700', 
+      bgCellColor: 'bg-purple-100',
+      icon: '🥗',
+      checkFunction: () => tiposAtendimentoEscola.includes('parcial_tarde')
     },
     { 
       key: 'eja', 
