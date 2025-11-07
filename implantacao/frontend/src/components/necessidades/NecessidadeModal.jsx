@@ -54,6 +54,25 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
   const [tiposAtendimentoEscola, setTiposAtendimentoEscola] = useState([]);
   const [loadingTiposAtendimento, setLoadingTiposAtendimento] = useState(false);
 
+  // Logs auxiliares para depuração
+  useEffect(() => {
+    if (isOpen) {
+      console.debug('[NecessidadeModal] 📚 filtros selecionados', formData);
+    }
+  }, [isOpen, formData]);
+
+  useEffect(() => {
+    if (isOpen) {
+      console.debug('[NecessidadeModal] 📊 médias carregadas', mediasPeriodo);
+    }
+  }, [isOpen, mediasPeriodo]);
+
+  useEffect(() => {
+    if (isOpen) {
+      console.debug('[NecessidadeModal] 🧭 tipos de atendimento por escola', tiposAtendimentoEscola);
+    }
+  }, [isOpen, tiposAtendimentoEscola]);
+
   // Limpar dados quando modal é fechado
   useEffect(() => {
     if (!isOpen) {
@@ -190,6 +209,12 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
     }
     return tipoDisponivel(tipo.key);
   });
+
+  useEffect(() => {
+    if (isOpen) {
+      console.debug('[NecessidadeModal] ✅ tipos de atendimento disponíveis na tela', tiposDisponiveis.map(tipo => tipo.key));
+    }
+  }, [isOpen, tiposDisponiveis]);
 
   // Inicializar tabela quando produtos estiverem carregados
   useEffect(() => {
