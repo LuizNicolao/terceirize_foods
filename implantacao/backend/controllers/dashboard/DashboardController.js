@@ -17,7 +17,6 @@ class DashboardController {
           const result = await executeQuery(query);
           return result[0] || defaultValue;
         } catch (error) {
-          console.error('Erro ao executar query:', error.message);
           return defaultValue;
         }
       };
@@ -122,7 +121,6 @@ class DashboardController {
         `);
         atividadesRecentes = result || [];
       } catch (error) {
-        console.error('Erro ao buscar atividades recentes:', error.message);
         atividadesRecentes = [];
       }
 
@@ -178,7 +176,6 @@ class DashboardController {
       });
 
     } catch (error) {
-      console.error('Erro ao obter estatísticas do dashboard:', error);
       res.status(500).json({
         success: false,
         message: 'Erro interno do servidor ao obter estatísticas'
@@ -252,7 +249,6 @@ class DashboardController {
       });
 
     } catch (error) {
-      console.error('Erro ao obter resumo executivo:', error);
       res.status(500).json({
         success: false,
         message: 'Erro interno do servidor ao obter resumo executivo'

@@ -85,7 +85,7 @@ class UsuariosCRUDController {
 
     // Verificar se usuário existe
     const existingUser = await executeQuery(
-      'SELECT id, email FROM usuarios WHERE id = ?',
+      'SELECT id, email, tipo_de_acesso, nivel_de_acesso FROM usuarios WHERE id = ?',
       [id]
     );
 
@@ -154,17 +154,15 @@ class UsuariosCRUDController {
       updateParams
     );
 
-    // Atualizar permissões se tipo de acesso ou nível foram alterados
-    if (tipo_de_acesso !== undefined || nivel_de_acesso !== undefined) {
-      const currentUser = await executeQuery(
-        'SELECT tipo_de_acesso, nivel_de_acesso FROM usuarios WHERE id = ?',
-        [id]
-      );
-      
-      const currentTipo = tipo_de_acesso || currentUser[0].tipo_de_acesso;
-      const currentNivel = nivel_de_acesso || currentUser[0].nivel_de_acesso;
-      
-      await atualizarPermissoesPorTipoNivel(id, currentTipo, currentNivel);
+    const tipoAlterado = tipo_de_acesso !== undefined && tipo_de_acesso !== existingUser[0].tipo_de_acesso;
+    const nivelAlterado = nivel_de_acesso !== undefined && nivel_de_acesso !== existingUser[0].nivel_de_acesso;
+
+    // Atualizar permissões somente se houve alteração real de tipo ou nível
+    if (tipoAlterado || nivelAlterado) {
+      const novoTipo = tipoAlterado ? tipo_de_acesso : existingUser[0].tipo_de_acesso;
+      const novoNivel = nivelAlterado ? nivel_de_acesso : existingUser[0].nivel_de_acesso;
+
+      await atualizarPermissoesPorTipoNivel(id, novoTipo, novoNivel);
     }
 
     // Atualizar vínculos com filiais se fornecidos (temporariamente desabilitado)
