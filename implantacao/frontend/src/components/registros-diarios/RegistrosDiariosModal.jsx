@@ -6,6 +6,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import RegistrosDiariosService from '../../services/registrosDiarios';
 import MediasCalculadasTab from './MediasCalculadasTab';
 import HistoricoTab from './HistoricoTab';
+import TipoAtendimentoEscolaService from '../../services/tipoAtendimentoEscolaService';
 
 const RegistrosDiariosModal = ({ 
   isOpen, 
@@ -45,6 +46,9 @@ const RegistrosDiariosModal = ({
       eja: 0
     }
   });
+
+  const [tiposAtendimentoEscola, setTiposAtendimentoEscola] = useState([]);
+  const [loadingTiposAtendimento, setLoadingTiposAtendimento] = useState(false);
 
   const [formData, setFormData] = useState(criarEstadoInicial());
   
@@ -140,6 +144,34 @@ const RegistrosDiariosModal = ({
     }
   }, [registro, isOpen]);
 
+  // Carregar tipos de atendimento quando escola mudar
+  useEffect(() => {
+    const buscarTiposAtendimento = async () => {
+      if (!isOpen || !formData.escola_id) {
+        setTiposAtendimentoEscola([]);
+        return;
+      }
+
+      try {
+        setLoadingTiposAtendimento(true);
+        const result = await TipoAtendimentoEscolaService.buscarPorEscola(formData.escola_id);
+        if (result.success) {
+          const tipos = result.data.map(item => item.tipo_atendimento);
+          setTiposAtendimentoEscola(tipos);
+        } else {
+          setTiposAtendimentoEscola([]);
+        }
+      } catch (error) {
+        console.error('Erro ao buscar tipos de atendimento para registros diários:', error);
+        setTiposAtendimentoEscola([]);
+      } finally {
+        setLoadingTiposAtendimento(false);
+      }
+    };
+
+    buscarTiposAtendimento();
+  }, [isOpen, formData.escola_id]);
+
   // Carregar registros existentes quando escola e data forem selecionados
   useEffect(() => {
     const carregarRegistrosExistentes = async () => {
@@ -177,6 +209,28 @@ const RegistrosDiariosModal = ({
     
     carregarRegistrosExistentes();
   }, [formData.escola_id, formData.data, registro, dadosIniciaisCarregados, escolaInicial, dataInicial]);
+
+  // Configuração dos tipos de atendimento exibidos no modal
+  const tiposConfig = [
+    { key: 'lanche_manha', label: 'Lanche da Manhã', icon: '🌅' },
+    { key: 'parcial_manha', label: 'Parcial Manhã', icon: '🥗' },
+    { key: 'almoco', label: 'Almoço', icon: '🍽️' },
+    { key: 'lanche_tarde', label: 'Lanche da Tarde', icon: '🌆' },
+    { key: 'parcial_tarde', label: 'Parcial Tarde', icon: '🌇' },
+    { key: 'eja', label: 'EJA (Noturno)', icon: '🌙' }
+  ];
+
+  const tiposDisponiveis = tiposAtendimentoEscola && tiposAtendimentoEscola.length > 0
+    ? tiposConfig.filter(tipo => {
+        if (tipo.key === 'parcial_manha') {
+          return tiposAtendimentoEscola.includes('parcial_manha') || tiposAtendimentoEscola.includes('parcial');
+        }
+        if (tipo.key === 'parcial_tarde') {
+          return tiposAtendimentoEscola.includes('parcial_tarde');
+        }
+        return tiposAtendimentoEscola.includes(tipo.key);
+      })
+    : tiposConfig;
   
   // Carregar médias quando aba de médias for ativada (apenas em modo visualização)
   useEffect(() => {
@@ -277,9 +331,23 @@ const RegistrosDiariosModal = ({
     const escola_nome = escolaSelecionada ? escolaSelecionada.nome_escola : `Escola ID ${formData.escola_id}`;
     
     // Adicionar nome da escola aos dados
+    const quantidadesFiltradas = {};
+    tiposConfig.forEach(({ key }) => {
+      const ehDisponivel = tiposDisponiveis.find(tipo => tipo.key === key);
+      if (ehDisponivel) {
+        quantidadesFiltradas[key] = Number(formData.quantidades[key]) || 0;
+      }
+    });
+
+    // Compatibilidade: se houver parcial_manha e não parcial, enviar também parcial
+    if (quantidadesFiltradas.parcial_manha !== undefined && quantidadesFiltradas.parcial === undefined) {
+      quantidadesFiltradas.parcial = quantidadesFiltradas.parcial_manha;
+    }
+
     onSave({
       ...formData,
-      escola_nome
+      escola_nome,
+      quantidades: quantidadesFiltradas
     });
   };
   
@@ -397,14 +465,7 @@ const RegistrosDiariosModal = ({
           </h3>
           
           <div className="space-y-3">
-            {[
-              { key: 'lanche_manha', label: 'Lanche da Manhã', icon: '🌅' },
-              { key: 'parcial_manha', label: 'Parcial Manhã', icon: '🥗' },
-              { key: 'almoco', label: 'Almoço', icon: '🍽️' },
-              { key: 'lanche_tarde', label: 'Lanche da Tarde', icon: '🌆' },
-              { key: 'parcial_tarde', label: 'Parcial Tarde', icon: '🌇' },
-              { key: 'eja', label: 'EJA (Noturno)', icon: '🌙' }
-            ].map(refeicao => (
+            {tiposDisponiveis.map(refeicao => (
               <div key={refeicao.key} className="flex items-center gap-3">
                 <span className="text-2xl">{refeicao.icon}</span>
                 <label className="flex-1 text-sm font-medium text-gray-700">
