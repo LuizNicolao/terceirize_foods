@@ -238,6 +238,8 @@ const AjusteNecessidades = () => {
         onIncluirProdutos={handleIncluirProdutosExtra}
         searchProduto={searchProduto}
         onSearchChange={handleSearchProduto}
+        grupoSelecionado={filtros.grupo}
+        gruposDisponiveis={grupos}
       />
 
       {/* Modal de Confirmação de Exclusão */}
