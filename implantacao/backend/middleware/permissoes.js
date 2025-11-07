@@ -24,7 +24,7 @@ const canView = (screenName) => {
       if (!permissao || !permissao.pode_visualizar) {
         if (
           req.user?.tipo_de_acesso === 'nutricionista' &&
-          ['necessidades', 'analise_necessidades', 'consulta_status_necessidade']
+          ['necessidades', 'analise_necessidades', 'consulta_status_necessidade', 'calendario']
             .includes(screenName)
         ) {
           return next();
@@ -86,7 +86,7 @@ const canCreate = (screenName) => {
       if (!permissao || !permissao.pode_criar) {
         if (
           req.user?.tipo_de_acesso === 'nutricionista' &&
-          screenName === 'necessidades'
+          ['necessidades', 'calendario'].includes(screenName)
         ) {
           return next();
         }
@@ -129,7 +129,7 @@ const canEdit = (screenName) => {
       if (!permissao || !permissao.pode_editar) {
         if (
           req.user?.tipo_de_acesso === 'nutricionista' &&
-          screenName === 'necessidades'
+          ['necessidades', 'calendario'].includes(screenName)
         ) {
           return next();
         }
