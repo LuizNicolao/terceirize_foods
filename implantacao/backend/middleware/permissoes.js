@@ -8,10 +8,35 @@ const canView = (screenName) => {
     try {
       const userId = req.user.id;
       
-      // TEMPORÁRIO: Permitir acesso para teste
-      next();
+      // Administradores têm todas as permissões
+      if (req.user?.tipo_de_acesso === 'administrador') {
+        return next();
+      }
+
+      const permissoes = await executeQuery(
+        `SELECT pode_visualizar FROM permissoes_usuario 
+         WHERE usuario_id = ? AND tela = ?`,
+        [userId, screenName]
+      );
+
+      const permissao = permissoes[0];
+
+      if (!permissao || !permissao.pode_visualizar) {
+        if (
+          req.user?.tipo_de_acesso === 'nutricionista' &&
+          ['necessidades', 'analise_necessidades', 'consulta_status_necessidade']
+            .includes(screenName)
+        ) {
+          return next();
+        }
+
+        return res.status(403).json({ 
+          error: 'Acesso negado', 
+          message: 'Você não tem permissão para visualizar esta tela' 
+        });
+      }
       
-      // TODO: Implementar verificação de permissões corretamente
+      next();
       /*
       const permissions = await executeQuery(
         `SELECT pode_visualizar FROM permissoes_usuario 
@@ -45,10 +70,34 @@ const canCreate = (screenName) => {
     try {
       const userId = req.user.id;
       
-      // TEMPORÁRIO: Permitir acesso para teste
-      next();
+      // Administradores têm todas as permissões
+      if (req.user?.tipo_de_acesso === 'administrador') {
+        return next();
+      }
+
+      const permissoes = await executeQuery(
+        `SELECT pode_criar FROM permissoes_usuario 
+         WHERE usuario_id = ? AND tela = ?`,
+        [userId, screenName]
+      );
+
+      const permissao = permissoes[0];
+
+      if (!permissao || !permissao.pode_criar) {
+        if (
+          req.user?.tipo_de_acesso === 'nutricionista' &&
+          screenName === 'necessidades'
+        ) {
+          return next();
+        }
+
+        return res.status(403).json({ 
+          error: 'Acesso negado', 
+          message: 'Você não tem permissão para realizar esta ação' 
+        });
+      }
       
-      // TODO: Implementar verificação de permissões corretamente
+      next();
     } catch (error) {
       console.error('Erro ao verificar permissão de criação:', error);
       res.status(500).json({ error: 'Erro interno do servidor' });
@@ -64,10 +113,34 @@ const canEdit = (screenName) => {
     try {
       const userId = req.user.id;
       
-      // TEMPORÁRIO: Permitir acesso para teste
-      next();
+      // Administradores têm todas as permissões
+      if (req.user?.tipo_de_acesso === 'administrador') {
+        return next();
+      }
+
+      const permissoes = await executeQuery(
+        `SELECT pode_editar FROM permissoes_usuario 
+         WHERE usuario_id = ? AND tela = ?`,
+        [userId, screenName]
+      );
+
+      const permissao = permissoes[0];
+
+      if (!permissao || !permissao.pode_editar) {
+        if (
+          req.user?.tipo_de_acesso === 'nutricionista' &&
+          screenName === 'necessidades'
+        ) {
+          return next();
+        }
+
+        return res.status(403).json({ 
+          error: 'Acesso negado', 
+          message: 'Você não tem permissão para realizar esta ação' 
+        });
+      }
       
-      // TODO: Implementar verificação de permissões corretamente
+      next();
     } catch (error) {
       console.error('Erro ao verificar permissão de edição:', error);
       res.status(500).json({ error: 'Erro interno do servidor' });
