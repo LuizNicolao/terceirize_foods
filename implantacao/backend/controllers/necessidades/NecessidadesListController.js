@@ -7,23 +7,38 @@ const listar = async (req, res) => {
     const userType = req.user.tipo_de_acesso;
     const isNutricionista = userType === 'nutricionista';
 
+    console.log('[NecessidadesList::listar] Inicio', {
+      userId: req.user.id,
+      email: req.user.email,
+      tipo: userType,
+      query: req.query,
+      isNutricionista
+    });
+
     let whereClause = 'WHERE 1=1';
     let params = [];
 
     if (isNutricionista) {
       try {
         const authToken = req.headers.authorization?.replace('Bearer ', '');
+        console.log('[NecessidadesList::listar] Buscando escolas para nutricionista', { email: req.user.email, hasAuth: Boolean(authToken) });
         const escolasIds = await buscarEscolasIdsDaNutricionista(req.user.email, authToken);
+
+        console.log('[NecessidadesList::listar] Resultado buscarEscolasIdsDaNutricionista', {
+          total: escolasIds.length,
+          escolas: escolasIds
+        });
 
         if (escolasIds.length > 0) {
           const placeholders = escolasIds.map(() => '?').join(',');
           whereClause += ` AND n.escola_id IN (${placeholders})`;
           params.push(...escolasIds);
         } else {
+          console.log('[NecessidadesList::listar] Nenhuma escola encontrada, aplicando filtro 1=0');
           whereClause += ' AND 1=0';
         }
       } catch (error) {
-        console.error('[NecessidadesList] Erro ao buscar escolas da nutricionista:', error);
+        console.error('[NecessidadesList::listar] Erro ao buscar escolas da nutricionista:', error);
         whereClause += ' AND 1=0';
       }
     } else if (!['coordenador', 'supervisor', 'administrador', 'logistica'].includes(userType)) {
@@ -77,6 +92,13 @@ const listar = async (req, res) => {
     `;
     
     const countResult = await executeQuery(countQuery, params);
+
+    console.log('[NecessidadesList::listar] Resultado count', {
+      whereClause,
+      params,
+      totalItems: countResult && countResult[0] ? countResult[0].total : null
+    });
+
     const totalItems = countResult && countResult.length > 0 && countResult[0] ? countResult[0].total : 0;
     const totalPages = Math.ceil(totalItems / validLimitNum);
 
@@ -89,6 +111,10 @@ const listar = async (req, res) => {
       ORDER BY n.data_preenchimento DESC
       LIMIT ${validLimitNum} OFFSET ${offset}
     `, params);
+
+    console.log('[NecessidadesList::listar] Necessidades retornadas', {
+      total: necessidades.length
+    });
 
     res.json({
       success: true,
@@ -179,10 +205,17 @@ const listarEscolasNutricionista = async (req, res) => {
     const userType = req.user.tipo_de_acesso;
     const authToken = req.headers.authorization?.replace('Bearer ', '');
 
+    console.log('[NecessidadesList::listarEscolasNutricionista] Inicio', {
+      userId: req.user.id,
+      email: req.user.email,
+      tipo: userType
+    });
+
     if (userType === 'nutricionista') {
-      console.log('[NecessidadesList] listarEscolasNutricionista - nutricionista solicitante', {
+      console.log('[NecessidadesList::listarEscolasNutricionista] Nutricionista solicitante', {
         userId: req.user.id,
-        email: req.user.email
+        email: req.user.email,
+        hasAuth: Boolean(authToken)
       });
 
       try {
@@ -196,9 +229,13 @@ const listarEscolasNutricionista = async (req, res) => {
           timeout: 5000
         });
 
+        console.log('[NecessidadesList::listarEscolasNutricionista] Resposta Foods', {
+          success: response.data?.success,
+          total: response.data?.data?.length
+        });
+
         if (response.data && response.data.success) {
           const unidadesEscolares = response.data.data || [];
-          console.log('[NecessidadesList] Escolas retornadas pelo Foods para nutricionista', { total: unidadesEscolares.length });
 
           const escolas = unidadesEscolares.map(unidade => ({
             id: unidade.id,
@@ -209,16 +246,20 @@ const listarEscolasNutricionista = async (req, res) => {
             filial_id: unidade.filial_id
           }));
 
+          console.log('[NecessidadesList::listarEscolasNutricionista] Escolas convertidas', {
+            total: escolas.length
+          });
+
           return res.json({
             success: true,
             data: escolas
           });
         }
 
-        console.log('[NecessidadesList] Foods não retornou sucesso para nutricionista');
+        console.log('[NecessidadesList::listarEscolasNutricionista] Foods não retornou sucesso');
         return res.json({ success: true, data: [] });
       } catch (apiError) {
-        console.error('[NecessidadesList] Erro ao buscar escolas do Foods para nutricionista:', apiError.message);
+        console.error('[NecessidadesList::listarEscolasNutricionista] Erro Foods nutricionista:', apiError.message);
         return res.json({ success: true, data: [] });
       }
     }
