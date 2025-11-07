@@ -33,8 +33,8 @@ class DashboardController {
         usuarios,
         necessidadesPadroes
       ] = await Promise.all([
-        // Total de unidades escolares
-        safeQuery(`SELECT COUNT(*) as total FROM unidades_escolares WHERE ativo = 1`),
+        // Total de unidades escolares (considerando escolas que possuem necessidades registradas)
+        safeQuery(`SELECT COUNT(DISTINCT escola_id) as total FROM necessidades`),
         
         // Total de produtos per capita
         safeQuery(`SELECT COUNT(*) as total, SUM(CASE WHEN ativo = 1 THEN 1 ELSE 0 END) as ativos FROM produtos_per_capita`),
@@ -43,8 +43,8 @@ class DashboardController {
         safeQuery(`
           SELECT 
             COUNT(*) as total,
-            COUNT(DISTINCT escola) as escolas_unicas,
-            SUM(quantidade) as quantidade_total
+            COUNT(DISTINCT escola_id) as escolas_unicas,
+            SUM(COALESCE(ajuste_nutricionista, ajuste, 0)) as quantidade_total
           FROM necessidades
           WHERE MONTH(data_preenchimento) = MONTH(CURRENT_DATE)
             AND YEAR(data_preenchimento) = YEAR(CURRENT_DATE)
@@ -220,7 +220,7 @@ class DashboardController {
           SELECT 
             n.escola,
             COUNT(*) as total_necessidades,
-            SUM(n.quantidade) as quantidade_total
+            SUM(COALESCE(n.ajuste_nutricionista, n.ajuste, 0)) as quantidade_total
           FROM necessidades n
           WHERE MONTH(n.data_preenchimento) = MONTH(CURRENT_DATE)
             AND YEAR(n.data_preenchimento) = YEAR(CURRENT_DATE)
