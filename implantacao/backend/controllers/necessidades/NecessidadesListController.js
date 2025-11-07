@@ -21,12 +21,16 @@ const listar = async (req, res) => {
     if (isNutricionista) {
       try {
         const authToken = req.headers.authorization?.replace('Bearer ', '');
-        console.log('[NecessidadesList::listar] Buscando escolas para nutricionista', { email: req.user.email, hasAuth: Boolean(authToken) });
+        console.log('[NecessidadesList::listar] Buscando escolas para nutricionista', {
+          email: req.user.email,
+          hasAuth: Boolean(authToken)
+        });
+
         const escolasIds = await buscarEscolasIdsDaNutricionista(req.user.email, authToken);
 
-        console.log('[NecessidadesList::listar] Resultado buscarEscolasIdsDaNutricionista', {
+        console.log('[NecessidadesList::listar] Escolas encontradas', {
           total: escolasIds.length,
-          escolas: escolasIds
+          escolasIds
         });
 
         if (escolasIds.length > 0) {
@@ -34,12 +38,14 @@ const listar = async (req, res) => {
           whereClause += ` AND n.escola_id IN (${placeholders})`;
           params.push(...escolasIds);
         } else {
-          console.log('[NecessidadesList::listar] Nenhuma escola encontrada, aplicando filtro 1=0');
-          whereClause += ' AND 1=0';
+          console.warn('[NecessidadesList::listar] Nenhuma escola encontrada para nutricionista, usando fallback por email');
+          whereClause += ' AND n.usuario_email = ?';
+          params.push(req.user.email);
         }
       } catch (error) {
-        console.error('[NecessidadesList::listar] Erro ao buscar escolas da nutricionista:', error);
-        whereClause += ' AND 1=0';
+        console.error('[NecessidadesList::listar] Falha ao buscar escolas da nutricionista, usando fallback por email:', error);
+        whereClause += ' AND n.usuario_email = ?';
+        params.push(req.user.email);
       }
     } else if (!['coordenador', 'supervisor', 'administrador', 'logistica'].includes(userType)) {
       whereClause += ' AND n.usuario_email = ?';
@@ -149,18 +155,31 @@ const listarTodas = async (req, res) => {
     if (isNutricionista) {
       try {
         const authToken = req.headers.authorization?.replace('Bearer ', '');
+        console.log('[NecessidadesList::listarTodas] Buscando escolas para nutricionista', {
+          email: req.user.email,
+          hasAuth: Boolean(authToken)
+        });
+
         const escolasIds = await buscarEscolasIdsDaNutricionista(req.user.email, authToken);
+
+        console.log('[NecessidadesList::listarTodas] Escolas encontradas', {
+          total: escolasIds.length,
+          escolasIds
+        });
 
         if (escolasIds.length > 0) {
           const placeholders = escolasIds.map(() => '?').join(',');
           whereClause += ` AND n.escola_id IN (${placeholders})`;
           params.push(...escolasIds);
         } else {
-          whereClause += ' AND 1=0';
+          console.warn('[NecessidadesList::listarTodas] Nenhuma escola encontrada para nutricionista, usando fallback por email');
+          whereClause += ' AND n.usuario_email = ?';
+          params.push(req.user.email);
         }
       } catch (error) {
-        console.error('[NecessidadesList] Erro ao buscar escolas da nutricionista (listarTodas):', error);
-        whereClause += ' AND 1=0';
+        console.error('[NecessidadesList::listarTodas] Falha ao buscar escolas da nutricionista, usando fallback por email:', error);
+        whereClause += ' AND n.usuario_email = ?';
+        params.push(req.user.email);
       }
     } else if (!['coordenador', 'supervisor', 'administrador', 'logistica'].includes(userType)) {
       whereClause += ' AND n.usuario_email = ?';
