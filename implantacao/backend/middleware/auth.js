@@ -82,6 +82,17 @@ const checkScreenPermission = (screen, permission) => {
         return next();
       }
 
+      // Permitir que o usuário carregue as próprias permissões sem checar regras explícitas
+      if (
+        screen === 'permissoes' &&
+        permission === 'visualizar' &&
+        req.params &&
+        req.params.usuarioId &&
+        Number(req.params.usuarioId) === user.id
+      ) {
+        return next();
+      }
+
       // Buscar permissões do usuário para a tela específica
       const permissoes = await executeQuery(
         `SELECT pode_visualizar, pode_criar, pode_editar, pode_excluir, pode_movimentar 
