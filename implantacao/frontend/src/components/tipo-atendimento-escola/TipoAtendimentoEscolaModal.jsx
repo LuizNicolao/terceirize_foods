@@ -189,23 +189,59 @@ const TipoAtendimentoEscolaModal = ({
     setErrors(prev => ({ ...prev, filial_id: undefined }));
   };
 
-  const handleTipoToggle = (escolaId, tipoValue) => {
+  const handleTipoToggle = useCallback((escolaId, tipoValue) => {
     setVinculosSelecionados(prev => {
       const escolaVinculos = prev[escolaId] || [];
       const novosVinculos = escolaVinculos.includes(tipoValue)
         ? escolaVinculos.filter(t => t !== tipoValue)
         : [...escolaVinculos, tipoValue];
-      
+
       return {
         ...prev,
         [escolaId]: novosVinculos.length > 0 ? novosVinculos : undefined
       };
-      });
-  };
+    });
+  }, []);
 
   const isTipoSelecionado = (escolaId, tipoValue) => {
     return vinculosSelecionados[escolaId]?.includes(tipoValue) || false;
   };
+
+  const selecionarTodos = useCallback(async () => {
+    if (!filialId) {
+      toast.error('Selecione uma filial para marcar as escolas');
+      return;
+    }
+    if (isViewMode) {
+      return;
+    }
+    if (!window.confirm('Deseja marcar todas as escolas e todos os tipos de atendimento?')) {
+      return;
+    }
+
+    const todasEscolas = escolas.map(escola => escola.id);
+    const tiposDisponiveis = tiposAtendimento.map(tipo => tipo.value);
+
+    setVinculosSelecionados(prev => {
+      const novos = { ...prev };
+      todasEscolas.forEach(escolaId => {
+        novos[escolaId] = [...tiposDisponiveis];
+      });
+      return novos;
+    });
+    toast.success('Todos os tipos marcados para todas as escolas listadas.');
+  }, [filialId, isViewMode, escolas, tiposAtendimento]);
+
+  const desmarcarTodos = useCallback(() => {
+    if (isViewMode) {
+      return;
+    }
+    if (!window.confirm('Deseja desmarcar todos os tipos de atendimento?')) {
+      return;
+    }
+    setVinculosSelecionados({});
+    toast.success('Todos os tipos foram desmarcados.');
+  }, [isViewMode]);
 
   const validateForm = () => {
     const newErrors = {};
@@ -439,6 +475,26 @@ const TipoAtendimentoEscolaModal = ({
                   onPageChange={setEscolasPage}
                 />
               )}
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  disabled={loadingEscolas || loading}
+                  onClick={selecionarTodos}
+                  className="text-xs"
+                >
+                  Marcar todos
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  disabled={loadingEscolas || loading}
+                  onClick={desmarcarTodos}
+                  className="text-xs text-red-600 hover:text-red-700"
+                >
+                  Desmarcar todos
+                </Button>
+              </div>
             </div>
           </div>
         )}
