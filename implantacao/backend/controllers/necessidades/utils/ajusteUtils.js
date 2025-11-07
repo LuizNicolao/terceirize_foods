@@ -86,7 +86,18 @@ const aplicarFiltroNutricionista = async (tipoUsuario, userEmail, authToken, que
   const escolasIds = await buscarEscolasIdsDaNutricionista(userEmail, authToken);
 
   if (escolasIds.length > 0) {
-    query += ` AND n.escola_id IN (${escolasIds.map(() => '?').join(',')})`;
+    const placeholders = escolasIds.map(() => '?').join(',');
+    const upperQuery = query.toUpperCase();
+    const limitIndex = upperQuery.lastIndexOf('LIMIT');
+
+    if (limitIndex !== -1) {
+      const beforeLimit = query.slice(0, limitIndex).trimEnd();
+      const limitClause = query.slice(limitIndex);
+      query = `${beforeLimit} AND n.escola_id IN (${placeholders}) ${limitClause}`;
+    } else {
+      query += ` AND n.escola_id IN (${placeholders})`;
+    }
+
     params.push(...escolasIds);
   } else {
     query += ' AND 1=0';

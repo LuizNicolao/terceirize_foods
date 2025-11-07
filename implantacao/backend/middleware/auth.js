@@ -121,6 +121,17 @@ const checkScreenPermission = (screen, permission) => {
         return next();
       }
 
+      const allowedByRole = (
+        permission === 'visualizar' &&
+        user.tipo_de_acesso === 'nutricionista' &&
+        ['necessidades', 'analise_necessidades', 'analise_necessidades_substituicoes', 'consulta_status_necessidade']
+          .includes(screen)
+      );
+
+      if (allowedByRole) {
+        return next();
+      }
+
       return res.status(403).json({ error: 'Permissão insuficiente para esta ação' });
       
     } catch (error) {
