@@ -17,6 +17,11 @@ class ProdutosPerCapitaStatsController {
         FROM produtos_per_capita
       `);
 
+      const produtosUnicos = await executeQuery(`
+        SELECT COUNT(DISTINCT produto_id) as total FROM produtos_per_capita
+      `);
+
+
       const estatisticasPeriodos = await executeQuery(`
         SELECT 
           'Parcial Manhã' as periodo,
@@ -80,7 +85,10 @@ class ProdutosPerCapitaStatsController {
       res.json({
         success: true,
         data: {
-          resumo: resultado[0],
+          resumo: {
+            ...resultado[0],
+            produtos_unicos: produtosUnicos[0]?.total || 0
+          },
           periodos: estatisticasPeriodos
         }
       });
