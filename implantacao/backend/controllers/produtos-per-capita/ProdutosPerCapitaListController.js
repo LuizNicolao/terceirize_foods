@@ -25,7 +25,7 @@ class ProdutosPerCapitaListController {
     const pagination = req.pagination;
 
     // Query base - usando todos os campos da tabela produtos_per_capita
-    let baseQuery = `
+    const queryBase = `
       SELECT 
         ppc.id,
         ppc.produto_id,
@@ -36,7 +36,8 @@ class ProdutosPerCapitaListController {
         ppc.grupo,
         ppc.subgrupo,
         ppc.classe,
-        ppc.per_capita_parcial,
+        ppc.per_capita_parcial_manha,
+        ppc.per_capita_parcial_tarde,
         ppc.per_capita_lanche_manha,
         ppc.per_capita_lanche_tarde,
         ppc.per_capita_almoco,
@@ -53,31 +54,38 @@ class ProdutosPerCapitaListController {
 
     // Aplicar filtros
     if (search) {
-      baseQuery += ' AND (ppc.descricao LIKE ? OR ppc.produto_nome LIKE ? OR ppc.produto_codigo LIKE ?)';
-      params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+      queryBase += ' AND (';
+      queryBase += `ppc.produto_nome LIKE ? OR `;
+      queryBase += `ppc.produto_codigo LIKE ? OR `;
+      queryBase += `ppc.grupo LIKE ? OR `;
+      queryBase += `ppc.subgrupo LIKE ? OR `;
+      queryBase += `ppc.classe LIKE ? OR `;
+      queryBase += `ppc.unidade_medida LIKE ?`;
+      queryBase += ')';
+      params.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
     }
 
     if (status !== 'todos') {
-      baseQuery += ' AND ppc.ativo = ?';
+      queryBase += ' AND ppc.ativo = ?';
       params.push(status === 'ativo' ? 1 : 0);
     }
 
     if (produto_id) {
-      baseQuery += ' AND ppc.produto_id = ?';
+      queryBase += ' AND ppc.produto_id = ?';
       params.push(produto_id);
     }
 
     if (grupo) {
-      baseQuery += ' AND ppc.grupo = ?';
+      queryBase += ' AND ppc.grupo = ?';
       params.push(grupo);
     }
 
-    baseQuery += ' ORDER BY ppc.data_cadastro DESC';
+    queryBase += ' ORDER BY ppc.data_cadastro DESC';
 
     // Aplicar paginação manualmente (seguindo o padrão das outras páginas)
     const limit = pagination.limit;
     const offset = pagination.offset;
-    const query = `${baseQuery} LIMIT ${limit} OFFSET ${offset}`;
+    const query = `${queryBase} LIMIT ${limit} OFFSET ${offset}`;
     
     // Executar query paginada
     const produtos = await executeQuery(query, params);
@@ -170,7 +178,8 @@ class ProdutosPerCapitaListController {
         ppc.grupo,
         ppc.subgrupo,
         ppc.classe,
-        ppc.per_capita_parcial,
+        ppc.per_capita_parcial_manha,
+        ppc.per_capita_parcial_tarde,
         ppc.per_capita_lanche_manha,
         ppc.per_capita_lanche_tarde,
         ppc.per_capita_almoco,

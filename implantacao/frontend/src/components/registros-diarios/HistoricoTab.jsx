@@ -7,15 +7,6 @@ const HistoricoTab = ({ historico, loading }) => {
   const [dataInicial, setDataInicial] = useState('');
   const [dataFinal, setDataFinal] = useState('');
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
-        <span className="ml-3 text-gray-600">Carregando histórico...</span>
-      </div>
-    );
-  }
-  
   const formatarDataHora = (valor) => {
     if (!valor) return '';
 
@@ -75,6 +66,15 @@ const HistoricoTab = ({ historico, loading }) => {
       });
     });
   }, [historico, dataInicial, dataFinal]);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+        <span className="ml-3 text-gray-600">Carregando histórico...</span>
+      </div>
+    );
+  }
 
   if (!historico || historico.length === 0) {
     return (
@@ -139,7 +139,7 @@ const HistoricoTab = ({ historico, loading }) => {
       </div>
     );
   }
-  
+
   const getAcaoIcon = (acao) => {
     switch (acao) {
       case 'criacao':
@@ -152,7 +152,7 @@ const HistoricoTab = ({ historico, loading }) => {
         return <FaClock className="text-gray-600" />;
     }
   };
-  
+
   const getAcaoText = (acao) => {
     switch (acao) {
       case 'criacao':
@@ -165,7 +165,7 @@ const HistoricoTab = ({ historico, loading }) => {
         return 'Ação realizada';
     }
   };
-  
+
   const getAcaoColor = (acao) => {
     switch (acao) {
       case 'criacao':
@@ -188,7 +188,7 @@ const HistoricoTab = ({ historico, loading }) => {
     { key: 'eja', label: 'EJA', badge: 'bg-yellow-50 text-yellow-700' },
     { key: 'parcial', label: 'Parcial', badge: 'bg-orange-100 text-orange-800' }
   ];
-  
+
   return (
     <div className="bg-white rounded-lg shadow-sm border p-6">
       {renderFiltros()}
@@ -196,20 +196,20 @@ const HistoricoTab = ({ historico, loading }) => {
       <div className="relative">
         {/* Linha vertical da timeline */}
         <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-gray-200"></div>
-        
+
         {/* Itens do histórico */}
         <div className="space-y-6">
           {historicoFiltrado.map((item, index) => (
             <div key={index} className="relative flex gap-4">
               {/* Ícone da ação */}
               <div className={`
-                relative z-10 flex items-center justify-center w-16 h-16 
+                relative z-10 flex items-center justify-center w-16 h-16
                 rounded-full border-4 border-white shadow-sm
                 ${getAcaoColor(item.acao)}
               `}>
                 {getAcaoIcon(item.acao)}
               </div>
-              
+
               {/* Conteúdo */}
               <div className="flex-1 pb-6">
                 <div className="bg-white border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
@@ -223,7 +223,7 @@ const HistoricoTab = ({ historico, loading }) => {
                       {formatarDataHora(item.data_acao)}
                     </span>
                   </div>
-                  
+
                   {/* Detalhes */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
                     <div className="flex items-center text-gray-600">
@@ -231,7 +231,7 @@ const HistoricoTab = ({ historico, loading }) => {
                       <span className="font-medium">Escola:</span>
                       <span className="ml-2">{item.escola_nome || `ID ${item.escola_id}`}</span>
                     </div>
-                    
+
                     <div className="flex items-center text-gray-600">
                       <FaCalendarAlt className="mr-2 text-blue-600" />
                       <span className="font-medium">Data Registro:</span>
@@ -239,13 +239,13 @@ const HistoricoTab = ({ historico, loading }) => {
                         {formatarDataParaExibicao(item.data)}
                       </span>
                     </div>
-                    
+
                     <div className="flex items-center text-gray-600">
                       <FaUser className="mr-2 text-purple-600" />
                       <span className="font-medium">Responsável:</span>
                       <span className="ml-2">{item.usuario_nome || `ID ${item.nutricionista_id}`}</span>
                     </div>
-                    
+
                     {item.valores && (
                       <div className="md:col-span-2">
                         <div className="flex flex-wrap gap-2 mt-2">
