@@ -13,10 +13,12 @@ export const useNecessidadesCalculos = () => {
     if (!escolaId || !data) return;
     
     try {
-      let dataFormatada;
-      if (!dataFormatada) {
-        dataFormatada = new Date().toISOString().split('T')[0];
-      }
+      console.debug('[useNecessidadesCalculos] 🔄 calcularMediasPorPeriodo', {
+        escolaId,
+        dataRecebida: data
+      });
+
+      let dataFormatada = null;
 
       // Se a data for uma string da semana (ex: "06/01 a 12/01"), converter para data
       if (typeof data === 'string') {
@@ -68,14 +70,28 @@ export const useNecessidadesCalculos = () => {
         dataFormatada = data;
       }
       
+      if (!dataFormatada) {
+        dataFormatada = new Date().toISOString().split('T')[0];
+        console.warn('[useNecessidadesCalculos] ⚠️ dataFormatada vazia, usando fallback para hoje', dataFormatada);
+      }
+
+      console.debug('[useNecessidadesCalculos] 📅 dataFormatada', dataFormatada);
+
       const response = await necessidadesService.calcularMediasPorPeriodo(escolaId, dataFormatada);
+      console.debug('[useNecessidadesCalculos] 📥 resposta calcularMediasPorPeriodo', response);
       
       if (response.success) {
         setMediasPeriodo(response.data);
         return response.data; // Retornar os dados para uso externo
+      } else {
+        console.warn('[useNecessidadesCalculos] ⚠️ resposta sem sucesso para cálculo de médias', {
+          escolaId,
+          dataFormatada,
+          response
+        });
       }
     } catch (err) {
-      console.error('Erro ao calcular médias por período:', err);
+      console.error('[useNecessidadesCalculos] ❌ Erro ao calcular médias por período:', err);
       throw err; // Re-throw para que o erro seja capturado no componente
     }
   }, []);
