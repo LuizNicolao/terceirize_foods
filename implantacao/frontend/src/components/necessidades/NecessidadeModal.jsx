@@ -246,6 +246,12 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
   }, [isOpen, produtos, percapitas, mediasPeriodo, formData.grupo_id, formData.escola_id, formData.data, tiposAtendimentoEscola, loadingTiposAtendimento]);
 
   const inicializarTabelaProdutos = () => {
+    console.log('[NecessidadeModal] 🔄 inicializarTabelaProdutos', {
+      produtos,
+      percapitas,
+      mediasPeriodo,
+      tiposDisponiveis: tiposDisponiveis.map(t => t.key)
+    });
     // Preservar ajustes existentes
     const ajustesExistentes = {};
     produtosTabela.forEach(produto => {
@@ -303,7 +309,7 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
         return sum + (qtds[qtdKey] || 0);
       }, 0);
 
-      return {
+      const produtoFinal = {
         id: produto.produto_id,
         nome: produto.produto_nome,
         unidade_medida: produto.unidade_medida,
@@ -338,6 +344,20 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
         total: total, // Usar total calculado
         ajuste: ajustesExistentes[produto.produto_id] || '' // Preservar ajuste existente ou inicializar em branco
       };
+
+      console.log('[NecessidadeModal] ✅ produto calculado', {
+        produtoId: produtoFinal.id,
+        medias: {
+          lanche_manha: produtoFinal.media_lanche_manha,
+          parcial_manha: produtoFinal.media_parcial_manha,
+          almoco: produtoFinal.media_almoco,
+          lanche_tarde: produtoFinal.media_lanche_tarde,
+          parcial_tarde: produtoFinal.media_parcial_tarde,
+          eja: produtoFinal.media_eja
+        }
+      });
+
+      return produtoFinal;
     });
 
     setProdutosTabela(produtosComCalculos);
