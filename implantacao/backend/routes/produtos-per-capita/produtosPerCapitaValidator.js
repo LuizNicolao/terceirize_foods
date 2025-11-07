@@ -55,11 +55,17 @@ const produtosPerCapitaValidations = {
       .isFloat({ min: 0, max: 999.999 })
       .withMessage('Per capita lanche tarde deve ser um número decimal entre 0 e 999.999'),
     
-    body('per_capita_parcial')
+    body('per_capita_parcial_manha')
       .optional()
       .isDecimal({ decimal_digits: '0,3' })
       .isFloat({ min: 0, max: 999.999 })
-      .withMessage('Per capita parcial deve ser um número decimal entre 0 e 999.999'),
+      .withMessage('Per capita parcial manhã deve ser um número decimal entre 0 e 999.999'),
+    
+    body('per_capita_parcial_tarde')
+      .optional()
+      .isDecimal({ decimal_digits: '0,3' })
+      .isFloat({ min: 0, max: 999.999 })
+      .withMessage('Per capita parcial tarde deve ser um número decimal entre 0 e 999.999'),
     
     body('per_capita_eja')
       .optional()
@@ -105,11 +111,17 @@ const produtosPerCapitaValidations = {
       .isFloat({ min: 0, max: 999.999 })
       .withMessage('Per capita lanche tarde deve ser um número decimal entre 0 e 999.999'),
     
-    body('per_capita_parcial')
+    body('per_capita_parcial_manha')
       .optional()
       .isDecimal({ decimal_digits: '0,3' })
       .isFloat({ min: 0, max: 999.999 })
-      .withMessage('Per capita parcial deve ser um número decimal entre 0 e 999.999'),
+      .withMessage('Per capita parcial manhã deve ser um número decimal entre 0 e 999.999'),
+    
+    body('per_capita_parcial_tarde')
+      .optional()
+      .isDecimal({ decimal_digits: '0,3' })
+      .isFloat({ min: 0, max: 999.999 })
+      .withMessage('Per capita parcial tarde deve ser um número decimal entre 0 e 999.999'),
     
     body('per_capita_eja')
       .optional()

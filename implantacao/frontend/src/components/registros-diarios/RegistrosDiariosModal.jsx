@@ -13,7 +13,8 @@ const RegistrosDiariosModal = ({
   onClose, 
   onSave,
   registro = null,
-  isViewMode = false
+  isViewMode = false,
+  onRequestEdit
 }) => {
   const { user } = useAuth();
   const [unidadesEscolares, setUnidadesEscolares] = useState([]);
@@ -274,6 +275,7 @@ const RegistrosDiariosModal = ({
               escola_nome: reg.escola_nome,
               data: reg.data,
               nutricionista_id: reg.nutricionista_id,
+              id: reg.id,
               usuario_nome: user?.nome,
               valores: {
                 lanche_manha: reg.lanche_manha || 0,
@@ -281,7 +283,8 @@ const RegistrosDiariosModal = ({
                 almoco: reg.almoco || 0,
                 lanche_tarde: reg.lanche_tarde || 0,
                 parcial_tarde: reg.parcial_tarde || 0,
-                eja: reg.eja || 0
+                eja: reg.eja || 0,
+                parcial: reg.parcial || 0
               }
             }));
             setHistorico(historicoFormatado);
@@ -361,6 +364,28 @@ const RegistrosDiariosModal = ({
       quantidades: quantidadesFiltradas
     });
   };
+
+  const handleHistoricoEdit = (item) => {
+    setAbaAtiva('detalhes');
+
+    if (typeof onRequestEdit === 'function') {
+      const registroParaEditar = {
+        escola_id: item.escola_id,
+        escola_nome: item.escola_nome,
+        data: item.data,
+        nutricionista_id: item.nutricionista_id,
+        lanche_manha: item.valores?.lanche_manha ?? 0,
+        parcial_manha: item.valores?.parcial_manha ?? item.valores?.parcial ?? 0,
+        parcial: item.valores?.parcial ?? 0,
+        almoco: item.valores?.almoco ?? 0,
+        lanche_tarde: item.valores?.lanche_tarde ?? 0,
+        parcial_tarde: item.valores?.parcial_tarde ?? 0,
+        eja: item.valores?.eja ?? 0
+      };
+
+      onRequestEdit(registroParaEditar);
+    }
+  };
   
   if (!isOpen) return null;
   
@@ -421,9 +446,11 @@ const RegistrosDiariosModal = ({
       )}
       
       {isViewMode && abaAtiva === 'historico' && (
-        <div className="max-h-96 overflow-y-auto">
-          <HistoricoTab historico={historico} loading={loadingHistorico} />
-        </div>
+        <HistoricoTab
+          historico={historico}
+          loading={loadingHistorico}
+          onEdit={onRequestEdit ? handleHistoricoEdit : undefined}
+        />
       )}
       
       {/* Formulário (modo criar/editar ou aba detalhes em visualização) */}

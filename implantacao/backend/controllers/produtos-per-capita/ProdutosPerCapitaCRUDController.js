@@ -20,7 +20,8 @@ class ProdutosPerCapitaCRUDController {
         grupo,
         subgrupo,
         classe,
-        per_capita_parcial = 0,
+        per_capita_parcial_manha = 0,
+        per_capita_parcial_tarde = 0,
         per_capita_lanche_manha = 0,
         per_capita_lanche_tarde = 0,
         per_capita_almoco = 0,
@@ -65,7 +66,8 @@ class ProdutosPerCapitaCRUDController {
         grupo !== undefined ? grupo : null,
         subgrupo !== undefined ? subgrupo : null,
         classe !== undefined ? classe : null,
-        per_capita_parcial !== undefined ? per_capita_parcial : 0,
+        per_capita_parcial_manha !== undefined ? per_capita_parcial_manha : 0,
+        per_capita_parcial_tarde !== undefined ? per_capita_parcial_tarde : 0,
         per_capita_lanche_manha !== undefined ? per_capita_lanche_manha : 0,
         per_capita_lanche_tarde !== undefined ? per_capita_lanche_tarde : 0,
         per_capita_almoco !== undefined ? per_capita_almoco : 0,
@@ -79,10 +81,10 @@ class ProdutosPerCapitaCRUDController {
         `INSERT INTO produtos_per_capita (
           produto_id, produto_origem_id, produto_nome, produto_codigo, 
           unidade_medida, grupo, subgrupo, classe,
-          per_capita_parcial, per_capita_lanche_manha, 
+          per_capita_parcial_manha, per_capita_parcial_tarde, per_capita_lanche_manha, 
           per_capita_lanche_tarde, per_capita_almoco, per_capita_eja, 
           descricao, ativo
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         insertParams
       );
 
@@ -98,7 +100,8 @@ class ProdutosPerCapitaCRUDController {
           ppc.grupo,
           ppc.subgrupo,
           ppc.classe,
-          ppc.per_capita_parcial,
+          ppc.per_capita_parcial_manha,
+          ppc.per_capita_parcial_tarde,
           ppc.per_capita_lanche_manha,
           ppc.per_capita_lanche_tarde,
           ppc.per_capita_almoco,
@@ -145,7 +148,8 @@ class ProdutosPerCapitaCRUDController {
           ppc.grupo,
           ppc.subgrupo,
           ppc.classe,
-          ppc.per_capita_parcial,
+          ppc.per_capita_parcial_manha,
+          ppc.per_capita_parcial_tarde,
           ppc.per_capita_lanche_manha,
           ppc.per_capita_lanche_tarde,
           ppc.per_capita_almoco,
@@ -188,7 +192,8 @@ class ProdutosPerCapitaCRUDController {
       const { id } = req.params;
       const {
         produto_id,
-        per_capita_parcial,
+        per_capita_parcial_manha,
+        per_capita_parcial_tarde,
         per_capita_lanche_manha,
         per_capita_lanche_tarde,
         per_capita_almoco,
@@ -230,7 +235,8 @@ class ProdutosPerCapitaCRUDController {
       // Converter undefined para null para evitar erro de bind parameters
       const params = [
         produto_id !== undefined ? produto_id : null,
-        per_capita_parcial !== undefined ? per_capita_parcial : null,
+        per_capita_parcial_manha !== undefined ? per_capita_parcial_manha : null,
+        per_capita_parcial_tarde !== undefined ? per_capita_parcial_tarde : null,
         per_capita_lanche_manha !== undefined ? per_capita_lanche_manha : null,
         per_capita_lanche_tarde !== undefined ? per_capita_lanche_tarde : null,
         per_capita_almoco !== undefined ? per_capita_almoco : null,
@@ -244,13 +250,15 @@ class ProdutosPerCapitaCRUDController {
       await executeQuery(
         `UPDATE produtos_per_capita SET 
           produto_id = COALESCE(?, produto_id),
-          per_capita_parcial = COALESCE(?, per_capita_parcial),
+          per_capita_parcial_manha = COALESCE(?, per_capita_parcial_manha),
+          per_capita_parcial_tarde = COALESCE(?, per_capita_parcial_tarde),
           per_capita_lanche_manha = COALESCE(?, per_capita_lanche_manha),
           per_capita_lanche_tarde = COALESCE(?, per_capita_lanche_tarde),
           per_capita_almoco = COALESCE(?, per_capita_almoco),
           per_capita_eja = COALESCE(?, per_capita_eja),
           descricao = COALESCE(?, descricao),
-          ativo = COALESCE(?, ativo)
+          ativo = COALESCE(?, ativo),
+          data_atualizacao = NOW()
         WHERE id = ?`,
         params
       );
@@ -260,7 +268,8 @@ class ProdutosPerCapitaCRUDController {
         `SELECT 
           ppc.id,
           ppc.produto_id,
-          ppc.per_capita_parcial,
+          ppc.per_capita_parcial_manha,
+          ppc.per_capita_parcial_tarde,
           ppc.per_capita_lanche_manha,
           ppc.per_capita_lanche_tarde,
           ppc.per_capita_almoco,

@@ -3,7 +3,7 @@ import { FaCalendarAlt, FaSchool, FaUser, FaClock, FaEdit, FaTrash, FaPlus } fro
 import { EmptyState, Button } from '../ui';
 import { formatarDataParaExibicao } from '../../utils/recebimentos/recebimentosUtils';
 
-const HistoricoTab = ({ historico, loading }) => {
+const HistoricoTab = ({ historico, loading, onEdit }) => {
   const [dataInicial, setDataInicial] = useState('');
   const [dataFinal, setDataFinal] = useState('');
 
@@ -190,7 +190,7 @@ const HistoricoTab = ({ historico, loading }) => {
   ];
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border p-6">
+    <div className="bg-white rounded-lg shadow-sm border p-6 max-h-[600px] overflow-y-auto">
       {renderFiltros()}
 
       <div className="relative">
@@ -214,14 +214,26 @@ const HistoricoTab = ({ historico, loading }) => {
               <div className="flex-1 pb-6">
                 <div className="bg-white border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
                   {/* Header */}
-                  <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center justify-between mb-3 gap-3">
                     <h4 className="font-semibold text-gray-900">
                       {getAcaoText(item.acao)}
                     </h4>
+                  <div className="flex items-center gap-2">
                     <span className="text-xs text-gray-500 flex items-center">
                       <FaClock className="mr-1" />
                       {formatarDataHora(item.data_acao)}
                     </span>
+                    {typeof onEdit === 'function' && (
+                      <Button
+                        type="button"
+                        size="xs"
+                        variant="outline"
+                        onClick={() => onEdit(item)}
+                      >
+                        Editar
+                      </Button>
+                    )}
+                  </div>
                   </div>
 
                   {/* Detalhes */}

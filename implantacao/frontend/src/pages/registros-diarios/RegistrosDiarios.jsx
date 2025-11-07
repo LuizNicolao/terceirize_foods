@@ -88,6 +88,14 @@ const RegistrosDiarios = () => {
     }
   };
 
+  const handleEditFromHistorico = (registroHistorico) => {
+    handleCloseModal();
+
+    setTimeout(() => {
+      handleEditRegistro(registroHistorico);
+    }, 0);
+  };
+
   const handleConfirmExclusao = () => {
     // Recarregar dados após exclusão
     loadRegistros();
@@ -182,6 +190,7 @@ const RegistrosDiarios = () => {
         onSave={onSubmit}
         registro={editingRegistro}
         isViewMode={viewMode}
+        onRequestEdit={handleEditFromHistorico}
       />
       
       {/* Modal de Confirmação de Exclusão */}
