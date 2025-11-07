@@ -1,6 +1,6 @@
 import React from 'react';
 import { FaUserCog } from 'react-icons/fa';
-import { Button, Table, EmptyState } from '../ui';
+import { Button, Table, EmptyState, SortableHeader, useSorting } from '../ui';
 
 const PermissoesTable = ({ 
   usuarios, 
@@ -12,6 +12,8 @@ const PermissoesTable = ({
 }) => {
   const usuariosProcessados = Array.isArray(usuarios) ? usuarios : [];
   const podeGerenciar = typeof canEdit === 'function' ? canEdit('permissoes') : true;
+  const { sortConfig, handleSort, sortData } = useSorting('nome', 'asc');
+  const usuariosOrdenados = sortData(usuariosProcessados);
 
   if (usuariosProcessados.length === 0) {
     return (
@@ -48,17 +50,25 @@ const PermissoesTable = ({
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
+              <SortableHeader field="nome" currentSort={sortConfig} onSort={handleSort}>
+                Nome
+              </SortableHeader>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nível</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+              <SortableHeader field="nivel_de_acesso" currentSort={sortConfig} onSort={handleSort}>
+                Nível
+              </SortableHeader>
+              <SortableHeader field="tipo_de_acesso" currentSort={sortConfig} onSort={handleSort}>
+                Tipo
+              </SortableHeader>
+              <SortableHeader field="status" currentSort={sortConfig} onSort={handleSort}>
+                Status
+              </SortableHeader>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Permissões</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {usuariosProcessados.map((usuario) => {
+            {usuariosOrdenados.map((usuario) => {
               const statusLabel = getStatusLabel(usuario.status);
 
               return (
@@ -96,7 +106,7 @@ const PermissoesTable = ({
 
       {/* Versão Mobile e Tablet - Cards */}
       <div className="xl:hidden space-y-3">
-        {usuariosProcessados.map((usuario) => {
+        {usuariosOrdenados.map((usuario) => {
           const statusLabel = getStatusLabel(usuario.status);
 
           return (
