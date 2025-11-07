@@ -38,7 +38,8 @@ const baixarModelo = async (req, res) => {
     worksheet.columns = [
       { header: 'produto_id', key: 'produto_id', width: 15 },
       { header: 'produto_nome', key: 'produto_nome', width: 40 },
-      { header: 'per_capita_parcial', key: 'per_capita_parcial', width: 18 },
+      { header: 'per_capita_parcial_manha', key: 'per_capita_parcial_manha', width: 22 },
+      { header: 'per_capita_parcial_tarde', key: 'per_capita_parcial_tarde', width: 22 },
       { header: 'per_capita_lanche_manha', key: 'per_capita_lanche_manha', width: 22 },
       { header: 'per_capita_lanche_tarde', key: 'per_capita_lanche_tarde', width: 22 },
       { header: 'per_capita_almoco', key: 'per_capita_almoco', width: 18 },
@@ -50,7 +51,8 @@ const baixarModelo = async (req, res) => {
     worksheet.addRow({
       produto_id: 1,
       produto_nome: 'Exemplo: Arroz Integral 1kg',
-      per_capita_parcial: 0.100,
+      per_capita_parcial_manha: 0.100,
+      per_capita_parcial_tarde: 0.000,
       per_capita_lanche_manha: 0.000,
       per_capita_lanche_tarde: 0.000,
       per_capita_almoco: 0.150,
@@ -129,7 +131,8 @@ const importarExcel = async (req, res) => {
         // Extrair valores (apenas campos essenciais)
         const produto_id = valores.produto_id ? parseInt(valores.produto_id) : null;
         const produto_nome = valores.produto_nome?.toString()?.trim() || '';
-        const per_capita_parcial = valores.per_capita_parcial ? parseFloat(valores.per_capita_parcial) : 0;
+        const per_capita_parcial_manha = valores.per_capita_parcial_manha ? parseFloat(valores.per_capita_parcial_manha) : 0;
+        const per_capita_parcial_tarde = valores.per_capita_parcial_tarde ? parseFloat(valores.per_capita_parcial_tarde) : 0;
         const per_capita_lanche_manha = valores.per_capita_lanche_manha ? parseFloat(valores.per_capita_lanche_manha) : 0;
         const per_capita_lanche_tarde = valores.per_capita_lanche_tarde ? parseFloat(valores.per_capita_lanche_tarde) : 0;
         const per_capita_almoco = valores.per_capita_almoco ? parseFloat(valores.per_capita_almoco) : 0;
@@ -221,7 +224,8 @@ const importarExcel = async (req, res) => {
               grupo = ?,
               subgrupo = ?,
               classe = ?,
-              per_capita_parcial = ?,
+              per_capita_parcial_manha = ?,
+              per_capita_parcial_tarde = ?,
               per_capita_lanche_manha = ?,
               per_capita_lanche_tarde = ?,
               per_capita_almoco = ?,
@@ -239,7 +243,8 @@ const importarExcel = async (req, res) => {
               grupo || null,
               subgrupo || null,
               classe || null,
-              per_capita_parcial,
+              per_capita_parcial_manha,
+              per_capita_parcial_tarde,
               per_capita_lanche_manha,
               per_capita_lanche_tarde,
               per_capita_almoco,
@@ -268,7 +273,7 @@ const importarExcel = async (req, res) => {
             `INSERT INTO produtos_per_capita (
               id, produto_id, produto_origem_id, produto_nome, produto_codigo,
               unidade_medida, grupo, subgrupo, classe,
-              per_capita_parcial, per_capita_lanche_manha, per_capita_lanche_tarde,
+              per_capita_parcial_manha, per_capita_parcial_tarde, per_capita_lanche_manha, per_capita_lanche_tarde,
               per_capita_almoco, per_capita_eja, descricao, ativo, grupo_id,
               data_cadastro, data_atualizacao
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
@@ -282,7 +287,8 @@ const importarExcel = async (req, res) => {
               grupo || null,
               subgrupo || null,
               classe || null,
-              per_capita_parcial,
+              per_capita_parcial_manha,
+              per_capita_parcial_tarde,
               per_capita_lanche_manha,
               per_capita_lanche_tarde,
               per_capita_almoco,
