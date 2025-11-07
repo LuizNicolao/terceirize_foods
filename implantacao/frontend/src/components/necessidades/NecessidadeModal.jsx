@@ -54,25 +54,6 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
   const [tiposAtendimentoEscola, setTiposAtendimentoEscola] = useState([]);
   const [loadingTiposAtendimento, setLoadingTiposAtendimento] = useState(false);
 
-  // Logs auxiliares para depuração
-  useEffect(() => {
-    if (isOpen) {
-      console.log('[NecessidadeModal] 📚 filtros selecionados', formData);
-    }
-  }, [isOpen, formData]);
-
-  useEffect(() => {
-    if (isOpen) {
-      console.log('[NecessidadeModal] 📊 médias carregadas', mediasPeriodo);
-    }
-  }, [isOpen, mediasPeriodo]);
-
-  useEffect(() => {
-    if (isOpen) {
-      console.log('[NecessidadeModal] 🧭 tipos de atendimento por escola', tiposAtendimentoEscola);
-    }
-  }, [isOpen, tiposAtendimentoEscola]);
-
   // Limpar dados quando modal é fechado
   useEffect(() => {
     if (!isOpen) {
@@ -214,7 +195,7 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
 
   useEffect(() => {
     if (isOpen) {
-      console.log('[NecessidadeModal] ✅ tipos de atendimento disponíveis na tela', tiposDisponiveis.map(tipo => tipo.key));
+      // console.log('[NecessidadeModal] ✅ tipos de atendimento disponíveis na tela', tiposDisponiveis.map(tipo => tipo.key));
     }
   }, [isOpen, tiposDisponiveis]);
 
@@ -246,12 +227,6 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
   }, [isOpen, produtos, percapitas, mediasPeriodo, formData.grupo_id, formData.escola_id, formData.data, tiposAtendimentoEscola, loadingTiposAtendimento]);
 
   const inicializarTabelaProdutos = () => {
-    console.log('[NecessidadeModal] 🔄 inicializarTabelaProdutos', {
-      produtos,
-      percapitas,
-      mediasPeriodo,
-      tiposDisponiveis: tiposDisponiveis.map(t => t.key)
-    });
     // Preservar ajustes existentes
     const ajustesExistentes = {};
     produtosTabela.forEach(produto => {
@@ -345,17 +320,17 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
         ajuste: ajustesExistentes[produto.produto_id] || '' // Preservar ajuste existente ou inicializar em branco
       };
 
-      console.log('[NecessidadeModal] ✅ produto calculado', {
-        produtoId: produtoFinal.id,
-        medias: {
-          lanche_manha: produtoFinal.media_lanche_manha,
-          parcial_manha: produtoFinal.media_parcial_manha,
-          almoco: produtoFinal.media_almoco,
-          lanche_tarde: produtoFinal.media_lanche_tarde,
-          parcial_tarde: produtoFinal.media_parcial_tarde,
-          eja: produtoFinal.media_eja
-        }
-      });
+      // console.log('[NecessidadeModal] ✅ produto calculado', {
+      //   produtoId: produtoFinal.id,
+      //   medias: {
+      //     lanche_manha: produtoFinal.media_lanche_manha,
+      //     parcial_manha: produtoFinal.media_parcial_manha,
+      //     almoco: produtoFinal.media_almoco,
+      //     lanche_tarde: produtoFinal.media_lanche_tarde,
+      //     parcial_tarde: produtoFinal.media_parcial_tarde,
+      //     eja: produtoFinal.media_eja
+      //   }
+      // });
 
       return produtoFinal;
     });
