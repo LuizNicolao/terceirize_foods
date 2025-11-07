@@ -325,28 +325,8 @@ const excluirProdutoAjuste = async (req, res) => {
 
     // Verificar permissões baseado no tipo de usuário
     if (tipo_usuario === 'nutricionista') {
-      // Nutricionista só pode excluir se:
-      // 1. O produto tem status 'NEC' (ainda não ajustado pela nutricionista)
-      // 2. OU pertence à rota da nutricionista
-      
-      if (produtoData.status === 'NEC') {
-        // Qualquer nutricionista pode excluir produtos não ajustados
-      } else if (['NEC NUTRI', 'CONF NUTRI'].includes(produtoData.status)) {
-        // Verificar se a nutricionista tem acesso à escola
-        const temAcesso = await executeQuery(`
-          SELECT 1 FROM rotas_nutricionistas 
-          WHERE usuario_id = ? AND escola_id = ? AND ativo = 1
-          LIMIT 1
-        `, [usuario_id, produtoData.escola_id]);
-
-        if (temAcesso.length === 0) {
-          return res.status(403).json({
-            success: false,
-            error: 'Sem permissão',
-            message: 'Você não tem permissão para excluir este produto'
-          });
-        }
-      } else {
+      // Nutricionista pode excluir produtos em status iniciais ou ajustados por ela
+      if (!['NEC', 'NEC NUTRI', 'CONF NUTRI'].includes(produtoData.status)) {
         return res.status(403).json({
           success: false,
           error: 'Sem permissão',
