@@ -57,19 +57,19 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
   // Logs auxiliares para depuração
   useEffect(() => {
     if (isOpen) {
-      console.debug('[NecessidadeModal] 📚 filtros selecionados', formData);
+      console.log('[NecessidadeModal] 📚 filtros selecionados', formData);
     }
   }, [isOpen, formData]);
 
   useEffect(() => {
     if (isOpen) {
-      console.debug('[NecessidadeModal] 📊 médias carregadas', mediasPeriodo);
+      console.log('[NecessidadeModal] 📊 médias carregadas', mediasPeriodo);
     }
   }, [isOpen, mediasPeriodo]);
 
   useEffect(() => {
     if (isOpen) {
-      console.debug('[NecessidadeModal] 🧭 tipos de atendimento por escola', tiposAtendimentoEscola);
+      console.log('[NecessidadeModal] 🧭 tipos de atendimento por escola', tiposAtendimentoEscola);
     }
   }, [isOpen, tiposAtendimentoEscola]);
 
@@ -212,7 +212,7 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
 
   useEffect(() => {
     if (isOpen) {
-      console.debug('[NecessidadeModal] ✅ tipos de atendimento disponíveis na tela', tiposDisponiveis.map(tipo => tipo.key));
+      console.log('[NecessidadeModal] ✅ tipos de atendimento disponíveis na tela', tiposDisponiveis.map(tipo => tipo.key));
     }
   }, [isOpen, tiposDisponiveis]);
 
