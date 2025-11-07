@@ -316,7 +316,6 @@ class RegistrosDiariosListController {
           `SELECT 
             media_lanche_manha,
             media_parcial_manha,
-            media_parcial,
             media_parcial_tarde,
             media_almoco,
             media_lanche_tarde,
@@ -336,16 +335,10 @@ class RegistrosDiariosListController {
           };
 
           mediasOrganizadas.lanche_manha.media = obterMedia(legada.media_lanche_manha);
-          mediasOrganizadas.parcial_manha.media = obterMedia(
-            legada.media_parcial_manha,
-            legada.media_parcial
-          );
+          mediasOrganizadas.parcial_manha.media = obterMedia(legada.media_parcial_manha);
           mediasOrganizadas.almoco.media = obterMedia(legada.media_almoco);
           mediasOrganizadas.lanche_tarde.media = obterMedia(legada.media_lanche_tarde);
-          mediasOrganizadas.parcial_tarde.media = obterMedia(
-            legada.media_parcial_tarde,
-            legada.media_parcial
-          );
+          mediasOrganizadas.parcial_tarde.media = obterMedia(legada.media_parcial_tarde);
           mediasOrganizadas.eja.media = obterMedia(legada.media_eja);
         }
       }
