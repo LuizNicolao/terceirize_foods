@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import toast from 'react-hot-toast';
 import PermissoesService from '../services/permissoes';
 import { usePermissions } from '../contexts/PermissionsContext';
@@ -9,7 +9,6 @@ export const usePermissoes = () => {
   
   // Estados principais
   const [usuarios, setUsuarios] = useState([]);
-  const [filteredUsuarios, setFilteredUsuarios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedUserId, setSelectedUserId] = useState('');
   const [selectedUser, setSelectedUser] = useState(null);
@@ -20,6 +19,9 @@ export const usePermissoes = () => {
   const [isSelectOpen, setIsSelectOpen] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState({});
   const [showPermissionsModal, setShowPermissionsModal] = useState(false);
+  const [statusFilter, setStatusFilter] = useState('todos');
+  const [nivelFilter, setNivelFilter] = useState('todos');
+  const [tipoFilter, setTipoFilter] = useState('todos');
 
   // Estados de estatísticas
   const [estatisticas, setEstatisticas] = useState({
@@ -37,7 +39,6 @@ export const usePermissoes = () => {
       if (result.success) {
         const data = Array.isArray(result.data) ? result.data : [];
         setUsuarios(data);
-        setFilteredUsuarios(data);
         
         // Calcular estatísticas
         const ativos = data.filter(u => u.status === 'ativo').length;
@@ -51,13 +52,11 @@ export const usePermissoes = () => {
       } else {
         toast.error(result.error || 'Erro ao carregar usuários');
         setUsuarios([]);
-        setFilteredUsuarios([]);
       }
     } catch (error) {
       console.error('Erro ao carregar usuários:', error);
       toast.error('Erro ao carregar usuários');
       setUsuarios([]);
-      setFilteredUsuarios([]);
     } finally {
       setLoading(false);
     }
@@ -114,13 +113,36 @@ export const usePermissoes = () => {
   }, []);
 
   // Filtrar usuários (client-side)
-  const filteredUsuariosData = (Array.isArray(usuarios) ? usuarios : []).filter(usuario => {
-    const matchesSearch = !searchTerm || 
-      (usuario.nome && usuario.nome.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (usuario.email && usuario.email.toLowerCase().includes(searchTerm.toLowerCase()));
-    
-    return matchesSearch;
-  });
+  const filteredUsuariosData = useMemo(() => {
+    const lista = Array.isArray(usuarios) ? usuarios : [];
+
+    return lista
+      .filter(usuario => {
+        const termo = searchTerm.trim().toLowerCase();
+        if (!termo) return true;
+
+        const nomeMatch = usuario.nome && usuario.nome.toLowerCase().includes(termo);
+        const emailMatch = usuario.email && usuario.email.toLowerCase().includes(termo);
+        return nomeMatch || emailMatch;
+      })
+      .filter(usuario => {
+        if (statusFilter === 'todos') return true;
+        return (usuario.status || '').toLowerCase() === statusFilter.toLowerCase();
+      })
+      .filter(usuario => {
+        if (nivelFilter === 'todos') return true;
+        return (usuario.nivel_de_acesso || '').toString().toLowerCase() === nivelFilter.toLowerCase();
+      })
+      .filter(usuario => {
+        if (tipoFilter === 'todos') return true;
+        return (usuario.tipo_de_acesso || '').toLowerCase() === tipoFilter.toLowerCase();
+      })
+      .sort((a, b) => {
+        const nomeA = (a.nome || '').toLowerCase();
+        const nomeB = (b.nome || '').toLowerCase();
+        return nomeA.localeCompare(nomeB);
+      });
+  }, [usuarios, searchTerm, statusFilter, nivelFilter, tipoFilter]);
 
   // Funções de CRUD
   const handleSavePermissions = async () => {
@@ -237,6 +259,25 @@ export const usePermissoes = () => {
     setSearchTerm(value);
   };
 
+  const handleStatusFilterChange = (value) => {
+    setStatusFilter(value);
+  };
+
+  const handleNivelFilterChange = (value) => {
+    setNivelFilter(value);
+  };
+
+  const handleTipoFilterChange = (value) => {
+    setTipoFilter(value);
+  };
+
+  const handleClearFilters = () => {
+    setSearchTerm('');
+    setStatusFilter('todos');
+    setNivelFilter('todos');
+    setTipoFilter('todos');
+  };
+
   // Funções utilitárias
   const formatDate = (dateString) => {
     if (!dateString) return '-';
@@ -274,10 +315,17 @@ export const usePermissoes = () => {
 
     // Funções de busca
     handleSearchChange,
+    handleStatusFilterChange,
+    handleNivelFilterChange,
+    handleTipoFilterChange,
+    handleClearFilters,
 
     // Funções de estado
     setIsSelectOpen,
     setShowPermissionsModal,
+    statusFilter,
+    nivelFilter,
+    tipoFilter,
 
     // Funções utilitárias
     formatDate,

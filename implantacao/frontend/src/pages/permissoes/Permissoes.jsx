@@ -34,8 +34,15 @@ const Permissoes = () => {
     handlePermissionChange,
     handleExpandGroup,
     handleSearchChange,
+    handleStatusFilterChange,
+    handleNivelFilterChange,
+    handleTipoFilterChange,
+    handleClearFilters,
     setIsSelectOpen,
     setShowPermissionsModal,
+    statusFilter,
+    nivelFilter,
+    tipoFilter,
     getStatusLabel
   } = usePermissoes();
 
@@ -82,6 +89,13 @@ const Permissoes = () => {
       <PermissoesFilters
         searchTerm={searchTerm}
         onSearchChange={handleSearchChange}
+        statusFilter={statusFilter}
+        onStatusFilterChange={handleStatusFilterChange}
+        nivelFilter={nivelFilter}
+        onNivelFilterChange={handleNivelFilterChange}
+        tipoFilter={tipoFilter}
+        onTipoFilterChange={handleTipoFilterChange}
+        onClearFilters={handleClearFilters}
         loading={loading}
       />
 
