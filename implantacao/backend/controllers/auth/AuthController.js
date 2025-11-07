@@ -34,12 +34,15 @@ class AuthController {
       }
 
       // Buscar usuário
+      console.log('[AuthController] Tentativa de login recebida', { email, rememberMe });
+
       const usuarios = await executeQuery(
         'SELECT id, nome, email, senha, nivel_de_acesso, tipo_de_acesso, status FROM usuarios WHERE email = ?',
         [email]
       );
 
       if (usuarios.length === 0) {
+        console.log('[AuthController] Usuário não encontrado', { email });
         loginAttempts[email].count++;
         loginAttempts[email].lastAttempt = now;
         if (loginAttempts[email].count >= MAX_ATTEMPTS) {
@@ -50,13 +53,22 @@ class AuthController {
 
       const usuario = usuarios[0];
 
+      console.log('[AuthController] Usuário localizado', {
+        id: usuario.id,
+        email: usuario.email,
+        tipo: usuario.tipo_de_acesso,
+        status: usuario.status
+      });
+
       // Se já estiver bloqueado permanentemente
       if (usuario.status === 'bloqueado') {
+        console.log('[AuthController] Usuário bloqueado permanentemente', { email });
         return res.status(403).json({ error: 'Usuário bloqueado. Procure o administrador.' });
       }
 
       // Se não estiver ativo
       if (usuario.status !== 'ativo') {
+        console.log('[AuthController] Usuário inativo', { email, status: usuario.status });
         return res.status(401).json({ error: 'Usuário inativo' });
       }
 
@@ -64,6 +76,7 @@ class AuthController {
       const isValidPassword = await bcrypt.compare(senha, usuario.senha);
 
       if (!isValidPassword) {
+        console.log('[AuthController] Senha inválida', { email });
         loginAttempts[email].count++;
         loginAttempts[email].lastAttempt = now;
         if (loginAttempts[email].count >= MAX_ATTEMPTS) {
@@ -80,6 +93,14 @@ class AuthController {
       // Gerar token com duração baseada na opção "Mantenha-me conectado"
       const tokenExpiration = rememberMe ? '30d' : '24h'; // 30 dias se "lembrar", 24h se não
       const token = await generateToken(usuario.id, tokenExpiration);
+
+      console.log('[AuthController] Login bem sucedido', {
+        id: usuario.id,
+        email: usuario.email,
+        tipo: usuario.tipo_de_acesso,
+        rememberMe,
+        tokenExpiration
+      });
 
       // Remover senha do objeto de resposta
       const { senha: _, ...userWithoutPassword } = usuario;
