@@ -36,7 +36,7 @@ const canView = (screenName) => {
       if (!permissao || !permissao.pode_visualizar) {
         if (
           req.user?.tipo_de_acesso === 'nutricionista' &&
-          ['necessidades', 'analise_necessidades', 'consulta_status_necessidade', 'calendario']
+          ['necessidades', 'analise_necessidades', 'consulta_status_necessidade', 'calendario', 'registros_diarios']
             .includes(screenName)
         ) {
           console.log('[canView] Acesso liberado por tipo nutricionista', {
@@ -122,7 +122,7 @@ const canCreate = (screenName) => {
       if (!permissao || !permissao.pode_criar) {
         if (
           req.user?.tipo_de_acesso === 'nutricionista' &&
-          ['necessidades', 'calendario'].includes(screenName)
+          ['necessidades', 'calendario', 'registros_diarios'].includes(screenName)
         ) {
           console.log('[canCreate] Acesso liberado por tipo nutricionista', {
             screenName
@@ -189,7 +189,7 @@ const canEdit = (screenName) => {
       if (!permissao || !permissao.pode_editar) {
         if (
           req.user?.tipo_de_acesso === 'nutricionista' &&
-          ['necessidades', 'calendario'].includes(screenName)
+          ['necessidades', 'calendario', 'registros_diarios'].includes(screenName)
         ) {
           console.log('[canEdit] Acesso liberado por tipo nutricionista', {
             screenName

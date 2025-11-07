@@ -137,7 +137,7 @@ const checkScreenPermission = (screen, permission) => {
       const allowedByRole = (
         permission === 'visualizar' &&
         user.tipo_de_acesso === 'nutricionista' &&
-        ['necessidades', 'analise_necessidades', 'analise_necessidades_substituicoes', 'consulta_status_necessidade', 'calendario']
+        ['necessidades', 'analise_necessidades', 'analise_necessidades_substituicoes', 'consulta_status_necessidade', 'calendario', 'registros_diarios']
           .includes(screen)
       );
 
