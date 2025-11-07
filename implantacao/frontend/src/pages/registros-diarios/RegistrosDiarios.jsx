@@ -5,6 +5,8 @@ import { useRegistrosDiarios } from '../../hooks/useRegistrosDiarios';
 import { Button, ConfirmModal } from '../../components/ui';
 import { Pagination } from '../../components/ui';
 import { ExportButtons } from '../../components/shared';
+import { useExport } from '../../hooks/common/useExport';
+import RegistrosDiariosService from '../../services/registrosDiarios';
 import { 
   RegistrosDiariosModal, 
   RegistrosDiariosTable, 
@@ -28,6 +30,9 @@ const RegistrosDiarios = () => {
     totalPages,
     totalItems,
     itemsPerPage,
+    escolaFilter,
+    dataInicio,
+    dataFim,
     estatisticas,
     onSubmit,
     handleDeleteRegistro,
@@ -42,7 +47,9 @@ const RegistrosDiarios = () => {
     handleDataFimChange,
     clearFiltros
   } = useRegistrosDiarios();
-  
+
+  const { handleExportXLSX, handleExportPDF } = useExport(RegistrosDiariosService);
+
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deletingRegistro, setDeletingRegistro] = useState(null);
   const [showImportModal, setShowImportModal] = useState(false);
@@ -62,15 +69,11 @@ const RegistrosDiarios = () => {
       setDeletingRegistro(null);
     }
   };
-  
-  const handleExportXLSX = () => {
-    // TODO: Implementar exportação para Excel
-    console.log('Exportar para Excel');
-  };
-  
-  const handleExportPDF = () => {
-    // TODO: Implementar exportação para PDF
-    console.log('Exportar para PDF');
+
+  const filtrosExportacao = {
+    escola_id: escolaFilter || undefined,
+    data_inicio: dataInicio || undefined,
+    data_fim: dataFim || undefined
   };
 
   const handleImportClick = () => {
@@ -140,8 +143,8 @@ const RegistrosDiarios = () => {
       {/* Botões de Exportação */}
       <div className="mb-4">
         <ExportButtons
-          onExportXLSX={handleExportXLSX}
-          onExportPDF={handleExportPDF}
+          onExportXLSX={() => handleExportXLSX(filtrosExportacao)}
+          onExportPDF={() => handleExportPDF(filtrosExportacao)}
           disabled={!canView('registros_diarios')}
         />
       </div>

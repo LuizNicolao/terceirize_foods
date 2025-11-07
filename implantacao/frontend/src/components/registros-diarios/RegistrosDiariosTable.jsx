@@ -12,6 +12,14 @@ const RegistrosDiariosTable = ({
   onDelete,
   loading
 }) => {
+  const formatQuantidade = (valor) => {
+    const numero = Number(valor);
+    if (!Number.isFinite(numero) || numero <= 0) {
+      return '-';
+    }
+    return numero;
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center py-12">
@@ -20,7 +28,7 @@ const RegistrosDiariosTable = ({
       </div>
     );
   }
-  
+
   if (!registros || registros.length === 0) {
     return (
       <EmptyState
@@ -30,7 +38,7 @@ const RegistrosDiariosTable = ({
       />
     );
   }
-  
+
   return (
     <>
       {/* Desktop */}
@@ -59,32 +67,32 @@ const RegistrosDiariosTable = ({
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-900 text-center">
                     <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
-                      {registro.lanche_manha}
+                      {formatQuantidade(registro.lanche_manha)}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-900 text-center">
                     <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-medium">
-                      {registro.parcial_manha ?? registro.parcial ?? 0}
+                      {formatQuantidade(registro.parcial_manha ?? registro.parcial)}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-900 text-center">
                     <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
-                      {registro.almoco}
+                      {formatQuantidade(registro.almoco)}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-900 text-center">
                     <span className="px-2 py-1 bg-orange-100 text-orange-800 rounded-full text-xs font-medium">
-                      {registro.lanche_tarde}
+                      {formatQuantidade(registro.lanche_tarde)}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-900 text-center">
                     <span className="px-2 py-1 bg-rose-100 text-rose-800 rounded-full text-xs font-medium">
-                      {registro.parcial_tarde ?? 0}
+                      {formatQuantidade(registro.parcial_tarde)}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-900 text-center">
                     <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">
-                      {registro.eja}
+                      {formatQuantidade(registro.eja)}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right">
@@ -105,7 +113,7 @@ const RegistrosDiariosTable = ({
           </table>
         </div>
       </div>
-      
+
       {/* Mobile */}
       <div className="xl:hidden space-y-3">
         {registros.map((registro) => (
@@ -127,31 +135,31 @@ const RegistrosDiariosTable = ({
                 className="p-2"
               />
             </div>
-            
+
             <div className="grid grid-cols-2 gap-2 text-xs">
               <div className="flex justify-between items-center">
                 <span className="text-gray-500">Lanche Manhã:</span>
-                <span className="px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full font-medium">{registro.lanche_manha}</span>
+                <span className="px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full font-medium">{formatQuantidade(registro.lanche_manha)}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-500">Parcial Manhã:</span>
-                <span className="px-2 py-0.5 bg-purple-100 text-purple-800 rounded-full font-medium">{registro.parcial_manha ?? registro.parcial ?? 0}</span>
+                <span className="px-2 py-0.5 bg-purple-100 text-purple-800 rounded-full font-medium">{formatQuantidade(registro.parcial_manha ?? registro.parcial)}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-500">Almoço:</span>
-                <span className="px-2 py-0.5 bg-green-100 text-green-800 rounded-full font-medium">{registro.almoco}</span>
+                <span className="px-2 py-0.5 bg-green-100 text-green-800 rounded-full font-medium">{formatQuantidade(registro.almoco)}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-500">Lanche Tarde:</span>
-                <span className="px-2 py-0.5 bg-orange-100 text-orange-800 rounded-full font-medium">{registro.lanche_tarde}</span>
+                <span className="px-2 py-0.5 bg-orange-100 text-orange-800 rounded-full font-medium">{formatQuantidade(registro.lanche_tarde)}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-500">Parcial Tarde:</span>
-                <span className="px-2 py-0.5 bg-rose-100 text-rose-800 rounded-full font-medium">{registro.parcial_tarde ?? 0}</span>
+                <span className="px-2 py-0.5 bg-rose-100 text-rose-800 rounded-full font-medium">{formatQuantidade(registro.parcial_tarde)}</span>
               </div>
               <div className="flex justify-between items-center col-span-2">
                 <span className="text-gray-500">EJA:</span>
-                <span className="px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded-full font-medium">{registro.eja}</span>
+                <span className="px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded-full font-medium">{formatQuantidade(registro.eja)}</span>
               </div>
             </div>
           </div>

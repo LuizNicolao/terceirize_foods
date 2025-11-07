@@ -1,10 +1,11 @@
 import React, { useMemo, useState } from 'react';
 import { FaCalendarAlt, FaSchool, FaUser, FaClock, FaEdit, FaTrash, FaPlus } from 'react-icons/fa';
-import { EmptyState } from '../ui';
+import { EmptyState, Button } from '../ui';
 import { formatarDataParaExibicao } from '../../utils/recebimentos/recebimentosUtils';
 
 const HistoricoTab = ({ historico, loading }) => {
-  const [filtroData, setFiltroData] = useState('');
+  const [dataInicial, setDataInicial] = useState('');
+  const [dataFinal, setDataFinal] = useState('');
 
   if (loading) {
     return (
@@ -29,22 +30,51 @@ const HistoricoTab = ({ historico, loading }) => {
     return `${dia}/${mes}/${ano}, ${hora}:${min}`;
   };
 
+  const normalizarDataLimite = (valor, ehFinal = false) => {
+    if (!valor) return null;
+    const sufixo = ehFinal ? 'T23:59:59' : 'T00:00:00';
+    const data = new Date(`${valor}${sufixo}`);
+    return Number.isNaN(data.getTime()) ? null : data;
+  };
+
+  const normalizarDataItem = (valor) => {
+    if (!valor) return null;
+    const data = new Date(valor);
+    return Number.isNaN(data.getTime()) ? null : data;
+  };
+
   const historicoFiltrado = useMemo(() => {
     if (!historico || historico.length === 0) {
       return [];
     }
 
-    const termo = filtroData.trim().toLowerCase();
-    if (!termo) {
+    const inicio = normalizarDataLimite(dataInicial, false);
+    const fim = normalizarDataLimite(dataFinal, true);
+
+    if (!inicio && !fim) {
       return historico;
     }
 
     return historico.filter((item) => {
-      const dataRegistro = formatarDataParaExibicao(item.data)?.toLowerCase() || '';
-      const dataAcao = formatarDataHora(item.data_acao)?.toLowerCase() || '';
-      return dataRegistro.includes(termo) || dataAcao.includes(termo);
+      const dataRegistro = normalizarDataItem(item.data);
+      const dataAcao = normalizarDataItem(item.data_acao);
+      const datas = [dataRegistro, dataAcao].filter(Boolean);
+
+      if (datas.length === 0) {
+        return false;
+      }
+
+      return datas.some((data) => {
+        if (inicio && data < inicio) {
+          return false;
+        }
+        if (fim && data > fim) {
+          return false;
+        }
+        return true;
+      });
     });
-  }, [historico, filtroData]);
+  }, [historico, dataInicial, dataFinal]);
 
   if (!historico || historico.length === 0) {
     return (
@@ -56,23 +86,54 @@ const HistoricoTab = ({ historico, loading }) => {
     );
   }
 
-  if (historicoFiltrado.length === 0) {
-    return (
-      <div className="bg-white rounded-lg shadow-sm border p-6">
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">Filtrar por data</label>
+  const renderFiltros = () => (
+    <div className="mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Data inicial</label>
           <input
-            type="text"
-            value={filtroData}
-            onChange={(e) => setFiltroData(e.target.value)}
-            placeholder="Digite a data (ex: 07/11/2025)"
+            type="date"
+            value={dataInicial}
+            onChange={(e) => setDataInicial(e.target.value)}
+            max={dataFinal || undefined}
             className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50"
           />
         </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Data final</label>
+          <input
+            type="date"
+            value={dataFinal}
+            onChange={(e) => setDataFinal(e.target.value)}
+            min={dataInicial || undefined}
+            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50"
+          />
+        </div>
+        <div className="flex items-end">
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => {
+              setDataInicial('');
+              setDataFinal('');
+            }}
+            disabled={!dataInicial && !dataFinal}
+            className="w-full md:w-auto"
+          >
+            Limpar filtro
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
 
+  if (historicoFiltrado.length === 0) {
+    return (
+      <div className="bg-white rounded-lg shadow-sm border p-6">
+        {renderFiltros()}
         <EmptyState
           title="Nenhum resultado encontrado"
-          description="Ajuste o termo de busca para visualizar registros do histórico"
+          description="Ajuste o intervalo de datas para visualizar registros do histórico"
           icon="history"
         />
       </div>
@@ -130,16 +191,7 @@ const HistoricoTab = ({ historico, loading }) => {
   
   return (
     <div className="bg-white rounded-lg shadow-sm border p-6">
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-2">Filtrar por data</label>
-        <input
-          type="text"
-          value={filtroData}
-          onChange={(e) => setFiltroData(e.target.value)}
-          placeholder="Digite a data (ex: 07/11/2025)"
-          className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50"
-        />
-      </div>
+      {renderFiltros()}
 
       <div className="relative">
         {/* Linha vertical da timeline */}

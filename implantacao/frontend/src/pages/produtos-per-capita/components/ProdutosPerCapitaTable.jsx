@@ -104,11 +104,11 @@ const ProdutosPerCapitaTable = ({
                   Lanche Tarde
                 </SortableHeader>
                 <SortableHeader 
-                  field="per_capita_parcial" 
+                  field="per_capita_parcial_manha" 
                   currentSort={sortConfig} 
                   onSort={handleSort}
                 >
-                  Parcial
+                  Parcial Manhã
                 </SortableHeader>
                 <SortableHeader 
                   field="per_capita_eja" 
@@ -116,6 +116,13 @@ const ProdutosPerCapitaTable = ({
                   onSort={handleSort}
                 >
                   EJA
+                </SortableHeader>
+                <SortableHeader 
+                  field="per_capita_parcial_tarde" 
+                  currentSort={sortConfig} 
+                  onSort={handleSort}
+                >
+                  Parcial Tarde
                 </SortableHeader>
                 <SortableHeader 
                   field="ativo" 
@@ -150,10 +157,13 @@ const ProdutosPerCapitaTable = ({
                     {formatPerCapita(produto.per_capita_lanche_tarde)}
                   </td>
                   <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
-                    {formatPerCapita(produto.per_capita_parcial)}
+                    {formatPerCapita(produto.per_capita_parcial_manha ?? produto.per_capita_parcial)}
                   </td>
                   <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                     {formatPerCapita(produto.per_capita_eja)}
+                  </td>
+                  <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
+                    {formatPerCapita(produto.per_capita_parcial_tarde ?? produto.per_capita_parcial)}
                   </td>
                   <td className="px-3 py-2 whitespace-nowrap">
                     {getStatusBadge(produto.ativo)}
@@ -215,12 +225,16 @@ const ProdutosPerCapitaTable = ({
                 <p className="font-medium">{formatPerCapita(produto.per_capita_lanche_tarde)}</p>
               </div>
               <div>
-                <span className="text-gray-500">Parcial:</span>
-                <p className="font-medium">{formatPerCapita(produto.per_capita_parcial)}</p>
+                <span className="text-gray-500">Parcial Manhã:</span>
+                <p className="font-medium">{formatPerCapita(produto.per_capita_parcial_manha ?? produto.per_capita_parcial)}</p>
               </div>
-              <div className="col-span-2">
+              <div>
                 <span className="text-gray-500">EJA:</span>
                 <p className="font-medium">{formatPerCapita(produto.per_capita_eja)}</p>
+              </div>
+              <div className="col-span-2">
+                <span className="text-gray-500">Parcial Tarde:</span>
+                <p className="font-medium">{formatPerCapita(produto.per_capita_parcial_tarde ?? produto.per_capita_parcial)}</p>
               </div>
             </div>
             

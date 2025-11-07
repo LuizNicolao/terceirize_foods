@@ -24,7 +24,49 @@ class RegistrosDiariosService {
       };
     }
   }
-  
+
+  /**
+   * Exportar registros diários em XLSX
+   */
+  static async exportarXLSX(params = {}) {
+    try {
+      const response = await api.get('/registros-diarios/export/xlsx', {
+        params,
+        responseType: 'blob'
+      });
+      return {
+        success: true,
+        data: response.data
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao exportar XLSX'
+      };
+    }
+  }
+
+  /**
+   * Exportar registros diários em PDF
+   */
+  static async exportarPDF(params = {}) {
+    try {
+      const response = await api.get('/registros-diarios/export/pdf', {
+        params,
+        responseType: 'blob'
+      });
+      return {
+        success: true,
+        data: response.data
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao exportar PDF'
+      };
+    }
+  }
+
   /**
    * Buscar registros de uma escola em uma data específica
    */
@@ -45,7 +87,7 @@ class RegistrosDiariosService {
       };
     }
   }
-  
+
   /**
    * Criar/atualizar registros diários
    */
@@ -65,7 +107,7 @@ class RegistrosDiariosService {
       };
     }
   }
-  
+
   /**
    * Excluir registros de uma data
    */
@@ -85,7 +127,7 @@ class RegistrosDiariosService {
       };
     }
   }
-  
+
   /**
    * Listar médias por escola
    */
@@ -105,7 +147,7 @@ class RegistrosDiariosService {
       };
     }
   }
-  
+
   /**
    * Listar histórico completo de uma escola
    */
@@ -126,7 +168,7 @@ class RegistrosDiariosService {
       };
     }
   }
-  
+
   /**
    * Obter estatísticas
    */
