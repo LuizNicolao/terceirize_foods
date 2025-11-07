@@ -38,12 +38,12 @@ const RegistrosDiariosModal = ({
     nutricionista_id: user?.id || '',
     data: getDataAtual(),
     quantidades: {
-      lanche_manha: 0,
-      parcial_manha: 0,
-      almoco: 0,
-      lanche_tarde: 0,
-      parcial_tarde: 0,
-      eja: 0
+      lanche_manha: '',
+      parcial_manha: '',
+      almoco: '',
+      lanche_tarde: '',
+      parcial_tarde: '',
+      eja: ''
     }
   });
 
@@ -113,12 +113,16 @@ const RegistrosDiariosModal = ({
         nutricionista_id: registro.nutricionista_id || user?.id || '',
         data: registro.data || new Date().toISOString().split('T')[0],
         quantidades: {
-          lanche_manha: registro.lanche_manha || 0,
-          parcial_manha: (registro.parcial_manha ?? registro.parcial) || 0,
-          almoco: registro.almoco || 0,
-          lanche_tarde: registro.lanche_tarde || 0,
-          parcial_tarde: registro.parcial_tarde || 0,
-          eja: registro.eja || 0
+          lanche_manha: registro.lanche_manha != null ? String(registro.lanche_manha) : '',
+          parcial_manha: registro.parcial_manha != null
+            ? String(registro.parcial_manha)
+            : registro.parcial != null
+              ? String(registro.parcial)
+              : '',
+          almoco: registro.almoco != null ? String(registro.almoco) : '',
+          lanche_tarde: registro.lanche_tarde != null ? String(registro.lanche_tarde) : '',
+          parcial_tarde: registro.parcial_tarde != null ? String(registro.parcial_tarde) : '',
+          eja: registro.eja != null ? String(registro.eja) : ''
         }
       });
       setDadosIniciaisCarregados(true);
@@ -191,12 +195,16 @@ const RegistrosDiariosModal = ({
           if (result.success && result.data?.quantidades) {
             const quantidades = result.data.quantidades;
             const quantidadesNormalizadas = {
-              lanche_manha: quantidades.lanche_manha || 0,
-              parcial_manha: quantidades.parcial_manha ?? quantidades.parcial ?? 0,
-              almoco: quantidades.almoco || 0,
-              lanche_tarde: quantidades.lanche_tarde || 0,
-              parcial_tarde: quantidades.parcial_tarde || 0,
-              eja: quantidades.eja || 0
+              lanche_manha: quantidades.lanche_manha != null ? String(quantidades.lanche_manha) : '',
+              parcial_manha: quantidades.parcial_manha != null
+                ? String(quantidades.parcial_manha)
+                : quantidades.parcial != null
+                  ? String(quantidades.parcial)
+                  : '',
+              almoco: quantidades.almoco != null ? String(quantidades.almoco) : '',
+              lanche_tarde: quantidades.lanche_tarde != null ? String(quantidades.lanche_tarde) : '',
+              parcial_tarde: quantidades.parcial_tarde != null ? String(quantidades.parcial_tarde) : '',
+              eja: quantidades.eja != null ? String(quantidades.eja) : ''
             };
             setFormData(prev => ({
               ...prev,
@@ -260,7 +268,7 @@ const RegistrosDiariosModal = ({
           if (result.success && result.data.length > 0) {
             // Transformar dados do backend para formato do HistoricoTab
             const historicoFormatado = result.data.map((reg, index) => ({
-              acao: index === 0 ? 'criacao' : 'edicao', // Mais recente = criação (na verdade é o último editado)
+              acao: index === 0 ? 'criacao' : 'edicao',
               data_acao: reg.data_atualizacao || reg.data_cadastro,
               escola_id: reg.escola_id,
               escola_nome: reg.escola_nome,
@@ -269,9 +277,10 @@ const RegistrosDiariosModal = ({
               usuario_nome: user?.nome,
               valores: {
                 lanche_manha: reg.lanche_manha || 0,
+                parcial_manha: reg.parcial_manha ?? reg.parcial ?? 0,
                 almoco: reg.almoco || 0,
                 lanche_tarde: reg.lanche_tarde || 0,
-                parcial: reg.parcial || 0,
+                parcial_tarde: reg.parcial_tarde || 0,
                 eja: reg.eja || 0
               }
             }));
@@ -303,11 +312,13 @@ const RegistrosDiariosModal = ({
   };
   
   const handleQuantidadeChange = (tipo, value) => {
+    const valorNormalizado = value === '' ? '' : String(Math.max(0, parseInt(value, 10) || 0));
+
     setFormData(prev => ({
       ...prev,
       quantidades: {
         ...prev.quantidades,
-        [tipo]: parseInt(value) || 0
+        [tipo]: valorNormalizado
       }
     }));
   };
@@ -478,7 +489,7 @@ const RegistrosDiariosModal = ({
                   onChange={(e) => handleQuantidadeChange(refeicao.key, e.target.value)}
                   disabled={isViewMode}
                   className="w-24 text-center"
-                  placeholder="0"
+                  placeholder=""
                 />
               </div>
             ))}

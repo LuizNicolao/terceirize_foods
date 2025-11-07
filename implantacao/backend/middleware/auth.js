@@ -13,33 +13,61 @@ const authenticateToken = async (req, res, next) => {
   const token = authHeader && authHeader.split(' ')[1];
 
   if (!token) {
+    console.warn('[authenticateToken] Token não fornecido', { ip: req.ip, path: req.path });
     return res.status(401).json({ error: 'Token de acesso não fornecido' });
   }
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    
-    // Verificar se o usuário ainda existe e está ativo
+    let decoded;
+    try {
+      decoded = jwt.verify(token, JWT_SECRET);
+    } catch (verifyError) {
+      console.error('[authenticateToken] Falha ao verificar token', {
+        message: verifyError.message,
+        name: verifyError.name,
+        path: req.path,
+        ip: req.ip
+      });
+      return res.status(403).json({ error: 'Token inválido' });
+    }
+
     const user = await executeQuery(
       'SELECT id, nome, email, nivel_de_acesso, tipo_de_acesso, status FROM usuarios WHERE id = ?',
       [decoded.userId]
     );
 
     if (user.length === 0) {
+      console.warn('[authenticateToken] Usuário não encontrado', {
+        userId: decoded.userId,
+        path: req.path
+      });
       return res.status(401).json({ error: 'Usuário não encontrado' });
     }
 
     if (user[0].status === 'bloqueado') {
+      console.warn('[authenticateToken] Usuário bloqueado', {
+        userId: decoded.userId,
+        path: req.path
+      });
       return res.status(403).json({ error: 'Usuário bloqueado. Procure o administrador.' });
     }
 
     if (user[0].status !== 'ativo') {
+      console.warn('[authenticateToken] Usuário inativo', {
+        userId: decoded.userId,
+        status: user[0].status
+      });
       return res.status(401).json({ error: 'Usuário inativo' });
     }
 
     req.user = user[0];
     next();
   } catch (error) {
+    console.error('[authenticateToken] Erro inesperado', {
+      message: error.message,
+      stack: error.stack,
+      path: req.path
+    });
     return res.status(403).json({ error: 'Token inválido' });
   }
 };

@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { FaCalendarAlt, FaSchool, FaUser, FaClock, FaEdit, FaTrash, FaPlus } from 'react-icons/fa';
 import { EmptyState } from '../ui';
 import { formatarDataParaExibicao } from '../../utils/recebimentos/recebimentosUtils';
 
 const HistoricoTab = ({ historico, loading }) => {
+  const [filtroData, setFiltroData] = useState('');
+
   if (loading) {
     return (
       <div className="flex justify-center items-center py-12">
@@ -13,6 +15,37 @@ const HistoricoTab = ({ historico, loading }) => {
     );
   }
   
+  const formatarDataHora = (valor) => {
+    if (!valor) return '';
+
+    const date = new Date(valor);
+    if (Number.isNaN(date.getTime())) return '';
+
+    const dia = String(date.getDate()).padStart(2, '0');
+    const mes = String(date.getMonth() + 1).padStart(2, '0');
+    const ano = date.getFullYear();
+    const hora = String(date.getHours()).padStart(2, '0');
+    const min = String(date.getMinutes()).padStart(2, '0');
+    return `${dia}/${mes}/${ano}, ${hora}:${min}`;
+  };
+
+  const historicoFiltrado = useMemo(() => {
+    if (!historico || historico.length === 0) {
+      return [];
+    }
+
+    const termo = filtroData.trim().toLowerCase();
+    if (!termo) {
+      return historico;
+    }
+
+    return historico.filter((item) => {
+      const dataRegistro = formatarDataParaExibicao(item.data)?.toLowerCase() || '';
+      const dataAcao = formatarDataHora(item.data_acao)?.toLowerCase() || '';
+      return dataRegistro.includes(termo) || dataAcao.includes(termo);
+    });
+  }, [historico, filtroData]);
+
   if (!historico || historico.length === 0) {
     return (
       <EmptyState
@@ -20,6 +53,29 @@ const HistoricoTab = ({ historico, loading }) => {
         description="O histórico de alterações aparecerá aqui quando houver registros"
         icon="history"
       />
+    );
+  }
+
+  if (historicoFiltrado.length === 0) {
+    return (
+      <div className="bg-white rounded-lg shadow-sm border p-6">
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">Filtrar por data</label>
+          <input
+            type="text"
+            value={filtroData}
+            onChange={(e) => setFiltroData(e.target.value)}
+            placeholder="Digite a data (ex: 07/11/2025)"
+            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50"
+          />
+        </div>
+
+        <EmptyState
+          title="Nenhum resultado encontrado"
+          description="Ajuste o termo de busca para visualizar registros do histórico"
+          icon="history"
+        />
+      </div>
     );
   }
   
@@ -61,16 +117,37 @@ const HistoricoTab = ({ historico, loading }) => {
         return 'bg-gray-100 border-gray-200';
     }
   };
+
+  const tiposRefeicao = [
+    { key: 'lanche_manha', label: 'Lanche Manhã', badge: 'bg-blue-50 text-blue-700' },
+    { key: 'parcial_manha', label: 'Parcial Manhã', badge: 'bg-indigo-50 text-indigo-700' },
+    { key: 'almoco', label: 'Almoço', badge: 'bg-green-50 text-green-700' },
+    { key: 'lanche_tarde', label: 'Lanche Tarde', badge: 'bg-purple-50 text-purple-700' },
+    { key: 'parcial_tarde', label: 'Parcial Tarde', badge: 'bg-orange-50 text-orange-700' },
+    { key: 'eja', label: 'EJA', badge: 'bg-yellow-50 text-yellow-700' },
+    { key: 'parcial', label: 'Parcial', badge: 'bg-orange-100 text-orange-800' }
+  ];
   
   return (
     <div className="bg-white rounded-lg shadow-sm border p-6">
+      <div className="mb-6">
+        <label className="block text-sm font-medium text-gray-700 mb-2">Filtrar por data</label>
+        <input
+          type="text"
+          value={filtroData}
+          onChange={(e) => setFiltroData(e.target.value)}
+          placeholder="Digite a data (ex: 07/11/2025)"
+          className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50"
+        />
+      </div>
+
       <div className="relative">
         {/* Linha vertical da timeline */}
         <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-gray-200"></div>
         
         {/* Itens do histórico */}
         <div className="space-y-6">
-          {historico.map((item, index) => (
+          {historicoFiltrado.map((item, index) => (
             <div key={index} className="relative flex gap-4">
               {/* Ícone da ação */}
               <div className={`
@@ -91,15 +168,7 @@ const HistoricoTab = ({ historico, loading }) => {
                     </h4>
                     <span className="text-xs text-gray-500 flex items-center">
                       <FaClock className="mr-1" />
-                      {(() => {
-                        const date = new Date(item.data_acao);
-                        const dia = String(date.getDate()).padStart(2, '0');
-                        const mes = String(date.getMonth() + 1).padStart(2, '0');
-                        const ano = date.getFullYear();
-                        const hora = String(date.getHours()).padStart(2, '0');
-                        const min = String(date.getMinutes()).padStart(2, '0');
-                        return `${dia}/${mes}/${ano}, ${hora}:${min}`;
-                      })()}
+                      {formatarDataHora(item.data_acao)}
                     </span>
                   </div>
                   
@@ -128,31 +197,23 @@ const HistoricoTab = ({ historico, loading }) => {
                     {item.valores && (
                       <div className="md:col-span-2">
                         <div className="flex flex-wrap gap-2 mt-2">
-                          {item.valores.lanche_manha > 0 && (
-                            <span className="px-2 py-1 bg-blue-50 text-blue-700 rounded text-xs">
-                              Lanche Manhã: {item.valores.lanche_manha}
-                            </span>
-                          )}
-                          {item.valores.almoco > 0 && (
-                            <span className="px-2 py-1 bg-green-50 text-green-700 rounded text-xs">
-                              Almoço: {item.valores.almoco}
-                            </span>
-                          )}
-                          {item.valores.lanche_tarde > 0 && (
-                            <span className="px-2 py-1 bg-purple-50 text-purple-700 rounded text-xs">
-                              Lanche Tarde: {item.valores.lanche_tarde}
-                            </span>
-                          )}
-                          {item.valores.parcial > 0 && (
-                            <span className="px-2 py-1 bg-orange-50 text-orange-700 rounded text-xs">
-                              Parcial: {item.valores.parcial}
-                            </span>
-                          )}
-                          {item.valores.eja > 0 && (
-                            <span className="px-2 py-1 bg-yellow-50 text-yellow-700 rounded text-xs">
-                              EJA: {item.valores.eja}
-                            </span>
-                          )}
+                          {tiposRefeicao.map((tipo) => {
+                            const valor = item.valores[tipo.key];
+                            if (valor === undefined || valor === null) {
+                              return null;
+                            }
+
+                            const numero = Number(valor);
+                            if (Number.isNaN(numero) || numero <= 0) {
+                              return null;
+                            }
+
+                            return (
+                              <span key={tipo.key} className={`px-2 py-1 rounded text-xs ${tipo.badge}`}>
+                                {tipo.label}: {numero}
+                              </span>
+                            );
+                          })}
                         </div>
                       </div>
                     )}
