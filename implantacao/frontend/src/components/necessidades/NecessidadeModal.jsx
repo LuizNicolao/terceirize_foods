@@ -145,13 +145,15 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
       'lanche_manha': 'lanche_manha',
       'almoco': 'almoco',
       'lanche_tarde': 'lanche_tarde',
-      'parcial': 'parcial_manha', // Parcial pode ser parcial_manha ou parcial_tarde
+      'parcial_manha': 'parcial_manha',
+      'parcial_tarde': 'parcial_tarde',
       'eja': 'eja'
     };
     const tipoMapeado = mapeamentoTipos[tipo];
-    // Verificar se o tipo está na lista ou se é parcial (pode ser parcial_manha ou parcial_tarde)
-    return tiposAtendimentoEscola.includes(tipoMapeado) || 
-           (tipo === 'parcial' && (tiposAtendimentoEscola.includes('parcial_manha') || tiposAtendimentoEscola.includes('parcial_tarde')));
+    if (!tipoMapeado) {
+      return false;
+    }
+    return tiposAtendimentoEscola.includes(tipoMapeado);
   };
 
   // Configuração dos tipos de atendimento para renderização dinâmica
@@ -256,6 +258,8 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
       const percapitaAlmoco = Number(produto.per_capita_almoco) || 0;
       const percapitaLancheTarde = Number(produto.per_capita_lanche_tarde) || 0;
       const percapitaParcial = Number(produto.per_capita_parcial) || 0;
+      const percapitaParcialManha = Number(produto.per_capita_parcial_manha ?? percapitaParcial) || percapitaParcial;
+      const percapitaParcialTarde = Number(produto.per_capita_parcial_tarde ?? percapitaParcial) || percapitaParcial;
       const percapitaEja = Number(produto.per_capita_eja) || 0;
 
 
@@ -265,6 +269,8 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
       const mediaAlmoco = Math.round(Number(mediasPeriodo.almoco?.media || 0)); // Número inteiro
       const mediaLancheTarde = Math.round(Number(mediasPeriodo.lanche_tarde?.media || 0)); // Número inteiro
       const mediaParcial = Math.round(Number(mediasPeriodo.parcial?.media || 0)); // Número inteiro
+      const mediaParcialManha = Math.round(Number(mediasPeriodo.parcial_manha?.media ?? mediasPeriodo.parcial?.media ?? 0));
+      const mediaParcialTarde = Math.round(Number(mediasPeriodo.parcial_tarde?.media ?? mediasPeriodo.parcial?.media ?? 0));
       const mediaEja = Math.round(Number(mediasPeriodo.eja?.media || 0)); // Número inteiro
       
       // EDIÇÃO MANUAL (comentado - usar apenas se necessário no futuro)
@@ -278,6 +284,8 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
       const qtdAlmoco = 0;
       const qtdLancheTarde = 0;
       const qtdParcial = 0;
+      const qtdParcialManha = 0;
+      const qtdParcialTarde = 0;
       const qtdEja = 0;
 
       // Total - considerar apenas tipos disponíveis
@@ -286,6 +294,8 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
         qtd_almoco: qtdAlmoco,
         qtd_lanche_tarde: qtdLancheTarde,
         qtd_parcial: qtdParcial,
+        qtd_parcial_manha: qtdParcialManha,
+        qtd_parcial_tarde: qtdParcialTarde,
         qtd_eja: qtdEja
       };
       const total = tiposDisponiveis.reduce((sum, tipo) => {
@@ -301,21 +311,29 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
         percapita_almoco: percapitaAlmoco,
         percapita_lanche_tarde: percapitaLancheTarde,
         percapita_parcial: percapitaParcial,
+        percapita_parcial_manha: percapitaParcialManha,
+        percapita_parcial_tarde: percapitaParcialTarde,
         percapita_eja: percapitaEja,
         media_lanche_manha: mediaLancheManha, // Média das escolas (número de alunos)
         media_almoco: mediaAlmoco,
         media_lanche_tarde: mediaLancheTarde,
         media_parcial: mediaParcial,
+        media_parcial_manha: mediaParcialManha,
+        media_parcial_tarde: mediaParcialTarde,
         media_eja: mediaEja,
         frequencia_lanche_manha: '', // Começar em branco (editável)
         frequencia_almoco: '',
         frequencia_lanche_tarde: '',
         frequencia_parcial: '',
+        frequencia_parcial_manha: '',
+        frequencia_parcial_tarde: '',
         frequencia_eja: '',
         qtd_lanche_manha: qtdLancheManha, // Usar cálculo inicial
         qtd_almoco: qtdAlmoco,
         qtd_lanche_tarde: qtdLancheTarde,
         qtd_parcial: qtdParcial,
+        qtd_parcial_manha: qtdParcialManha,
+        qtd_parcial_tarde: qtdParcialTarde,
         qtd_eja: qtdEja,
         total: total, // Usar total calculado
         ajuste: ajustesExistentes[produto.produto_id] || '' // Preservar ajuste existente ou inicializar em branco
@@ -433,6 +451,8 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
         (produto.frequencia_almoco && produto.frequencia_almoco > 0) ||
         (produto.frequencia_lanche_tarde && produto.frequencia_lanche_tarde > 0) ||
         (produto.frequencia_parcial && produto.frequencia_parcial > 0) ||
+        (produto.frequencia_parcial_manha && produto.frequencia_parcial_manha > 0) ||
+        (produto.frequencia_parcial_tarde && produto.frequencia_parcial_tarde > 0) ||
         (produto.frequencia_eja && produto.frequencia_eja > 0);
       
       const temPedido = produto.ajuste && produto.ajuste > 0;
