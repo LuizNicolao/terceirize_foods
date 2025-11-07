@@ -39,7 +39,7 @@ class AuthController {
       }
 
       // Buscar usuário
-      console.log('[AuthController] Tentativa de login recebida', { email, rememberMe });
+      console.log('[AuthController] Tentativa de login recebida', { email, rememberMe, ip: req.ip });
 
       const usuarios = await executeQuery(
         'SELECT id, nome, email, senha, nivel_de_acesso, tipo_de_acesso, status FROM usuarios WHERE email = ?',
@@ -47,7 +47,7 @@ class AuthController {
       );
 
       if (usuarios.length === 0) {
-        console.log('[AuthController] Usuário não encontrado', { email });
+        console.log('[AuthController] Usuário não encontrado', { email, ip: req.ip });
         loginAttempts[email].count++;
         loginAttempts[email].lastAttempt = now;
         console.log('[AuthController] Tentativas acumuladas (usuário não encontrado)', {
@@ -70,18 +70,20 @@ class AuthController {
         id: usuario.id,
         email: usuario.email,
         tipo: usuario.tipo_de_acesso,
-        status: usuario.status
+        status: usuario.status,
+        tokenExpiration: loginAttempts[email],
+        rememberMe
       });
 
       // Se já estiver bloqueado permanentemente
       if (usuario.status === 'bloqueado') {
-        console.log('[AuthController] Usuário bloqueado permanentemente', { email });
+        console.log('[AuthController] Usuário bloqueado permanentemente', { email, ip: req.ip });
         return res.status(403).json({ error: 'Usuário bloqueado. Procure o administrador.' });
       }
 
       // Se não estiver ativo
       if (usuario.status !== 'ativo') {
-        console.log('[AuthController] Usuário inativo', { email, status: usuario.status });
+        console.log('[AuthController] Usuário inativo', { email, status: usuario.status, ip: req.ip });
         return res.status(401).json({ error: 'Usuário inativo' });
       }
 
@@ -92,23 +94,27 @@ class AuthController {
         email,
         isValidPassword,
         hashPrefix: usuario.senha ? usuario.senha.slice(0, 10) : null,
-        hashLength: usuario.senha ? usuario.senha.length : null
+        hashLength: usuario.senha ? usuario.senha.length : null,
+        ip: req.ip
       });
 
       if (!isValidPassword) {
-        console.log('[AuthController] Senha inválida', { email });
+        console.log('[AuthController] Senha inválida', { email, ip: req.ip });
         loginAttempts[email].count++;
         loginAttempts[email].lastAttempt = now;
         console.log('[AuthController] Tentativas acumuladas (senha inválida)', {
           email,
-          attempts: loginAttempts[email].count
+          attempts: loginAttempts[email].count,
+          blockedUntil: loginAttempts[email].blockedUntil ? new Date(loginAttempts[email].blockedUntil).toISOString() : null,
+          ip: req.ip
         });
         if (loginAttempts[email].count >= MAX_ATTEMPTS) {
           // Bloquear apenas temporariamente em memória (não no banco)
           loginAttempts[email].blockedUntil = now + BLOCK_TIME_MINUTES * 60 * 1000;
           console.log('[AuthController] Usuário temporariamente bloqueado por senha incorreta', {
             email,
-            blockedUntil: new Date(loginAttempts[email].blockedUntil).toISOString()
+            blockedUntil: new Date(loginAttempts[email].blockedUntil).toISOString(),
+            ip: req.ip
           });
           return res.status(403).json({ error: 'Usuário temporariamente bloqueado por tentativas inválidas. Tente novamente em alguns minutos.' });
         }
@@ -117,7 +123,7 @@ class AuthController {
 
       // Login bem-sucedido: resetar tentativas
       loginAttempts[email] = { count: 0, lastAttempt: now, blockedUntil: null };
-      console.log('[AuthController] Tentativas resetadas após sucesso de login', { email });
+      console.log('[AuthController] Tentativas resetadas após sucesso de login', { email, ip: req.ip });
 
       // Gerar token com duração baseada na opção "Mantenha-me conectado"
       const tokenExpiration = rememberMe ? '30d' : '24h'; // 30 dias se "lembrar", 24h se não
@@ -128,7 +134,8 @@ class AuthController {
         email: usuario.email,
         tipo: usuario.tipo_de_acesso,
         rememberMe,
-        tokenExpiration
+        tokenExpiration,
+        ip: req.ip
       });
 
       // Remover senha do objeto de resposta
