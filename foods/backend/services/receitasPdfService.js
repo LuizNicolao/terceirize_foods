@@ -127,6 +127,54 @@ const mapearReceitasExtraidas = (resultado) => {
   }));
 };
 
+const formatarReceitasPorData = (receitas) => {
+  const agrupado = receitas.reduce((acc, receita) => {
+    const data = receita.data || 'Data não identificada';
+    if (!acc[data]) {
+      acc[data] = [];
+    }
+    acc[data].push({
+      turno: receita.turno || 'Não identificado',
+      codigo: receita.codigo || null,
+      descricao: receita.descricao || receita.texto_original || '',
+      ingredientes: receita.ingredientes || [],
+      categoria_inferida: receita.categoria_inferida || null
+    });
+    return acc;
+  }, {});
+
+  const jsonOrdenado = Object.keys(agrupado)
+    .sort((a, b) => {
+      const [diaA, mesA, anoA] = a.split('/').map(Number);
+      const [diaB, mesB, anoB] = b.split('/').map(Number);
+      return new Date(anoA, mesA - 1, diaA) - new Date(anoB, mesB - 1, diaB);
+    })
+    .reduce((acc, data) => {
+      const turnosOrdenados = agrupado[data].sort((a, b) => a.turno.localeCompare(b.turno));
+      acc[data] = turnosOrdenados;
+      return acc;
+    }, {});
+
+  const linhasTxt = [];
+  linhasTxt.push('CARDÁPIO PROCESSADO');
+  linhasTxt.push('===================');
+  linhasTxt.push('');
+
+  Object.entries(jsonOrdenado).forEach(([data, itens]) => {
+    linhasTxt.push(`📅 ${data}`);
+    itens.forEach(item => {
+      const codigo = item.codigo ? `(${item.codigo}) ` : '';
+      linhasTxt.push(`  • ${item.turno}: ${codigo}${item.descricao}`);
+    });
+    linhasTxt.push('');
+  });
+
+  return {
+    json: jsonOrdenado,
+    txt: linhasTxt.join('\n')
+  };
+};
+
 class ReceitasPdfService {
   constructor(options = {}) {
     this.debugDir = options.debugDir || process.env.RECEITAS_PDF_DEBUG_DIR || DEFAULT_DEBUG_DIR;
@@ -206,6 +254,20 @@ class ReceitasPdfService {
       }
     };
 
+    const { json: jsonCardapio, txt: txtCardapio } = formatarReceitasPorData(receitasEstruturadas);
+    const reportJsonPath = path.join(this.reportsDir, `${path.basename(debugPaths.json, '.json')}.processed.json`);
+    const reportTxtPath = path.join(this.reportsDir, `${path.basename(debugPaths.texto, '.txt')}.processed.txt`);
+
+    try {
+      fs.writeFileSync(reportJsonPath, JSON.stringify({
+        resumo,
+        receitas_por_data: jsonCardapio
+      }, null, 2), 'utf-8');
+      fs.writeFileSync(reportTxtPath, txtCardapio, 'utf-8');
+    } catch (error) {
+      console.error('[ReceitasPdfService] Erro ao salvar relatórios processados:', error.message);
+    }
+
     return {
       dadosExtraidos,
       resumo,
@@ -213,7 +275,11 @@ class ReceitasPdfService {
       primeiraReceita,
       debugPaths,
       textoExtraido,
-      resultadoPython: resultadoPython.data
+      resultadoPython: resultadoPython.data,
+      reports: {
+        json: reportJsonPath,
+        txt: reportTxtPath
+      }
     };
   }
 }
