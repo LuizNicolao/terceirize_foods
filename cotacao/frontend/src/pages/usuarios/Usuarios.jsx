@@ -2,10 +2,7 @@ import React from 'react';
 import { useUsuarios } from '../../hooks/useUsuarios';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { AuditModal } from '../../components/shared';
-import {
-  ConfirmModal,
-  LoadingSpinner
-} from '../../components/ui';
+import { ConfirmModal, LoadingSpinner, Button } from '../../components/ui';
 import {
   UsuarioModal,
   UsuariosActions,
