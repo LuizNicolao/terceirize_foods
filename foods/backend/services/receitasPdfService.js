@@ -57,7 +57,7 @@ const extrairIngredientesReceita = (descricao, textoOriginal) => {
     .filter(Boolean);
 };
 
-const inferirTipoReceita = (codigo, turno) => {
+const inferirCategoriaReceita = (codigo, turno) => {
   if (turno) {
     return turno.toLowerCase();
   }
@@ -92,11 +92,13 @@ const mapearReceitasExtraidas = (resultado) => {
 
     if (!receitasMap.has(chave)) {
       const nomeReceita = extrairNomeReceita(refeicao.descricao, refeicao.texto_original);
+      const categoriaInferida = inferirCategoriaReceita(refeicao.codigo, refeicao.turno);
       receitasMap.set(chave, {
         codigo_referencia: refeicao.codigo || null,
         nome: nomeReceita,
         descricao: refeicao.descricao || nomeReceita,
-        tipo: inferirTipoReceita(refeicao.codigo, refeicao.turno),
+        categoria_inferida: categoriaInferida,
+        tipo: categoriaInferida,
         ingredientes: extrairIngredientesReceita(refeicao.descricao, refeicao.texto_original),
         texto_original: refeicao.texto_original ? [refeicao.texto_original] : [refeicao.descricao || nomeReceita],
         datas: refeicao.data ? [refeicao.data] : [],
@@ -175,13 +177,16 @@ class ReceitasPdfService {
       total_receitas_unicas: receitasEstruturadas.length
     };
 
+    const categoriaInferida = primeiraReceita?.categoria_inferida || null;
+    const tipoBanco = 'receita';
+
     const dadosExtraidos = {
       nome: primeiraReceita?.nome || null,
       codigo_referencia: primeiraReceita?.codigo_referencia || null,
       descricao: primeiraReceita?.descricao || '',
       texto_extraido_pdf: primeiraReceita?.texto_original?.join('\n') || textoExtraido || '',
       ingredientes: primeiraReceita?.ingredientes || [],
-      tipo: primeiraReceita?.tipo || null,
+      tipo: tipoBanco,
       status: 'rascunho',
       origem: 'pdf',
       receitas: receitasEstruturadas,
@@ -190,6 +195,11 @@ class ReceitasPdfService {
         raw_text: textoExtraido,
         resultado_python: resultadoPython.data,
         arquivos: debugPaths
+      },
+      meta: {
+        categoria_inferida: categoriaInferida,
+        resumo,
+        arquivos_debug: debugPaths
       }
     };
 
