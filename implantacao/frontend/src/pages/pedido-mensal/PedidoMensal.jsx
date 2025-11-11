@@ -343,11 +343,6 @@ const PedidoMensal = () => {
             <FaUpload className="text-green-600" />
             <span>Importar Dados</span>
           </Button>
-          <ExportButtons
-            onExportXLSX={handleExportPadraoXLSX}
-            onExportPDF={handleExportPadraoPDF}
-            className="flex"
-          />
           <Button
             onClick={handleOpenAuditModal}
             variant="ghost"
@@ -418,6 +413,13 @@ const PedidoMensal = () => {
                 Incluir Produto
               </Button>
             </div>
+          </div>
+
+          <div className="mb-4">
+            <ExportButtons
+              onExportXLSX={handleExportPadraoXLSX}
+              onExportPDF={handleExportPadraoPDF}
+            />
           </div>
 
           {/* Tabela de Produtos */}
