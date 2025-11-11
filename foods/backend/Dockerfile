@@ -4,6 +4,8 @@ WORKDIR /app
 
 # Instalar dependências necessárias para Puppeteer/Chrome
 RUN apk add --no-cache \
+    python3 \
+    py3-pip \
     chromium \
     nss \
     freetype \
@@ -22,6 +24,11 @@ COPY package*.json ./
 RUN npm install
 
 COPY . .
+
+# Instalar dependências Python do serviço de PDF
+RUN python3 -m venv /app/venv \
+    && /app/venv/bin/pip install --upgrade pip \
+    && if [ -f requirements.txt ]; then /app/venv/bin/pip install -r requirements.txt; fi
 
 EXPOSE 3001
 
