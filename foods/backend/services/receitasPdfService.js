@@ -130,8 +130,11 @@ const mapearReceitasExtraidas = (resultado) => {
 class ReceitasPdfService {
   constructor(options = {}) {
     this.debugDir = options.debugDir || process.env.RECEITAS_PDF_DEBUG_DIR || DEFAULT_DEBUG_DIR;
+    this.reportsDir = options.reportsDir || process.env.RECEITAS_PDF_REPORTS_DIR 
+      || path.join(this.debugDir, 'processed');
     this.pythonService = new PythonPDFService();
     ensureDirectory(this.debugDir);
+    ensureDirectory(this.reportsDir);
   }
 
   gerarNomesArquivos(filename) {
