@@ -1,16 +1,14 @@
 /**
- * Componente de Cabeçalho da página de Usuários
+ * Componente de Cabeçalho da página de Permissões
  * Exibe título, descrição e botões de ação
  */
 
 import React from 'react';
-import { FaPlus, FaQuestionCircle } from 'react-icons/fa';
+import { FaQuestionCircle } from 'react-icons/fa';
 import { Button } from '../../../components/ui';
 
-const UsuariosHeader = ({ 
-  canCreate, 
+const PermissoesHeader = ({ 
   canView, 
-  onAddUser, 
   onShowHelp, 
   loading 
 }) => {
@@ -19,7 +17,7 @@ const UsuariosHeader = ({
       <div className="flex justify-between items-start">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center">
-            👥 Usuários
+            🔐 Permissões
             {canView && (
               <button
                 onClick={onShowHelp}
@@ -31,25 +29,27 @@ const UsuariosHeader = ({
             )}
           </h1>
           <p className="text-gray-600 mt-1">
-            Gerencie usuários do sistema e suas permissões
+            Gerencie permissões de acesso dos usuários do sistema
           </p>
         </div>
         
-        <div className="flex space-x-3">
-          {canCreate && (
+        {canView && (
+          <div className="flex space-x-3">
             <Button
-              onClick={onAddUser}
+              onClick={onShowHelp}
               disabled={loading}
-              className="flex items-center space-x-2"
+              variant="ghost"
+              size="sm"
+              className="text-xs"
             >
-              <FaPlus size={14} />
-              <span>Novo Usuário</span>
+              <FaQuestionCircle className="mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Auditoria</span>
             </Button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
-export default UsuariosHeader;
+export default PermissoesHeader;

@@ -1,10 +1,11 @@
-import { 
-  FaHome, 
-  FaUsers, 
+import {
+  FaHome,
+  FaUsers,
   FaClipboardList,
   FaChartLine,
   FaThumbsUp,
-  FaSitemap
+  FaSitemap,
+  FaUserShield
 } from 'react-icons/fa';
 
 // Configuração dos grupos de menu
@@ -28,7 +29,7 @@ export const menuGroups = [
     title: 'Administração',
     items: [
       { path: '/usuarios', icon: FaUsers, label: 'Usuários', screen: 'usuarios' },
-
+      { path: '/permissoes', icon: FaUserShield, label: 'Permissões', screen: 'permissoes' }
     ]
   }
 ];

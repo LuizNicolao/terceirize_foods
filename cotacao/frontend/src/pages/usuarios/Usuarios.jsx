@@ -1,11 +1,8 @@
 import React from 'react';
-import { FaPlus, FaQuestionCircle } from 'react-icons/fa';
 import { useUsuarios } from '../../hooks/useUsuarios';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { AuditModal } from '../../components/shared';
 import {
-  Button,
-  CadastroFilterBar,
   ConfirmModal,
   LoadingSpinner
 } from '../../components/ui';
@@ -15,6 +12,7 @@ import {
   UsuariosStats,
   UsuariosTable
 } from '../../components/usuarios';
+import { UsuariosHeader, UsuariosFilters } from './components';
 
 const Usuarios = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
@@ -77,28 +75,14 @@ const Usuarios = () => {
   }
 
   return (
-    <div className="p-3 sm:p-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3 sm:gap-4">
-        <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Usuários</h1>
-        <div className="flex gap-2 sm:gap-3">
-          <Button
-            onClick={handleOpenAuditModal}
-            variant="ghost"
-            size="sm"
-            className="text-xs"
-          >
-            <FaQuestionCircle className="mr-1 sm:mr-2" />
-            <span className="hidden sm:inline">Auditoria</span>
-          </Button>
-          {canCreate('usuarios') && (
-            <Button onClick={handleAddUser} size="sm">
-              <FaPlus className="mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">Adicionar</span>
-              <span className="sm:hidden">Novo</span>
-            </Button>
-          )}
-        </div>
-      </div>
+    <div className="p-3 sm:p-6 space-y-6">
+      <UsuariosHeader
+        canCreate={canCreate('usuarios')}
+        canView={canView('usuarios')}
+        onAddUser={handleAddUser}
+        onShowHelp={handleOpenAuditModal}
+        loading={loading}
+      />
 
       <UsuariosStats usuarios={usuarios} />
 
@@ -108,13 +92,12 @@ const Usuarios = () => {
         disabled={!canView('usuarios') || usuarios.length === 0}
       />
 
-      <CadastroFilterBar
+      <UsuariosFilters
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         statusFilter={statusFilter}
         onStatusFilterChange={setStatusFilter}
         onClear={handleClearFilters}
-        placeholder="Buscar por nome ou e-mail..."
       />
 
       <UsuariosTable
