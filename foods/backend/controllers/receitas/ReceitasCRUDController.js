@@ -3,6 +3,10 @@
  * Implementa operações de criação, atualização e exclusão de receitas
  */
 
+const ReceitasPdfService = require('../../services/receitasPdfService');
+
+const receitasPdfService = new ReceitasPdfService();
+
 class ReceitasCRUDController {
   /**
    * Criar novo receita
@@ -254,10 +258,6 @@ class ReceitasCRUDController {
         });
       }
 
-      // Importar dependências necessárias
-      const pdf = require('pdf-parse');
-      const pdfProcessor = require('../../utils/pdfProcessor');
-
       console.log('\n' + '='.repeat(80));
       console.log('📄 INICIANDO PROCESSAMENTO DE PDF DE RECEITA');
       console.log('='.repeat(80));
@@ -265,195 +265,21 @@ class ReceitasCRUDController {
       console.log('📋 Nome do arquivo:', req.file.originalname);
       console.log('📋 Tipo MIME:', req.file.mimetype);
 
-      // 1. Extrair texto do PDF
-      console.log('\n🔍 Extraindo texto do PDF...');
-      const pdfData = await pdf(req.file.buffer);
-      
-      console.log('📄 Metadados do PDF:');
-      console.log('   - Número de páginas:', pdfData.numpages);
-      console.log('   - Informações:', JSON.stringify(pdfData.info, null, 2));
-      
-      const textoExtraido = pdfData.text;
-
-      console.log('\n✅ Texto extraído com sucesso!');
-      console.log('📏 Tamanho total do texto:', textoExtraido.length, 'caracteres');
-      console.log('📏 Número de linhas:', textoExtraido.split('\n').length);
-      
-      console.log('\n📝 TEXTO COMPLETO EXTRAÍDO DO PDF:');
-      console.log('-'.repeat(80));
-      console.log(textoExtraido);
-      console.log('-'.repeat(80));
-      
-      console.log('\n📝 Primeiros 500 caracteres:');
-      console.log(textoExtraido.substring(0, 500));
-      
-      console.log('\n📝 Últimos 500 caracteres:');
-      console.log(textoExtraido.substring(Math.max(0, textoExtraido.length - 500)));
-
-      // 2. Extrair ingredientes usando PDFProcessor
-      console.log('\n📋 Extraindo ingredientes do texto...');
-      const ingredientesBrutos = pdfProcessor.extrairIngredientes(textoExtraido);
-      
-      console.log('📊 Ingredientes brutos encontrados:', ingredientesBrutos.length);
-      console.log('📋 Lista de ingredientes brutos:');
-      ingredientesBrutos.forEach((ing, idx) => {
-        console.log(`   ${idx + 1}. Nome: "${ing.nome}", Quantidade: "${ing.quantidade_per_capita || ing.quantidade}", Unidade: "${ing.unidade_medida}"`);
-      });
-      
-      const ingredientesExtraidos = ingredientesBrutos.map(ing => ({
-        nome: ing.nome || '',
-        quantidade: ing.quantidade_per_capita || ing.quantidade || '',
-        unidade: ing.unidade_medida || ''
-      }));
-
-      console.log('\n✅ Extração encontrou', ingredientesExtraidos.length, 'ingredientes');
-      console.log('📋 Ingredientes processados (primeiros 10):');
-      ingredientesExtraidos.slice(0, 10).forEach((ing, idx) => {
-        console.log(`   ${idx + 1}. ${ing.nome} - ${ing.quantidade} ${ing.unidade}`);
-      });
-
-      // 3. Tentar identificar nome da receita e instruções do texto
-      console.log('\n🔍 Analisando estrutura do texto para extrair nome e instruções...');
-      const linhas = textoExtraido.split('\n').filter(l => l.trim());
-      
-      console.log('📊 Total de linhas:', linhas.length);
-      console.log('📋 Primeiras 20 linhas:');
-      linhas.slice(0, 20).forEach((linha, idx) => {
-        console.log(`   ${idx + 1}. "${linha.trim()}"`);
-      });
-      
-      // Buscar nome da receita - procurar por linhas com código de receita (R25.xxx, LL25.xxx, etc)
-      let nomeReceita = '';
-      let codigoReferencia = null;
-      let inicioTexto = 0;
-      const palavrasCabeçalho = [
-        'SECRETARIA', 'DIRETORIA', 'GERÊNCIA', 'ESTADO', 'EDUCAÇÃO', 
-        'PROGRAMA NACIONAL', 'PNAE', 'CARDÁPIO', 'PARCIAL', 'OUTUBRO',
-        'JANEIRO', 'FEVEREIRO', 'MARÇO', 'ABRIL', 'MAIO', 'JUNHO',
-        'JULHO', 'AGOSTO', 'SETEMBRO', 'NOVEMBRO', 'DEZEMBRO'
-      ];
-      
-      // Padrão para código de receita: R25.375, LL25.228, etc
-      const padraoCodigoReceita = /^[A-Z]{1,2}\d{2}\.\d{2,3}/;
-      
-      console.log('\n🔍 Buscando nome da receita (procurando código de receita e pulando cabeçalhos)...');
-      
-      // Primeiro: procurar por linha com código de receita
-      for (let i = 0; i < Math.min(50, linhas.length); i++) {
-        const linha = linhas[i].trim();
-        console.log(`   Linha ${i + 1}: "${linha}"`);
-        
-        // Verificar se a linha começa com código de receita
-        if (padraoCodigoReceita.test(linha)) {
-          // Extrair código e nome da receita
-          const match = linha.match(/^([A-Z]{1,2}\d{2}\.\d{2,3})\s+(.+)/);
-          if (match && match[1] && match[2]) {
-            codigoReferencia = match[1].trim(); // Salvar código de referência
-            console.log(`   📌 Código de referência encontrado: "${codigoReferencia}"`);
-            
-            // Pegar nome da receita e algumas linhas seguintes que podem continuar a descrição
-            let nomeCompleto = match[2].trim();
-            let j = i + 1;
-            let linhasDescricao = [];
-            
-            // Pegar até 5 linhas seguintes que não sejam códigos de receita e não sejam muito curtas
-            while (j < linhas.length && linhasDescricao.length < 5) {
-              const linhaSeg = linhas[j].trim();
-              if (!padraoCodigoReceita.test(linhaSeg) && 
-                  linhaSeg.length > 3 && 
-                  !palavrasCabeçalho.some(p => linhaSeg.toUpperCase().includes(p)) &&
-                  !linhaSeg.match(/^\d{1,2}\/\d{1,2}\/\d{4}/) && // Não é data
-                  !linhaSeg.match(/^(Matutino|Vespertino|Noturno|Semana)/i)) { // Não é turno ou semana
-                linhasDescricao.push(linhaSeg);
-              } else {
-                break;
-              }
-              j++;
-            }
-            
-            if (linhasDescricao.length > 0) {
-              nomeCompleto += ' ' + linhasDescricao.join(' ');
-            }
-            
-            nomeReceita = nomeCompleto.substring(0, 255).trim(); // Aumentar limite para 255
-            inicioTexto = i;
-            console.log(`   ✅ Nome encontrado na linha ${i + 1}: "${nomeReceita}"`);
-            break;
-          }
-        }
-      }
-      
-      // Fallback: procurar primeira linha que não seja cabeçalho
-      if (!nomeReceita) {
-        console.log('   ⚠️ Código de receita não encontrado, procurando primeira linha válida...');
-        for (let i = 0; i < Math.min(20, linhas.length); i++) {
-          const linha = linhas[i].trim();
-          if (linha.length > 10 && 
-              !palavrasCabeçalho.some(p => linha.toUpperCase().includes(p)) &&
-              !linha.match(/^\d{1,2}\/\d{1,2}\/\d{4}/) && // Não é data
-              !linha.match(/^(Matutino|Vespertino|Noturno|Semana)/i)) { // Não é turno ou semana
-            nomeReceita = linha.substring(0, 200);
-            inicioTexto = i;
-            console.log(`   ✅ Nome encontrado na linha ${i + 1}: "${nomeReceita}"`);
-            break;
-          }
-        }
-      }
-      
-      // Último fallback
-      if (!nomeReceita && linhas.length > 0) {
-        nomeReceita = 'Receita Extraída do PDF';
-        console.log(`   ⚠️ Nome não encontrado, usando padrão: "${nomeReceita}"`);
-      }
-
-      // Buscar seção de instruções/preparo
-      console.log('\n🔍 Buscando seção de instruções/preparo...');
-      let instrucoes = '';
-      const palavrasChave = ['modo de preparo', 'instruções', 'preparo', 'como fazer', 'modo de fazer'];
-      const indiceInstrucoes = linhas.findIndex((l, idx) => 
-        idx > inicioTexto && palavrasChave.some(palavra => l.toLowerCase().includes(palavra))
-      );
-
-      if (indiceInstrucoes !== -1 && indiceInstrucoes < linhas.length - 1) {
-        instrucoes = linhas.slice(indiceInstrucoes + 1, indiceInstrucoes + 20)
-          .join('\n')
-          .trim();
-        console.log(`   ✅ Instruções encontradas a partir da linha ${indiceInstrucoes + 1}`);
-        console.log(`   📝 Primeiros 200 caracteres: "${instrucoes.substring(0, 200)}"`);
-      } else {
-        // Usar parte do meio do texto como instruções
-        const meioTexto = Math.floor(textoExtraido.length / 2);
-        instrucoes = textoExtraido.substring(meioTexto).trim().substring(0, 1000);
-        console.log(`   ⚠️ Instruções não encontradas, usando parte do meio do texto`);
-        console.log(`   📝 Primeiros 200 caracteres: "${instrucoes.substring(0, 200)}"`);
-      }
-
-      const descricao = 'Receita extraída automaticamente do PDF';
-
-      // 4. Preparar dados extraídos
-      console.log('\n📦 Preparando dados extraídos para retorno...');
-      const dadosExtraidos = {
-        nome: nomeReceita || 'Receita Extraída do PDF',
-        codigo_referencia: codigoReferencia,
-        descricao: descricao,
-        texto_extraido_pdf: textoExtraido,
-        ingredientes: ingredientesExtraidos,
-        instrucoes: instrucoes || 'Instruções extraídas do PDF...',
-        tipo: 'receita',
-        status: 'rascunho'
-      };
+      const resultado = await receitasPdfService.processar(req.file.buffer, req.file.originalname);
+      const { dadosExtraidos, receitasEstruturadas, debugPaths, resumo } = resultado;
 
       console.log('\n✅ PROCESSAMENTO CONCLUÍDO:');
       console.log('='.repeat(80));
       console.log('📋 Resumo dos dados extraídos:');
-      console.log('   - Código de Referência:', dadosExtraidos.codigo_referencia || 'Não encontrado');
-      console.log('   - Nome:', dadosExtraidos.nome);
-      console.log('   - Descrição:', dadosExtraidos.descricao);
-      console.log('   - Tipo:', dadosExtraidos.tipo);
-      console.log('   - Status:', dadosExtraidos.status);
-      console.log('   - Total de ingredientes:', dadosExtraidos.ingredientes.length);
-      console.log('   - Tamanho do texto extraído:', dadosExtraidos.texto_extraido_pdf.length, 'caracteres');
-      console.log('   - Tamanho das instruções:', dadosExtraidos.instrucoes.length, 'caracteres');
+      console.log('   - Receitas únicas identificadas:', receitasEstruturadas.length);
+      console.log('   - Código de Referência (primeira receita):', dadosExtraidos.codigo_referencia || 'Não encontrado');
+      console.log('   - Nome (primeira receita):', dadosExtraidos.nome || 'Não identificado');
+      console.log('   - Tipo (primeira receita):', dadosExtraidos.tipo || 'Não identificado');
+      console.log('   - Total de ingredientes (primeira receita):', dadosExtraidos.ingredientes.length);
+      console.log('   - Total de refeições:', resumo.total_refeicoes);
+      console.log('   - Total de dias:', resumo.total_dias);
+      console.log('   - Caminho debug JSON:', debugPaths.json);
+      console.log('   - Caminho debug TXT:', debugPaths.texto);
       console.log('='.repeat(80));
 
       res.json({
@@ -464,9 +290,10 @@ class ReceitasCRUDController {
 
     } catch (error) {
       console.error('❌ Erro ao processar PDF:', error);
-      res.status(500).json({
+      const statusCode = error.status || 500;
+      res.status(statusCode).json({
         success: false,
-        error: 'Erro interno do servidor',
+        error: statusCode === 500 ? 'Erro interno do servidor' : error.message,
         message: error.message || 'Não foi possível processar o PDF'
       });
     }
