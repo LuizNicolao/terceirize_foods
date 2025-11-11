@@ -21,16 +21,28 @@ const ReceitaPreviewModal = ({ isOpen, onClose, receita, onAprovar, onRejeitar }
   const carregarDadosPreview = async () => {
     setLoading(true);
     try {
-      // Usar apenas dados reais extraídos do PDF
-      if (receita && receita.refeicoes) {
+      const listaReceitas = Array.isArray(receita?.receitas) && receita.receitas.length > 0
+        ? receita.receitas
+        : Array.isArray(receita?.refeicoes)
+          ? receita.refeicoes
+          : [];
+
+      const receitasAgrupadas = receita?.reports?.normalizedCardapio?.receitas_por_data || {};
+      const possuiCardapioAgrupado = Object.keys(receitasAgrupadas).length > 0;
+
+      if (listaReceitas.length > 0 || possuiCardapioAgrupado) {
+        const totalRefeicoes = receita?.resumo?.total_refeicoes ?? listaReceitas.length ?? 0;
+        const totalDias =
+          receita?.resumo?.total_dias ??
+          (possuiCardapioAgrupado ? Object.keys(receitasAgrupadas).length : receita?.dias?.length) ??
+          0;
         setValidacoes([
           { status: 'success', mensagem: `PDF processado com sucesso usando ${receita.metadados?.metodo || 'pdfplumber'}` },
-          { status: 'info', mensagem: `${receita.total_refeicoes || 0} refeições extraídas` },
-          { status: 'info', mensagem: `${receita.total_dias || 0} dias identificados` }
+          { status: 'info', mensagem: `${totalRefeicoes} refeições extraídas` },
+          { status: 'info', mensagem: `${totalDias} dias identificados` }
         ]);
 
         // Calcular estatísticas reais
-        const receitasUnicas = [...new Set(receita.refeicoes?.map(r => r.codigo).filter(Boolean))];
         setEfetivosCalculados({
           total_padrao: 0, // TODO: Calcular baseado nos dados reais
           total_nae: 0,
@@ -215,13 +227,18 @@ const ReceitaPreviewModal = ({ isOpen, onClose, receita, onAprovar, onRejeitar }
           </div>
         );
 
-      case 'receitas':
+      case 'receitas': {
+        const listaReceitas = Array.isArray(receita?.receitas) && receita.receitas.length > 0
+          ? receita.receitas
+          : Array.isArray(receita?.refeicoes)
+            ? receita.refeicoes
+            : [];
         return (
           <div className="bg-white rounded-lg border border-gray-200 p-4">
             <h4 className="text-lg font-medium text-gray-900 mb-4">Receitas Extraídas</h4>
-            {receita.refeicoes && receita.refeicoes.length > 0 ? (
+            {listaReceitas.length > 0 ? (
               <div className="space-y-3 max-h-96 overflow-y-auto">
-                {receita.refeicoes.map((refeicao, index) => (
+                {listaReceitas.map((refeicao, index) => (
                   <div key={index} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex-1">
@@ -255,6 +272,7 @@ const ReceitaPreviewModal = ({ isOpen, onClose, receita, onAprovar, onRejeitar }
             )}
           </div>
         );
+      }
 
       case 'receita':
         return (
