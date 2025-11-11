@@ -6,6 +6,15 @@ import { useModal } from './useModal';
 import { useFilters } from './useFilters';
 import { useDebouncedSearch } from './useDebouncedSearch';
 
+const noopDebouncedSearch = {
+  searchTerm: '',
+  debouncedSearchTerm: '',
+  isSearching: false,
+  updateSearchTerm: () => {},
+  handleKeyPress: () => {},
+  clearSearch: () => {}
+};
+
 export const useBaseEntity = (entityName, service, options = {}) => {
   const {
     initialItemsPerPage = 20,
@@ -19,7 +28,8 @@ export const useBaseEntity = (entityName, service, options = {}) => {
   const pagination = usePagination(initialItemsPerPage);
   const modal = useModal();
   const filters = useFilters(initialFilters);
-  const debouncedSearch = enableDebouncedSearch ? useDebouncedSearch(500) : null;
+  const debouncedSearchHook = useDebouncedSearch(500);
+  const debouncedSearch = enableDebouncedSearch ? debouncedSearchHook : noopDebouncedSearch;
 
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -35,7 +45,7 @@ export const useBaseEntity = (entityName, service, options = {}) => {
       const params = {
         ...pagination.getPaginationParams(),
         ...filters.getFilterParams(),
-        search: debouncedSearch?.debouncedSearchTerm || filters.searchTerm || undefined,
+        search: debouncedSearch.debouncedSearchTerm || filters.searchTerm || undefined,
         sortField: customParams.sortField !== undefined ? customParams.sortField : sortField,
         sortDirection: customParams.sortDirection !== undefined ? customParams.sortDirection : sortDirection,
         ...customParams
@@ -80,7 +90,7 @@ export const useBaseEntity = (entityName, service, options = {}) => {
     } finally {
       setLoading(false);
     }
-  }, [entityName, service, pagination, filters, enableStats, debouncedSearch?.debouncedSearchTerm, sortField, sortDirection]);
+  }, [entityName, service, pagination, filters, enableStats, debouncedSearch.debouncedSearchTerm, sortField, sortDirection]);
 
   const onSubmit = useCallback(async (formData) => {
     try {
@@ -145,7 +155,7 @@ export const useBaseEntity = (entityName, service, options = {}) => {
 
   useEffect(() => {
     loadData();
-  }, [pagination.currentPage, pagination.itemsPerPage, debouncedSearch?.debouncedSearchTerm || filters.searchTerm, filters.statusFilter, filters.filters]);
+  }, [pagination.currentPage, pagination.itemsPerPage, debouncedSearch.debouncedSearchTerm || filters.searchTerm, filters.statusFilter, filters.filters]);
 
   return {
     items,
@@ -160,8 +170,8 @@ export const useBaseEntity = (entityName, service, options = {}) => {
     totalPages: pagination.totalPages,
     totalItems: pagination.totalItems,
     itemsPerPage: pagination.itemsPerPage,
-    searchTerm: debouncedSearch?.searchTerm || filters.searchTerm,
-    isSearching: debouncedSearch?.isSearching || false,
+    searchTerm: debouncedSearch.searchTerm || filters.searchTerm,
+    isSearching: debouncedSearch.isSearching || false,
     statusFilter: filters.statusFilter,
     filters: filters.filters,
     validationErrors: validation.validationErrors,
@@ -172,9 +182,9 @@ export const useBaseEntity = (entityName, service, options = {}) => {
     handleCloseModal: modal.handleCloseModal,
     handlePageChange: pagination.handlePageChange,
     handleItemsPerPageChange: pagination.handleItemsPerPageChange,
-    setSearchTerm: debouncedSearch?.updateSearchTerm || filters.setSearchTerm,
-    clearSearch: debouncedSearch?.clearSearch || (() => filters.setSearchTerm('')),
-    handleKeyPress: debouncedSearch?.handleKeyPress || (() => {}),
+    setSearchTerm: debouncedSearch.updateSearchTerm || filters.setSearchTerm,
+    clearSearch: debouncedSearch.clearSearch || (() => filters.setSearchTerm('')),
+    handleKeyPress: debouncedSearch.handleKeyPress || (() => {}),
     setStatusFilter: filters.setStatusFilter,
     updateFilter: filters.updateFilter,
     updateFilters: filters.updateFilters,
