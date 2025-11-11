@@ -1,8 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { FaBuilding } from 'react-icons/fa';
 import { Button, Input, Modal } from '../ui';
-import FiliaisService from '../../services/filiais';
 
 const UsuarioModal = ({
   isOpen,
@@ -12,29 +10,6 @@ const UsuarioModal = ({
   isViewMode = false
 }) => {
   const { register, handleSubmit, reset, setValue } = useForm();
-  const [filiais, setFiliais] = useState([]);
-  const [loadingFiliais, setLoadingFiliais] = useState(false);
-  const [filiaisSelecionadas, setFiliaisSelecionadas] = useState([]);
-
-  useEffect(() => {
-    if (isOpen) {
-      loadFiliais();
-    }
-  }, [isOpen]);
-
-  const loadFiliais = async () => {
-    try {
-      setLoadingFiliais(true);
-      const result = await FiliaisService.buscarAtivas();
-      if (result.success) {
-        setFiliais(result.data || []);
-      }
-    } catch (error) {
-      console.error('Erro ao carregar filiais:', error);
-    } finally {
-      setLoadingFiliais(false);
-    }
-  };
 
   useEffect(() => {
     if (usuario && isOpen) {
@@ -44,35 +19,16 @@ const UsuarioModal = ({
         }
       });
 
-      if (usuario.filiais && Array.isArray(usuario.filiais)) {
-        const filiaisIds = usuario.filiais.map(f => f.id);
-        setFiliaisSelecionadas(filiaisIds);
-      } else {
-        setFiliaisSelecionadas([]);
-      }
     } else if (!usuario && isOpen) {
       reset();
       setValue('status', 'ativo');
       setValue('nivel_de_acesso', 'I');
       setValue('tipo_de_acesso', 'administrativo');
-      setFiliaisSelecionadas([]);
     }
   }, [usuario, isOpen, setValue, reset]);
 
-  const handleFilialChange = (filialId, checked) => {
-    if (checked) {
-      setFiliaisSelecionadas(prev => [...prev, filialId]);
-    } else {
-      setFiliaisSelecionadas(prev => prev.filter(id => id !== filialId));
-    }
-  };
-
   const handleFormSubmit = (data) => {
-    const formDataWithFiliais = {
-      ...data,
-      filiais: filiaisSelecionadas
-    };
-    onSubmit(formDataWithFiliais);
+    onSubmit(data);
   };
 
   if (!isOpen) return null;
@@ -150,54 +106,17 @@ const UsuarioModal = ({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-            <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">
-              Senha
-            </h3>
-            <div className="space-y-3">
-              <Input
-                label={usuario ? 'Nova Senha (deixe em branco para manter a atual)' : 'Senha *'}
-                type="password"
-                {...register('senha')}
-                disabled={isViewMode}
-              />
-            </div>
-          </div>
-
-          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-            <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-blue-500">
-              <FaBuilding className="inline mr-2" />
-              Filiais com Acesso
-            </h3>
-            <div className="space-y-3">
-              {loadingFiliais ? (
-                <div className="text-sm text-gray-500">Carregando filiais...</div>
-              ) : (
-                <div className="space-y-2 max-h-48 overflow-y-auto border border-gray-300 rounded-md p-3">
-                  {filiais.map((filial) => {
-                    const isChecked = filiaisSelecionadas.includes(filial.id);
-                    return (
-                      <label key={filial.id} className="flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={isChecked}
-                          onChange={(e) => handleFilialChange(filial.id, e.target.checked)}
-                          disabled={isViewMode}
-                          className="mr-3 text-blue-600 focus:ring-blue-500 rounded"
-                        />
-                        <span className="text-sm text-gray-700">
-                          {filial.filial} - {filial.cidade}/{filial.estado}
-                        </span>
-                      </label>
-                    );
-                  })}
-                </div>
-              )}
-              {filiais.length === 0 && !loadingFiliais && (
-                <div className="text-sm text-gray-500">Nenhuma filial disponível</div>
-              )}
-            </div>
+        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+          <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">
+            Senha
+          </h3>
+          <div className="space-y-3">
+            <Input
+              label={usuario ? 'Nova Senha (deixe em branco para manter a atual)' : 'Senha *'}
+              type="password"
+              {...register('senha')}
+              disabled={isViewMode}
+            />
           </div>
         </div>
 
