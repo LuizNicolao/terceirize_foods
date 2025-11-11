@@ -1,6 +1,6 @@
-import {
-  FaHome,
-  FaUsers,
+import { 
+  FaHome, 
+  FaUsers, 
   FaClipboardList,
   FaChartLine,
   FaThumbsUp,

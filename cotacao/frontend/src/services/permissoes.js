@@ -6,30 +6,46 @@ class PermissoesService {
    */
   static async listarUsuarios(params = {}) {
     try {
-      const response = await api.get('/permissoes/usuarios', { params });
-      
-      // Extrair dados da estrutura HATEOAS
+      const response = await api.get('/users');
+
       let usuarios = [];
-      let pagination = null;
-      
-      if (response.data.data) {
-        // Se tem data.items (estrutura HATEOAS)
-        if (response.data.data.items) {
-          usuarios = response.data.data.items;
-          pagination = response.data.data._meta?.pagination;
-        } else {
-          // Se data é diretamente um array
-          usuarios = response.data.data;
-        }
+      if (response.data?.data?.data) {
+        usuarios = response.data.data.data;
+      } else if (response.data?.data) {
+        usuarios = Array.isArray(response.data.data) ? response.data.data : [response.data.data];
       } else if (Array.isArray(response.data)) {
-        // Se response.data é diretamente um array
         usuarios = response.data;
       }
-      
+
+      const mapped = usuarios.map((usuario) => ({
+        id: usuario.id,
+        nome: usuario.name,
+        email: usuario.email,
+        status: typeof usuario.status === 'string' ? usuario.status : usuario.status === 1 ? 'ativo' : 'inativo',
+        tipo_de_acesso: usuario.role || 'comprador',
+        nivel_de_acesso: usuario.nivel_de_acesso || 'I'
+      }));
+
+      const permissoesCounts = await Promise.all(
+        mapped.map(async (usuario) => {
+          try {
+            const permsResponse = await api.get(`/permissoes/usuario/${usuario.id}`);
+            const permissoes = permsResponse.data?.permissoes || permsResponse.data?.data?.permissoes || [];
+            return Array.isArray(permissoes) ? permissoes.length : 0;
+          } catch (error) {
+            return 0;
+          }
+        })
+      );
+
+      const enriched = mapped.map((usuario, index) => ({
+        ...usuario,
+        permissoes_count: permissoesCounts[index]
+      }));
+
       return {
         success: true,
-        data: usuarios,
-        pagination: pagination || response.data.pagination
+        data: enriched
       };
     } catch (error) {
       return {
@@ -45,13 +61,15 @@ class PermissoesService {
   static async buscarPermissoesUsuario(userId) {
     try {
       const response = await api.get(`/permissoes/usuario/${userId}`);
-      
-      // O backend retorna { success: true, data: { usuario, permissoes: [...] } }
-      // Retornar diretamente response.data para evitar duplicação
-      return response.data;
+      const permissoes = response.data?.permissoes || response.data?.data?.permissoes || [];
+
+      return {
+        success: true,
+        data: {
+          permissoes: Array.isArray(permissoes) ? permissoes : []
+        }
+      };
     } catch (error) {
-      console.error('Erro na API de permissões:', error);
-      
       return {
         success: false,
         error: error.response?.data?.message || 'Erro ao carregar permissões'
@@ -84,8 +102,18 @@ class PermissoesService {
    */
   static async salvarPermissoes(userId, permissoes) {
     try {
-      const response = await api.put(`/permissoes/usuario/${userId}`, { permissoes });
-      
+      const payload = Array.isArray(permissoes)
+        ? permissoes.map((permissao) => ({
+            screen: permissao.tela || permissao.screen,
+            can_view: permissao.pode_visualizar ? 1 : 0,
+            can_create: permissao.pode_criar ? 1 : 0,
+            can_edit: permissao.pode_editar ? 1 : 0,
+            can_delete: permissao.pode_excluir ? 1 : 0
+          }))
+        : [];
+
+      const response = await api.post(`/permissoes/usuario/${userId}`, { permissoes: payload });
+
       return {
         success: true,
         data: response.data,
@@ -145,23 +173,7 @@ class PermissoesService {
   static async listarTelas() {
     try {
       const response = await api.get('/permissoes/telas');
-      
-      // Extrair dados da estrutura HATEOAS
-      let telas = [];
-      
-      if (response.data.data) {
-        // Se tem data.items (estrutura HATEOAS)
-        if (response.data.data.items) {
-          telas = response.data.data.items;
-        } else {
-          // Se data é diretamente um array
-          telas = response.data.data;
-        }
-      } else if (Array.isArray(response.data)) {
-        // Se response.data é diretamente um array
-        telas = response.data;
-      }
-      
+      const telas = response.data?.telas || response.data?.data || [];
       return {
         success: true,
         data: telas
@@ -179,7 +191,7 @@ class PermissoesService {
    */
   static async exportarXLSX(params = {}) {
     try {
-      const response = await api.get('/permissoes/export/xlsx', { 
+      const response = await api.get('/permissoes/export/xlsx', {
         params,
         responseType: 'blob'
       });
@@ -200,7 +212,7 @@ class PermissoesService {
    */
   static async exportarPDF(params = {}) {
     try {
-      const response = await api.get('/permissoes/export/pdf', { 
+      const response = await api.get('/permissoes/export/pdf', {
         params,
         responseType: 'blob'
       });

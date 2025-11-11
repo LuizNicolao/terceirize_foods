@@ -12,34 +12,52 @@ const PermissoesForm = ({
   onExpandGroup, 
   onSavePermissions 
 }) => {
-  // Grupos de telas organizados por categoria - apenas funcionalidades implementadas
+  // Grupos de telas organizados por categoria
   const gruposTelas = {
-    'Cadastros': [
+    'Cadastros Básicos': [
       { key: 'usuarios', label: 'Usuários' },
-      { key: 'filiais', label: 'Filiais' },
       { key: 'fornecedores', label: 'Fornecedores' },
-      { key: 'unidades_escolares', label: 'Unidades Escolares' },
-      { key: 'rotas_nutricionistas', label: 'Rotas Nutricionistas' },
-      { key: 'produtos_origem', label: 'Produtos Origem' },
-      { key: 'unidades_medida', label: 'Unidades de Medida' },
+      { key: 'clientes', label: 'Clientes' },
+      { key: 'filiais', label: 'Filiais' }
+    ],
+    'Produtos e Categorias': [
+      { key: 'produtos', label: 'Produtos' },
       { key: 'grupos', label: 'Grupos' },
       { key: 'subgrupos', label: 'Subgrupos' },
       { key: 'classes', label: 'Classes' },
-      { key: 'produtos_per_capita', label: 'Produtos Per Capita' },
-      { key: 'tipo_atendimento_escola', label: 'Tipo de Atendimento por Escola' },
-      { key: 'recebimentos_escolas', label: 'Recebimentos Escolas' },
-      { key: 'registros_diarios', label: 'Quantidade Servida' },
-      { key: 'necessidades', label: 'Gerar Necessidades' },
-      { key: 'necessidades_padroes', label: 'Pedido Mensal' },
+      { key: 'unidades', label: 'Unidades' },
+      { key: 'unidades_escolares', label: 'Unidades Escolares' },
+      { key: 'marcas', label: 'Marcas' },
+      { key: 'produto_origem', label: 'Produtos Origem' },
+      { key: 'produto_generico', label: 'Produtos Genéricos' },
+      { key: 'intolerancias', label: 'Intolerâncias' },
+      { key: 'patrimonios', label: 'Patrimônios' },
+      { key: 'rotas_nutricionistas', label: 'Rotas Nutricionistas' },
+      { key: 'tipos_cardapio', label: 'Tipos de Cardápio' },
+      { key: 'periodos_refeicao', label: 'Períodos de Refeição' },
+      { key: 'periodicidade', label: 'Períodicidade' },
+      { key: 'faturamento', label: 'Faturamento' },
+      { key: 'receitas', label: 'Receitas' },
+      { key: 'necessidades_merenda', label: 'Necessidades da Merenda' },
+      { key: 'plano_amostragem', label: 'Plano de Amostragem' },
+      { key: 'relatorio_inspecao', label: 'Relatório de Inspeção' },
+      { key: 'solicitacoes_compras', label: 'Solicitações de Compras' },
       { key: 'calendario', label: 'Calendário' },
-      { key: 'analise_necessidades', label: 'Analise Necessidades' },
-      { key: 'analise_necessidades_substituicoes', label: 'Análise Substituições' },
-      { key: 'consulta_status_necessidade', label: 'Consulta Status Necessidade' }
-      
-      
+      { key: 'formas_pagamento', label: 'Formas de Pagamento' },
+      { key: 'prazos_pagamento', label: 'Prazos de Pagamento' },
+      { key: 'pedidos_compras', label: 'Pedidos de Compras' }
+    ],
+    'Logística': [
+      { key: 'veiculos', label: 'Veículos' },
+      { key: 'motoristas', label: 'Motoristas' },
+      { key: 'ajudantes', label: 'Ajudantes' },
+      { key: 'rotas', label: 'Rotas' },
+      { key: 'tipo_rota', label: 'Tipo de Rota' }
     ],
     'Sistema': [
-      { key: 'permissoes', label: 'Permissões' }
+      { key: 'cotacao', label: 'Cotação' },
+      { key: 'permissoes', label: 'Permissões' },
+      { key: 'pdf_templates', label: 'Templates de PDF' }
     ]
   };
 
@@ -51,20 +69,6 @@ const PermissoesForm = ({
       pode_excluir: false,
       pode_movimentar: false
     };
-
-    // Determinar se uma tela é apenas de consulta
-    const telasConsulta = [
-      'fornecedores',
-      'filiais', 
-      'unidades_escolares',
-      'rotas_nutricionistas',
-      'produtos_origem',
-      'unidades_medida',
-      'grupos',
-      'subgrupos',
-      'classes'
-    ];
-    const apenasConsulta = telasConsulta.includes(tela);
 
     // Determinar se deve mostrar a coluna movimentar (apenas para patrimônios)
     const mostrarMovimentar = tela === 'patrimonios';
@@ -88,36 +92,27 @@ const PermissoesForm = ({
         <div className="col-span-1 flex justify-center">
           <input
             type="checkbox"
-            checked={apenasConsulta ? false : perms.pode_criar}
+            checked={perms.pode_criar}
             onChange={(e) => onPermissionChange(tela, 'pode_criar', e.target.checked)}
-            disabled={apenasConsulta}
-            className={`w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-2 ${
-              apenasConsulta ? 'bg-gray-200 cursor-not-allowed' : 'bg-gray-100'
-            }`}
+            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
           />
         </div>
         
         <div className="col-span-1 flex justify-center">
           <input
             type="checkbox"
-            checked={apenasConsulta ? false : perms.pode_editar}
+            checked={perms.pode_editar}
             onChange={(e) => onPermissionChange(tela, 'pode_editar', e.target.checked)}
-            disabled={apenasConsulta}
-            className={`w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-2 ${
-              apenasConsulta ? 'bg-gray-200 cursor-not-allowed' : 'bg-gray-100'
-            }`}
+            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
           />
         </div>
         
         <div className="col-span-1 flex justify-center">
           <input
             type="checkbox"
-            checked={apenasConsulta ? false : perms.pode_excluir}
+            checked={perms.pode_excluir}
             onChange={(e) => onPermissionChange(tela, 'pode_excluir', e.target.checked)}
-            disabled={apenasConsulta}
-            className={`w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-2 ${
-              apenasConsulta ? 'bg-gray-200 cursor-not-allowed' : 'bg-gray-100'
-            }`}
+            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
           />
         </div>
         

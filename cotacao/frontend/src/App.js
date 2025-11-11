@@ -9,8 +9,7 @@ import './utils/axiosConfig'; // Importar configuração do axios
 import './design-system'; // Importar design system
 // import Login from './pages/auth'; // DESABILITADO - Autenticação centralizada no Foods
 import Dashboard from './pages/dashboard';
-import Usuarios, { EditarUsuario, VisualizarUsuario } from './pages/usuarios';
-import Permissoes from './pages/permissoes';
+import Usuarios from './pages/usuarios';
 import Cotacoes from './pages/cotacoes';
 // import { AnalisarCotacao } from './components/cotacoes'; // Removido - componente não mais utilizado
 import { Supervisor, AnalisarCotacaoSupervisor } from './pages/supervisor';
@@ -132,17 +131,6 @@ function AppRoutes() {
         } 
       />
 
-      <Route
-        path="/permissoes"
-        element={
-          <AuthenticatedRoute>
-            <ProtectedRoute screen="permissoes">
-              <Permissoes />
-            </ProtectedRoute>
-          </AuthenticatedRoute>
-        }
-      />
-
       <Route 
         path="/cotacoes" 
         element={
@@ -182,28 +170,6 @@ function AppRoutes() {
           <AuthenticatedRoute>
             <ProtectedRoute screen="cotacoes">
               <EditarCotacao />
-            </ProtectedRoute>
-          </AuthenticatedRoute>
-        } 
-      />
-
-      <Route 
-        path="/editar-usuario/:id" 
-        element={
-          <AuthenticatedRoute>
-            <ProtectedRoute screen="usuarios">
-              <EditarUsuario />
-            </ProtectedRoute>
-          </AuthenticatedRoute>
-        } 
-      />
-
-      <Route 
-        path="/visualizar-usuario/:id" 
-        element={
-          <AuthenticatedRoute>
-            <ProtectedRoute screen="usuarios">
-              <VisualizarUsuario />
             </ProtectedRoute>
           </AuthenticatedRoute>
         } 

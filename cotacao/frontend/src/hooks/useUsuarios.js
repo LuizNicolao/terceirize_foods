@@ -3,6 +3,19 @@ import toast from 'react-hot-toast';
 import UsuariosService from '../services/usuarios';
 import { useBaseEntity } from './common/useBaseEntity';
 import { useFilters } from './common/useFilters';
+import useTableSort from './common/useTableSort';
+
+const mapRoleToNivel = (role) => {
+  switch (role) {
+    case 'administrador':
+      return 'III';
+    case 'gestor':
+    case 'supervisor':
+      return 'II';
+    default:
+      return 'I';
+  }
+};
 
 export const useUsuarios = () => {
   // Hook base para funcionalidades CRUD
@@ -15,6 +28,23 @@ export const useUsuarios = () => {
 
   // Hook de filtros customizados para usuários
   const customFilters = useFilters({});
+
+  // Hook de busca com debounce
+
+  // Hook de ordenação híbrida
+  const {
+    sortedData: usuariosOrdenados,
+    sortField,
+    sortDirection,
+    handleSort,
+    isSortingLocally
+  } = useTableSort({
+    data: baseEntity.items,
+    defaultField: null,
+    defaultDirection: null,
+    threshold: 100,
+    totalItems: baseEntity.totalItems
+  });
 
   // Estados de estatísticas específicas dos usuários
   const [estatisticasUsuarios, setEstatisticasUsuarios] = useState({
@@ -39,9 +69,9 @@ export const useUsuarios = () => {
     }
 
     const total = usuarios.length;
-    const ativos = usuarios.filter(u => u.status === 'ativo').length;
-    const administradores = usuarios.filter(u => u.tipo_de_acesso === 'administrador').length;
-    const coordenadores = usuarios.filter(u => u.tipo_de_acesso === 'coordenador').length;
+    const ativos = usuarios.filter(u => (u.status || '').toString().toLowerCase() === 'ativo').length;
+    const administradores = usuarios.filter(u => (u.tipo_de_acesso || u.role) === 'administrador').length;
+    const coordenadores = usuarios.filter(u => (u.tipo_de_acesso || u.role) === 'coordenador').length;
 
     setEstatisticasUsuarios({
       total_usuarios: total,
@@ -70,14 +100,28 @@ export const useUsuarios = () => {
    */
   const onSubmitCustom = useCallback(async (data) => {
     // Limpar campos vazios para evitar problemas de validação
-    const cleanData = {
-      ...data,
-      nome: data.nome && data.nome.trim() !== '' ? data.nome.trim() : null,
-      email: data.email && data.email.trim() !== '' ? data.email.trim() : null,
-      senha: data.senha && data.senha.trim() !== '' ? data.senha.trim() : null
+    const payload = {
+      name: data.name?.trim() || data.nome?.trim() || '',
+      email: data.email?.trim() || '',
+      role: data.role || data.tipo_de_acesso || 'comprador',
+      status: data.status || 'ativo'
     };
 
-    await baseEntity.onSubmit(cleanData);
+    if (data.password && data.password.trim() !== '') {
+      payload.password = data.password.trim();
+    }
+
+    if (Array.isArray(data.permissions) && data.permissions.length > 0) {
+      payload.permissions = data.permissions.map((perm) => ({
+        screen: perm.screen,
+        can_view: perm.can_view ? 1 : 0,
+        can_create: perm.can_create ? 1 : 0,
+        can_edit: perm.can_edit ? 1 : 0,
+        can_delete: perm.can_delete ? 1 : 0
+      }));
+    }
+
+    await baseEntity.onSubmit(payload);
     // Recalcular estatísticas após salvar
     calculateEstatisticas(baseEntity.items);
   }, [baseEntity, calculateEstatisticas]);
@@ -155,11 +199,12 @@ export const useUsuarios = () => {
 
   const getTipoAcessoLabel = useCallback((tipo) => {
     const tipos = {
-      'administrador': 'Administrador',
-      'coordenador': 'Coordenador',
-      'administrativo': 'Administrativo',
-      'gerente': 'Gerente',
-      'supervisor': 'Supervisor'
+      administrador: 'Administrador',
+      coordenador: 'Coordenador',
+      administrativo: 'Administrativo',
+      gerente: 'Gerente',
+      supervisor: 'Supervisor',
+      comprador: 'Comprador'
     };
     return tipos[tipo] || tipo;
   }, []);
@@ -180,9 +225,10 @@ export const useUsuarios = () => {
   }, [baseEntity.items, calculateEstatisticas]);
 
   return {
-    // Estados principais (do hook base)
-    usuarios: baseEntity.items,
+    // Estados principais (usa dados ordenados se ordenação local)
+    usuarios: isSortingLocally ? usuariosOrdenados : baseEntity.items,
     loading: baseEntity.loading,
+    
     estatisticas: estatisticasUsuarios, // Usar estatísticas específicas dos usuários
     
     // Estados de modal (do hook base)
@@ -201,12 +247,17 @@ export const useUsuarios = () => {
     itemsPerPage: baseEntity.itemsPerPage,
     
     // Estados de filtros
-    searchTerm: customFilters.searchTerm,
+    searchTerm: baseEntity.searchTerm,
     statusFilter: customFilters.statusFilter,
     
     // Estados de validação (do hook base)
     validationErrors: baseEntity.validationErrors,
     showValidationModal: baseEntity.showValidationModal,
+    
+    // Estados de ordenação
+    sortField,
+    sortDirection,
+    isSortingLocally,
     
     // Ações de modal (customizadas)
     handleAddUser: baseEntity.handleAdd,
@@ -219,9 +270,13 @@ export const useUsuarios = () => {
     handleItemsPerPageChange: baseEntity.handleItemsPerPageChange,
     
     // Ações de filtros
-    setSearchTerm: customFilters.setSearchTerm,
+    setSearchTerm: baseEntity.setSearchTerm,
+    clearSearch: baseEntity.clearSearch,
     setStatusFilter: customFilters.setStatusFilter,
     setItemsPerPage: baseEntity.handleItemsPerPageChange, // Alias para compatibilidade
+    
+    // Ações de ordenação
+    handleSort,
     
     // Ações de CRUD (customizadas)
     onSubmit: onSubmitCustom,
@@ -231,6 +286,7 @@ export const useUsuarios = () => {
     
     // Ações de validação (do hook base)
     handleCloseValidationModal: baseEntity.handleCloseValidationModal,
+    handleKeyPress: baseEntity.handleKeyPress,
     
     // Funções utilitárias
     formatDate,
