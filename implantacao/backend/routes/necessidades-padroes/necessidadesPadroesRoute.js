@@ -5,7 +5,9 @@ const router = express.Router();
 const {
   NecessidadesPadroesListController,
   NecessidadesPadroesCRUDController,
-  NecessidadesPadroesGeracaoController
+  NecessidadesPadroesGeracaoController,
+  NecessidadesPadroesExportController,
+  NecessidadesPadroesImportController
 } = require('../../controllers/necessidades-padroes');
 
 // Middleware de autenticação e permissões
@@ -29,5 +31,30 @@ router.delete('/:id', canDelete('necessidades_padroes'), NecessidadesPadroesCRUD
 // Rotas específicas (POST)
 router.post('/salvar-padrao', canCreate('necessidades_padroes'), NecessidadesPadroesCRUDController.salvarPadrao);
 router.post('/gerar-necessidades', canCreate('necessidades_padroes'), NecessidadesPadroesGeracaoController.gerarNecessidadesPadrao);
+
+// Exportações
+router.get(
+  '/export/xlsx',
+  canView('necessidades_padroes'),
+  NecessidadesPadroesExportController.exportarXLSX
+);
+router.get(
+  '/export/pdf',
+  canView('necessidades_padroes'),
+  NecessidadesPadroesExportController.exportarPDF
+);
+
+// Importação
+router.get(
+  '/import/modelo',
+  canView('necessidades_padroes'),
+  NecessidadesPadroesImportController.baixarModelo
+);
+router.post(
+  '/import',
+  canCreate('necessidades_padroes'),
+  NecessidadesPadroesImportController.uploadMiddleware,
+  NecessidadesPadroesImportController.importarExcel
+);
 
 module.exports = router;

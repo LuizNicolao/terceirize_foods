@@ -131,6 +131,100 @@ class NecessidadesPadroesService {
       };
     }
   }
+
+  /**
+   * Exportar padrões para XLSX
+   */
+  static async exportarXLSX(params = {}) {
+    try {
+      const response = await api.get('/necessidades-padroes/export/xlsx', {
+        params,
+        responseType: 'blob'
+      });
+      return {
+        success: true,
+        data: response.data,
+        filename: response.headers['content-disposition']
+          ? response.headers['content-disposition'].split('filename=')[1]?.replace(/"/g, '')
+          : undefined
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao exportar XLSX'
+      };
+    }
+  }
+
+  /**
+   * Exportar padrões para PDF
+   */
+  static async exportarPDF(params = {}) {
+    try {
+      const response = await api.get('/necessidades-padroes/export/pdf', {
+        params,
+        responseType: 'blob'
+      });
+      return {
+        success: true,
+        data: response.data,
+        filename: response.headers['content-disposition']
+          ? response.headers['content-disposition'].split('filename=')[1]?.replace(/"/g, '')
+          : undefined
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao exportar PDF'
+      };
+    }
+  }
+
+  /**
+   * Baixar modelo para importação
+   */
+  static async baixarModelo() {
+    try {
+      const response = await api.get('/necessidades-padroes/import/modelo', {
+        responseType: 'blob'
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'modelo_pedido_mensal.xlsx');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+
+      return { success: true };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao baixar modelo'
+      };
+    }
+  }
+
+  /**
+   * Importar padrões via Excel
+   */
+  static async importarExcel(formData) {
+    try {
+      const response = await api.post('/necessidades-padroes/import', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      return response.data;
+    } catch (error) {
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Erro ao importar planilha'
+      };
+    }
+  }
 }
 
 export default NecessidadesPadroesService;

@@ -1,16 +1,20 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { FaShoppingCart, FaPlus, FaSave, FaFilter, FaCog } from 'react-icons/fa';
+import { FaShoppingCart, FaPlus, FaSave, FaFilter, FaUpload, FaQuestionCircle } from 'react-icons/fa';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { useNecessidadesPadroes } from '../../hooks/necessidades';
+import { useAuditoria } from '../../hooks/common/useAuditoria';
+import { useExport } from '../../hooks/common/useExport';
 import {
   PedidoMensalTable,
   AdicionarProdutoModal,
-  PedidoMensalTabs
+  PedidoMensalTabs,
+  ImportPedidoMensalModal
 } from '../../components/necessidades-padroes';
 import GerarNecessidadePadrao from '../../components/necessidades-padroes/GerarNecessidadePadrao';
 import { Button, SearchableSelect } from '../../components/ui';
 import FoodsApiService from '../../services/FoodsApiService';
 import NecessidadesPadroesService from '../../services/necessidadesPadroes';
+import { ExportButtons, AuditModal } from '../../components/shared';
 import toast from 'react-hot-toast';
 
 const PedidoMensal = () => {
@@ -31,6 +35,7 @@ const PedidoMensal = () => {
   const [escolas, setEscolas] = useState([]);
   const [grupos, setGrupos] = useState([]);
   const [produtos, setProdutos] = useState([]);
+  const [showImportModal, setShowImportModal] = useState(false);
   
   // Estados para UI
   const [showAdicionarModal, setShowAdicionarModal] = useState(false);
@@ -42,6 +47,20 @@ const PedidoMensal = () => {
     salvarPadrao,
     buscarPorEscolaGrupo
   } = useNecessidadesPadroes();
+
+  const { handleExportXLSX, handleExportPDF } = useExport(NecessidadesPadroesService);
+  const {
+    showAuditModal,
+    auditLogs,
+    auditLoading,
+    auditFilters,
+    handleOpenAuditModal,
+    handleCloseAuditModal,
+    handleApplyAuditFilters,
+    handleExportAuditXLSX,
+    handleExportAuditPDF,
+    setAuditFilters
+  } = useAuditoria('necessidades_padroes');
 
   // Verificar permissões específicas
   const canViewPedidoMensal = canView('necessidades_padroes');
@@ -98,31 +117,31 @@ const PedidoMensal = () => {
     loadEscolas();
   }, [filtros.filial]);
 
+  const carregarProdutosPadrao = useCallback(async () => {
+    if (filtros.escola && filtros.grupo) {
+      setLoading(true);
+      try {
+        const produtosExistentes = await buscarPorEscolaGrupo(filtros.escola, filtros.grupo);
+        if (produtosExistentes && produtosExistentes.length > 0) {
+          setProdutos(produtosExistentes);
+        } else {
+          setProdutos([]);
+        }
+      } catch (error) {
+        console.error('Erro ao carregar produtos padrão:', error);
+        setProdutos([]);
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      setProdutos([]);
+    }
+  }, [filtros.escola, filtros.grupo, buscarPorEscolaGrupo]);
+
   // Carregar produtos padrão existentes quando escola e grupo forem selecionados
   useEffect(() => {
-    const carregarProdutosPadrao = async () => {
-      if (filtros.escola && filtros.grupo) {
-        setLoading(true);
-        try {
-          const produtosExistentes = await buscarPorEscolaGrupo(filtros.escola, filtros.grupo);
-          if (produtosExistentes && produtosExistentes.length > 0) {
-            setProdutos(produtosExistentes);
-          } else {
-            setProdutos([]);
-          }
-        } catch (error) {
-          console.error('Erro ao carregar produtos padrão:', error);
-          setProdutos([]);
-        } finally {
-          setLoading(false);
-        }
-      } else {
-        setProdutos([]);
-      }
-    };
-    
     carregarProdutosPadrao();
-  }, [filtros.escola, filtros.grupo, buscarPorEscolaGrupo]);
+  }, [carregarProdutosPadrao]);
 
   const carregarDadosIniciais = async () => {
     setLoading(true);
@@ -264,6 +283,29 @@ const PedidoMensal = () => {
 
   const podeIncluirProduto = filtros.escola && filtros.grupo;
 
+  const buildExportParams = () => {
+    const params = {};
+    if (filtros.escola) {
+      params.escola_id = filtros.escola;
+    }
+    if (filtros.grupo) {
+      params.grupo_id = filtros.grupo;
+    }
+    return params;
+  };
+
+  const handleExportPadraoXLSX = async () => {
+    await handleExportXLSX(buildExportParams());
+  };
+
+  const handleExportPadraoPDF = async () => {
+    await handleExportPDF(buildExportParams());
+  };
+
+  const handleImportSuccess = () => {
+    carregarProdutosPadrao();
+  };
+
   if (permissionsLoading) {
     return <div className="text-center py-8">Carregando permissões...</div>;
   }
@@ -290,6 +332,31 @@ const PedidoMensal = () => {
           <p className="text-gray-600 mt-1">
             Defina padrões de produtos para pedidos mensais por escola e grupo.
           </p>
+        </div>
+        <div className="flex flex-wrap gap-2 sm:gap-3">
+          <Button
+            onClick={() => setShowImportModal(true)}
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-2"
+          >
+            <FaUpload className="text-green-600" />
+            <span>Importar Dados</span>
+          </Button>
+          <ExportButtons
+            onExportXLSX={handleExportPadraoXLSX}
+            onExportPDF={handleExportPadraoPDF}
+            className="flex"
+          />
+          <Button
+            onClick={handleOpenAuditModal}
+            variant="ghost"
+            size="sm"
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-800"
+          >
+            <FaQuestionCircle />
+            <span>Auditoria</span>
+          </Button>
         </div>
       </div>
 
@@ -409,6 +476,25 @@ const PedidoMensal = () => {
         onAdicionarProdutos={handleAdicionarProdutos}
         grupoId={filtros.grupo}
         produtosJaAdicionados={produtos.map(p => p.produto_id)}
+      />
+
+      <ImportPedidoMensalModal
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        onImportSuccess={handleImportSuccess}
+      />
+
+      <AuditModal
+        isOpen={showAuditModal}
+        onClose={handleCloseAuditModal}
+        title="Relatório de Auditoria - Pedido Mensal"
+        auditLogs={auditLogs}
+        auditLoading={auditLoading}
+        auditFilters={auditFilters}
+        onApplyFilters={handleApplyAuditFilters}
+        onExportXLSX={handleExportAuditXLSX}
+        onExportPDF={handleExportAuditPDF}
+        onFilterChange={(field, value) => setAuditFilters(prev => ({ ...prev, [field]: value }))}
       />
     </div>
   );
