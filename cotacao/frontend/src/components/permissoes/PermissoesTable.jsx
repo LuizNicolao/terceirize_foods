@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { FaEye, FaEdit, FaTrash, FaUserCog, FaSort, FaSortUp, FaSortDown, FaFilter } from 'react-icons/fa';
-import { Button, Table } from '../ui';
+import { Button } from '../ui';
 
 const PermissoesTable = ({ 
   usuarios, 
@@ -204,8 +204,9 @@ const PermissoesTable = ({
 
       {/* Versão Desktop - Tabela completa */}
       <div className="hidden xl:block bg-white rounded-lg shadow-sm overflow-hidden">
-        <Table>
-          <thead className="bg-gray-50">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50">
             <tr>
               <SortableHeader field="id">ID</SortableHeader>
               <SortableHeader field="nome">Nome</SortableHeader>
@@ -253,8 +254,9 @@ const PermissoesTable = ({
                 </td>
               </tr>
             ))}
-          </tbody>
-        </Table>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Versão Mobile e Tablet - Cards */}
