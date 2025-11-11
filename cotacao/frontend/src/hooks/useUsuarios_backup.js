@@ -6,7 +6,6 @@ import { useFilters } from './common/useFilters';
 import useTableSort from './common/useTableSort';
 
 export const useUsuarios = () => {
-  // Hook base para funcionalidades CRUD
   const baseEntity = useBaseEntity('usuarios', UsuariosService, {
     initialItemsPerPage: 20,
     initialFilters: {},
@@ -14,12 +13,8 @@ export const useUsuarios = () => {
     enableDelete: true
   });
 
-  // Hook de filtros customizados para usuários
   const customFilters = useFilters({});
 
-  // Hook de busca com debounce
-
-  // Hook de ordenação híbrida
   const {
     sortedData: usuariosOrdenados,
     sortField,
@@ -34,7 +29,6 @@ export const useUsuarios = () => {
     totalItems: baseEntity.totalItems
   });
 
-  // Estados de estatísticas específicas dos usuários
   const [estatisticasUsuarios, setEstatisticasUsuarios] = useState({
     total_usuarios: 0,
     usuarios_ativos: 0,
@@ -42,9 +36,6 @@ export const useUsuarios = () => {
     coordenadores: 0
   });
 
-  /**
-   * Calcula estatísticas específicas dos usuários
-   */
   const calculateEstatisticas = useCallback((usuarios) => {
     if (!usuarios || usuarios.length === 0) {
       setEstatisticasUsuarios({
@@ -69,9 +60,6 @@ export const useUsuarios = () => {
     });
   }, []);
 
-  /**
-   * Carrega dados com filtros customizados
-   */
   const loadDataWithFilters = useCallback(async () => {
     const params = {
       ...baseEntity.getPaginationParams(),
@@ -83,11 +71,7 @@ export const useUsuarios = () => {
     await baseEntity.loadData(params);
   }, [baseEntity, customFilters]);
 
-  /**
-   * Submissão customizada com limpeza de dados
-   */
   const onSubmitCustom = useCallback(async (data) => {
-    // Limpar campos vazios para evitar problemas de validação
     const cleanData = {
       ...data,
       nome: data.nome && data.nome.trim() !== '' ? data.nome.trim() : null,
@@ -96,25 +80,16 @@ export const useUsuarios = () => {
     };
 
     await baseEntity.onSubmit(cleanData);
-    // Recalcular estatísticas após salvar
     calculateEstatisticas(baseEntity.items);
   }, [baseEntity, calculateEstatisticas]);
 
-  /**
-   * Exclusão customizada que recarrega dados
-   */
   const handleDeleteCustom = useCallback(async () => {
     await baseEntity.handleConfirmDelete();
-    // Recalcular estatísticas após excluir
     calculateEstatisticas(baseEntity.items);
   }, [baseEntity, calculateEstatisticas]);
 
-  /**
-   * Visualização customizada que busca dados completos
-   */
   const handleViewCustom = useCallback(async (usuario) => {
     try {
-      // Buscar usuário completo com filiais vinculadas
       const result = await UsuariosService.buscarPorId(usuario.id);
       if (result.success) {
         baseEntity.handleView(result.data);
@@ -127,12 +102,8 @@ export const useUsuarios = () => {
     }
   }, [baseEntity]);
 
-  /**
-   * Edição customizada que busca dados completos
-   */
   const handleEditCustom = useCallback(async (usuario) => {
     try {
-      // Buscar usuário completo com filiais vinculadas
       const result = await UsuariosService.buscarPorId(usuario.id);
       if (result.success) {
         baseEntity.handleEdit(result.data);
@@ -145,9 +116,6 @@ export const useUsuarios = () => {
     }
   }, [baseEntity]);
 
-  /**
-   * Funções utilitárias
-   */
   const formatDate = useCallback((dateString) => {
     if (!dateString) return '-';
     return new Date(dateString).toLocaleString('pt-BR');
@@ -182,85 +150,69 @@ export const useUsuarios = () => {
     return tipos[tipo] || tipo;
   }, []);
 
-  // Carregar dados quando filtros mudam
   useEffect(() => {
     loadDataWithFilters();
   }, [customFilters.searchTerm, customFilters.statusFilter, customFilters.filters]);
 
-  // Carregar dados quando paginação muda
   useEffect(() => {
     loadDataWithFilters();
   }, [baseEntity.currentPage, baseEntity.itemsPerPage]);
 
-  // Recalcular estatísticas quando os dados mudam
   useEffect(() => {
     calculateEstatisticas(baseEntity.items);
   }, [baseEntity.items, calculateEstatisticas]);
 
+  const handleSearchChange = useCallback((value) => {
+    customFilters.setSearchTerm(value);
+    if (baseEntity.setSearchTerm) {
+      baseEntity.setSearchTerm(value);
+    }
+  }, [customFilters, baseEntity]);
+
+  const handleClearSearch = useCallback(() => {
+    customFilters.setSearchTerm('');
+    if (baseEntity.clearSearch) {
+      baseEntity.clearSearch();
+    }
+  }, [customFilters, baseEntity]);
+
   return {
-    // Estados principais (usa dados ordenados se ordenação local)
     usuarios: isSortingLocally ? usuariosOrdenados : baseEntity.items,
     loading: baseEntity.loading,
-    
-    estatisticas: estatisticasUsuarios, // Usar estatísticas específicas dos usuários
-    
-    // Estados de modal (do hook base)
+    estatisticas: estatisticasUsuarios,
     showModal: baseEntity.showModal,
     viewMode: baseEntity.viewMode,
     editingUsuario: baseEntity.editingItem,
-    
-    // Estados de exclusão (do hook base)
     showDeleteConfirmModal: baseEntity.showDeleteConfirmModal,
     usuarioToDelete: baseEntity.itemToDelete,
-    
-    // Estados de paginação (do hook base)
     currentPage: baseEntity.currentPage,
     totalPages: baseEntity.totalPages,
     totalItems: baseEntity.totalItems,
     itemsPerPage: baseEntity.itemsPerPage,
-    
-    // Estados de filtros
-    searchTerm: baseEntity.searchTerm,
+    searchTerm: customFilters.searchTerm,
     statusFilter: customFilters.statusFilter,
-    
-    // Estados de validação (do hook base)
     validationErrors: baseEntity.validationErrors,
     showValidationModal: baseEntity.showValidationModal,
-    
-    // Estados de ordenação
     sortField,
     sortDirection,
     isSortingLocally,
-    
-    // Ações de modal (customizadas)
     handleAddUser: baseEntity.handleAdd,
     handleViewUser: handleViewCustom,
     handleEditUser: handleEditCustom,
     handleCloseModal: baseEntity.handleCloseModal,
-    
-    // Ações de paginação (do hook base)
     handlePageChange: baseEntity.handlePageChange,
     handleItemsPerPageChange: baseEntity.handleItemsPerPageChange,
-    
-    // Ações de filtros
-    setSearchTerm: baseEntity.setSearchTerm,
-    clearSearch: baseEntity.clearSearch,
+    setSearchTerm: handleSearchChange,
+    clearSearch: handleClearSearch,
+    handleKeyPress: baseEntity.handleKeyPress,
     setStatusFilter: customFilters.setStatusFilter,
-    setItemsPerPage: baseEntity.handleItemsPerPageChange, // Alias para compatibilidade
-    
-    // Ações de ordenação
-    handleSort,
-    
-    // Ações de CRUD (customizadas)
+    setItemsPerPage: baseEntity.handleItemsPerPageChange,
     onSubmit: onSubmitCustom,
     handleDeleteUser: baseEntity.handleDelete,
     handleConfirmDelete: handleDeleteCustom,
     handleCloseDeleteModal: baseEntity.handleCloseDeleteModal,
-    
-    // Ações de validação (do hook base)
     handleCloseValidationModal: baseEntity.handleCloseValidationModal,
-    
-    // Funções utilitárias
+    handleSort,
     formatDate,
     getStatusLabel,
     getNivelAcessoLabel,

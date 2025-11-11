@@ -5,19 +5,15 @@ import { useUsuarios } from '../../hooks/useUsuarios';
 import { useAuditoria } from '../../hooks/common/useAuditoria';
 import { useExport } from '../../hooks/common/useExport';
 import UsuariosService from '../../services/usuarios';
-import { Button, ConfirmModal } from '../../components/ui';
-import { CadastroFilterBar } from '../../components/ui';
-import { Pagination } from '../../components/ui';
+import { Button, ConfirmModal, Pagination, ValidationErrorModal, CadastroFilterBar } from '../../components/ui';
 import { UsuarioModal } from '../../components/usuarios';
 import UsuariosStats from '../../components/usuarios/UsuariosStats';
 import UsuariosTable from '../../components/usuarios/UsuariosTable';
 import { AuditModal, ExportButtons } from '../../components/shared';
-import ValidationErrorModal from '../../components/ui/ValidationErrorModal';
 
 const Usuarios = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
-  
-  // Hooks customizados
+
   const {
     usuarios,
     loading,
@@ -44,37 +40,32 @@ const Usuarios = () => {
     handleEditUser,
     handleCloseModal,
     handlePageChange,
-    handleItemsPerPageChange,
     setSearchTerm,
+    clearSearch,
     handleKeyPress,
-    setItemsPerPage,
-    formatDate,
+    handleItemsPerPageChange,
     getStatusLabel,
     getNivelAcessoLabel,
     getTipoAcessoLabel,
     sortField,
     sortDirection,
-    handleSort,
-    isSortingLocally
+    handleSort
   } = useUsuarios();
+
+  const { handleExportXLSX, handleExportPDF } = useExport(UsuariosService);
 
   const {
     showAuditModal,
     auditLogs,
     auditLoading,
     auditFilters,
-    auditPagination,
     handleOpenAuditModal,
     handleCloseAuditModal,
     handleApplyAuditFilters,
-    handleAuditPageChange,
-    handleAuditItemsPerPageChange,
     handleExportAuditXLSX,
     handleExportAuditPDF,
     setAuditFilters
   } = useAuditoria('usuarios');
-
-  const { handleExportXLSX, handleExportPDF } = useExport(UsuariosService);
 
   if (loading) {
     return (
@@ -89,7 +80,6 @@ const Usuarios = () => {
 
   return (
     <div className="p-3 sm:p-6">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3 sm:gap-4">
         <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Usuários</h1>
         <div className="flex gap-2 sm:gap-3">
@@ -112,19 +102,16 @@ const Usuarios = () => {
         </div>
       </div>
 
-      {/* Estatísticas */}
       <UsuariosStats estatisticas={estatisticas} />
 
-      {/* Filtros */}
       <CadastroFilterBar
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
-        onKeyPress={handleKeyPress}
-        onClear={() => setSearchTerm('')}
+        onClear={clearSearch}
         placeholder="Buscar por nome ou email..."
+        onKeyPress={handleKeyPress}
       />
 
-      {/* Ações de Exportação */}
       <div className="mb-4">
         <ExportButtons
           onExportXLSX={handleExportXLSX}
@@ -133,7 +120,6 @@ const Usuarios = () => {
         />
       </div>
 
-      {/* Tabela */}
       <UsuariosTable
         usuarios={usuarios}
         canView={canView}
@@ -145,13 +131,11 @@ const Usuarios = () => {
         getTipoAcessoLabel={getTipoAcessoLabel}
         getNivelAcessoLabel={getNivelAcessoLabel}
         getStatusLabel={getStatusLabel}
-        formatDate={formatDate}
         sortField={sortField}
         sortDirection={sortDirection}
         onSort={handleSort}
       />
 
-      {/* Modal de Usuário */}
       <UsuarioModal
         isOpen={showModal}
         onClose={handleCloseModal}
@@ -160,23 +144,6 @@ const Usuarios = () => {
         isViewMode={viewMode}
       />
 
-      {/* Modal de Auditoria */}
-      <AuditModal
-        isOpen={showAuditModal}
-        onClose={handleCloseAuditModal}
-        logs={auditLogs}
-        loading={auditLoading}
-        filters={auditFilters}
-        auditPagination={auditPagination}
-        onApplyFilters={handleApplyAuditFilters}
-        onPageChange={handleAuditPageChange}
-        onItemsPerPageChange={handleAuditItemsPerPageChange}
-        onExportXLSX={handleExportAuditXLSX}
-        onExportPDF={handleExportAuditPDF}
-        onSetFilters={setAuditFilters}
-      />
-
-      {/* Modal de Erros de Validação */}
       <ValidationErrorModal
         isOpen={showValidationModal}
         onClose={handleCloseValidationModal}
@@ -184,17 +151,30 @@ const Usuarios = () => {
         errorCategories={validationErrors?.errorCategories}
       />
 
-      {/* Paginação */}
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={handlePageChange}
-        totalItems={totalItems}
-        itemsPerPage={itemsPerPage}
-        onItemsPerPageChange={handleItemsPerPageChange}
+      {totalPages > 1 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+          totalItems={totalItems}
+          itemsPerPage={itemsPerPage}
+          onItemsPerPageChange={handleItemsPerPageChange}
+        />
+      )}
+
+      <AuditModal
+        isOpen={showAuditModal}
+        onClose={handleCloseAuditModal}
+        title="Relatório de Auditoria - Usuários"
+        auditLogs={auditLogs}
+        auditLoading={auditLoading}
+        auditFilters={auditFilters}
+        onApplyFilters={handleApplyAuditFilters}
+        onExportXLSX={handleExportAuditXLSX}
+        onExportPDF={handleExportAuditPDF}
+        onFilterChange={(field, value) => setAuditFilters(prev => ({ ...prev, [field]: value }))}
       />
 
-      {/* Modal de Confirmação de Exclusão */}
       <ConfirmModal
         isOpen={showDeleteConfirmModal}
         onClose={handleCloseDeleteModal}
