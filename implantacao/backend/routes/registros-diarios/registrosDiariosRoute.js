@@ -41,6 +41,18 @@ router.get('/estatisticas',
   RegistrosDiariosController.obterEstatisticas
 );
 
+// GET /api/registros-diarios/export/xlsx - Exportar registros em XLSX
+router.get('/export/xlsx',
+  checkScreenPermission('registros_diarios', 'visualizar'),
+  RegistrosDiariosController.exportarXLSX
+);
+
+// GET /api/registros-diarios/export/pdf - Exportar registros em PDF
+router.get('/export/pdf',
+  checkScreenPermission('registros_diarios', 'visualizar'),
+  RegistrosDiariosController.exportarPDF
+);
+
 // GET /api/registros-diarios/buscar - Buscar registros de uma escola em uma data
 router.get('/buscar',
   checkScreenPermission('registros_diarios', 'visualizar'),
