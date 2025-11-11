@@ -274,6 +274,8 @@ class ReceitasPdfService {
       status: 'rascunho',
       origem: 'pdf',
       receitas: receitasEstruturadas,
+      tabela_bruta: resultadoPython.data?.tabela_bruta || null,
+      receita_por_data: resultadoPython.data?.cardapio_por_data || null,
       resumo,
       debug: {
         raw_text: textoExtraido,
