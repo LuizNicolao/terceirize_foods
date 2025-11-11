@@ -9,6 +9,7 @@ class ProdutoOrigemExportController {
 
       // Colunas com as mesmas informações da tela
       worksheet.columns = [
+        { header: 'ID', key: 'id', width: 10 },
         { header: 'Código', key: 'codigo', width: 15 },
         { header: 'Nome', key: 'nome', width: 40 },
         { header: 'Unidade', key: 'unidade_sigla', width: 10 },
@@ -54,6 +55,7 @@ class ProdutoOrigemExportController {
       // Query com todas as informações da tela
       const query = `
         SELECT 
+          po.id,
           po.codigo,
           po.nome,
           um.sigla as unidade_sigla,
@@ -79,6 +81,7 @@ class ProdutoOrigemExportController {
         const codigoFormatado = produto.codigo ? produto.codigo.replace('ORIG-', '') : '-';
         
         worksheet.addRow({
+          id: produto.id,
           codigo: codigoFormatado,
           nome: produto.nome,
           unidade_sigla: produto.unidade_sigla || '-',
@@ -150,6 +153,7 @@ class ProdutoOrigemExportController {
       // Query com todas as informações da tela
       const query = `
         SELECT 
+          po.id,
           po.codigo,
           po.nome,
           um.sigla as unidade_sigla,
@@ -172,20 +176,22 @@ class ProdutoOrigemExportController {
 
       // Definir posições das colunas (modo paisagem A4 = ~842 pontos de largura)
       const cols = {
-        codigo: 30,
-        nome: 75,
-        unidade: 250,
-        grupo: 305,
-        subgrupo: 430,
-        classe: 555,
-        status: 680,
-        ref: 740
+        id: 30,
+        codigo: 75,
+        nome: 130,
+        unidade: 305,
+        grupo: 360,
+        subgrupo: 485,
+        classe: 610,
+        status: 735,
+        ref: 795
       };
 
       // Cabeçalho da tabela
       doc.fontSize(9).font('Helvetica-Bold');
       const headerY = doc.y;
-      doc.text('Código', cols.codigo, headerY, { width: 40 });
+      doc.text('ID', cols.id, headerY, { width: 35 });
+      doc.text('Código', cols.codigo, headerY, { width: 45 });
       doc.text('Nome', cols.nome, headerY, { width: 170 });
       doc.text('Unid.', cols.unidade, headerY, { width: 50 });
       doc.text('Grupo', cols.grupo, headerY, { width: 120 });
@@ -208,7 +214,8 @@ class ProdutoOrigemExportController {
           // Repetir cabeçalho na nova página
           doc.fontSize(9).font('Helvetica-Bold');
           const newHeaderY = doc.y;
-          doc.text('Código', cols.codigo, newHeaderY, { width: 40 });
+          doc.text('ID', cols.id, newHeaderY, { width: 35 });
+          doc.text('Código', cols.codigo, newHeaderY, { width: 45 });
           doc.text('Nome', cols.nome, newHeaderY, { width: 170 });
           doc.text('Unid.', cols.unidade, newHeaderY, { width: 50 });
           doc.text('Grupo', cols.grupo, newHeaderY, { width: 120 });
@@ -233,7 +240,8 @@ class ProdutoOrigemExportController {
         const classe = (produto.classe_nome || '-').length > 20 ? (produto.classe_nome || '-').substring(0, 17) + '...' : (produto.classe_nome || '-');
         const ref = (produto.referencia_mercado || '-').length > 12 ? (produto.referencia_mercado || '-').substring(0, 9) + '...' : (produto.referencia_mercado || '-');
 
-        doc.text(codigoFormatado, cols.codigo, currentY, { width: 40 });
+        doc.text(String(produto.id || '-'), cols.id, currentY, { width: 35 });
+        doc.text(codigoFormatado, cols.codigo, currentY, { width: 45 });
         doc.text(nome, cols.nome, currentY, { width: 170 });
         doc.text(produto.unidade_sigla || '-', cols.unidade, currentY, { width: 50 });
         doc.text(grupo, cols.grupo, currentY, { width: 120 });

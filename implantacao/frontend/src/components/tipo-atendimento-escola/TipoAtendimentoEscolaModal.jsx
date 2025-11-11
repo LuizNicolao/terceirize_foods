@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import FoodsApiService from '../../services/FoodsApiService';
 import escolasService from '../../services/escolasService';
 import { useAuth } from '../../contexts/AuthContext';
+import useUnsavedChangesPrompt from '../../hooks/useUnsavedChangesPrompt';
 
 const TipoAtendimentoEscolaModal = ({
   isOpen,
@@ -34,6 +35,22 @@ const TipoAtendimentoEscolaModal = ({
   const [confirmacao, setConfirmacao] = useState({ aberto: false, acao: null });
   const isEditing = Boolean(editingItem);
   const isViewMode = viewMode;
+  const {
+    markDirty,
+    resetDirty,
+    requestClose,
+    showConfirm,
+    confirmClose,
+    cancelClose,
+    confirmTitle,
+    confirmMessage
+  } = useUnsavedChangesPrompt();
+
+  useEffect(() => {
+    if (!isOpen || isViewMode) {
+      resetDirty();
+    }
+  }, [isOpen, isViewMode, resetDirty]);
 
   // Carregar filiais
   useEffect(() => {
@@ -188,6 +205,9 @@ const TipoAtendimentoEscolaModal = ({
     setEscolasPage(1);
     setVinculosSelecionados({});
     setErrors(prev => ({ ...prev, filial_id: undefined }));
+    if (!isViewMode) {
+      markDirty();
+    }
   };
 
   const handleTipoToggle = useCallback((escolaId, tipoValue) => {
@@ -202,7 +222,10 @@ const TipoAtendimentoEscolaModal = ({
         [escolaId]: novosVinculos.length > 0 ? novosVinculos : undefined
       };
     });
-  }, []);
+    if (!isViewMode) {
+      markDirty();
+    }
+  }, [isViewMode, markDirty]);
 
   const isTipoSelecionado = (escolaId, tipoValue) => {
     return vinculosSelecionados[escolaId]?.includes(tipoValue) || false;
@@ -280,15 +303,17 @@ const TipoAtendimentoEscolaModal = ({
         return novos;
       });
       toast.success('Todos os tipos marcados para as escolas da filial selecionada.');
+      markDirty();
     }
 
     if (confirmacao.acao === 'desmarcar') {
       setVinculosSelecionados({});
       toast.success('Todos os tipos foram desmarcados.');
+      markDirty();
     }
 
     setConfirmacao({ aberto: false, acao: null });
-  }, [confirmacao, buscarTodasEscolasDaFilial, tiposAtendimento]);
+  }, [confirmacao, buscarTodasEscolasDaFilial, tiposAtendimento, markDirty]);
 
   const fecharConfirmacao = useCallback(() => {
     setConfirmacao({ aberto: false, acao: null });
@@ -349,6 +374,7 @@ const TipoAtendimentoEscolaModal = ({
         vinculos: vinculosParaSalvar
       });
     }
+    resetDirty();
   };
 
   const handleBuscaEscola = (e) => {
@@ -402,9 +428,10 @@ const TipoAtendimentoEscolaModal = ({
     : 'Vincular Tipos de Atendimento às Escolas';
 
   return (
+    <>
     <Modal
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={() => requestClose(onClose)}
       title={modalTitle}
       size="full"
     >
@@ -705,7 +732,7 @@ const TipoAtendimentoEscolaModal = ({
           <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
             <Button
               type="button"
-              onClick={onClose}
+              onClick={() => requestClose(onClose)}
               variant="ghost"
               disabled={loading}
             >
@@ -740,6 +767,17 @@ const TipoAtendimentoEscolaModal = ({
         variant={confirmacao.acao === 'desmarcar' ? 'danger' : 'primary'}
       />
     </Modal>
+    <ConfirmModal
+      isOpen={showConfirm}
+      onClose={cancelClose}
+      onConfirm={confirmClose}
+      title={confirmTitle}
+      message={confirmMessage}
+      confirmText="Descartar"
+      cancelText="Continuar editando"
+      variant="danger"
+    />
+    </>
   );
 };
 

@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { FaCog, FaArrowLeft, FaSave, FaPlus, FaTrash, FaCalendarCheck, FaTruck, FaShoppingCart, FaExclamationTriangle } from 'react-icons/fa';
 import { useCalendario } from '../../hooks/useCalendario';
 import { usePermissions } from '../../contexts/PermissionsContext';
-import { Button, Input, Modal } from '../../components/ui';
+import { Button, Input, Modal, ConfirmModal } from '../../components/ui';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import useUnsavedChangesPrompt from '../../hooks/useUnsavedChangesPrompt';
 
 const CalendarioConfiguracao = () => {
   const { user } = usePermissions();
@@ -29,6 +30,24 @@ const CalendarioConfiguracao = () => {
     nome_feriado: '',
     observacoes: ''
   });
+const {
+  markDirty,
+  resetDirty,
+  requestClose,
+  showConfirm,
+  confirmClose,
+  cancelClose,
+  confirmTitle,
+  confirmMessage
+} = useUnsavedChangesPrompt({
+  confirmMessage: 'Ao sair, o feriado em edição será descartado. Deseja continuar?'
+});
+
+useEffect(() => {
+  if (!modalFeriado) {
+    resetDirty();
+  }
+}, [modalFeriado, resetDirty]);
 
   const opcoesDiasSemana = [
     { value: 1, label: 'Segunda-feira' },
@@ -103,14 +122,30 @@ const CalendarioConfiguracao = () => {
     }
   };
 
-  const handleAdicionarFeriado = () => {
+const handleChangeFeriado = (field, value) => {
+  setFormFeriado(prev => ({ ...prev, [field]: value }));
+  markDirty();
+};
+
+const handleAdicionarFeriado = () => {
     setFormFeriado({
       data: '',
       nome_feriado: '',
       observacoes: ''
     });
     setModalFeriado(true);
+  resetDirty();
   };
+
+const closeModalFeriado = useCallback(() => {
+  setModalFeriado(false);
+  setFormFeriado({
+    data: '',
+    nome_feriado: '',
+    observacoes: ''
+  });
+  resetDirty();
+}, [resetDirty]);
 
   const handleSalvarFeriado = async () => {
     if (!formFeriado.data || !formFeriado.nome_feriado) {
@@ -120,12 +155,7 @@ const CalendarioConfiguracao = () => {
 
     const sucesso = await adicionarFeriado(formFeriado);
     if (sucesso) {
-      setModalFeriado(false);
-      setFormFeriado({
-        data: '',
-        nome_feriado: '',
-        observacoes: ''
-      });
+    closeModalFeriado();
     }
   };
 
@@ -341,7 +371,7 @@ const CalendarioConfiguracao = () => {
       {/* Modal de Feriado */}
       <Modal
         isOpen={modalFeriado}
-        onClose={() => setModalFeriado(false)}
+        onClose={() => requestClose(closeModalFeriado)}
         title="Adicionar Feriado"
         size="md"
       >
@@ -350,14 +380,14 @@ const CalendarioConfiguracao = () => {
             label="Data"
             type="date"
             value={formFeriado.data}
-            onChange={(e) => setFormFeriado(prev => ({ ...prev, data: e.target.value }))}
+            onChange={(e) => handleChangeFeriado('data', e.target.value)}
             required
           />
           
           <Input
             label="Nome do Feriado"
             value={formFeriado.nome_feriado}
-            onChange={(e) => setFormFeriado(prev => ({ ...prev, nome_feriado: e.target.value }))}
+            onChange={(e) => handleChangeFeriado('nome_feriado', e.target.value)}
             placeholder="Ex: Natal, Ano Novo..."
             required
           />
@@ -365,13 +395,13 @@ const CalendarioConfiguracao = () => {
           <Input
             label="Observações"
             value={formFeriado.observacoes}
-            onChange={(e) => setFormFeriado(prev => ({ ...prev, observacoes: e.target.value }))}
+            onChange={(e) => handleChangeFeriado('observacoes', e.target.value)}
             placeholder="Observações adicionais..."
           />
           
           <div className="flex justify-end space-x-3 pt-4">
             <Button
-              onClick={() => setModalFeriado(false)}
+              onClick={() => requestClose(closeModalFeriado)}
               variant="outline"
             >
               Cancelar
@@ -387,6 +417,16 @@ const CalendarioConfiguracao = () => {
           </div>
         </div>
       </Modal>
+      <ConfirmModal
+        isOpen={showConfirm}
+        onClose={cancelClose}
+        onConfirm={confirmClose}
+        title={confirmTitle}
+        message={confirmMessage}
+        confirmText="Descartar"
+        cancelText="Continuar editando"
+        variant="danger"
+      />
     </div>
   );
 };

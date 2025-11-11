@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { FaSave } from 'react-icons/fa';
-import { Modal, Button, Input, SearchableSelect } from '../ui';
+import { Modal, Button, Input, SearchableSelect, ConfirmModal } from '../ui';
 import { formatDate } from '../../utils/formatters';
+import useUnsavedChangesPrompt from '../../hooks/useUnsavedChangesPrompt';
 
 /**
  * Modal para Produto Per Capita
@@ -22,12 +23,24 @@ const ProdutoPerCapitaModal = ({
     per_capita_lanche_manha: '',
     per_capita_almoco: '',
     per_capita_lanche_tarde: '',
-    per_capita_parcial: '',
+    per_capita_parcial_manha: '',
+    per_capita_parcial_tarde: '',
     per_capita_eja: '',
     ativo: true
   });
 
   const [errors, setErrors] = useState({});
+  const {
+    isDirty,
+    markDirty,
+    resetDirty,
+    requestClose,
+    showConfirm,
+    confirmClose,
+    cancelClose,
+    confirmTitle,
+    confirmMessage
+  } = useUnsavedChangesPrompt();
 
   // Limpar dados quando modal é fechado
   useEffect(() => {
@@ -38,13 +51,15 @@ const ProdutoPerCapitaModal = ({
         per_capita_lanche_manha: '',
         per_capita_almoco: '',
         per_capita_lanche_tarde: '',
-        per_capita_parcial: '',
+        per_capita_parcial_manha: '',
+        per_capita_parcial_tarde: '',
         per_capita_eja: '',
         ativo: true
       });
       setErrors({});
+      resetDirty();
     }
-  }, [isOpen]);
+  }, [isOpen, resetDirty]);
 
   // Carregar produtos disponíveis quando modal abrir
   useEffect(() => {
@@ -70,19 +85,25 @@ const ProdutoPerCapitaModal = ({
         per_capita_lanche_manha: produto.per_capita_lanche_manha || '',
         per_capita_almoco: produto.per_capita_almoco || '',
         per_capita_lanche_tarde: produto.per_capita_lanche_tarde || '',
-        per_capita_parcial: produto.per_capita_parcial || '',
+        per_capita_parcial_manha: produto.per_capita_parcial_manha ?? produto.per_capita_parcial ?? '',
+        per_capita_parcial_tarde: produto.per_capita_parcial_tarde ?? '',
         per_capita_eja: produto.per_capita_eja || '',
         descricao: produto.descricao || '',
         ativo: produto.ativo !== undefined ? produto.ativo : true
       });
+      resetDirty();
     }
-  }, [isOpen, produto]);
+  }, [isOpen, produto, resetDirty]);
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
     }));
+
+    if (!isViewMode) {
+      markDirty();
+    }
     
     // Limpar erro do campo
     if (errors[field]) {
@@ -124,7 +145,8 @@ const ProdutoPerCapitaModal = ({
     const temPerCapita = formData.per_capita_lanche_manha > 0 ||
                         formData.per_capita_almoco > 0 ||
                         formData.per_capita_lanche_tarde > 0 ||
-                        formData.per_capita_parcial > 0 ||
+                        formData.per_capita_parcial_manha > 0 ||
+                        formData.per_capita_parcial_tarde > 0 ||
                         formData.per_capita_eja > 0;
     
     if (!temPerCapita) {
@@ -141,7 +163,8 @@ const ProdutoPerCapitaModal = ({
       const dadosLimpos = {
         ...formData,
         produto_id: formData.produto_id || null,
-        per_capita_parcial: formData.per_capita_parcial || 0,
+        per_capita_parcial_manha: formData.per_capita_parcial_manha || 0,
+        per_capita_parcial_tarde: formData.per_capita_parcial_tarde || 0,
         per_capita_lanche_manha: formData.per_capita_lanche_manha || 0,
         per_capita_lanche_tarde: formData.per_capita_lanche_tarde || 0,
         per_capita_almoco: formData.per_capita_almoco || 0,
@@ -158,10 +181,12 @@ const ProdutoPerCapitaModal = ({
           per_capita_lanche_manha: '',
           per_capita_almoco: '',
           per_capita_lanche_tarde: '',
-          per_capita_parcial: '',
+          per_capita_parcial_manha: '',
+          per_capita_parcial_tarde: '',
           per_capita_eja: '',
           ativo: true
         });
+        resetDirty();
       }
       
       onClose();
@@ -176,25 +201,31 @@ const ProdutoPerCapitaModal = ({
       per_capita_lanche_manha: '',
       per_capita_almoco: '',
       per_capita_lanche_tarde: '',
-      per_capita_parcial: '',
+      per_capita_parcial_manha: '',
+      per_capita_parcial_tarde: '',
       per_capita_eja: '',
       ativo: true
     });
     setErrors({});
+    if (!isViewMode) {
+      markDirty();
+    }
   };
 
   const periodos = [
     { key: 'per_capita_lanche_manha', label: 'Lanche Manhã', placeholder: 'Ex: 0.200' },
     { key: 'per_capita_almoco', label: 'Almoço', placeholder: 'Ex: 0.150' },
     { key: 'per_capita_lanche_tarde', label: 'Lanche Tarde', placeholder: 'Ex: 0.150' },
-    { key: 'per_capita_parcial', label: 'Parcial', placeholder: 'Ex: 0.200' },
+    { key: 'per_capita_parcial_manha', label: 'Parcial Manhã', placeholder: 'Ex: 0.200' },
+    { key: 'per_capita_parcial_tarde', label: 'Parcial Tarde', placeholder: 'Ex: 0.150' },
     { key: 'per_capita_eja', label: 'EJA', placeholder: 'Ex: 0.100' }
   ];
 
   return (
+    <>
     <Modal
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={() => requestClose(onClose)}
       title={isViewMode ? 'Visualizar Produto Per Capita' : produto ? 'Editar Produto Per Capita' : 'Adicionar Produto Per Capita'}
       size="xl"
     >
@@ -387,7 +418,7 @@ const ProdutoPerCapitaModal = ({
               <Button
                 type="button"
                 variant="ghost"
-                onClick={onClose}
+              onClick={() => requestClose(onClose)}
                 disabled={loading}
                 className="px-8"
               >
@@ -413,7 +444,7 @@ const ProdutoPerCapitaModal = ({
             <Button
               type="button"
               variant="ghost"
-              onClick={onClose}
+              onClick={() => requestClose(onClose)}
               className="px-8"
             >
               Fechar
@@ -422,6 +453,17 @@ const ProdutoPerCapitaModal = ({
         )}
       </form>
     </Modal>
+    <ConfirmModal
+      isOpen={showConfirm}
+      onClose={cancelClose}
+      onConfirm={confirmClose}
+      title={confirmTitle}
+      message={confirmMessage}
+      confirmText="Descartar"
+      cancelText="Continuar editando"
+      variant="danger"
+    />
+    </>
   );
 };
 

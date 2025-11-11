@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Button, Input, SearchableSelect } from '../ui';
+import { Modal, Button, Input, SearchableSelect, ConfirmModal } from '../ui';
 import { FaList, FaChartLine, FaHistory } from 'react-icons/fa';
 import FoodsApiService from '../../services/FoodsApiService';
 import { useAuth } from '../../contexts/AuthContext';
@@ -7,6 +7,7 @@ import RegistrosDiariosService from '../../services/registrosDiarios';
 import MediasCalculadasTab from './MediasCalculadasTab';
 import HistoricoTab from './HistoricoTab';
 import TipoAtendimentoEscolaService from '../../services/tipoAtendimentoEscolaService';
+import useUnsavedChangesPrompt from '../../hooks/useUnsavedChangesPrompt';
 
 const RegistrosDiariosModal = ({ 
   isOpen, 
@@ -24,6 +25,16 @@ const RegistrosDiariosModal = ({
   const [loadingMedias, setLoadingMedias] = useState(false);
   const [historico, setHistorico] = useState([]);
   const [loadingHistorico, setLoadingHistorico] = useState(false);
+  const {
+    markDirty,
+    resetDirty,
+    requestClose,
+    showConfirm,
+    confirmClose,
+    cancelClose,
+    confirmTitle,
+    confirmMessage
+  } = useUnsavedChangesPrompt();
   
   // Função para obter data atual no formato YYYY-MM-DD
   const getDataAtual = () => {
@@ -52,6 +63,12 @@ const RegistrosDiariosModal = ({
   const [loadingTiposAtendimento, setLoadingTiposAtendimento] = useState(false);
 
   const [formData, setFormData] = useState(criarEstadoInicial());
+  
+  useEffect(() => {
+    if (!isOpen || isViewMode) {
+      resetDirty();
+    }
+  }, [isOpen, isViewMode, resetDirty]);
   
   // Carregar TODAS as escolas quando modal abrir
   useEffect(() => {
@@ -127,12 +144,14 @@ const RegistrosDiariosModal = ({
         }
       });
       setDadosIniciaisCarregados(true);
+      resetDirty();
     } else if (!registro && isOpen) {
       // Resetar para novo registro com data atual
       setFormData(criarEstadoInicial());
       setDadosIniciaisCarregados(false);
+      resetDirty();
     }
-  }, [registro, isOpen, user]);
+  }, [registro, isOpen, user, resetDirty]);
 
   // Armazenar valores iniciais da escola e data para comparação
   const [escolaInicial, setEscolaInicial] = useState(null);
@@ -312,6 +331,9 @@ const RegistrosDiariosModal = ({
   
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    if (!isViewMode) {
+      markDirty();
+    }
   };
   
   const handleQuantidadeChange = (tipo, value) => {
@@ -324,9 +346,12 @@ const RegistrosDiariosModal = ({
         [tipo]: valorNormalizado
       }
     }));
+    if (!isViewMode) {
+      markDirty();
+    }
   };
   
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     // Validação básica
@@ -358,11 +383,12 @@ const RegistrosDiariosModal = ({
       quantidadesFiltradas.parcial = quantidadesFiltradas.parcial_manha;
     }
 
-    onSave({
+    await onSave({
       ...formData,
       escola_nome,
       quantidades: quantidadesFiltradas
     });
+    resetDirty();
   };
 
   const handleHistoricoEdit = (item) => {
@@ -396,9 +422,10 @@ const RegistrosDiariosModal = ({
   ];
   
   return (
+    <>
     <Modal
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={() => requestClose(onClose)}
       title={isViewMode ? 'Visualizar Quantidade Servida' : registro ? 'Editar Quantidade Servida' : 'Nova Quantidade Servida'}
       size="6xl"
     >
@@ -529,7 +556,7 @@ const RegistrosDiariosModal = ({
             <Button
               type="button"
               variant="secondary"
-              onClick={onClose}
+              onClick={() => requestClose(onClose)}
             >
               Cancelar
             </Button>
@@ -546,13 +573,24 @@ const RegistrosDiariosModal = ({
           <Button
             type="button"
             variant="secondary"
-            onClick={onClose}
+            onClick={() => requestClose(onClose)}
           >
             Fechar
           </Button>
         </div>
       )}
     </Modal>
+    <ConfirmModal
+      isOpen={showConfirm}
+      onClose={cancelClose}
+      onConfirm={confirmClose}
+      title={confirmTitle}
+      message={confirmMessage}
+      confirmText="Descartar"
+      cancelText="Continuar editando"
+      variant="danger"
+    />
+    </>
   );
 };
 

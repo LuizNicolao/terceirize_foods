@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { Modal, Button, Input, Pagination } from '../ui';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Modal, Button, Input, Pagination, ConfirmModal } from '../ui';
 import { FaPlus } from 'react-icons/fa';
 import FoodsApiService from '../../services/FoodsApiService';
 import toast from 'react-hot-toast';
+import useUnsavedChangesPrompt from '../../hooks/useUnsavedChangesPrompt';
 
 const AdicionarProdutoModal = ({ 
   isOpen, 
@@ -18,6 +19,22 @@ const AdicionarProdutoModal = ({
   const [filtrados, setFiltrados] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
+  const {
+    markDirty,
+    resetDirty,
+    requestClose,
+    showConfirm,
+    confirmClose,
+    cancelClose,
+    confirmTitle,
+    confirmMessage
+  } = useUnsavedChangesPrompt();
+
+  useEffect(() => {
+    if (!isOpen) {
+      resetDirty();
+    }
+  }, [isOpen, resetDirty]);
 
   // Carregar produtos do grupo quando modal abrir
   useEffect(() => {
@@ -100,6 +117,7 @@ const AdicionarProdutoModal = ({
         unidade_medida: produto.unidade_medida_sigla || produto.unidade_medida
       }]);
     }
+    markDirty();
   };
 
   const handleSelecionarTodos = () => {
@@ -110,10 +128,12 @@ const AdicionarProdutoModal = ({
       unidade_medida: produto.unidade_medida_sigla || produto.unidade_medida
     }));
     setProdutosSelecionados(todosSelecionados);
+    markDirty();
   };
 
   const handleDesmarcarTodos = () => {
     setProdutosSelecionados([]);
+    markDirty();
   };
 
   const handleAdicionar = () => {
@@ -134,15 +154,17 @@ const AdicionarProdutoModal = ({
 
     onAdicionarProdutos(produtosFormatados);
     setProdutosSelecionados([]);
+    resetDirty();
     onClose();
   };
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setSearchTerm('');
     setProdutosSelecionados([]);
     setCurrentPage(1);
+    resetDirty();
     onClose();
-  };
+  }, [onClose, resetDirty]);
 
   // Calcular produtos da página atual
   const totalPages = Math.ceil(filtrados.length / itemsPerPage);
@@ -155,9 +177,10 @@ const AdicionarProdutoModal = ({
   };
 
   return (
+    <>
     <Modal
       isOpen={isOpen}
-      onClose={handleClose}
+      onClose={() => requestClose(handleClose)}
       title="Incluir Produtos"
       size="5xl"
     >
@@ -277,7 +300,7 @@ const AdicionarProdutoModal = ({
         <div className="flex justify-end space-x-3 pt-4">
           <Button
             variant="secondary"
-            onClick={handleClose}
+            onClick={() => requestClose(handleClose)}
           >
             Cancelar
           </Button>
@@ -292,6 +315,17 @@ const AdicionarProdutoModal = ({
         </div>
       </div>
     </Modal>
+    <ConfirmModal
+      isOpen={showConfirm}
+      onClose={cancelClose}
+      onConfirm={confirmClose}
+      title={confirmTitle}
+      message={confirmMessage}
+      confirmText="Descartar"
+      cancelText="Continuar selecionando"
+      variant="danger"
+    />
+    </>
   );
 };
 
