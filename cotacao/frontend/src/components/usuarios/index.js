@@ -1,3 +1,4 @@
-// export { default as Usuarios } from './Usuarios'; // Arquivo removido
-// export { default as EditarUsuario } from './EditarUsuario'; // Arquivo removido
-// export { default as VisualizarUsuario } from './VisualizarUsuario'; // Arquivo removido
+export { default as UsuariosStats } from './UsuariosStats';
+export { default as UsuariosTable } from './UsuariosTable';
+export { default as UsuarioModal } from './UsuarioModal';
+export { default as UsuariosActions } from './UsuariosActions';

@@ -11,3 +11,6 @@ export { default as FornecedorSearch } from './FornecedorSearch';
 export { default as FilialSearch } from './FilialSearch';
 export { default as ProdutoSearch } from './ProdutoSearch';
 export { default as ConfirmModal } from './ConfirmModal';
+export { default as ValidationErrorModal } from './ValidationErrorModal';
+export { default as EmptyState } from './EmptyState';
+export { default as StatCard } from './StatCard';
