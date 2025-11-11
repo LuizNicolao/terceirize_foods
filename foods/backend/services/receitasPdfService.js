@@ -80,15 +80,26 @@ const inferirCategoriaReceita = (codigo, turno) => {
 const mapearReceitasExtraidas = (resultado) => {
   const refeicoes = resultado?.refeicoes || [];
   const receitasMap = new Map();
+  let ultimaDataValida = null;
 
   refeicoes.forEach(refeicao => {
     if (!refeicao) {
       return;
     }
 
+    if (refeicao.data) {
+      ultimaDataValida = refeicao.data;
+    }
+
+    const dataNormalizada = refeicao.data || ultimaDataValida || 'Data não identificada';
+
+    if (!refeicao.data && ultimaDataValida) {
+      refeicao.data = ultimaDataValida;
+    }
+
     const chave = refeicao.codigo
-      ? `${refeicao.codigo}-${refeicao.descricao}`
-      : refeicao.descricao || `${Date.now()}-${Math.random()}`;
+      ? `${refeicao.codigo}-${dataNormalizada}-${refeicao.turno || 'turno'}`
+      : `${dataNormalizada}-${refeicao.descricao || `${Date.now()}-${Math.random()}`}`;
 
     if (!receitasMap.has(chave)) {
       const nomeReceita = extrairNomeReceita(refeicao.descricao, refeicao.texto_original);
@@ -278,7 +289,11 @@ class ReceitasPdfService {
       resultadoPython: resultadoPython.data,
       reports: {
         json: reportJsonPath,
-        txt: reportTxtPath
+        txt: reportTxtPath,
+        normalizedCardapio: {
+          resumo,
+          receitas_por_data: jsonCardapio
+        }
       }
     };
   }

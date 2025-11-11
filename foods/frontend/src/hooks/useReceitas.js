@@ -234,31 +234,25 @@ export const useReceitas = () => {
   const handleProcessarPDF = async (dadosProcessados) => {
     try {
       console.log('Dados processados do PDF:', dadosProcessados);
-      
-      // Criar nova receita com os dados extraídos
-      const novaReceita = {
-        nome: dadosProcessados.nome || 'Receita do PDF',
-        codigo_referencia: dadosProcessados.codigo_referencia || null,
-        descricao: dadosProcessados.descricao || '',
-        texto_extraido_pdf: dadosProcessados.texto_extraido_pdf || '',
-        ingredientes: dadosProcessados.ingredientes || [],
-        instrucoes: dadosProcessados.instrucoes || '',
-        tipo: dadosProcessados.tipo || 'receita',
-        status: dadosProcessados.status || 'rascunho'
-      };
-      
-      // Salvar no banco de dados
-      const resultado = await ReceitasService.criar(novaReceita);
-      
-      if (resultado.success) {
-        toast.success('Receita criada com sucesso a partir do PDF!');
-        
-        // Fechar modal e recarregar dados
-        setShowUploadModal(false);
-        baseEntity.loadData();
+
+      setShowUploadModal(false);
+
+      if (dadosProcessados?.upload?.duplicate) {
+        toast(
+          `PDF já havia sido processado (upload #${dadosProcessados.upload.uploadId}). Resumo carregado para conferência.`,
+          { icon: '⚠️' }
+        );
       } else {
-        toast.error('Erro ao salvar receita: ' + (resultado.error || 'Erro desconhecido'));
+        toast.success(
+          `PDF processado com sucesso: ${dadosProcessados.resumo?.total_refeicoes ?? dadosProcessados.receitas?.length ?? 0} refeições registradas`
+        );
       }
+
+      setEditingReceita(dadosProcessados);
+      setShowPreviewModal(true);
+
+      // Recarregar lista para manter consistência com dados existentes
+      baseEntity.loadData();
     } catch (error) {
       console.error('Erro ao processar PDF:', error);
       toast.error('Erro ao processar PDF: ' + error.message);

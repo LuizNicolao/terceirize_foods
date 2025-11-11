@@ -104,10 +104,46 @@ const ReceitaPreviewModal = ({ isOpen, onClose, receita, onAprovar, onRejeitar }
   ];
 
   const renderTabContent = () => {
+    const receitasPorDataAgrupado =
+      receita?.reports?.normalizedCardapio?.receitas_por_data ||
+      receita?.receita_por_data ||
+      {};
+
     switch (activeTab) {
       case 'resumo':
         return (
           <div className="space-y-6">
+            {receita.upload && (
+              <div className="bg-white rounded-lg border border-gray-200 p-4">
+                <h4 className="text-lg font-medium text-gray-900 mb-4">Informações do Upload</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-gray-700">
+                  <div>
+                    <strong>ID:</strong> {receita.upload.uploadId}
+                  </div>
+                  <div>
+                    <strong>Status:</strong>{' '}
+                    <span className={receita.upload.duplicate ? 'text-yellow-600 font-medium' : 'text-green-600 font-medium'}>
+                      {receita.upload.duplicate ? 'Duplicado' : 'Novo processamento'}
+                    </span>
+                  </div>
+                  <div>
+                    <strong>Receitas registradas:</strong> {receita.upload.totalReceitasRegistradas ?? receita.resumo?.total_refeicoes ?? '-'}
+                  </div>
+                  {receita.reports?.processed_json && (
+                    <div className="col-span-full text-xs text-gray-600">
+                      <strong>Arquivos gerados:</strong>
+                      <ul className="mt-1 space-y-1">
+                        <li>• JSON bruto: {receita.reports.raw_json}</li>
+                        <li>• TXT bruto: {receita.reports.raw_txt}</li>
+                        <li>• JSON processado: {receita.reports.processed_json}</li>
+                        <li>• TXT processado: {receita.reports.processed_txt}</li>
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Validações */}
             <div className="bg-white rounded-lg border border-gray-200 p-4">
               <h4 className="text-lg font-medium text-gray-900 mb-4">Validações</h4>
@@ -224,9 +260,9 @@ const ReceitaPreviewModal = ({ isOpen, onClose, receita, onAprovar, onRejeitar }
         return (
           <div className="bg-white rounded-lg border border-gray-200 p-4">
             <h4 className="text-lg font-medium text-gray-900 mb-4">Cardápio por Dia</h4>
-            {receita.receita_por_data && Object.keys(receita.receita_por_data).length > 0 ? (
+            {Object.keys(receitasPorDataAgrupado).length > 0 ? (
               <div className="space-y-4 max-h-96 overflow-y-auto">
-                {Object.entries(receita.receita_por_data).map(([data, refeicoes], index) => (
+                {Object.entries(receitasPorDataAgrupado).map(([data, refeicoes], index) => (
                   <div key={index} className="border border-gray-200 rounded-lg p-4">
                     <div className="font-medium text-gray-900 mb-3 text-lg">
                       📅 {data}
@@ -344,13 +380,13 @@ const ReceitaPreviewModal = ({ isOpen, onClose, receita, onAprovar, onRejeitar }
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="bg-green-50 rounded-lg p-4 text-center">
               <div className="text-2xl font-bold text-green-600">
-                {receita.total_dias || receita.dias?.length || 0}
+                {receita.resumo?.total_dias ?? receita.total_dias ?? receita.dias?.length ?? 0}
               </div>
               <div className="text-sm text-green-800">Dias</div>
             </div>
             <div className="bg-green-50 rounded-lg p-4 text-center">
               <div className="text-2xl font-bold text-green-600">
-                {receita.total_refeicoes || receita.receitas?.length || 0}
+                {receita.resumo?.total_refeicoes ?? receita.total_refeicoes ?? receita.receitas?.length ?? 0}
               </div>
               <div className="text-sm text-green-800">Refeições</div>
             </div>

@@ -4,6 +4,12 @@
  */
 
 const ReceitasPdfService = require('../../services/receitasPdfService');
+const {
+  computeFileHash,
+  computeNormalizedHash,
+  findDuplicateUpload,
+  insertUploadWithRecipes
+} = require('../../services/pdfUploadService');
 
 const receitasPdfService = new ReceitasPdfService();
 
@@ -266,7 +272,38 @@ class ReceitasCRUDController {
       console.log('📋 Tipo MIME:', req.file.mimetype);
 
       const resultado = await receitasPdfService.processar(req.file.buffer, req.file.originalname);
-      const { dadosExtraidos, receitasEstruturadas, debugPaths, resumo } = resultado;
+      const { dadosExtraidos, receitasEstruturadas, debugPaths, resumo, reports, resultadoPython } = resultado;
+
+      const fileHash = computeFileHash(req.file.buffer);
+      const normalizedHash = computeNormalizedHash(reports.normalizedCardapio);
+
+      const existingUpload = await findDuplicateUpload({ fileHash, normalizedHash });
+      let uploadInfo = null;
+
+      if (existingUpload && existingUpload.status !== 'discarded') {
+        uploadInfo = {
+          duplicate: true,
+          uploadId: existingUpload.id,
+          status: existingUpload.status
+        };
+      } else {
+        const insertResult = await insertUploadWithRecipes({
+          originalName: req.file.originalname,
+          fileHash,
+          normalizedHash,
+          periodLabel: resultadoPython?.metadados?.periodo || null,
+          pages: resultadoPython?.metadados?.total_paginas || null,
+          normalizedCardapio: reports.normalizedCardapio,
+          receitas: receitasEstruturadas,
+          status: 'committed'
+        });
+
+        uploadInfo = {
+          duplicate: false,
+          uploadId: insertResult.uploadId,
+          totalReceitasRegistradas: insertResult.totalReceitas
+        };
+      }
 
       console.log('\n✅ PROCESSAMENTO CONCLUÍDO:');
       console.log('='.repeat(80));
@@ -284,8 +321,20 @@ class ReceitasCRUDController {
 
       res.json({
         success: true,
-        data: dadosExtraidos,
-        message: 'PDF processado com sucesso'
+        data: {
+          ...dadosExtraidos,
+          upload: uploadInfo,
+          resumo,
+          reports: {
+            raw_json: debugPaths.json,
+            raw_txt: debugPaths.texto,
+            processed_json: reports.json,
+            processed_txt: reports.txt
+          }
+        },
+        message: uploadInfo?.duplicate
+          ? 'PDF já processado anteriormente. Dados retornados para conferência.'
+          : 'PDF processado e receitas registradas com sucesso'
       });
 
     } catch (error) {
