@@ -6,40 +6,55 @@
 import React from 'react';
 import { CadastroFilterBar } from '../../../components/ui';
 
-const PermissoesFilters = ({
-  searchTerm,
-  onSearchChange,
+const PermissoesFilters = ({ 
+  searchTerm, 
+  onSearchChange, 
   statusFilter,
   onStatusFilterChange,
-  roleFilter,
-  onRoleFilterChange,
+  nivelFilter,
+  onNivelFilterChange,
+  tipoFilter,
+  onTipoFilterChange,
   onClearFilters,
-  loading
-}) => (
-  <div className="mb-6">
-    <CadastroFilterBar
-      searchTerm={searchTerm}
-      onSearchChange={onSearchChange}
-      placeholder="Buscar usuários por nome ou e-mail..."
-      statusFilter={statusFilter}
-      onStatusFilterChange={onStatusFilterChange}
-      additionalFilters={[
-        {
-          value: roleFilter,
-          onChange: onRoleFilterChange,
-          options: [
-            { value: 'todos', label: 'Todos os perfis' },
-            { value: 'administrador', label: 'Administrador' },
-            { value: 'gestor', label: 'Gestor' },
-            { value: 'supervisor', label: 'Supervisor' },
-            { value: 'comprador', label: 'Comprador' }
-          ]
-        }
-      ]}
-      onClear={onClearFilters}
-      loading={loading}
-    />
-  </div>
-);
+  loading 
+}) => {
+  return (
+    <div className="mb-6">
+      <CadastroFilterBar
+        searchTerm={searchTerm}
+        onSearchChange={onSearchChange}
+        placeholder="Buscar usuários por nome ou email..."
+        statusFilter={statusFilter}
+        onStatusFilterChange={onStatusFilterChange}
+        additionalFilters={[
+          {
+            value: nivelFilter,
+            onChange: onNivelFilterChange,
+            options: [
+              { value: 'todos', label: 'Todos os níveis' },
+              { value: 'I', label: 'Nível I' },
+              { value: 'II', label: 'Nível II' },
+              { value: 'III', label: 'Nível III' }
+            ]
+          },
+          {
+            value: tipoFilter,
+            onChange: onTipoFilterChange,
+            options: [
+              { value: 'todos', label: 'Todos os tipos' },
+              { value: 'administrador', label: 'Administrador' },
+              { value: 'coordenador', label: 'Coordenador' },
+              { value: 'administrativo', label: 'Administrativo' },
+              { value: 'gerente', label: 'Gerente' },
+              { value: 'supervisor', label: 'Supervisor' }
+            ]
+          }
+        ]}
+        onClear={onClearFilters}
+        loading={loading}
+      />
+    </div>
+  );
+};
 
 export default PermissoesFilters;

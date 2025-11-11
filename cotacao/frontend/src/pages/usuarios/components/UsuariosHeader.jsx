@@ -20,15 +20,13 @@ const UsuariosHeader = ({
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center">
             👥 Usuários
-            {canView && (
-              <button
-                onClick={onShowHelp}
-                className="ml-2 text-gray-400 hover:text-gray-600 transition-colors"
-                title="Ajuda"
-              >
-                <FaQuestionCircle size={16} />
-              </button>
-            )}
+            <button
+              onClick={onShowHelp}
+              className="ml-2 text-gray-400 hover:text-gray-600 transition-colors"
+              title="Ajuda"
+            >
+              <FaQuestionCircle size={16} />
+            </button>
           </h1>
           <p className="text-gray-600 mt-1">
             Gerencie usuários do sistema e suas permissões

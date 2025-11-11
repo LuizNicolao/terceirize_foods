@@ -26,7 +26,7 @@ const UserSelector = ({
               className="w-full justify-between text-left"
             >
               <span className="truncate">
-                {selectedUser ? (selectedUser.nome || selectedUser.name) : 'Selecione um usuário...'}
+                {selectedUser ? selectedUser.nome : 'Selecione um usuário...'}
               </span>
               <FaChevronDown className={`ml-2 transition-transform ${isSelectOpen ? 'rotate-180' : ''}`} />
             </Button>
@@ -51,7 +51,7 @@ const UserSelector = ({
                         >
                           <div className="flex items-center justify-between">
                             <div className="flex-1 min-w-0">
-                              <div className="font-medium truncate">{usuario.nome || usuario.name}</div>
+                              <div className="font-medium truncate">{usuario.nome}</div>
                               <div className="text-xs text-gray-500 truncate">{usuario.email}</div>
                             </div>
                             <div className="ml-2">

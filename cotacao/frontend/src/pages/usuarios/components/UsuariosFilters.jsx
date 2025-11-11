@@ -6,23 +6,22 @@
 import React from 'react';
 import { CadastroFilterBar } from '../../../components/ui';
 
-const UsuariosFilters = ({
-  searchTerm,
-  onSearchChange,
-  statusFilter,
-  onStatusFilterChange,
-  onClear
-}) => (
-  <div className="mb-6">
-    <CadastroFilterBar
-      searchTerm={searchTerm}
-      onSearchChange={onSearchChange}
-      statusFilter={statusFilter}
-      onStatusFilterChange={onStatusFilterChange}
-      onClear={onClear}
-      placeholder="Buscar por nome ou e-mail..."
-    />
-  </div>
-);
+const UsuariosFilters = ({ 
+  searchTerm, 
+  onSearchChange, 
+  loading 
+}) => {
+  return (
+    <div className="mb-6">
+      <CadastroFilterBar
+        searchTerm={searchTerm}
+        onSearchChange={onSearchChange}
+        placeholder="Buscar por nome, email ou tipo de acesso..."
+        loading={loading}
+        showFilters={false} // Usuários não tem filtros adicionais por enquanto
+      />
+    </div>
+  );
+};
 
 export default UsuariosFilters;

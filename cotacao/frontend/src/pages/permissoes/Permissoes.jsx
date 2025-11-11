@@ -1,46 +1,53 @@
 import React from 'react';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { usePermissoes } from '../../hooks/usePermissoes';
-import { useAuditoria } from '../../hooks/useAuditoria';
-import { useExport } from '../../hooks/useExport';
+import { useAuditoria } from '../../hooks/common/useAuditoria';
+import { useExport } from '../../hooks/common/useExport';
 import PermissoesService from '../../services/permissoes';
-import { PermissoesStats, PermissoesActions, PermissoesTable, PermissoesForm, UserSelector } from '../../components/permissoes';
+import { PermissoesStats } from '../../components/permissoes';
+import { ExportButtons } from '../../components/shared';
+import PermissoesTable from '../../components/permissoes/PermissoesTable';
+import PermissoesForm from '../../components/permissoes/PermissoesForm';
+import UserSelector from '../../components/permissoes/UserSelector';
 import { AuditModal } from '../../components/shared';
 import { PermissoesHeader, PermissoesFilters } from './components';
 
 const Permissoes = () => {
-  const { canEdit, canView } = usePermissions();
-
+  const { canCreate, canEdit, canDelete, canView } = usePermissions();
+  
+  // Hooks customizados
   const {
     usuarios,
     loading,
     selectedUserId,
     selectedUser,
+    userPermissions,
     editingPermissions,
     saving,
     searchTerm,
     isSelectOpen,
+    expandedGroups,
     showPermissionsModal,
     estatisticas,
     handleSavePermissions,
     handleUserSelect,
     handlePermissionChange,
+    handleExpandGroup,
     handleSearchChange,
     handleStatusFilterChange,
-    handleRoleFilterChange,
+    handleNivelFilterChange,
+    handleTipoFilterChange,
     handleClearFilters,
     setIsSelectOpen,
     setShowPermissionsModal,
     statusFilter,
-    roleFilter,
+    nivelFilter,
+    tipoFilter,
     getStatusLabel
   } = usePermissoes();
 
-  const { handleExportXLSX, handleExportPDF } = useExport({
-    entityName: 'permissoes',
-    exportXLSXEndpoint: '/permissoes/export/xlsx',
-    exportPDFEndpoint: '/permissoes/export/pdf'
-  });
+
+  const { handleExportXLSX, handleExportPDF } = useExport(PermissoesService);
 
   const {
     showAuditModal,
@@ -67,31 +74,41 @@ const Permissoes = () => {
   }
 
   return (
-    <div className="p-3 sm:p-6 space-y-6">
+    <div className="p-3 sm:p-6">
+      {/* Header */}
       <PermissoesHeader
         canView={canView('permissoes')}
         onShowHelp={handleOpenAuditModal}
         loading={loading}
       />
 
+      {/* Estatísticas */}
       <PermissoesStats estatisticas={estatisticas} />
 
+      {/* Filtros */}
       <PermissoesFilters
         searchTerm={searchTerm}
         onSearchChange={handleSearchChange}
         statusFilter={statusFilter}
         onStatusFilterChange={handleStatusFilterChange}
-        roleFilter={roleFilter}
-        onRoleFilterChange={handleRoleFilterChange}
+        nivelFilter={nivelFilter}
+        onNivelFilterChange={handleNivelFilterChange}
+        tipoFilter={tipoFilter}
+        onTipoFilterChange={handleTipoFilterChange}
         onClearFilters={handleClearFilters}
         loading={loading}
       />
 
-      <PermissoesActions
-        onExportXLSX={handleExportXLSX}
-        onExportPDF={handleExportPDF}
-      />
+      {/* Ações */}
+      {/* Botões de Exportação */}
+      <div className="mb-4">
+        <ExportButtons
+          onExportXLSX={handleExportXLSX}
+          onExportPDF={handleExportPDF}
+        />
+      </div>
 
+      {/* Seletor de Usuário */}
       <UserSelector
         usuarios={usuarios}
         selectedUserId={selectedUserId}
@@ -101,22 +118,29 @@ const Permissoes = () => {
         setIsSelectOpen={setIsSelectOpen}
       />
 
+      {/* Tabela de Usuários */}
       <PermissoesTable
         usuarios={usuarios}
+        canView={canView}
         canEdit={canEdit}
+        canDelete={canDelete}
         onUserSelect={handleUserSelect}
         getStatusLabel={getStatusLabel}
       />
 
+      {/* Modal de Permissões */}
       <PermissoesForm
         isOpen={showPermissionsModal}
         onClose={() => setShowPermissionsModal(false)}
         editingPermissions={editingPermissions}
+        expandedGroups={expandedGroups}
         saving={saving}
         onPermissionChange={handlePermissionChange}
+        onExpandGroup={handleExpandGroup}
         onSavePermissions={handleSavePermissions}
       />
 
+      {/* Modal de Auditoria */}
       <AuditModal
         isOpen={showAuditModal}
         onClose={handleCloseAuditModal}
@@ -127,7 +151,7 @@ const Permissoes = () => {
         onApplyFilters={handleApplyAuditFilters}
         onExportXLSX={handleExportAuditXLSX}
         onExportPDF={handleExportAuditPDF}
-        onFilterChange={(field, value) => setAuditFilters((prev) => ({ ...prev, [field]: value }))}
+        onFilterChange={(field, value) => setAuditFilters(prev => ({ ...prev, [field]: value }))}
       />
     </div>
   );

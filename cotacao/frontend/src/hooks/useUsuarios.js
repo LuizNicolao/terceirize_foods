@@ -1,208 +1,241 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
-import { usuariosService } from '../services/usuarios';
-import { useAuditoria } from './useAuditoria';
-import { useExport } from './useExport';
-
-const normalizeErrorMessage = (error) => {
-  const message = error?.message || 'Erro ao processar solicitação';
-
-  if (message.includes('Email já cadastrado') || message.includes('já existe')) {
-    return 'Este e-mail já está sendo utilizado por outro usuário.';
-  }
-
-  return message;
-};
+import UsuariosService from '../services/usuarios';
+import { useBaseEntity } from './common/useBaseEntity';
+import { useFilters } from './common/useFilters';
 
 export const useUsuarios = () => {
-  const [usuarios, setUsuarios] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('todos');
-
-  const [showModal, setShowModal] = useState(false);
-  const [viewMode, setViewMode] = useState(false);
-  const [editingUsuario, setEditingUsuario] = useState(null);
-  const [modalLoading, setModalLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
-
-  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
-  const [usuarioToDelete, setUsuarioToDelete] = useState(null);
-
-  const auditoria = useAuditoria('usuarios');
-  const exportadores = useExport({
-    entityName: 'usuarios',
-    exportXLSXEndpoint: '/users/export/xlsx',
-    exportPDFEndpoint: '/users/export/pdf'
+  // Hook base para funcionalidades CRUD
+  const baseEntity = useBaseEntity('usuarios', UsuariosService, {
+    initialItemsPerPage: 20,
+    initialFilters: {},
+    enableStats: true,
+    enableDelete: true
   });
 
-  const fetchUsuarios = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await usuariosService.getUsuarios();
-      setUsuarios(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error('Erro ao buscar usuários:', err);
-      setError(err?.message || 'Erro ao carregar usuários');
-      toast.error('Erro ao carregar usuários');
-      setUsuarios([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Hook de filtros customizados para usuários
+  const customFilters = useFilters({});
 
-  useEffect(() => {
-    fetchUsuarios();
+  // Estados de estatísticas específicas dos usuários
+  const [estatisticasUsuarios, setEstatisticasUsuarios] = useState({
+    total_usuarios: 0,
+    usuarios_ativos: 0,
+    administradores: 0,
+    coordenadores: 0
+  });
+
+  /**
+   * Calcula estatísticas específicas dos usuários
+   */
+  const calculateEstatisticas = useCallback((usuarios) => {
+    if (!usuarios || usuarios.length === 0) {
+      setEstatisticasUsuarios({
+        total_usuarios: 0,
+        usuarios_ativos: 0,
+        administradores: 0,
+        coordenadores: 0
+      });
+      return;
+    }
+
+    const total = usuarios.length;
+    const ativos = usuarios.filter(u => u.status === 'ativo').length;
+    const administradores = usuarios.filter(u => u.tipo_de_acesso === 'administrador').length;
+    const coordenadores = usuarios.filter(u => u.tipo_de_acesso === 'coordenador').length;
+
+    setEstatisticasUsuarios({
+      total_usuarios: total,
+      usuarios_ativos: ativos,
+      administradores,
+      coordenadores
+    });
   }, []);
 
-  const filteredUsuarios = useMemo(() => {
-    return usuarios.filter(usuario => {
-      const term = searchTerm.trim().toLowerCase();
-      const matchesSearch =
-        term.length === 0 ||
-        (usuario.name && usuario.name.toLowerCase().includes(term)) ||
-        (usuario.email && usuario.email.toLowerCase().includes(term));
+  /**
+   * Carrega dados com filtros customizados
+   */
+  const loadDataWithFilters = useCallback(async () => {
+    const params = {
+      ...baseEntity.getPaginationParams(),
+      ...customFilters.getFilterParams(),
+      search: customFilters.searchTerm || undefined,
+      status: customFilters.statusFilter === 'ativo' ? 1 : customFilters.statusFilter === 'inativo' ? 0 : undefined
+    };
 
-      const matchesStatus =
-        statusFilter === 'todos' || usuario.status === statusFilter;
+    await baseEntity.loadData(params);
+  }, [baseEntity, customFilters]);
 
-      return matchesSearch && matchesStatus;
-    });
-  }, [usuarios, searchTerm, statusFilter]);
+  /**
+   * Submissão customizada com limpeza de dados
+   */
+  const onSubmitCustom = useCallback(async (data) => {
+    // Limpar campos vazios para evitar problemas de validação
+    const cleanData = {
+      ...data,
+      nome: data.nome && data.nome.trim() !== '' ? data.nome.trim() : null,
+      email: data.email && data.email.trim() !== '' ? data.email.trim() : null,
+      senha: data.senha && data.senha.trim() !== '' ? data.senha.trim() : null
+    };
 
-  const handleAddUser = () => {
-    setEditingUsuario(null);
-    setViewMode(false);
-    setShowModal(true);
-  };
+    await baseEntity.onSubmit(cleanData);
+    // Recalcular estatísticas após salvar
+    calculateEstatisticas(baseEntity.items);
+  }, [baseEntity, calculateEstatisticas]);
 
-  const loadUsuario = async (userId, mode = 'view') => {
+  /**
+   * Exclusão customizada que recarrega dados
+   */
+  const handleDeleteCustom = useCallback(async () => {
+    await baseEntity.handleConfirmDelete();
+    // Recalcular estatísticas após excluir
+    calculateEstatisticas(baseEntity.items);
+  }, [baseEntity, calculateEstatisticas]);
+
+  /**
+   * Visualização customizada que busca dados completos
+   */
+  const handleViewCustom = useCallback(async (usuario) => {
     try {
-      setModalLoading(true);
-      const data = await usuariosService.getUsuario(userId);
-      setEditingUsuario(data);
-      setViewMode(mode === 'view');
-      setShowModal(true);
-    } catch (err) {
-      console.error('Erro ao carregar usuário:', err);
-      toast.error(normalizeErrorMessage(err));
-    } finally {
-      setModalLoading(false);
-    }
-  };
-
-  const handleViewUser = (usuario) => {
-    if (!usuario?.id) return;
-    loadUsuario(usuario.id, 'view');
-  };
-
-  const handleEditUser = (usuario) => {
-    if (!usuario?.id) return;
-    loadUsuario(usuario.id, 'edit');
-  };
-
-  const handleCloseModal = () => {
-    setShowModal(false);
-    setViewMode(false);
-    setEditingUsuario(null);
-  };
-
-  const onSubmit = async (data) => {
-    const payload = { ...data };
-
-    if (!payload.permissions) {
-      payload.permissions = [];
-    }
-
-    if (!payload.password) {
-      delete payload.password;
-    }
-
-    try {
-      setSaving(true);
-
-      if (editingUsuario && editingUsuario.id) {
-        await usuariosService.updateUsuario(editingUsuario.id, payload);
-        toast.success('Usuário atualizado com sucesso!');
+      // Buscar usuário completo com filiais vinculadas
+      const result = await UsuariosService.buscarPorId(usuario.id);
+      if (result.success) {
+        baseEntity.handleView(result.data);
       } else {
-        if (!payload.password) {
-          toast.error('Senha é obrigatória para novos usuários.');
-          return;
-        }
-        await usuariosService.createUsuario(payload);
-        toast.success('Usuário criado com sucesso!');
+        toast.error('Erro ao carregar dados do usuário');
       }
-
-      await fetchUsuarios();
-      handleCloseModal();
-    } catch (err) {
-      console.error('Erro ao salvar usuário:', err);
-      toast.error(normalizeErrorMessage(err));
-    } finally {
-      setSaving(false);
+    } catch (error) {
+      console.error('Erro ao buscar usuário:', error);
+      toast.error('Erro ao carregar dados do usuário');
     }
-  };
+  }, [baseEntity]);
 
-  const handleDeleteUser = (usuario) => {
-    if (!usuario?.id) return;
-    setUsuarioToDelete(usuario);
-    setShowDeleteConfirmModal(true);
-  };
-
-  const handleCloseDeleteModal = () => {
-    setShowDeleteConfirmModal(false);
-    setUsuarioToDelete(null);
-  };
-
-  const handleConfirmDelete = async () => {
-    if (!usuarioToDelete?.id) return;
-
+  /**
+   * Edição customizada que busca dados completos
+   */
+  const handleEditCustom = useCallback(async (usuario) => {
     try {
-      await usuariosService.deleteUsuario(usuarioToDelete.id);
-      toast.success('Usuário excluído com sucesso!');
-      await fetchUsuarios();
-    } catch (err) {
-      console.error('Erro ao excluir usuário:', err);
-      toast.error(normalizeErrorMessage(err));
-    } finally {
-      handleCloseDeleteModal();
+      // Buscar usuário completo com filiais vinculadas
+      const result = await UsuariosService.buscarPorId(usuario.id);
+      if (result.success) {
+        baseEntity.handleEdit(result.data);
+      } else {
+        toast.error('Erro ao carregar dados do usuário');
+      }
+    } catch (error) {
+      console.error('Erro ao buscar usuário:', error);
+      toast.error('Erro ao carregar dados do usuário');
     }
-  };
+  }, [baseEntity]);
 
-  const handleClearFilters = () => {
-    setSearchTerm('');
-    setStatusFilter('todos');
-  };
+  /**
+   * Funções utilitárias
+   */
+  const formatDate = useCallback((dateString) => {
+    if (!dateString) return '-';
+    return new Date(dateString).toLocaleString('pt-BR');
+  }, []);
+
+  const getStatusLabel = useCallback((status) => {
+    const statusMap = {
+      ativo: 'Ativo',
+      inativo: 'Inativo',
+      bloqueado: 'Bloqueado'
+    };
+    return statusMap[status] || status;
+  }, []);
+
+  const getNivelAcessoLabel = useCallback((nivel) => {
+    const niveis = {
+      'I': 'Nível I',
+      'II': 'Nível II',
+      'III': 'Nível III'
+    };
+    return niveis[nivel] || nivel;
+  }, []);
+
+  const getTipoAcessoLabel = useCallback((tipo) => {
+    const tipos = {
+      'administrador': 'Administrador',
+      'coordenador': 'Coordenador',
+      'administrativo': 'Administrativo',
+      'gerente': 'Gerente',
+      'supervisor': 'Supervisor'
+    };
+    return tipos[tipo] || tipo;
+  }, []);
+
+  // Carregar dados quando filtros mudam
+  useEffect(() => {
+    loadDataWithFilters();
+  }, [customFilters.searchTerm, customFilters.statusFilter, customFilters.filters]);
+
+  // Carregar dados quando paginação muda
+  useEffect(() => {
+    loadDataWithFilters();
+  }, [baseEntity.currentPage, baseEntity.itemsPerPage]);
+
+  // Recalcular estatísticas quando os dados mudam
+  useEffect(() => {
+    calculateEstatisticas(baseEntity.items);
+  }, [baseEntity.items, calculateEstatisticas]);
 
   return {
-    usuarios,
-    filteredUsuarios,
-    loading,
-    error,
-    searchTerm,
-    setSearchTerm,
-    statusFilter,
-    setStatusFilter,
-    handleClearFilters,
-    showModal,
-    viewMode,
-    editingUsuario,
-    modalLoading,
-    saving,
-    handleAddUser,
-    handleViewUser,
-    handleEditUser,
-    handleCloseModal,
-    onSubmit,
-    showDeleteConfirmModal,
-    usuarioToDelete,
-    handleDeleteUser,
-    handleConfirmDelete,
-    handleCloseDeleteModal,
-    ...auditoria,
-    ...exportadores
+    // Estados principais (do hook base)
+    usuarios: baseEntity.items,
+    loading: baseEntity.loading,
+    estatisticas: estatisticasUsuarios, // Usar estatísticas específicas dos usuários
+    
+    // Estados de modal (do hook base)
+    showModal: baseEntity.showModal,
+    viewMode: baseEntity.viewMode,
+    editingUsuario: baseEntity.editingItem,
+    
+    // Estados de exclusão (do hook base)
+    showDeleteConfirmModal: baseEntity.showDeleteConfirmModal,
+    usuarioToDelete: baseEntity.itemToDelete,
+    
+    // Estados de paginação (do hook base)
+    currentPage: baseEntity.currentPage,
+    totalPages: baseEntity.totalPages,
+    totalItems: baseEntity.totalItems,
+    itemsPerPage: baseEntity.itemsPerPage,
+    
+    // Estados de filtros
+    searchTerm: customFilters.searchTerm,
+    statusFilter: customFilters.statusFilter,
+    
+    // Estados de validação (do hook base)
+    validationErrors: baseEntity.validationErrors,
+    showValidationModal: baseEntity.showValidationModal,
+    
+    // Ações de modal (customizadas)
+    handleAddUser: baseEntity.handleAdd,
+    handleViewUser: handleViewCustom,
+    handleEditUser: handleEditCustom,
+    handleCloseModal: baseEntity.handleCloseModal,
+    
+    // Ações de paginação (do hook base)
+    handlePageChange: baseEntity.handlePageChange,
+    handleItemsPerPageChange: baseEntity.handleItemsPerPageChange,
+    
+    // Ações de filtros
+    setSearchTerm: customFilters.setSearchTerm,
+    setStatusFilter: customFilters.setStatusFilter,
+    setItemsPerPage: baseEntity.handleItemsPerPageChange, // Alias para compatibilidade
+    
+    // Ações de CRUD (customizadas)
+    onSubmit: onSubmitCustom,
+    handleDeleteUser: baseEntity.handleDelete,
+    handleConfirmDelete: handleDeleteCustom,
+    handleCloseDeleteModal: baseEntity.handleCloseDeleteModal,
+    
+    // Ações de validação (do hook base)
+    handleCloseValidationModal: baseEntity.handleCloseValidationModal,
+    
+    // Funções utilitárias
+    formatDate,
+    getStatusLabel,
+    getNivelAcessoLabel,
+    getTipoAcessoLabel
   };
 };

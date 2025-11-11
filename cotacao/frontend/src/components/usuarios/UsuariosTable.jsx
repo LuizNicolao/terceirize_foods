@@ -1,37 +1,24 @@
 import React from 'react';
 import { ActionButtons, EmptyState } from '../ui';
 
-const roleLabels = {
-  administrador: 'Administrador',
-  gestor: 'Gestor',
-  supervisor: 'Supervisor',
-  comprador: 'Comprador'
-};
-
-const statusLabels = {
-  ativo: 'Ativo',
-  inativo: 'Inativo'
-};
-
-const statusStyles = {
-  ativo: 'bg-green-100 text-green-800',
-  inativo: 'bg-red-100 text-red-800'
-};
-
-const UsuariosTable = ({
-  usuarios = [],
-  canView = false,
-  canEdit = false,
-  canDelete = false,
-  onView,
-  onEdit,
-  onDelete
+const UsuariosTable = ({ 
+  usuarios, 
+  canView, 
+  canEdit, 
+  canDelete, 
+  onView, 
+  onEdit, 
+  onDelete, 
+  getTipoAcessoLabel,
+  getNivelAcessoLabel,
+  getStatusLabel,
+  formatDate
 }) => {
-  if (!usuarios.length) {
+  if (usuarios.length === 0) {
     return (
       <EmptyState
         title="Nenhum usuário encontrado"
-        description="Ajuste os filtros de busca ou adicione um novo usuário."
+        description="Tente ajustar os filtros de busca ou adicionar um novo usuário"
         icon="usuarios"
       />
     );
@@ -39,58 +26,65 @@ const UsuariosTable = ({
 
   return (
     <>
-      <div className="hidden xl:block bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+      {/* Versão Desktop - Tabela completa */}
+      <div className="hidden xl:block bg-white rounded-lg shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
+          <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Nome
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  E-mail
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Email
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Tipo
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Tipo de Acesso
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Nível
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Ações
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {usuarios.map(usuario => (
-                <tr key={usuario.id} className="hover:bg-gray-50 transition-colors">
+              {usuarios.map((usuario) => (
+                <tr key={usuario.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-semibold text-gray-900">
-                      {usuario.name}
+                    <div className="text-sm font-medium text-gray-900">
+                      {usuario.nome}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-600">
-                      {usuario.email}
-                    </div>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {usuario.email}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {getTipoAcessoLabel(usuario.tipo_de_acesso)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {getNivelAcessoLabel(usuario.nivel_de_acesso)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                      {roleLabels[usuario.role] || usuario.role || '-'}
+                    <span className={`inline-flex items-center px-1.5 py-0.5 text-xs font-medium rounded-full ${
+                      usuario.status === 'ativo' 
+                        ? 'bg-green-100 text-green-800' 
+                        : usuario.status === 'bloqueado'
+                        ? 'bg-red-100 text-red-800'
+                        : 'bg-gray-100 text-gray-800'
+                    }`}>
+                      {getStatusLabel(usuario.status)}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${statusStyles[usuario.status] || 'bg-gray-100 text-gray-800'}`}
-                    >
-                      {statusLabels[usuario.status] || usuario.status || '-'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <ActionButtons
-                      canView={canView}
-                      canEdit={canEdit}
-                      canDelete={canDelete}
+                      canView={canView('usuarios')}
+                      canEdit={canEdit('usuarios')}
+                      canDelete={canDelete('usuarios')}
                       onView={onView}
                       onEdit={onEdit}
                       onDelete={onDelete}
@@ -105,18 +99,19 @@ const UsuariosTable = ({
         </div>
       </div>
 
+      {/* Versão Mobile e Tablet - Cards */}
       <div className="xl:hidden space-y-3">
-        {usuarios.map(usuario => (
-          <div key={usuario.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        {usuarios.map((usuario) => (
+          <div key={usuario.id} className="bg-white rounded-lg shadow-sm p-4 border">
             <div className="flex justify-between items-start mb-3">
-              <div>
-                <h3 className="text-sm font-semibold text-gray-900">{usuario.name}</h3>
-                <p className="text-xs text-gray-500">{usuario.email}</p>
+              <div className="flex-1">
+                <h3 className="font-semibold text-gray-900 text-sm">{usuario.nome}</h3>
+                <p className="text-gray-600 text-xs">Email: {usuario.email}</p>
               </div>
               <ActionButtons
-                canView={canView}
-                canEdit={canEdit}
-                canDelete={canDelete}
+                canView={canView('usuarios')}
+                canEdit={canEdit('usuarios')}
+                canDelete={canDelete('usuarios')}
                 onView={onView}
                 onEdit={onEdit}
                 onDelete={onDelete}
@@ -125,21 +120,31 @@ const UsuariosTable = ({
                 className="p-2"
               />
             </div>
-
-            <div className="grid grid-cols-2 gap-3 text-xs text-gray-600">
+            
+            <div className="grid grid-cols-2 gap-3 text-xs">
               <div>
-                <span className="font-medium text-gray-700">Tipo:</span>
-                <div>{roleLabels[usuario.role] || usuario.role || '-'}</div>
+                <span className="text-gray-500">Email:</span>
+                <p className="font-medium">{usuario.email}</p>
               </div>
               <div>
-                <span className="font-medium text-gray-700">Status:</span>
-                <div>
-                  <span
-                    className={`inline-flex px-2 py-1 rounded-full font-medium ${statusStyles[usuario.status] || 'bg-gray-100 text-gray-800'}`}
-                  >
-                    {statusLabels[usuario.status] || usuario.status || '-'}
-                  </span>
-                </div>
+                <span className="text-gray-500">Tipo:</span>
+                <p className="font-medium">{getTipoAcessoLabel(usuario.tipo_de_acesso)}</p>
+              </div>
+              <div>
+                <span className="text-gray-500">Nível:</span>
+                <p className="font-medium">{getNivelAcessoLabel(usuario.nivel_de_acesso)}</p>
+              </div>
+              <div className="col-span-2">
+                <span className="text-gray-500">Status:</span>
+                <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ml-2 ${
+                  usuario.status === 'ativo' 
+                    ? 'bg-green-100 text-green-800' 
+                    : usuario.status === 'bloqueado'
+                    ? 'bg-red-100 text-red-800'
+                    : 'bg-gray-100 text-gray-800'
+                }`}>
+                  {getStatusLabel(usuario.status)}
+                </span>
               </div>
             </div>
           </div>
