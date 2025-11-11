@@ -77,12 +77,9 @@ class ProdutoOrigemExportController {
       const produtos = await executeQuery(query, params);
 
       produtos.forEach(produto => {
-        // Remover prefixo ORIG- do código (igual à grid)
-        const codigoFormatado = produto.codigo ? produto.codigo.replace('ORIG-', '') : '-';
-        
         worksheet.addRow({
           id: produto.id,
-          codigo: codigoFormatado,
+          codigo: produto.codigo || '-',
           nome: produto.nome,
           unidade_sigla: produto.unidade_sigla || '-',
           grupo_nome: produto.grupo_nome || '-',
@@ -230,9 +227,6 @@ class ProdutoOrigemExportController {
         doc.fontSize(8).font('Helvetica');
         const currentY = doc.y;
         
-        // Remover prefixo ORIG- do código (igual à grid)
-        const codigoFormatado = produto.codigo ? produto.codigo.replace('ORIG-', '') : '-';
-        
         // Truncar textos longos
         const nome = produto.nome.length > 30 ? produto.nome.substring(0, 27) + '...' : produto.nome;
         const grupo = (produto.grupo_nome || '-').length > 20 ? (produto.grupo_nome || '-').substring(0, 17) + '...' : (produto.grupo_nome || '-');
@@ -241,7 +235,7 @@ class ProdutoOrigemExportController {
         const ref = (produto.referencia_mercado || '-').length > 12 ? (produto.referencia_mercado || '-').substring(0, 9) + '...' : (produto.referencia_mercado || '-');
 
         doc.text(String(produto.id || '-'), cols.id, currentY, { width: 35 });
-        doc.text(codigoFormatado, cols.codigo, currentY, { width: 45 });
+        doc.text(produto.codigo || '-', cols.codigo, currentY, { width: 45 });
         doc.text(nome, cols.nome, currentY, { width: 170 });
         doc.text(produto.unidade_sigla || '-', cols.unidade, currentY, { width: 50 });
         doc.text(grupo, cols.grupo, currentY, { width: 120 });
