@@ -26,6 +26,13 @@ const sanitizeFilename = (value) => {
     .toLowerCase();
 };
 
+const normalizeTextField = (value) => {
+  if (!value) {
+    return '';
+  }
+  return value.toString().trim().replace(/\s+/g, ' ');
+};
+
 const extrairNomeReceita = (descricao, textoOriginal) => {
   const base = textoOriginal || descricao || '';
   if (!base) {
@@ -97,23 +104,29 @@ const mapearReceitasExtraidas = (resultado) => {
       refeicao.data = ultimaDataValida;
     }
 
+    const categoriaInferida = inferirCategoriaReceita(refeicao.codigo, refeicao.turno);
+    const turnoNormalizado = refeicao.turno || categoriaInferida || 'Não identificado';
+    const descricaoNormalizada = normalizeTextField(refeicao.descricao || refeicao.texto_original || '');
+
     const chave = refeicao.codigo
-      ? `${refeicao.codigo}-${dataNormalizada}-${refeicao.turno || 'turno'}`
-      : `${dataNormalizada}-${refeicao.descricao || `${Date.now()}-${Math.random()}`}`;
+      ? `${refeicao.codigo}-${dataNormalizada}-${turnoNormalizado}`
+      : `${dataNormalizada}-${descricaoNormalizada || `${Date.now()}-${Math.random()}`}`;
 
     if (!receitasMap.has(chave)) {
       const nomeReceita = extrairNomeReceita(refeicao.descricao, refeicao.texto_original);
-      const categoriaInferida = inferirCategoriaReceita(refeicao.codigo, refeicao.turno);
       receitasMap.set(chave, {
         codigo_referencia: refeicao.codigo || null,
+      codigo: refeicao.codigo || null,
         nome: nomeReceita,
         descricao: refeicao.descricao || nomeReceita,
         categoria_inferida: categoriaInferida,
         tipo: categoriaInferida,
         ingredientes: extrairIngredientesReceita(refeicao.descricao, refeicao.texto_original),
         texto_original: refeicao.texto_original ? [refeicao.texto_original] : [refeicao.descricao || nomeReceita],
+        data: dataNormalizada,
+        turno: turnoNormalizado,
         datas: refeicao.data ? [refeicao.data] : [],
-        turnos: refeicao.turno ? [refeicao.turno] : [],
+      turnos: turnoNormalizado ? [turnoNormalizado] : [],
       });
     } else {
       const receitaExistente = receitasMap.get(chave);
@@ -124,9 +137,18 @@ const mapearReceitasExtraidas = (resultado) => {
       }
       if (refeicao.data) {
         receitaExistente.datas.push(refeicao.data);
+        if (!receitaExistente.data || receitaExistente.data === 'Data não identificada') {
+          receitaExistente.data = refeicao.data;
+        }
       }
-      if (refeicao.turno) {
-        receitaExistente.turnos.push(refeicao.turno);
+    if (turnoNormalizado) {
+      receitaExistente.turnos.push(turnoNormalizado);
+      if (!receitaExistente.turno || receitaExistente.turno === 'Não identificado') {
+        receitaExistente.turno = turnoNormalizado;
+      }
+    }
+      if (!receitaExistente.turno && turnoNormalizado) {
+        receitaExistente.turno = turnoNormalizado;
       }
     }
   });
@@ -140,14 +162,14 @@ const mapearReceitasExtraidas = (resultado) => {
 
 const formatarReceitasPorData = (receitas) => {
   const agrupado = receitas.reduce((acc, receita) => {
-    const data = receita.data || 'Data não identificada';
+    const data = receita.data || receita.datas?.[0] || 'Data não identificada';
     if (!acc[data]) {
       acc[data] = [];
     }
     acc[data].push({
-      turno: receita.turno || 'Não identificado',
+      turno: receita.turno || receita.turnos?.[0] || 'Não identificado',
       codigo: receita.codigo || null,
-      descricao: receita.descricao || receita.texto_original || '',
+      descricao: receita.descricao || (Array.isArray(receita.texto_original) ? receita.texto_original[0] : receita.texto_original) || '',
       ingredientes: receita.ingredientes || [],
       categoria_inferida: receita.categoria_inferida || null
     });
