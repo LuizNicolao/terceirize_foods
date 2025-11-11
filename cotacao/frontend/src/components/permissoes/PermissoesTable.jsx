@@ -1,6 +1,7 @@
 import React from 'react';
 import { FaUserCog } from 'react-icons/fa';
-import { Button, Table, EmptyState, SortableHeader, useSorting } from '../ui';
+import { Button, EmptyState, SortableTableHeader } from '../ui';
+import useTableSort from '../../hooks/common/useTableSort';
 
 const PermissoesTable = ({
   usuarios,
@@ -12,8 +13,18 @@ const PermissoesTable = ({
 }) => {
   const usuariosProcessados = Array.isArray(usuarios) ? usuarios : [];
   const podeGerenciar = typeof canEdit === 'function' ? canEdit('permissoes') : true;
-  const { sortConfig, handleSort, sortData } = useSorting('nome', 'asc');
-  const usuariosOrdenados = sortData(usuariosProcessados);
+
+  const {
+    sortedData: usuariosOrdenados,
+    sortField,
+    sortDirection,
+    handleSort
+  } = useTableSort({
+    data: usuariosProcessados,
+    defaultField: 'nome',
+    defaultDirection: 'asc',
+    totalItems: usuariosProcessados.length
+  });
 
   if (usuariosProcessados.length === 0) {
     return (
@@ -45,70 +56,88 @@ const PermissoesTable = ({
   return (
     <>
       <div className="hidden xl:block bg-white rounded-lg shadow-sm overflow-hidden">
-        <Table>
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                ID
-              </th>
-              <SortableHeader field="nome" currentSort={sortConfig} onSort={handleSort}>
-                Nome
-              </SortableHeader>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Email
-              </th>
-              <SortableHeader field="nivel_de_acesso" currentSort={sortConfig} onSort={handleSort}>
-                Nível
-              </SortableHeader>
-              <SortableHeader field="tipo_de_acesso" currentSort={sortConfig} onSort={handleSort}>
-                Tipo
-              </SortableHeader>
-              <SortableHeader field="status" currentSort={sortConfig} onSort={handleSort}>
-                Status
-              </SortableHeader>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Permissões
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Ações
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {usuariosOrdenados.map((usuario) => {
-              const statusLabel = getStatusLabel(usuario.status);
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  ID
+                </th>
+                <SortableTableHeader
+                  label="Nome"
+                  field="nome"
+                  currentSort={sortField}
+                  currentDirection={sortDirection}
+                  onSort={handleSort}
+                />
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Email
+                </th>
+                <SortableTableHeader
+                  label="Nível"
+                  field="nivel_de_acesso"
+                  currentSort={sortField}
+                  currentDirection={sortDirection}
+                  onSort={handleSort}
+                />
+                <SortableTableHeader
+                  label="Tipo"
+                  field="tipo_de_acesso"
+                  currentSort={sortField}
+                  currentDirection={sortDirection}
+                  onSort={handleSort}
+                />
+                <SortableTableHeader
+                  label="Status"
+                  field="status"
+                  currentSort={sortField}
+                  currentDirection={sortDirection}
+                  onSort={handleSort}
+                />
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Permissões
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Ações
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {usuariosOrdenados.map((usuario) => {
+                const statusLabel = getStatusLabel(usuario.status);
 
-              return (
-                <tr key={usuario.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{usuario.id}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{usuario.nome}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{usuario.email}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{usuario.nivel_de_acesso || '-'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{usuario.tipo_de_acesso || '-'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    <span
-                      className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
-                        usuario.status === 'ativo'
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-red-100 text-red-800'
-                      }`}
-                    >
-                      {statusLabel}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                      {usuario.permissoes_count || 0} tela(s)
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    <div className="flex gap-2">{renderAcao(usuario)}</div>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </Table>
+                return (
+                  <tr key={usuario.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{usuario.id}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{usuario.nome}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{usuario.email}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{usuario.nivel_de_acesso || '-'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{usuario.tipo_de_acesso || '-'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <span
+                        className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
+                          usuario.status === 'ativo'
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-red-100 text-red-800'
+                        }`}
+                      >
+                        {statusLabel}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        {usuario.permissoes_count || 0} tela(s)
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <div className="flex gap-2">{renderAcao(usuario)}</div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <div className="xl:hidden space-y-3">
