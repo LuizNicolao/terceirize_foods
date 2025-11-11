@@ -1,20 +1,17 @@
 import React from 'react';
-import { FaQuestionCircle } from 'react-icons/fa';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { usePermissoes } from '../../hooks/usePermissoes';
 import { useAuditoria } from '../../hooks/common/useAuditoria';
 import { useExport } from '../../hooks/common/useExport';
 import PermissoesService from '../../services/permissoes';
-import { Button, CadastroFilterBar } from '../../components/ui';
-import { PermissoesStats } from '../../components/permissoes';
-import PermissoesTable from '../../components/permissoes/PermissoesTable';
-import { ExportButtons } from '../../components/shared';
-import PermissoesForm from '../../components/permissoes/PermissoesForm';
+import { PermissoesStats, PermissoesForm, PermissoesTable, PermissoesActions } from '../../components/permissoes';
 import UserSelector from '../../components/permissoes/UserSelector';
 import { AuditModal } from '../../components/shared';
+import { PermissoesHeader, PermissoesFilters } from './components';
 
 const Permissoes = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
+
   const {
     usuarios,
     loading,
@@ -33,37 +30,32 @@ const Permissoes = () => {
     handlePermissionChange,
     handleExpandGroup,
     handleSearchChange,
-    handleKeyPress,
+    handleStatusFilterChange,
+    handleNivelFilterChange,
+    handleTipoFilterChange,
+    handleClearFilters,
     setIsSelectOpen,
     setShowPermissionsModal,
     statusFilter,
     nivelFilter,
     tipoFilter,
-    handleStatusFilterChange,
-    handleNivelFilterChange,
-    handleTipoFilterChange,
-    handleClearFilters,
-    formatDate,
     getStatusLabel
   } = usePermissoes();
+
+  const { handleExportXLSX, handleExportPDF } = useExport(PermissoesService);
 
   const {
     showAuditModal,
     auditLogs,
     auditLoading,
     auditFilters,
-    auditPagination,
     handleOpenAuditModal,
     handleCloseAuditModal,
     handleApplyAuditFilters,
-    handleAuditPageChange,
-    handleAuditItemsPerPageChange,
     handleExportAuditXLSX,
     handleExportAuditPDF,
     setAuditFilters
   } = useAuditoria('permissoes');
-
-  const { handleExportXLSX, handleExportPDF } = useExport(PermissoesService);
 
   if (loading) {
     return (
@@ -78,63 +70,31 @@ const Permissoes = () => {
 
   return (
     <div className="p-3 sm:p-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3 sm:gap-4">
-        <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Gerenciar Permissões</h1>
-        <div className="flex gap-2 sm:gap-3">
-          <Button
-            onClick={handleOpenAuditModal}
-            variant="ghost"
-            size="sm"
-            className="text-xs"
-          >
-            <FaQuestionCircle className="mr-1 sm:mr-2" />
-            <span className="hidden sm:inline">Auditoria</span>
-          </Button>
-        </div>
-      </div>
+      <PermissoesHeader
+        canView={canView('permissoes')}
+        onShowHelp={handleOpenAuditModal}
+        loading={loading}
+      />
 
       <PermissoesStats estatisticas={estatisticas} />
 
-      <CadastroFilterBar
+      <PermissoesFilters
         searchTerm={searchTerm}
         onSearchChange={handleSearchChange}
-        onKeyPress={handleKeyPress}
-        onClear={handleClearFilters}
-        placeholder="Buscar por nome ou email..."
         statusFilter={statusFilter}
         onStatusFilterChange={handleStatusFilterChange}
-        additionalFilters={[
-          {
-            value: nivelFilter,
-            onChange: handleNivelFilterChange,
-            options: [
-              { value: 'todos', label: 'Todos os níveis' },
-              { value: 'I', label: 'Nível I' },
-              { value: 'II', label: 'Nível II' },
-              { value: 'III', label: 'Nível III' }
-            ]
-          },
-          {
-            value: tipoFilter,
-            onChange: handleTipoFilterChange,
-            options: [
-              { value: 'todos', label: 'Todos os tipos' },
-              { value: 'administrador', label: 'Administrador' },
-              { value: 'gestor', label: 'Gestor' },
-              { value: 'supervisor', label: 'Supervisor' },
-              { value: 'comprador', label: 'Comprador' }
-            ]
-          }
-        ]}
+        nivelFilter={nivelFilter}
+        onNivelFilterChange={handleNivelFilterChange}
+        tipoFilter={tipoFilter}
+        onTipoFilterChange={handleTipoFilterChange}
+        onClearFilters={handleClearFilters}
+        loading={loading}
       />
 
-      <div className="mb-4">
-        <ExportButtons
-          onExportXLSX={handleExportXLSX}
-          onExportPDF={handleExportPDF}
-          disabled={!canView('permissoes')}
-        />
-      </div>
+      <PermissoesActions
+        onExportXLSX={handleExportXLSX}
+        onExportPDF={handleExportPDF}
+      />
 
       <UserSelector
         usuarios={usuarios}
@@ -172,10 +132,7 @@ const Permissoes = () => {
         auditLogs={auditLogs}
         auditLoading={auditLoading}
         auditFilters={auditFilters}
-        auditPagination={auditPagination}
         onApplyFilters={handleApplyAuditFilters}
-        onPageChange={handleAuditPageChange}
-        onItemsPerPageChange={handleAuditItemsPerPageChange}
         onExportXLSX={handleExportAuditXLSX}
         onExportPDF={handleExportAuditPDF}
         onFilterChange={(field, value) => setAuditFilters((prev) => ({ ...prev, [field]: value }))}

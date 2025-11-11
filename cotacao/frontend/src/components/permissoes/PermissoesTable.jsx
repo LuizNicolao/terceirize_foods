@@ -1,6 +1,6 @@
-import React, { useMemo, useState } from 'react';
+import React from 'react';
 import { FaUserCog } from 'react-icons/fa';
-import { Button, EmptyState, SortableTableHeader } from '../ui';
+import { Button, Table, EmptyState, SortableHeader, useSorting } from '../ui';
 
 const PermissoesTable = ({
   usuarios,
@@ -10,36 +10,12 @@ const PermissoesTable = ({
   onUserSelect,
   getStatusLabel
 }) => {
-  const [sortField, setSortField] = useState('nome');
-  const [sortDirection, setSortDirection] = useState('asc');
-
-  const handleSort = (field) => {
-    if (sortField === field) {
-      setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
-    } else {
-      setSortField(field);
-      setSortDirection('asc');
-    }
-  };
-
-  const usuariosOrdenados = useMemo(() => {
-    const lista = Array.isArray(usuarios) ? [...usuarios] : [];
-
-    lista.sort((a, b) => {
-      const aValue = (a[sortField] || '').toString().toLowerCase();
-      const bValue = (b[sortField] || '').toString().toLowerCase();
-
-      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
-      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
-      return 0;
-    });
-
-    return lista;
-  }, [usuarios, sortField, sortDirection]);
-
+  const usuariosProcessados = Array.isArray(usuarios) ? usuarios : [];
   const podeGerenciar = typeof canEdit === 'function' ? canEdit('permissoes') : true;
+  const { sortConfig, handleSort, sortData } = useSorting('nome', 'asc');
+  const usuariosOrdenados = sortData(usuariosProcessados);
 
-  if (usuariosOrdenados.length === 0) {
+  if (usuariosProcessados.length === 0) {
     return (
       <EmptyState
         title="Nenhum usuário encontrado"
@@ -69,80 +45,70 @@ const PermissoesTable = ({
   return (
     <>
       <div className="hidden xl:block bg-white rounded-lg shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                <SortableTableHeader
-                  label="Nome"
-                  field="nome"
-                  currentSort={sortField}
-                  currentDirection={sortDirection}
-                  onSort={handleSort}
-                />
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                <SortableTableHeader
-                  label="Nível"
-                  field="nivel_de_acesso"
-                  currentSort={sortField}
-                  currentDirection={sortDirection}
-                  onSort={handleSort}
-                />
-                <SortableTableHeader
-                  label="Tipo"
-                  field="tipo_de_acesso"
-                  currentSort={sortField}
-                  currentDirection={sortDirection}
-                  onSort={handleSort}
-                />
-                <SortableTableHeader
-                  label="Status"
-                  field="status"
-                  currentSort={sortField}
-                  currentDirection={sortDirection}
-                  onSort={handleSort}
-                />
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Permissões</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {usuariosOrdenados.map((usuario) => {
-                const statusLabel = getStatusLabel(usuario.status);
+        <Table>
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                ID
+              </th>
+              <SortableHeader field="nome" currentSort={sortConfig} onSort={handleSort}>
+                Nome
+              </SortableHeader>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Email
+              </th>
+              <SortableHeader field="nivel_de_acesso" currentSort={sortConfig} onSort={handleSort}>
+                Nível
+              </SortableHeader>
+              <SortableHeader field="tipo_de_acesso" currentSort={sortConfig} onSort={handleSort}>
+                Tipo
+              </SortableHeader>
+              <SortableHeader field="status" currentSort={sortConfig} onSort={handleSort}>
+                Status
+              </SortableHeader>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Permissões
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Ações
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {usuariosOrdenados.map((usuario) => {
+              const statusLabel = getStatusLabel(usuario.status);
 
-                return (
-                  <tr key={usuario.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{usuario.id}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{usuario.nome}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{usuario.email}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{usuario.nivel_de_acesso || '-'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{usuario.tipo_de_acesso || '-'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
+              return (
+                <tr key={usuario.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{usuario.id}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{usuario.nome}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{usuario.email}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{usuario.nivel_de_acesso || '-'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{usuario.tipo_de_acesso || '-'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <span
+                      className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
                         usuario.status === 'ativo'
                           ? 'bg-green-100 text-green-800'
                           : 'bg-red-100 text-red-800'
-                      }`}>
-                        {statusLabel}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                        {usuario.permissoes_count || 0} tela(s)
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      <div className="flex gap-2">
-                        {renderAcao(usuario)}
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                      }`}
+                    >
+                      {statusLabel}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      {usuario.permissoes_count || 0} tela(s)
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <div className="flex gap-2">{renderAcao(usuario)}</div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </Table>
       </div>
 
       <div className="xl:hidden space-y-3">
@@ -156,9 +122,7 @@ const PermissoesTable = ({
                   <h3 className="font-semibold text-gray-900 text-sm">{usuario.nome}</h3>
                   <p className="text-gray-600 text-xs">ID: {usuario.id}</p>
                 </div>
-                <div className="flex gap-2">
-                  {renderAcao(usuario)}
-                </div>
+                <div className="flex gap-2">{renderAcao(usuario)}</div>
               </div>
 
               <div className="grid grid-cols-2 gap-3 text-xs">
@@ -176,11 +140,13 @@ const PermissoesTable = ({
                 </div>
                 <div>
                   <span className="text-gray-500">Status:</span>
-                  <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
-                    usuario.status === 'ativo'
-                      ? 'bg-green-100 text-green-800'
-                      : 'bg-red-100 text-red-800'
-                  }`}>
+                  <span
+                    className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
+                      usuario.status === 'ativo'
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-red-100 text-red-800'
+                    }`}
+                  >
                     {statusLabel}
                   </span>
                 </div>

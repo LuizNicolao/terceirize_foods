@@ -36,8 +36,8 @@ export const usePermissoes = () => {
         const data = Array.isArray(result.data) ? result.data : [];
         setUsuarios(data);
 
-        const ativos = data.filter((u) => (u.status || '').toLowerCase() === 'ativo').length;
-        const comPermissoes = data.filter((u) => (u.permissoes_count || 0) > 0).length;
+        const ativos = data.filter((u) => u.status === 'ativo').length;
+        const comPermissoes = data.filter((u) => u.permissoes_count > 0).length;
 
         setEstatisticas({
           total_usuarios: data.length,
@@ -62,8 +62,10 @@ export const usePermissoes = () => {
       const result = await PermissoesService.buscarPermissoesUsuario(userId);
 
       if (result.success) {
-        const permissoes = result.data?.permissoes || [];
+        const permissoes = result.data.permissoes || [];
+
         if (!Array.isArray(permissoes)) {
+          console.error('Permissões não é um array:', permissoes);
           toast.error('Formato de permissões inválido');
           setUserPermissions({});
           setEditingPermissions({});
@@ -72,12 +74,12 @@ export const usePermissoes = () => {
 
         const permissionsObj = {};
         permissoes.forEach((perm) => {
-          permissionsObj[perm.tela || perm.screen] = {
-            pode_visualizar: perm.pode_visualizar === 1 || perm.pode_visualizar === true || perm.can_view === 1,
-            pode_criar: perm.pode_criar === 1 || perm.pode_criar === true || perm.can_create === 1,
-            pode_editar: perm.pode_editar === 1 || perm.pode_editar === true || perm.can_edit === 1,
-            pode_excluir: perm.pode_excluir === 1 || perm.pode_excluir === true || perm.can_delete === 1,
-            pode_movimentar: perm.pode_movimentar === 1 || perm.pode_movimentar === true || false
+          permissionsObj[perm.tela] = {
+            pode_visualizar: perm.pode_visualizar === 1 || perm.pode_visualizar === true,
+            pode_criar: perm.pode_criar === 1 || perm.pode_criar === true,
+            pode_editar: perm.pode_editar === 1 || perm.pode_editar === true,
+            pode_excluir: perm.pode_excluir === 1 || perm.pode_excluir === true,
+            pode_movimentar: perm.pode_movimentar === 1 || perm.pode_movimentar === true
           };
         });
 
@@ -124,7 +126,11 @@ export const usePermissoes = () => {
         if (tipoFilter === 'todos') return true;
         return (usuario.tipo_de_acesso || '').toLowerCase() === tipoFilter.toLowerCase();
       })
-      .sort((a, b) => (a.nome || '').toLowerCase().localeCompare((b.nome || '').toLowerCase()));
+      .sort((a, b) => {
+        const nomeA = (a.nome || '').toLowerCase();
+        const nomeB = (b.nome || '').toLowerCase();
+        return nomeA.localeCompare(nomeB);
+      });
   }, [usuarios, searchTerm, statusFilter, nivelFilter, tipoFilter]);
 
   const handleSavePermissions = async () => {
@@ -136,14 +142,48 @@ export const usePermissoes = () => {
     try {
       setSaving(true);
 
-      const permissoesArray = Object.entries(editingPermissions).map(([tela, perms]) => ({
-        tela,
-        pode_visualizar: perms.pode_visualizar ? 1 : 0,
-        pode_criar: perms.pode_criar ? 1 : 0,
-        pode_editar: perms.pode_editar ? 1 : 0,
-        pode_excluir: perms.pode_excluir ? 1 : 0,
-        pode_movimentar: perms.pode_movimentar ? 1 : 0
-      }));
+      const todasAsTelas = [
+        'usuarios',
+        'fornecedores',
+        'filiais',
+        'rotas_nutricionistas',
+        'unidades_escolares',
+        'produtos_origem',
+        'unidades_medida',
+        'grupos',
+        'subgrupos',
+        'classes',
+        'produtos_per_capita',
+        'tipo_atendimento_escola',
+        'recebimentos_escolas',
+        'registros_diarios',
+        'necessidades',
+        'calendario',
+        'analise_necessidades',
+        'analise_necessidades_substituicoes',
+        'consulta_status_necessidade',
+        'necessidades_padroes',
+        'permissoes'
+      ];
+
+      const permissoesArray = todasAsTelas.map((tela) => {
+        const perms = editingPermissions[tela] || {
+          pode_visualizar: false,
+          pode_criar: false,
+          pode_editar: false,
+          pode_excluir: false,
+          pode_movimentar: false
+        };
+
+        return {
+          tela,
+          pode_visualizar: perms.pode_visualizar ? 1 : 0,
+          pode_criar: perms.pode_criar ? 1 : 0,
+          pode_editar: perms.pode_editar ? 1 : 0,
+          pode_excluir: perms.pode_excluir ? 1 : 0,
+          pode_movimentar: perms.pode_movimentar ? 1 : 0
+        };
+      });
 
       const result = await PermissoesService.salvarPermissoes(selectedUserId, permissoesArray);
 
@@ -201,12 +241,6 @@ export const usePermissoes = () => {
     setSearchTerm(value);
   };
 
-  const handleKeyPress = (event) => {
-    if (event.key === 'Enter') {
-      setSearchTerm((prev) => prev.trim());
-    }
-  };
-
   const handleStatusFilterChange = (value) => {
     setStatusFilter(value);
   };
@@ -253,7 +287,6 @@ export const usePermissoes = () => {
     handlePermissionChange,
     handleExpandGroup,
     handleSearchChange,
-    handleKeyPress,
     handleStatusFilterChange,
     handleNivelFilterChange,
     handleTipoFilterChange,

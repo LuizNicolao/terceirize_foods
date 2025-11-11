@@ -10,6 +10,7 @@ import './design-system'; // Importar design system
 // import Login from './pages/auth'; // DESABILITADO - Autenticação centralizada no Foods
 import Dashboard from './pages/dashboard';
 import Usuarios from './pages/usuarios';
+import Permissoes from './pages/permissoes/Permissoes';
 import Cotacoes from './pages/cotacoes';
 // import { AnalisarCotacao } from './components/cotacoes'; // Removido - componente não mais utilizado
 import { Supervisor, AnalisarCotacaoSupervisor } from './pages/supervisor';
@@ -126,6 +127,17 @@ function AppRoutes() {
           <AuthenticatedRoute>
             <ProtectedRoute screen="usuarios">
               <Usuarios />
+            </ProtectedRoute>
+          </AuthenticatedRoute>
+        } 
+      />
+
+      <Route 
+        path="/permissoes" 
+        element={
+          <AuthenticatedRoute>
+            <ProtectedRoute screen="permissoes">
+              <Permissoes />
             </ProtectedRoute>
           </AuthenticatedRoute>
         } 

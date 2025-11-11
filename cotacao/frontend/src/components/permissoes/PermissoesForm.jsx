@@ -2,63 +2,40 @@ import React from 'react';
 import { FaEye, FaPlus, FaEdit, FaTrash, FaChevronDown, FaChevronRight, FaSave, FaTimes, FaExchangeAlt } from 'react-icons/fa';
 import { Button, Modal } from '../ui';
 
-const PermissoesForm = ({ 
+const PermissoesForm = ({
   isOpen,
   onClose,
-  editingPermissions, 
-  expandedGroups, 
+  editingPermissions,
+  expandedGroups,
   saving,
-  onPermissionChange, 
-  onExpandGroup, 
-  onSavePermissions 
+  onPermissionChange,
+  onExpandGroup,
+  onSavePermissions
 }) => {
-  // Grupos de telas organizados por categoria
   const gruposTelas = {
-    'Cadastros Básicos': [
+    Cadastros: [
       { key: 'usuarios', label: 'Usuários' },
+      { key: 'filiais', label: 'Filiais' },
       { key: 'fornecedores', label: 'Fornecedores' },
-      { key: 'clientes', label: 'Clientes' },
-      { key: 'filiais', label: 'Filiais' }
-    ],
-    'Produtos e Categorias': [
-      { key: 'produtos', label: 'Produtos' },
+      { key: 'unidades_escolares', label: 'Unidades Escolares' },
+      { key: 'rotas_nutricionistas', label: 'Rotas Nutricionistas' },
+      { key: 'produtos_origem', label: 'Produtos Origem' },
+      { key: 'unidades_medida', label: 'Unidades de Medida' },
       { key: 'grupos', label: 'Grupos' },
       { key: 'subgrupos', label: 'Subgrupos' },
       { key: 'classes', label: 'Classes' },
-      { key: 'unidades', label: 'Unidades' },
-      { key: 'unidades_escolares', label: 'Unidades Escolares' },
-      { key: 'marcas', label: 'Marcas' },
-      { key: 'produto_origem', label: 'Produtos Origem' },
-      { key: 'produto_generico', label: 'Produtos Genéricos' },
-      { key: 'intolerancias', label: 'Intolerâncias' },
-      { key: 'patrimonios', label: 'Patrimônios' },
-      { key: 'rotas_nutricionistas', label: 'Rotas Nutricionistas' },
-      { key: 'tipos_cardapio', label: 'Tipos de Cardápio' },
-      { key: 'periodos_refeicao', label: 'Períodos de Refeição' },
-      { key: 'periodicidade', label: 'Períodicidade' },
-      { key: 'faturamento', label: 'Faturamento' },
-      { key: 'receitas', label: 'Receitas' },
-      { key: 'necessidades_merenda', label: 'Necessidades da Merenda' },
-      { key: 'plano_amostragem', label: 'Plano de Amostragem' },
-      { key: 'relatorio_inspecao', label: 'Relatório de Inspeção' },
-      { key: 'solicitacoes_compras', label: 'Solicitações de Compras' },
+      { key: 'produtos_per_capita', label: 'Produtos Per Capita' },
+      { key: 'tipo_atendimento_escola', label: 'Tipo Atendimento Escola' },
+      { key: 'recebimentos_escolas', label: 'Recebimentos Escolas' },
+      { key: 'registros_diarios', label: 'Quantidade Servida' },
+      { key: 'necessidades', label: 'Gerar Necessidades' },
+      { key: 'necessidades_padroes', label: 'Pedido Mensal' },
       { key: 'calendario', label: 'Calendário' },
-      { key: 'formas_pagamento', label: 'Formas de Pagamento' },
-      { key: 'prazos_pagamento', label: 'Prazos de Pagamento' },
-      { key: 'pedidos_compras', label: 'Pedidos de Compras' }
+      { key: 'analise_necessidades', label: 'Análise Necessidades' },
+      { key: 'analise_necessidades_substituicoes', label: 'Análise Substituições' },
+      { key: 'consulta_status_necessidade', label: 'Consulta Status Necessidade' }
     ],
-    'Logística': [
-      { key: 'veiculos', label: 'Veículos' },
-      { key: 'motoristas', label: 'Motoristas' },
-      { key: 'ajudantes', label: 'Ajudantes' },
-      { key: 'rotas', label: 'Rotas' },
-      { key: 'tipo_rota', label: 'Tipo de Rota' }
-    ],
-    'Sistema': [
-      { key: 'cotacao', label: 'Cotação' },
-      { key: 'permissoes', label: 'Permissões' },
-      { key: 'pdf_templates', label: 'Templates de PDF' }
-    ]
+    Sistema: [{ key: 'permissoes', label: 'Permissões' }]
   };
 
   const renderPermissionRow = (tela, label) => {
@@ -70,7 +47,19 @@ const PermissoesForm = ({
       pode_movimentar: false
     };
 
-    // Determinar se deve mostrar a coluna movimentar (apenas para patrimônios)
+    const telasConsulta = [
+      'fornecedores',
+      'filiais',
+      'unidades_escolares',
+      'rotas_nutricionistas',
+      'produtos_origem',
+      'unidades_medida',
+      'grupos',
+      'subgrupos',
+      'classes'
+    ];
+    const apenasConsulta = telasConsulta.includes(tela);
+
     const mostrarMovimentar = tela === 'patrimonios';
     const colSpan = mostrarMovimentar ? 6 : 5;
 
@@ -79,7 +68,7 @@ const PermissoesForm = ({
         <div className="col-span-1 flex items-center">
           <span className="text-sm font-medium text-gray-700">{label}</span>
         </div>
-        
+
         <div className="col-span-1 flex justify-center">
           <input
             type="checkbox"
@@ -88,34 +77,43 @@ const PermissoesForm = ({
             className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
           />
         </div>
-        
+
         <div className="col-span-1 flex justify-center">
           <input
             type="checkbox"
-            checked={perms.pode_criar}
+            checked={apenasConsulta ? false : perms.pode_criar}
             onChange={(e) => onPermissionChange(tela, 'pode_criar', e.target.checked)}
-            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+            disabled={apenasConsulta}
+            className={`w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-2 ${
+              apenasConsulta ? 'bg-gray-200 cursor-not-allowed' : 'bg-gray-100'
+            }`}
           />
         </div>
-        
+
         <div className="col-span-1 flex justify-center">
           <input
             type="checkbox"
-            checked={perms.pode_editar}
+            checked={apenasConsulta ? false : perms.pode_editar}
             onChange={(e) => onPermissionChange(tela, 'pode_editar', e.target.checked)}
-            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+            disabled={apenasConsulta}
+            className={`w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-2 ${
+              apenasConsulta ? 'bg-gray-200 cursor-not-allowed' : 'bg-gray-100'
+            }`}
           />
         </div>
-        
+
         <div className="col-span-1 flex justify-center">
           <input
             type="checkbox"
-            checked={perms.pode_excluir}
+            checked={apenasConsulta ? false : perms.pode_excluir}
             onChange={(e) => onPermissionChange(tela, 'pode_excluir', e.target.checked)}
-            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+            disabled={apenasConsulta}
+            className={`w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-2 ${
+              apenasConsulta ? 'bg-gray-200 cursor-not-allowed' : 'bg-gray-100'
+            }`}
           />
         </div>
-        
+
         {mostrarMovimentar && (
           <div className="col-span-1 flex justify-center">
             <input
@@ -130,8 +128,7 @@ const PermissoesForm = ({
     );
   };
 
-  // Determinar se deve mostrar a coluna movimentar (verificar se há patrimônios expandidos)
-  const temPatrimoniosExpandidos = Object.entries(gruposTelas).some(([grupoNome, telas]) => 
+  const temPatrimoniosExpandidos = Object.entries(gruposTelas).some(([grupoNome, telas]) =>
     expandedGroups[grupoNome] && telas.some(({ key }) => key === 'patrimonios')
   );
 
@@ -145,7 +142,6 @@ const PermissoesForm = ({
       size="full"
     >
       <div className="bg-white rounded-lg shadow-sm border">
-        {/* Tabela de permissões */}
         <div className="overflow-x-auto max-h-[75vh]">
           <table className="w-full">
             <thead className="bg-gray-50 sticky top-0">
@@ -190,7 +186,6 @@ const PermissoesForm = ({
             <tbody className="bg-white divide-y divide-gray-200">
               {Object.entries(gruposTelas).map(([grupoNome, telas]) => (
                 <React.Fragment key={grupoNome}>
-                  {/* Cabeçalho do grupo */}
                   <tr className="bg-gray-50">
                     <td colSpan={temPatrimoniosExpandidos ? 6 : 5} className="px-6 py-3">
                       <button
@@ -206,86 +201,72 @@ const PermissoesForm = ({
                       </button>
                     </td>
                   </tr>
-                  
-                  {/* Telas do grupo */}
-                  {expandedGroups[grupoNome] && telas.map(({ key, label }) => {
-                    // Determinar se deve mostrar a coluna movimentar (apenas para patrimônios)
-                    const mostrarMovimentar = key === 'patrimonios';
-                    
-                    return (
-                      <tr key={key} className="hover:bg-gray-50">
-                        <td className="px-6 py-3 text-sm text-gray-900">
-                          {label}
-                        </td>
-                        <td className="px-3 py-3 text-center">
-                          <input
-                            type="checkbox"
-                            checked={editingPermissions[key]?.pode_visualizar || false}
-                            onChange={(e) => onPermissionChange(key, 'pode_visualizar', e.target.checked)}
-                            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                          />
-                        </td>
-                        <td className="px-3 py-3 text-center">
-                          <input
-                            type="checkbox"
-                            checked={editingPermissions[key]?.pode_criar || false}
-                            onChange={(e) => onPermissionChange(key, 'pode_criar', e.target.checked)}
-                            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                          />
-                        </td>
-                        <td className="px-3 py-3 text-center">
-                          <input
-                            type="checkbox"
-                            checked={editingPermissions[key]?.pode_editar || false}
-                            onChange={(e) => onPermissionChange(key, 'pode_editar', e.target.checked)}
-                            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                          />
-                        </td>
-                        <td className="px-3 py-3 text-center">
-                          <input
-                            type="checkbox"
-                            checked={editingPermissions[key]?.pode_excluir || false}
-                            onChange={(e) => onPermissionChange(key, 'pode_excluir', e.target.checked)}
-                            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                          />
-                        </td>
-                        {mostrarMovimentar && (
+
+                  {expandedGroups[grupoNome] &&
+                    telas.map(({ key, label }) => {
+                      const mostrarMovimentar = key === 'patrimonios';
+
+                      return (
+                        <tr key={key} className="hover:bg-gray-50">
+                          <td className="px-6 py-3 text-sm text-gray-900">{label}</td>
                           <td className="px-3 py-3 text-center">
                             <input
                               type="checkbox"
-                              checked={editingPermissions[key]?.pode_movimentar || false}
-                              onChange={(e) => onPermissionChange(key, 'pode_movimentar', e.target.checked)}
+                              checked={editingPermissions[key]?.pode_visualizar || false}
+                              onChange={(e) => onPermissionChange(key, 'pode_visualizar', e.target.checked)}
                               className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
                             />
                           </td>
-                        )}
-                      </tr>
-                    );
-                  })}
+                          <td className="px-3 py-3 text-center">
+                            <input
+                              type="checkbox"
+                              checked={editingPermissions[key]?.pode_criar || false}
+                              onChange={(e) => onPermissionChange(key, 'pode_criar', e.target.checked)}
+                              className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                            />
+                          </td>
+                          <td className="px-3 py-3 text-center">
+                            <input
+                              type="checkbox"
+                              checked={editingPermissions[key]?.pode_editar || false}
+                              onChange={(e) => onPermissionChange(key, 'pode_editar', e.target.checked)}
+                              className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                            />
+                          </td>
+                          <td className="px-3 py-3 text-center">
+                            <input
+                              type="checkbox"
+                              checked={editingPermissions[key]?.pode_excluir || false}
+                              onChange={(e) => onPermissionChange(key, 'pode_excluir', e.target.checked)}
+                              className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                            />
+                          </td>
+                          {mostrarMovimentar && (
+                            <td className="px-3 py-3 text-center">
+                              <input
+                                type="checkbox"
+                                checked={editingPermissions[key]?.pode_movimentar || false}
+                                onChange={(e) => onPermissionChange(key, 'pode_movimentar', e.target.checked)}
+                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                              />
+                            </td>
+                          )}
+                        </tr>
+                      );
+                    })}
                 </React.Fragment>
               ))}
             </tbody>
           </table>
         </div>
 
-        {/* Footer com botões */}
         <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
           <div className="flex justify-end gap-3">
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              onClick={onClose}
-            >
+            <Button type="button" variant="secondary" size="sm" onClick={onClose}>
               <FaTimes className="mr-1 sm:mr-2" />
               Cancelar
             </Button>
-            <Button
-              onClick={onSavePermissions}
-              disabled={saving}
-              size="sm"
-              className="flex items-center gap-2"
-            >
+            <Button onClick={onSavePermissions} disabled={saving} size="sm" className="flex items-center gap-2">
               <FaSave className="text-sm" />
               {saving ? 'Salvando...' : 'Salvar Permissões'}
             </Button>
