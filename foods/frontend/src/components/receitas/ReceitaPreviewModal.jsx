@@ -74,6 +74,10 @@ const ReceitaPreviewModal = ({ isOpen, onClose, receita, onAprovar, onRejeitar }
   };
 
   const handleAprovar = async () => {
+    if (typeof onAprovar !== 'function') {
+      onClose();
+      return;
+    }
     try {
       await onAprovar(receita);
       toast.success('Cardápio aprovado com sucesso!');
@@ -85,6 +89,10 @@ const ReceitaPreviewModal = ({ isOpen, onClose, receita, onAprovar, onRejeitar }
   };
 
   const handleRejeitar = async () => {
+    if (typeof onRejeitar !== 'function') {
+      onClose();
+      return;
+    }
     try {
       await onRejeitar(receita);
       toast.success('Cardápio rejeitado');
