@@ -11,6 +11,7 @@ console.log('DB_NAME:', process.env.DB_NAME);
 
 // Importar configurações da aplicação
 const { app, PORT, limiter, loginLimiter } = require('./config/app');
+const { connectRedis } = require('./config/redis');
 
 // Importar middleware de prefixo de rotas
 const { applyRoutePrefixes } = require('./middleware/routePrefix');
@@ -52,6 +53,7 @@ app.use('*', (req, res) => {
 
 // Inicializar servidor
 app.listen(PORT, () => {
+  connectRedis();
   console.log(`🚀 Servidor rodando na porta ${PORT}`);
   console.log(`📊 Ambiente: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🔗 URL: http://localhost:${PORT}`);

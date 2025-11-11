@@ -5,41 +5,67 @@ const { body, validationResult } = require('express-validator');
 const { executeQuery } = require('../config/database');
 const { generateToken } = require('../middleware/auth');
 const { logAction, AUDIT_ACTIONS } = require('../utils/audit');
+const { ipRateLimiter, checkEmailLockout } = require('../middleware/loginSecurity');
+const { incrementFailedAttempt, resetFailedAttempts } = require('../services/loginAttemptService');
 
 const router = express.Router();
 
-// Controle de tentativas de login (em memória)
-const loginAttempts = {};
-const MAX_ATTEMPTS = 5;
-const BLOCK_TIME_MINUTES = 30;
-
-// Login
-router.post('/login', [
+const loginValidationRules = [
   body('email').isEmail().withMessage('Email inválido'),
   body('senha').isLength({ min: 6 }).withMessage('Senha deve ter pelo menos 6 caracteres')
-], async (req, res) => {
+];
+
+const handleValidation = (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({
+      error: 'Dados inválidos',
+      details: errors.array()
+    });
+  }
+  next();
+};
+
+const buildLockoutResponse = (lockoutUntil) => {
+  const now = Date.now();
+  const lockoutTime = lockoutUntil instanceof Date ? lockoutUntil.getTime() : new Date(lockoutUntil).getTime();
+  const remainingSeconds = Math.max(1, Math.ceil((lockoutTime - now) / 1000));
+  const minutes = Math.ceil(remainingSeconds / 60);
+
+  const message = minutes <= 1
+    ? 'Conta temporariamente bloqueada. Tente novamente em até 1 minuto.'
+    : `Conta temporariamente bloqueada. Tente novamente em ${minutes} minutos.`;
+
+  return {
+    message,
+    remainingSeconds
+  };
+};
+
+const handleFailedLogin = async (email, res) => {
+  const result = await incrementFailedAttempt(email);
+
+  if (result.lockoutUntil) {
+    const { message, remainingSeconds } = buildLockoutResponse(result.lockoutUntil);
+    return res.status(401).json({
+      error: message,
+      lockout: true,
+      retryAfter: remainingSeconds
+    });
+  }
+
+  return res.status(401).json({ error: 'Email ou senha incorretos' });
+};
+
+// Login
+router.post('/login',
+  ipRateLimiter,
+  loginValidationRules,
+  handleValidation,
+  checkEmailLockout,
+  async (req, res) => {
   try {
-    // Verificar erros de validação
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ 
-        error: 'Dados inválidos',
-        details: errors.array() 
-      });
-    }
-
     const { email, senha, rememberMe = false } = req.body;
-    const now = Date.now();
-
-    // Inicializar tentativas
-    if (!loginAttempts[email]) {
-      loginAttempts[email] = { count: 0, lastAttempt: now, blockedUntil: null };
-    }
-
-    // Verificar se está bloqueado temporariamente
-    if (loginAttempts[email].blockedUntil && now < loginAttempts[email].blockedUntil) {
-      return res.status(403).json({ error: `Usuário temporariamente bloqueado por tentativas inválidas. Tente novamente em alguns minutos.` });
-    }
 
     // Buscar usuário
     const users = await executeQuery(
@@ -48,12 +74,7 @@ router.post('/login', [
     );
 
     if (users.length === 0) {
-      loginAttempts[email].count++;
-      loginAttempts[email].lastAttempt = now;
-      if (loginAttempts[email].count >= MAX_ATTEMPTS) {
-        loginAttempts[email].blockedUntil = now + BLOCK_TIME_MINUTES * 60 * 1000;
-      }
-      return res.status(401).json({ error: 'Email ou senha incorretos' });
+      return handleFailedLogin(email, res);
     }
 
     const user = users[0];
@@ -72,19 +93,11 @@ router.post('/login', [
     const isValidPassword = await bcrypt.compare(senha, user.senha);
 
     if (!isValidPassword) {
-      loginAttempts[email].count++;
-      loginAttempts[email].lastAttempt = now;
-      if (loginAttempts[email].count >= MAX_ATTEMPTS) {
-        // Bloquear usuário no banco
-        await executeQuery('UPDATE usuarios SET status = ? WHERE id = ?', ['bloqueado', user.id]);
-        loginAttempts[email].blockedUntil = now + BLOCK_TIME_MINUTES * 60 * 1000;
-        return res.status(403).json({ error: 'Usuário bloqueado por tentativas inválidas. Procure o administrador.' });
-      }
-      return res.status(401).json({ error: 'Email ou senha incorretos' });
+      return handleFailedLogin(email, res);
     }
 
     // Login bem-sucedido: resetar tentativas
-    loginAttempts[email] = { count: 0, lastAttempt: now, blockedUntil: null };
+    await resetFailedAttempts(user.email);
 
     // Gerar token com duração baseada na opção "Mantenha-me conectado"
     const tokenExpiration = rememberMe ? '30d' : '24h'; // 30 dias se "lembrar", 24h se não
