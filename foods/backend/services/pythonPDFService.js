@@ -6,6 +6,11 @@ class PythonPDFService {
     constructor() {
         this.pythonScriptPath = path.join(__dirname, 'pdf_processor.py');
         this.requirementsPath = path.join(__dirname, '..', 'requirements.txt');
+        this.venvDir = process.env.PYTHON_VENV_DIR || path.join(__dirname, '..', 'venv');
+        this.pythonBinPath = process.env.PYTHON_BIN_PATH 
+            || path.join(this.venvDir, 'bin', process.env.PYTHON_BIN_NAME || 'python');
+        this.pipBinPath = process.env.PIP_BIN_PATH 
+            || path.join(this.venvDir, 'bin', process.env.PIP_BIN_NAME || 'pip');
     }
 
     /**
@@ -15,8 +20,7 @@ class PythonPDFService {
         return new Promise((resolve, reject) => {
             console.log('🔧 Instalando dependências Python no ambiente virtual...');
             
-            const venvPip = path.join(__dirname, '..', 'venv', 'bin', 'pip');
-            const pip = spawn(venvPip, ['install', '-r', this.requirementsPath], {
+            const pip = spawn(this.pipBinPath, ['install', '-r', this.requirementsPath], {
                 stdio: 'inherit'
             });
 
@@ -56,8 +60,7 @@ class PythonPDFService {
 
                 // Executar script Python usando o ambiente virtual
                 console.log('🐍 Executando processador Python...');
-                const venvPython = path.join(__dirname, '..', 'venv', 'bin', 'python');
-                const python = spawn(venvPython, [this.pythonScriptPath, tempFilePath], {
+                const python = spawn(this.pythonBinPath, [this.pythonScriptPath, tempFilePath], {
                     stdio: ['pipe', 'pipe', 'pipe']
                 });
 
@@ -157,8 +160,7 @@ class PythonPDFService {
         return new Promise((resolve, reject) => {
             console.log('🔍 Verificando dependências Python no ambiente virtual...');
             
-            const venvPython = path.join(__dirname, '..', 'venv', 'bin', 'python');
-            const python = spawn(venvPython, ['-c', 'import pdfplumber; print("OK")'], {
+            const python = spawn(this.pythonBinPath, ['-c', 'import pdfplumber; print("OK")'], {
                 stdio: 'pipe'
             });
 
