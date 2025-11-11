@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { FaTimes, FaSave, FaEye, FaEdit, FaBuilding } from 'react-icons/fa';
+import { FaInfoCircle } from 'react-icons/fa';
 import { Button, Input, Modal } from '../ui';
-import FiliaisService from '../../services/filiais';
 
 const UsuarioModal = ({ 
   isOpen, 
@@ -11,34 +10,9 @@ const UsuarioModal = ({
   usuario, 
   isViewMode = false
 }) => {
-  const { register, handleSubmit, reset, setValue, watch } = useForm();
-  const [filiais, setFiliais] = useState([]);
-  const [loadingFiliais, setLoadingFiliais] = useState(false);
-  const [filiaisSelecionadas, setFiliaisSelecionadas] = useState([]);
+  const { register, handleSubmit, reset, setValue } = useForm();
 
-  // Carregar filiais quando o modal abrir
   useEffect(() => {
-    if (isOpen) {
-      loadFiliais();
-    }
-  }, [isOpen]);
-
-  // Carregar filiais disponíveis
-  const loadFiliais = async () => {
-    try {
-      setLoadingFiliais(true);
-      const result = await FiliaisService.buscarAtivas();
-      if (result.success) {
-        setFiliais(result.data || []);
-      }
-    } catch (error) {
-      console.error('Erro ao carregar filiais:', error);
-    } finally {
-      setLoadingFiliais(false);
-    }
-  };
-
-  React.useEffect(() => {
     if (usuario && isOpen) {
       // Preencher formulário com dados do usuário
       Object.keys(usuario).forEach(key => {
@@ -47,39 +21,17 @@ const UsuarioModal = ({
         }
       });
       
-      // Preencher filiais selecionadas se o usuário já tiver
-      if (usuario.filiais && Array.isArray(usuario.filiais)) {
-        const filiaisIds = usuario.filiais.map(f => f.id);
-        setFiliaisSelecionadas(filiaisIds);
-      } else {
-        setFiliaisSelecionadas([]);
-      }
     } else if (!usuario && isOpen) {
       // Resetar formulário para novo usuário
       reset();
       setValue('status', 'ativo');
       setValue('nivel_de_acesso', 'I');
       setValue('tipo_de_acesso', 'administrativo');
-      setFiliaisSelecionadas([]);
     }
   }, [usuario, isOpen, setValue, reset]);
 
-  // Gerenciar seleção de filiais
-  const handleFilialChange = (filialId, checked) => {
-    if (checked) {
-      setFiliaisSelecionadas(prev => [...prev, filialId]);
-    } else {
-      setFiliaisSelecionadas(prev => prev.filter(id => id !== filialId));
-    }
-  };
-
   const handleFormSubmit = (data) => {
-    // Adicionar filiais selecionadas aos dados do formulário
-    const formDataWithFiliais = {
-      ...data,
-      filiais: filiaisSelecionadas
-    };
-    onSubmit(formDataWithFiliais);
+    onSubmit(data);
   };
 
   if (!isOpen) return null;
@@ -162,40 +114,16 @@ const UsuarioModal = ({
 
         {/* Segunda Linha - 2 Cards */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {/* Card 3: Filiais */}
+          {/* Card 3: Informativo */}
           <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-            <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-blue-500">
-              <FaBuilding className="inline mr-2" />
-              Filiais com Acesso
+            <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-blue-500 flex items-center gap-2">
+              <FaInfoCircle className="text-blue-500" />
+              Controle por Filiais
             </h3>
-            <div className="space-y-3">
-              {loadingFiliais ? (
-                <div className="text-sm text-gray-500">Carregando filiais...</div>
-              ) : (
-                <div className="space-y-2 max-h-48 overflow-y-auto border border-gray-300 rounded-md p-3">
-                  {filiais.map((filial) => {
-                    const isChecked = filiaisSelecionadas.includes(filial.id);
-                    return (
-                      <label key={filial.id} className="flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={isChecked}
-                          onChange={(e) => handleFilialChange(filial.id, e.target.checked)}
-                          disabled={isViewMode}
-                          className="mr-3 text-blue-600 focus:ring-blue-500 rounded"
-                        />
-                        <span className="text-sm text-gray-700">
-                          {filial.filial} - {filial.cidade}/{filial.estado}
-                        </span>
-                      </label>
-                    );
-                  })}
-                </div>
-              )}
-              {filiais.length === 0 && !loadingFiliais && (
-                <div className="text-sm text-gray-500">Nenhuma filial disponível</div>
-              )}
-            </div>
+            <p className="text-sm text-gray-600 leading-relaxed">
+              Este módulo no sistema de Cotação não utiliza vinculação de filiais. 
+              Todos os usuários têm acesso conforme as permissões configuradas na tela de Permissões.
+            </p>
           </div>
 
           {/* Card 4: Senha */}
