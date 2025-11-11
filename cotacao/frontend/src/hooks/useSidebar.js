@@ -64,7 +64,15 @@ export const useSidebar = () => {
 
   // Função para verificar se o usuário pode visualizar um item
   const canViewItem = (item) => {
-    return item.screen === 'dashboard' || canView(item.screen);
+    if (item.screen === 'dashboard') {
+      return true;
+    }
+
+    if (item.screen === 'permissoes') {
+      return true;
+    }
+
+    return canView(item.screen);
   };
 
   // Função para verificar se um item está ativo

@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
+import { FaInfoCircle } from 'react-icons/fa';
 import { Button, Input, Modal } from '../ui';
 
 const UsuarioModal = ({
@@ -106,17 +107,30 @@ const UsuarioModal = ({
           </div>
         </div>
 
-        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-          <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">
-            Senha
-          </h3>
-          <div className="space-y-3">
-            <Input
-              label={usuario ? 'Nova Senha (deixe em branco para manter a atual)' : 'Senha *'}
-              type="password"
-              {...register('senha')}
-              disabled={isViewMode}
-            />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">
+              Senha
+            </h3>
+            <div className="space-y-3">
+              <Input
+                label={usuario ? 'Nova Senha (deixe em branco para manter a atual)' : 'Senha *'}
+                type="password"
+                {...register('senha')}
+                disabled={isViewMode}
+              />
+            </div>
+          </div>
+
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-blue-500 flex items-center gap-2">
+              <FaInfoCircle className="text-blue-500" />
+              Controle por Filiais
+            </h3>
+            <p className="text-sm text-gray-600 leading-relaxed">
+              Este módulo no sistema de Cotação não utiliza vinculação de filiais. 
+              Todos os usuários têm acesso conforme as permissões configuradas na tela de Permissões.
+            </p>
           </div>
         </div>
 

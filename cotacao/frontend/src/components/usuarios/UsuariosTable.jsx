@@ -12,7 +12,6 @@ const UsuariosTable = ({
   getTipoAcessoLabel,
   getNivelAcessoLabel,
   getStatusLabel,
-  formatDate,
   sortField,
   sortDirection,
   onSort

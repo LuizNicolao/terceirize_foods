@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import UsuariosService from '../services/usuarios';
 import { useBaseEntity } from './common/useBaseEntity';
 import { useFilters } from './common/useFilters';
+import useTableSort from './common/useTableSort';
 
 export const useUsuarios = () => {
   const baseEntity = useBaseEntity('usuarios', UsuariosService, {
@@ -13,6 +14,20 @@ export const useUsuarios = () => {
   });
 
   const customFilters = useFilters({});
+
+  const {
+    sortedData: usuariosOrdenados,
+    sortField,
+    sortDirection,
+    handleSort,
+    isSortingLocally
+  } = useTableSort({
+    data: baseEntity.items,
+    defaultField: null,
+    defaultDirection: null,
+    threshold: 100,
+    totalItems: baseEntity.totalItems
+  });
 
   const [estatisticasUsuarios, setEstatisticasUsuarios] = useState({
     total_usuarios: 0,
@@ -147,8 +162,22 @@ export const useUsuarios = () => {
     calculateEstatisticas(baseEntity.items);
   }, [baseEntity.items, calculateEstatisticas]);
 
+  const handleSearchChange = useCallback((value) => {
+    customFilters.setSearchTerm(value);
+    if (baseEntity.setSearchTerm) {
+      baseEntity.setSearchTerm(value);
+    }
+  }, [customFilters, baseEntity]);
+
+  const handleClearSearch = useCallback(() => {
+    customFilters.setSearchTerm('');
+    if (baseEntity.clearSearch) {
+      baseEntity.clearSearch();
+    }
+  }, [customFilters, baseEntity]);
+
   return {
-    usuarios: baseEntity.items,
+    usuarios: isSortingLocally ? usuariosOrdenados : baseEntity.items,
     loading: baseEntity.loading,
     estatisticas: estatisticasUsuarios,
     showModal: baseEntity.showModal,
@@ -164,13 +193,18 @@ export const useUsuarios = () => {
     statusFilter: customFilters.statusFilter,
     validationErrors: baseEntity.validationErrors,
     showValidationModal: baseEntity.showValidationModal,
+    sortField,
+    sortDirection,
+    isSortingLocally,
     handleAddUser: baseEntity.handleAdd,
     handleViewUser: handleViewCustom,
     handleEditUser: handleEditCustom,
     handleCloseModal: baseEntity.handleCloseModal,
     handlePageChange: baseEntity.handlePageChange,
     handleItemsPerPageChange: baseEntity.handleItemsPerPageChange,
-    setSearchTerm: customFilters.setSearchTerm,
+    setSearchTerm: handleSearchChange,
+    clearSearch: handleClearSearch,
+    handleKeyPress: baseEntity.handleKeyPress,
     setStatusFilter: customFilters.setStatusFilter,
     setItemsPerPage: baseEntity.handleItemsPerPageChange,
     onSubmit: onSubmitCustom,
@@ -178,6 +212,7 @@ export const useUsuarios = () => {
     handleConfirmDelete: handleDeleteCustom,
     handleCloseDeleteModal: baseEntity.handleCloseDeleteModal,
     handleCloseValidationModal: baseEntity.handleCloseValidationModal,
+    handleSort,
     formatDate,
     getStatusLabel,
     getNivelAcessoLabel,
