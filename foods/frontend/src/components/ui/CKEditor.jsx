@@ -82,6 +82,10 @@ const CKEditor = ({
   };
 
   const [basePath] = useState(() => getBasePath());
+  const getSkinConfig = () => {
+    const normalizedBase = basePath.endsWith('/') ? basePath : `${basePath}/`;
+    return `moono-lisa,${normalizedBase}skins/moono-lisa/`;
+  };
 
   // Carregar script do CKEditor dinamicamente
   useEffect(() => {
@@ -178,8 +182,16 @@ const CKEditor = ({
         editorConfig?.removePlugins
       );
 
-      editorConfig.skin = editorConfig.skin || 'moono-lisa';
+      editorConfig.skin = editorConfig.skin || getSkinConfig();
       editorConfig.baseHref = editorConfig.baseHref || window.location.origin;
+      editorConfig.contentsCss = editorConfig.contentsCss || [
+        `${basePath}contents.css`,
+        `${basePath}skins/moono-lisa/editor.css`,
+        `${basePath}skins/moono-lisa/editor_gecko.css`,
+        `${basePath}skins/moono-lisa/editor_ie.css`,
+        `${basePath}skins/moono-lisa/editor_iequirks.css`,
+        `${basePath}skins/moono-lisa/editor_ie8.css`
+      ];
 
       // Inicializar editor
       try {
