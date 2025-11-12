@@ -26,86 +26,92 @@ const CKEditor = ({
   const containerRef = useRef(null);
   const [scriptLoaded, setScriptLoaded] = useState(false);
 
+  const normalizePluginsList = (...lists) => {
+    const plugins = new Set();
+    
+    lists.forEach((list) => {
+      if (!list) return;
+
+      if (Array.isArray(list)) {
+        list.forEach((item) => {
+          if (item && typeof item === 'string') {
+            plugins.add(item.trim());
+          }
+        });
+        return;
+      }
+
+      if (typeof list === 'string') {
+        list
+          .split(',')
+          .map((item) => item.trim())
+          .filter(Boolean)
+          .forEach((item) => plugins.add(item));
+      }
+    });
+
+    return Array.from(plugins).join(',');
+  };
+
+  const getBasePath = () => {
+    if (typeof window === 'undefined') {
+      return '/ckeditor/';
+    }
+
+    const publicUrlEnv = (process.env.PUBLIC_URL || '').trim();
+
+    if (publicUrlEnv && publicUrlEnv !== '.') {
+      const normalized = publicUrlEnv.endsWith('/')
+        ? publicUrlEnv.slice(0, -1)
+        : publicUrlEnv;
+      if (/^https?:\/\//i.test(normalized)) {
+        return `${normalized}/ckeditor/`;
+      }
+      const withLeadingSlash = normalized.startsWith('/')
+        ? normalized
+        : `/${normalized}`;
+      return `${withLeadingSlash}/ckeditor/`;
+    }
+
+    const pathname = window.location?.pathname || '';
+    if (pathname.startsWith('/foods')) {
+      return '/foods/ckeditor/';
+    }
+
+    return '/ckeditor/';
+  };
+
+  const [basePath] = useState(() => getBasePath());
+
   // Carregar script do CKEditor dinamicamente
   useEffect(() => {
     // Se já está carregado, marcar como carregado
     if (typeof window.CKEDITOR !== 'undefined') {
+      if (!window.CKEDITOR_BASEPATH) {
+        window.CKEDITOR_BASEPATH = basePath;
+      }
       setScriptLoaded(true);
       return;
     }
 
-    // Verificar se o script já está sendo carregado
-    const existingScript = document.querySelector('script[src*="ckeditor.js"]');
+    window.CKEDITOR_BASEPATH = basePath;
+
+    const scriptSrc = `${basePath}ckeditor.js`;
+
+    const existingScript = document.querySelector(`script[src="${scriptSrc}"]`);
     if (existingScript) {
       existingScript.onload = () => setScriptLoaded(true);
       existingScript.onerror = () => console.error('Erro ao carregar CKEditor');
       return;
     }
 
-    // Função para verificar se um arquivo existe via fetch
-    const checkFileExists = async (url) => {
-      try {
-        const response = await fetch(url, { method: 'HEAD', cache: 'no-cache' });
-        if (response.ok) {
-          const contentType = response.headers.get('content-type');
-          return contentType?.includes('javascript') || contentType?.includes('text/plain');
-        }
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 2000);
-        const getResponse = await fetch(url, { method: 'GET', cache: 'no-cache', signal: controller.signal });
-        clearTimeout(timeout);
-        if (getResponse.ok) {
-          const text = await getResponse.text();
-          return !text.trim().startsWith('<') && (text.includes('CKEDITOR') || text.includes('function'));
-        }
-        return false;
-      } catch (error) {
-        return false;
-      }
-    };
-    
-    // Função para carregar o script quando encontrar o caminho correto
-    const loadCKEditorScript = async (basePath) => {
-      const possiblePaths = [
-        `${basePath}/ckeditor/ckeditor.js`,
-        `/foods/ckeditor/ckeditor.js`,
-        `/ckeditor/ckeditor.js`,
-        `${window.location.origin}${basePath}/ckeditor/ckeditor.js`,
-        `${window.location.origin}/foods/ckeditor/ckeditor.js`,
-        `${window.location.origin}/ckeditor/ckeditor.js`
-      ];
-      
-      for (let i = 0; i < possiblePaths.length; i++) {
-        const path = possiblePaths[i];
-        const exists = await checkFileExists(path);
-        if (exists) {
-          const detectedBasePath = path.includes('/foods') ? '/foods' : '';
-          window.CKEDITOR_BASEPATH = `${detectedBasePath}/ckeditor/`;
-          
-          const script = document.createElement('script');
-          script.src = path;
-          script.async = true;
-          script.onload = () => setScriptLoaded(true);
-          script.onerror = () => console.error('Erro ao carregar CKEditor');
-          document.head.appendChild(script);
-          return;
-        }
-      }
-      console.error('CKEditor não encontrado em nenhum dos caminhos testados');
-    };
-    
-    // Detectar caminho base
-    const getBasePath = () => {
-      const pathname = window.location.pathname;
-      if (pathname.startsWith('/foods')) {
-        return '/foods';
-      }
-      return '';
-    };
-    
-    const basePath = getBasePath();
-    loadCKEditorScript(basePath);
-  }, []);
+    const script = document.createElement('script');
+    script.src = scriptSrc;
+    script.async = true;
+    script.onload = () => setScriptLoaded(true);
+    script.onerror = () => console.error(`Erro ao carregar CKEditor a partir de ${scriptSrc}`);
+    document.head.appendChild(script);
+  }, [basePath]);
 
   // Inicializar editor quando script estiver carregado
   useEffect(() => {
@@ -153,11 +159,27 @@ const CKEditor = ({
       }
 
       // Configuração do editor
+      const defaultRemovePlugins = [
+        'exportpdf',
+        'uploadimage',
+        'easyimage',
+        'cloudservices'
+      ];
+
       const editorConfig = {
         language: 'pt-br',
         height,
         ...config
       };
+
+      editorConfig.removePlugins = normalizePluginsList(
+        defaultRemovePlugins,
+        config?.removePlugins,
+        editorConfig?.removePlugins
+      );
+
+      editorConfig.skin = editorConfig.skin || 'moono-lisa';
+      editorConfig.baseHref = editorConfig.baseHref || window.location.origin;
 
       // Inicializar editor
       try {
