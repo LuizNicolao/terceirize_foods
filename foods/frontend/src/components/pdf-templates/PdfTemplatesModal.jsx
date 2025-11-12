@@ -139,7 +139,6 @@ const PdfTemplatesModal = ({
     } else if (!isOpen) {
       // Limpar quando modal fechar
       setHtmlContent('');
-      editorInstanceRef.current = null;
     }
   }, [template, isOpen, setValue, reset]);
 
