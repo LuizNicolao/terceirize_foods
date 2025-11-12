@@ -13,6 +13,22 @@ const CalendarioGrid = ({ dados, ano, mes, loading = false }) => {
     return ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
   };
 
+  const obterOrdemDiaSemana = (dataString) => {
+    if (!dataString) return null;
+    const data = new Date(`${dataString}T00:00:00`);
+    const diaSemana = data.getDay(); // 0 (Domingo) a 6 (Sábado)
+    return diaSemana === 0 ? 7 : diaSemana; // Converter para 1 (Segunda) a 7 (Domingo)
+  };
+
+  const ordenarDiasDaSemana = (dias = []) => {
+    const diasOrdenados = [];
+    for (let ordem = 1; ordem <= 7; ordem++) {
+      const diaEncontrado = dias.find((dia) => obterOrdemDiaSemana(dia.data) === ordem);
+      diasOrdenados.push(diaEncontrado || null);
+    }
+    return diasOrdenados;
+  };
+
   const obterBadges = (dia) => {
     const badges = [];
     
@@ -126,58 +142,61 @@ const CalendarioGrid = ({ dados, ano, mes, loading = false }) => {
 
               {/* Grid dos Dias da Semana */}
               <div className="grid grid-cols-7 gap-1">
-                {semana.dias
-                  .sort((a, b) => {
-                    // Ordenar os dias da semana começando pela segunda-feira
-                    const diaSemanaA = new Date(a.data).getDay();
-                    const diaSemanaB = new Date(b.data).getDay();
-                    
-                    // Converter para ordem da semana (Seg=1, Ter=2, ..., Dom=0)
-                    const ordemA = diaSemanaA === 0 ? 7 : diaSemanaA;
-                    const ordemB = diaSemanaB === 0 ? 7 : diaSemanaB;
-                    
-                    return ordemA - ordemB;
-                  })
-                  .map((dia) => {
-                    const badges = obterBadges(dia);
-                    const corFundo = obterCorFundo(dia);
-                    
+                {ordenarDiasDaSemana(semana.dias).map((dia, index) => {
+                  if (!dia) {
                     return (
                       <div
-                        key={dia.id}
-                        className={`p-3 rounded-lg border ${corFundo} min-h-[100px]`}
+                        key={`placeholder-${semana.numero}-${index}`}
+                        className="p-3 rounded-lg border border-dashed border-gray-200 bg-white min-h-[100px] flex flex-col justify-between text-gray-300"
                       >
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm font-semibold text-gray-900">
-                            {new Date(dia.data).getDate()}
-                          </span>
-                          <span className="text-xs text-gray-500">
-                            {dia.dia_semana_nome}
-                          </span>
+                          <span className="text-sm font-semibold">-</span>
+                          <span className="text-xs">{obterDiasSemana()[index]}</span>
                         </div>
-
-                        {/* Badges */}
-                        <div className="space-y-1">
-                          {badges.map((badge, badgeIndex) => (
-                            <div
-                              key={badgeIndex}
-                              className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${badge.color}`}
-                            >
-                              <badge.icon className="h-3 w-3 mr-1" />
-                              {badge.text}
-                            </div>
-                          ))}
-                        </div>
-
-                        {/* Observações */}
-                        {dia.observacoes && (
-                          <div className="mt-2 text-xs text-gray-600">
-                            {dia.observacoes}
-                          </div>
-                        )}
                       </div>
                     );
-                  })}
+                  }
+
+                  const badges = obterBadges(dia);
+                  const corFundo = obterCorFundo(dia);
+                  const dataNormalizada = dia.data ? new Date(`${dia.data}T00:00:00`) : null;
+
+                  return (
+                    <div
+                      key={dia.id}
+                      className={`p-3 rounded-lg border ${corFundo} min-h-[100px]`}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-semibold text-gray-900">
+                          {dataNormalizada ? dataNormalizada.getDate() : '-'}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {dia.dia_semana_nome || obterDiasSemana()[index]}
+                        </span>
+                      </div>
+
+                      {/* Badges */}
+                      <div className="space-y-1">
+                        {badges.map((badge, badgeIndex) => (
+                          <div
+                            key={badgeIndex}
+                            className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${badge.color}`}
+                          >
+                            <badge.icon className="h-3 w-3 mr-1" />
+                            {badge.text}
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Observações */}
+                      {dia.observacoes && (
+                        <div className="mt-2 text-xs text-gray-600">
+                          {dia.observacoes}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
