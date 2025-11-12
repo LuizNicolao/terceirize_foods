@@ -55,6 +55,23 @@ const calendarioService = {
     return response.data;
   },
 
+  adicionarDiaNaoUtil: async (dados) => {
+    const response = await api.post('/calendario/configuracao/dias-nao-uteis', dados);
+    return response.data;
+  },
+
+  removerDiaNaoUtil: async (id) => {
+    const response = await api.delete(`/calendario/configuracao/dias-nao-uteis/${id}`);
+    return response.data;
+  },
+
+  listarDiasNaoUteis: async (ano) => {
+    const response = await api.get('/calendario/configuracao/dias-nao-uteis', {
+      params: { ano }
+    });
+    return response.data;
+  },
+
   removerFeriado: async (data) => {
     const response = await api.delete(`/calendario/configuracao/feriados/${data}`);
     return response.data;

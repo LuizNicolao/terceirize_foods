@@ -63,6 +63,23 @@ const CalendarioGrid = ({ dados, ano, mes, loading = false }) => {
         color: 'bg-red-100 text-red-800'
       });
     }
+
+    if (Array.isArray(dia.excecoes) && dia.excecoes.length > 0) {
+      dia.excecoes.forEach((excecao) => {
+        const destino =
+          excecao.tipo_destino === 'global'
+            ? ''
+            : excecao.tipo_destino === 'filial'
+              ? ` - ${excecao.filial_nome || 'Filial'}`
+              : ` - ${excecao.unidade_nome || 'Unidade'}`;
+
+        badges.push({
+          icon: FaExclamationTriangle,
+          text: `${excecao.descricao}${destino}`,
+          color: 'bg-amber-100 text-amber-800'
+        });
+      });
+    }
     
     return badges;
   };
@@ -189,11 +206,26 @@ const CalendarioGrid = ({ dados, ano, mes, loading = false }) => {
                       </div>
 
                       {/* Observações */}
-                      {dia.observacoes && (
-                        <div className="mt-2 text-xs text-gray-600">
-                          {dia.observacoes}
-                        </div>
-                      )}
+                        {dia.observacoes && (
+                          <div className="mt-2 text-xs text-gray-600">
+                            {dia.observacoes}
+                          </div>
+                        )}
+                        {Array.isArray(dia.excecoes) &&
+                          dia.excecoes.some((ex) => ex.observacoes) && (
+                            <div className="mt-2 space-y-1">
+                              {dia.excecoes
+                                .filter((ex) => ex.observacoes)
+                                .map((ex) => (
+                                  <div
+                                    key={`excecao-${ex.id}`}
+                                    className="text-xs text-gray-600 italic"
+                                  >
+                                    {ex.observacoes}
+                                  </div>
+                                ))}
+                            </div>
+                          )}
                     </div>
                   );
                 })}

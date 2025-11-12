@@ -1,5 +1,22 @@
 const { executeQuery } = require('../../config/database');
 
+const ensureDiasNaoUteisTable = async () => {
+  await executeQuery(`
+    CREATE TABLE IF NOT EXISTS calendario_dias_nao_uteis (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      data DATE NOT NULL,
+      descricao VARCHAR(255) NOT NULL,
+      observacoes TEXT NULL,
+      tipo_destino ENUM('global', 'filial', 'unidade') NOT NULL DEFAULT 'global',
+      filial_id INT NULL,
+      unidade_escolar_id INT NULL,
+      criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      atualizado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      UNIQUE KEY uk_calendario_dia_destino (data, tipo_destino, filial_id, unidade_escolar_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  `);
+};
+
 /**
  * Controller para configuração do calendário
  */
@@ -222,6 +239,8 @@ class CalendarioConfiguracaoController {
     try {
       const { ano = new Date().getFullYear() } = req.query;
 
+      await ensureDiasNaoUteisTable();
+
       // Dias úteis configurados
       const diasUteis = await executeQuery(`
         SELECT DISTINCT dia_semana_numero, dia_semana_nome
@@ -254,6 +273,26 @@ class CalendarioConfiguracaoController {
         ORDER BY data
       `, [ano]);
 
+      const diasNaoUteis = await executeQuery(`
+        SELECT 
+          d.id,
+          d.data,
+          d.descricao,
+          d.observacoes,
+          d.tipo_destino,
+          d.filial_id,
+          d.unidade_escolar_id,
+          f.filial AS filial_nome,
+          f.cidade AS filial_cidade,
+          ue.nome_escola AS unidade_nome,
+          ue.cidade AS unidade_cidade
+        FROM calendario_dias_nao_uteis d
+        LEFT JOIN filiais f ON d.filial_id = f.id
+        LEFT JOIN unidades_escolares ue ON d.unidade_escolar_id = ue.id
+        WHERE YEAR(d.data) = ?
+        ORDER BY d.data ASC
+      `, [ano]);
+
       res.json({
         success: true,
         data: {
@@ -261,12 +300,147 @@ class CalendarioConfiguracaoController {
           dias_uteis: diasUteis,
           dias_abastecimento: diasAbastecimento,
           dias_consumo: diasConsumo,
-          feriados: feriados
+          feriados: feriados,
+          dias_nao_uteis: diasNaoUteis
         }
       });
 
     } catch (error) {
       console.error('Erro ao obter configuração:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro interno do servidor'
+      });
+    }
+  }
+
+  static async listarDiasNaoUteis(req, res) {
+    try {
+      const { ano = new Date().getFullYear() } = req.query;
+
+      await ensureDiasNaoUteisTable();
+
+      const dias = await executeQuery(`
+        SELECT 
+          d.id,
+          d.data,
+          d.descricao,
+          d.observacoes,
+          d.tipo_destino,
+          d.filial_id,
+          d.unidade_escolar_id,
+          f.filial AS filial_nome,
+          f.cidade AS filial_cidade,
+          ue.nome_escola AS unidade_nome,
+          ue.cidade AS unidade_cidade
+        FROM calendario_dias_nao_uteis d
+        LEFT JOIN filiais f ON d.filial_id = f.id
+        LEFT JOIN unidades_escolares ue ON d.unidade_escolar_id = ue.id
+        WHERE YEAR(d.data) = ?
+        ORDER BY d.data ASC
+      `, [ano]);
+
+      res.json({
+        success: true,
+        data: dias
+      });
+    } catch (error) {
+      console.error('Erro ao listar dias não úteis personalizados:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro interno do servidor'
+      });
+    }
+  }
+
+  static async adicionarDiaNaoUtil(req, res) {
+    try {
+      const { data, descricao, observacoes, tipo_destino = 'global', filial_id, unidade_escolar_id } = req.body;
+
+      if (!data || !descricao) {
+        return res.status(400).json({
+          success: false,
+          message: 'Data e descrição são obrigatórias'
+        });
+      }
+
+      if (!['global', 'filial', 'unidade'].includes(tipo_destino)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Tipo de destino inválido'
+        });
+      }
+
+      if (tipo_destino === 'filial' && !filial_id) {
+        return res.status(400).json({
+          success: false,
+          message: 'Selecione a filial para o dia não útil'
+        });
+      }
+
+      if (tipo_destino === 'unidade' && !unidade_escolar_id) {
+        return res.status(400).json({
+          success: false,
+          message: 'Selecione a unidade escolar para o dia não útil'
+        });
+      }
+
+      await ensureDiasNaoUteisTable();
+
+      await executeQuery(`
+        INSERT INTO calendario_dias_nao_uteis (
+          data,
+          descricao,
+          observacoes,
+          tipo_destino,
+          filial_id,
+          unidade_escolar_id
+        ) VALUES (?, ?, ?, ?, ?, ?)
+      `, [
+        data,
+        descricao,
+        observacoes || null,
+        tipo_destino,
+        tipo_destino === 'filial' ? filial_id : null,
+        tipo_destino === 'unidade' ? unidade_escolar_id : null
+      ]);
+
+      res.json({
+        success: true,
+        message: 'Dia não útil adicionado com sucesso'
+      });
+    } catch (error) {
+      if (error && error.code === 'ER_DUP_ENTRY') {
+        return res.status(409).json({
+          success: false,
+          message: 'Já existe um dia não útil cadastrado com esses critérios'
+        });
+      }
+      console.error('Erro ao adicionar dia não útil personalizado:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro interno do servidor'
+      });
+    }
+  }
+
+  static async removerDiaNaoUtil(req, res) {
+    try {
+      const { id } = req.params;
+
+      await ensureDiasNaoUteisTable();
+
+      await executeQuery(
+        'DELETE FROM calendario_dias_nao_uteis WHERE id = ?',
+        [id]
+      );
+
+      res.json({
+        success: true,
+        message: 'Dia não útil removido com sucesso'
+      });
+    } catch (error) {
+      console.error('Erro ao remover dia não útil personalizado:', error);
       res.status(500).json({
         success: false,
         message: 'Erro interno do servidor'

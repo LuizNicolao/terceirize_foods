@@ -28,6 +28,9 @@ router.post('/configuracao/dias-consumo', checkScreenPermission('calendario', 'e
 router.post('/configuracao/feriados', checkScreenPermission('calendario', 'editar'), CalendarioConfiguracaoController.adicionarFeriado);
 router.delete('/configuracao/feriados/:data', checkScreenPermission('calendario', 'excluir'), CalendarioConfiguracaoController.removerFeriado);
 router.get('/configuracao', checkScreenPermission('calendario', 'visualizar'), CalendarioConfiguracaoController.obterConfiguracao);
+router.get('/configuracao/dias-nao-uteis', checkScreenPermission('calendario', 'visualizar'), CalendarioConfiguracaoController.listarDiasNaoUteis);
+router.post('/configuracao/dias-nao-uteis', checkScreenPermission('calendario', 'editar'), CalendarioConfiguracaoController.adicionarDiaNaoUtil);
+router.delete('/configuracao/dias-nao-uteis/:id', checkScreenPermission('calendario', 'excluir'), CalendarioConfiguracaoController.removerDiaNaoUtil);
 
 // ===== API DE INTEGRAÇÃO =====
 // Semanas

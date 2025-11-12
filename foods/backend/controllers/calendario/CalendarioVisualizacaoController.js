@@ -1,5 +1,22 @@
 const { executeQuery } = require('../../config/database');
 
+const ensureDiasNaoUteisTable = async () => {
+  await executeQuery(`
+    CREATE TABLE IF NOT EXISTS calendario_dias_nao_uteis (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      data DATE NOT NULL,
+      descricao VARCHAR(255) NOT NULL,
+      observacoes TEXT NULL,
+      tipo_destino ENUM('global', 'filial', 'unidade') NOT NULL DEFAULT 'global',
+      filial_id INT NULL,
+      unidade_escolar_id INT NULL,
+      criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      atualizado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      UNIQUE KEY uk_calendario_dia_destino (data, tipo_destino, filial_id, unidade_escolar_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  `);
+};
+
 /**
  * Controller para visualização do calendário
  */
@@ -81,6 +98,8 @@ class CalendarioVisualizacaoController {
       // Buscar dados
       const queryParams = [...params, parseInt(limit), parseInt(offset)];
       
+      await ensureDiasNaoUteisTable();
+
       const dados = await executeQuery(`
         SELECT 
           id,
@@ -169,9 +188,48 @@ class CalendarioVisualizacaoController {
         ORDER BY data ASC
       `, [ano, mes]);
 
+      const diasNaoUteis = await executeQuery(`
+        SELECT 
+          d.id,
+          d.data,
+          d.descricao,
+          d.observacoes,
+          d.tipo_destino,
+          d.filial_id,
+          d.unidade_escolar_id,
+          f.filial AS filial_nome,
+          f.cidade AS filial_cidade,
+          ue.nome_escola AS unidade_nome,
+          ue.cidade AS unidade_cidade
+        FROM calendario_dias_nao_uteis d
+        LEFT JOIN filiais f ON d.filial_id = f.id
+        LEFT JOIN unidades_escolares ue ON d.unidade_escolar_id = ue.id
+        WHERE YEAR(d.data) = ? AND MONTH(d.data) = ?
+        ORDER BY d.data ASC
+      `, [ano, mes]);
+
+      const mapaDiasNaoUteis = {};
+      diasNaoUteis.forEach((item) => {
+        const dataKey = item.data instanceof Date
+          ? item.data.toISOString().split('T')[0]
+          : new Date(`${item.data}T00:00:00`).toISOString().split('T')[0];
+
+        if (!mapaDiasNaoUteis[dataKey]) {
+          mapaDiasNaoUteis[dataKey] = [];
+        }
+
+        mapaDiasNaoUteis[dataKey].push(item);
+      });
+
       // Organizar por semanas
       const semanas = {};
       dados.forEach(dia => {
+        const dataKey = dia.data instanceof Date
+          ? dia.data.toISOString().split('T')[0]
+          : new Date(`${dia.data}T00:00:00`).toISOString().split('T')[0];
+
+        dia.excecoes = mapaDiasNaoUteis[dataKey] || [];
+
         if (!semanas[dia.semana_numero]) {
           semanas[dia.semana_numero] = {
             numero: dia.semana_numero,

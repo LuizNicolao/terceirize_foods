@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { FaCog, FaArrowLeft, FaSave, FaPlus, FaTrash, FaCalendarCheck, FaTruck, FaShoppingCart, FaExclamationTriangle } from 'react-icons/fa';
+import { FaCog, FaArrowLeft, FaSave, FaPlus, FaTrash, FaCalendarCheck, FaTruck, FaShoppingCart, FaExclamationTriangle, FaCalendarTimes } from 'react-icons/fa';
 import { useCalendario } from '../../hooks/useCalendario';
 import { usePermissions } from '../../contexts/PermissionsContext';
-import { Button, Input, Modal } from '../../components/ui';
+import { Button, Input, Modal, SearchableSelect } from '../../components/ui';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import FiliaisService from '../../services/filiais';
+import UnidadesEscolaresService from '../../services/unidadesEscolares';
 
 const CalendarioConfiguracao = () => {
   const { user } = usePermissions();
@@ -16,7 +18,10 @@ const CalendarioConfiguracao = () => {
     configurarDiasAbastecimento,
     configurarDiasConsumo,
     adicionarFeriado,
-    removerFeriado
+    removerFeriado,
+    diasNaoUteis,
+    adicionarDiaNaoUtil,
+    removerDiaNaoUtil
   } = useCalendario();
 
   const [ano, setAno] = useState(new Date().getFullYear());
@@ -29,6 +34,18 @@ const CalendarioConfiguracao = () => {
     nome_feriado: '',
     observacoes: ''
   });
+  const [modalDiaNaoUtil, setModalDiaNaoUtil] = useState(false);
+  const [formDiaNaoUtil, setFormDiaNaoUtil] = useState({
+    data: '',
+    descricao: '',
+    tipo_destino: 'global',
+    filial_id: '',
+    unidade_escolar_id: '',
+    observacoes: ''
+  });
+  const [filiais, setFiliais] = useState([]);
+  const [unidadesEscolares, setUnidadesEscolares] = useState([]);
+  const [loadingListas, setLoadingListas] = useState(false);
 
   const opcoesDiasSemana = [
     { value: 1, label: 'Segunda-feira' },
@@ -51,6 +68,32 @@ const CalendarioConfiguracao = () => {
       setDiasConsumo(configuracao.dias_consumo?.map(d => d.dia_semana_numero) || []);
     }
   }, [configuracao]);
+
+  useEffect(() => {
+    const carregarListasAuxiliares = async () => {
+      try {
+        setLoadingListas(true);
+        const [filiaisResult, unidadesResult] = await Promise.all([
+          FiliaisService.buscarAtivas(),
+          UnidadesEscolaresService.buscarAtivas()
+        ]);
+
+        if (filiaisResult.success) {
+          setFiliais(filiaisResult.data || []);
+        }
+
+        if (unidadesResult.success) {
+          setUnidadesEscolares(unidadesResult.data || []);
+        }
+      } catch (error) {
+        console.error('Erro ao carregar listas auxiliares do calendário:', error);
+      } finally {
+        setLoadingListas(false);
+      }
+    };
+
+    carregarListasAuxiliares();
+  }, []);
 
   const handleAnoChange = (novoAno) => {
     setAno(novoAno);
@@ -137,6 +180,79 @@ const CalendarioConfiguracao = () => {
       }
     }
   };
+
+  const handleAdicionarDiaNaoUtil = () => {
+    setFormDiaNaoUtil({
+      data: '',
+      descricao: '',
+      tipo_destino: 'global',
+      filial_id: '',
+      unidade_escolar_id: '',
+      observacoes: ''
+    });
+    setModalDiaNaoUtil(true);
+  };
+
+  const handleTipoDestinoChange = (valor) => {
+    setFormDiaNaoUtil((prev) => ({
+      ...prev,
+      tipo_destino: valor,
+      filial_id: valor === 'filial' ? prev.filial_id : '',
+      unidade_escolar_id: valor === 'unidade' ? prev.unidade_escolar_id : '',
+    }));
+  };
+
+  const handleSalvarDiaNaoUtil = async () => {
+    if (!formDiaNaoUtil.data || !formDiaNaoUtil.descricao) {
+      toast.error('Data e descrição são obrigatórias');
+      return;
+    }
+
+    if (formDiaNaoUtil.tipo_destino === 'filial' && !formDiaNaoUtil.filial_id) {
+      toast.error('Selecione a filial vinculada ao dia não útil');
+      return;
+    }
+
+    if (formDiaNaoUtil.tipo_destino === 'unidade' && !formDiaNaoUtil.unidade_escolar_id) {
+      toast.error('Selecione a unidade escolar vinculada ao dia não útil');
+      return;
+    }
+
+    const payload = {
+      data: formDiaNaoUtil.data,
+      descricao: formDiaNaoUtil.descricao,
+      observacoes: formDiaNaoUtil.observacoes || null,
+      tipo_destino: formDiaNaoUtil.tipo_destino,
+      filial_id: formDiaNaoUtil.tipo_destino === 'filial' ? parseInt(formDiaNaoUtil.filial_id, 10) : null,
+      unidade_escolar_id: formDiaNaoUtil.tipo_destino === 'unidade' ? parseInt(formDiaNaoUtil.unidade_escolar_id, 10) : null
+    };
+
+    const sucesso = await adicionarDiaNaoUtil(payload);
+    if (sucesso) {
+      setModalDiaNaoUtil(false);
+    }
+  };
+
+  const handleRemoverDiaNaoUtil = async (dia) => {
+    if (!dia || !dia.id) return;
+    if (window.confirm('Tem certeza que deseja remover este dia não útil?')) {
+      await removerDiaNaoUtil(dia.id, dia.data);
+    }
+  };
+
+  const filiaisOptions = filiais.map((filial) => ({
+    value: filial.id,
+    label: filial.filial,
+    description: filial.cidade ? `${filial.cidade}${filial.estado ? ` - ${filial.estado}` : ''}` : undefined
+  }));
+
+  const unidadesEscolaresOptions = unidadesEscolares.map((unidade) => ({
+    value: unidade.id,
+    label: unidade.nome_escola,
+    description: unidade.cidade ? `${unidade.cidade}${unidade.estado ? ` - ${unidade.estado}` : ''}` : undefined
+  }));
+
+  const diasNaoUteisConfigurados = diasNaoUteis || [];
 
   const gerarAnos = () => {
     const anos = [];
@@ -336,6 +452,72 @@ const CalendarioConfiguracao = () => {
               )}
             </div>
           </div>
+
+          {/* Dias não úteis personalizados */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+                <FaCalendarTimes className="h-5 w-5 text-amber-600 mr-2" />
+                Dias Não Úteis Personalizados
+              </h3>
+              <Button
+                onClick={handleAdicionarDiaNaoUtil}
+                variant="primary"
+                size="sm"
+                disabled={loadingListas || loading}
+              >
+                <FaPlus className="h-4 w-4 mr-2" />
+                Adicionar
+              </Button>
+            </div>
+
+            <div className="space-y-2">
+              {diasNaoUteisConfigurados.length > 0 ? (
+                diasNaoUteisConfigurados.map((dia) => {
+                  const dataFormatada = dia.data
+                    ? new Date(`${dia.data}T00:00:00`).toLocaleDateString('pt-BR')
+                    : '';
+                  let destinoDescricao = 'Global';
+                  if (dia.tipo_destino === 'filial') {
+                    destinoDescricao = `Filial: ${dia.filial_nome || dia.filial_id}`;
+                    if (dia.filial_cidade) {
+                      destinoDescricao += ` (${dia.filial_cidade})`;
+                    }
+                  } else if (dia.tipo_destino === 'unidade') {
+                    destinoDescricao = `Unidade: ${dia.unidade_nome || dia.unidade_escolar_id}`;
+                    if (dia.unidade_cidade) {
+                      destinoDescricao += ` (${dia.unidade_cidade})`;
+                    }
+                  }
+
+                  return (
+                    <div key={dia.id} className="flex items-center justify-between p-3 bg-amber-50 rounded-lg border border-amber-200">
+                      <div>
+                        <div className="font-medium text-gray-900">{dia.descricao}</div>
+                        <div className="text-sm text-gray-500">{dataFormatada}</div>
+                        <div className="text-xs text-amber-700 mt-1">{destinoDescricao}</div>
+                        {dia.observacoes && (
+                          <div className="text-xs text-gray-600 mt-1">{dia.observacoes}</div>
+                        )}
+                      </div>
+                      <Button
+                        onClick={() => handleRemoverDiaNaoUtil(dia)}
+                        variant="outline"
+                        size="sm"
+                        disabled={loading}
+                      >
+                        <FaTrash className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="text-center py-4 text-gray-500">
+                  Nenhum dia não útil personalizado configurado para {ano}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
       {/* Modal de Feriado */}
@@ -378,6 +560,95 @@ const CalendarioConfiguracao = () => {
             </Button>
             <Button
               onClick={handleSalvarFeriado}
+              variant="primary"
+              disabled={loading}
+            >
+              <FaSave className="h-4 w-4 mr-2" />
+              Salvar
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Modal de Dia Não Útil */}
+      <Modal
+        isOpen={modalDiaNaoUtil}
+        onClose={() => setModalDiaNaoUtil(false)}
+        title="Adicionar Dia Não Útil Personalizado"
+        size="md"
+      >
+        <div className="space-y-4">
+          <Input
+            label="Data"
+            type="date"
+            value={formDiaNaoUtil.data}
+            onChange={(e) => setFormDiaNaoUtil((prev) => ({ ...prev, data: e.target.value }))}
+            required
+          />
+
+          <Input
+            label="Descrição"
+            value={formDiaNaoUtil.descricao}
+            onChange={(e) => setFormDiaNaoUtil((prev) => ({ ...prev, descricao: e.target.value }))}
+            placeholder="Ex: Recesso municipal, Atividade interna..."
+            required
+          />
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Aplicar para</label>
+            <select
+              value={formDiaNaoUtil.tipo_destino}
+              onChange={(e) => handleTipoDestinoChange(e.target.value)}
+              className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-sm"
+            >
+              <option value="global">Todos (Global)</option>
+              <option value="filial">Filial / Cidade</option>
+              <option value="unidade">Unidade Escolar</option>
+            </select>
+          </div>
+
+          {formDiaNaoUtil.tipo_destino === 'filial' && (
+            <SearchableSelect
+              label="Filial"
+              value={formDiaNaoUtil.filial_id}
+              onChange={(valor) =>
+                setFormDiaNaoUtil((prev) => ({ ...prev, filial_id: valor, unidade_escolar_id: '' }))
+              }
+              options={filiaisOptions}
+              placeholder="Selecione uma filial..."
+              loading={loadingListas}
+            />
+          )}
+
+          {formDiaNaoUtil.tipo_destino === 'unidade' && (
+            <SearchableSelect
+              label="Unidade Escolar"
+              value={formDiaNaoUtil.unidade_escolar_id}
+              onChange={(valor) =>
+                setFormDiaNaoUtil((prev) => ({ ...prev, unidade_escolar_id: valor, filial_id: '' }))
+              }
+              options={unidadesEscolaresOptions}
+              placeholder="Selecione uma unidade escolar..."
+              loading={loadingListas}
+            />
+          )}
+
+          <Input
+            label="Observações"
+            value={formDiaNaoUtil.observacoes}
+            onChange={(e) => setFormDiaNaoUtil((prev) => ({ ...prev, observacoes: e.target.value }))}
+            placeholder="Observações adicionais..."
+          />
+
+          <div className="flex justify-end space-x-3 pt-4">
+            <Button
+              onClick={() => setModalDiaNaoUtil(false)}
+              variant="outline"
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleSalvarDiaNaoUtil}
               variant="primary"
               disabled={loading}
             >

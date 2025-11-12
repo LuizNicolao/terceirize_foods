@@ -10,6 +10,7 @@ export const useCalendario = () => {
   const [dados, setDados] = useState([]);
   const [estatisticas, setEstatisticas] = useState(null);
   const [configuracao, setConfiguracao] = useState(null);
+  const [diasNaoUteis, setDiasNaoUteis] = useState([]);
   const [filtros, setFiltros] = useState({
     ano: new Date().getFullYear(),
     mes: new Date().getMonth() + 1,
@@ -180,6 +181,29 @@ export const useCalendario = () => {
     }
   }, []);
 
+  const adicionarDiaNaoUtil = useCallback(async (dados) => {
+    setLoading(true);
+    try {
+      const response = await calendarioService.adicionarDiaNaoUtil(dados);
+      if (response.success) {
+        toast.success(response.message || 'Dia não útil adicionado com sucesso');
+        const anoReferencia = dados?.data
+          ? new Date(`${dados.data}T00:00:00`).getFullYear()
+          : new Date().getFullYear();
+        await carregarConfiguracao(anoReferencia);
+        return true;
+      }
+      toast.error(response.message || 'Erro ao adicionar dia não útil');
+      return false;
+    } catch (error) {
+      console.error('Erro ao adicionar dia não útil:', error);
+      toast.error('Erro ao adicionar dia não útil');
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, [carregarConfiguracao]);
+
   const removerFeriado = useCallback(async (data) => {
     setLoading(true);
     try {
@@ -197,12 +221,36 @@ export const useCalendario = () => {
     }
   }, []);
 
+  const removerDiaNaoUtil = useCallback(async (id, dataReferencia) => {
+    setLoading(true);
+    try {
+      const response = await calendarioService.removerDiaNaoUtil(id);
+      if (response.success) {
+        toast.success(response.message || 'Dia não útil removido com sucesso');
+        const anoReferencia = dataReferencia
+          ? new Date(`${dataReferencia}T00:00:00`).getFullYear()
+          : (configuracao?.ano || new Date().getFullYear());
+        await carregarConfiguracao(anoReferencia);
+        return true;
+      }
+      toast.error(response.message || 'Erro ao remover dia não útil');
+      return false;
+    } catch (error) {
+      console.error('Erro ao remover dia não útil:', error);
+      toast.error('Erro ao remover dia não útil');
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, [carregarConfiguracao, configuracao]);
+
   const carregarConfiguracao = useCallback(async (ano) => {
     setLoading(true);
     try {
       const response = await calendarioService.obterConfiguracao(ano);
       if (response.success) {
         setConfiguracao(response.data);
+        setDiasNaoUteis(response.data.dias_nao_uteis || []);
         return response.data;
       }
     } catch (error) {
@@ -292,6 +340,7 @@ export const useCalendario = () => {
     dados,
     estatisticas,
     configuracao,
+    diasNaoUteis,
     filtros,
 
     // Dashboard
@@ -309,6 +358,8 @@ export const useCalendario = () => {
     configurarDiasConsumo,
     adicionarFeriado,
     removerFeriado,
+    adicionarDiaNaoUtil,
+    removerDiaNaoUtil,
     carregarConfiguracao,
 
     // API de Integração
