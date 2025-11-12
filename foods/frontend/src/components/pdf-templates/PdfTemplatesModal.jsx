@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { FaTimes, FaSave, FaEye, FaEdit, FaPlus } from 'react-icons/fa';
-import { Button, Input, Modal, SearchableSelect, CKEditor } from '../ui';
+import { Button, Input, Modal, SearchableSelect, CKEditor5, CKEditor } from '../ui';
 
 const PdfTemplatesModal = ({
   isOpen,
@@ -16,6 +16,7 @@ const PdfTemplatesModal = ({
   const [saving, setSaving] = useState(false);
   const [htmlContent, setHtmlContent] = useState('');
   const editorInstanceRef = useRef(null);
+  const usarEditorNovo = true;
 
   const telaVinculada = watch('tela_vinculada');
 
@@ -145,18 +146,44 @@ const PdfTemplatesModal = ({
   }, [template, isOpen, setValue, reset]);
 
   // Função para inserir variável no editor CKEditor 4
-  const inserirVariavel = (variavel) => {
-    if (typeof window.CKEDITOR !== 'undefined') {
-      // Procurar a instância do editor nas instâncias do CKEditor pelo name
-      const editors = window.CKEDITOR.instances;
-      for (const key in editors) {
-        const editor = editors[key];
-        // Verificar se é o editor que queremos pelo elemento textarea name
-        if (editor && editor.element && editor.element.$ && editor.element.$.name === 'html_template') {
-          editor.insertText(`{{${variavel}}}`);
-          break;
-        }
+  const inserirVariavelNoEditorNovo = (variavel) => {
+    if (!editorInstanceRef.current) {
+      return;
+    }
+
+    const editor = editorInstanceRef.current;
+    editor.model.change((writer) => {
+      const insertPosition = editor.model.document.selection.getFirstPosition();
+      writer.insertText(`{{${variavel}}}`, insertPosition);
+    });
+
+    editor.editing.view.focus();
+  };
+
+  const inserirVariavelNoEditorAntigo = (variavel) => {
+    if (typeof window.CKEDITOR === 'undefined') {
+      return;
+    }
+    const editors = window.CKEDITOR.instances;
+    for (const key in editors) {
+      const editor = editors[key];
+      if (
+        editor &&
+        editor.element &&
+        editor.element.$ &&
+        editor.element.$.name === 'html_template'
+      ) {
+        editor.insertText(`{{${variavel}}}`);
+        break;
       }
+    }
+  };
+
+  const inserirVariavel = (variavel) => {
+    if (usarEditorNovo) {
+      inserirVariavelNoEditorNovo(variavel);
+    } else {
+      inserirVariavelNoEditorAntigo(variavel);
     }
   };
 
@@ -308,29 +335,42 @@ const PdfTemplatesModal = ({
             <label className="block text-sm font-medium text-gray-700 mb-2">
               HTML Template *
             </label>
-            <CKEditor
-              value={htmlContent}
-              onChange={(e) => setHtmlContent(e.target.value)}
-              name="html_template"
-              disabled={isViewMode || saving}
-              height={500}
-              config={{
-                toolbar: [
-                  { name: 'document', items: [ 'Source', '-', 'Save', 'NewPage', 'Preview' ] },
-                  { name: 'clipboard', items: [ 'Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo' ] },
-                  { name: 'editing', items: [ 'Find', 'Replace', '-', 'SelectAll' ] },
-                  '/',
-                  { name: 'basicstyles', items: [ 'Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'RemoveFormat' ] },
-                  { name: 'paragraph', items: [ 'NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock' ] },
-                  { name: 'links', items: [ 'Link', 'Unlink', 'Anchor' ] },
-                  { name: 'insert', items: [ 'Image', 'Table', 'HorizontalRule', 'SpecialChar', 'PageBreak' ] },
-                  '/',
-                  { name: 'styles', items: [ 'Styles', 'Format', 'Font', 'FontSize' ] },
-                  { name: 'colors', items: [ 'TextColor', 'BGColor' ] },
-                  { name: 'tools', items: [ 'Maximize', 'ShowBlocks' ] }
-                ]
-              }}
-            />
+            {usarEditorNovo ? (
+              <CKEditor5
+                value={htmlContent}
+                onChange={(e) => setHtmlContent(e.target.value)}
+                name="html_template"
+                disabled={isViewMode || saving}
+                height={500}
+                onEditorReady={(editor) => {
+                  editorInstanceRef.current = editor;
+                }}
+              />
+            ) : (
+              <CKEditor
+                value={htmlContent}
+                onChange={(e) => setHtmlContent(e.target.value)}
+                name="html_template"
+                disabled={isViewMode || saving}
+                height={500}
+                config={{
+                  toolbar: [
+                    { name: 'document', items: [ 'Source', '-', 'Save', 'NewPage', 'Preview' ] },
+                    { name: 'clipboard', items: [ 'Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo' ] },
+                    { name: 'editing', items: [ 'Find', 'Replace', '-', 'SelectAll' ] },
+                    '/',
+                    { name: 'basicstyles', items: [ 'Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'RemoveFormat' ] },
+                    { name: 'paragraph', items: [ 'NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock' ] },
+                    { name: 'links', items: [ 'Link', 'Unlink', 'Anchor' ] },
+                    { name: 'insert', items: [ 'Image', 'Table', 'HorizontalRule', 'SpecialChar', 'PageBreak' ] },
+                    '/',
+                    { name: 'styles', items: [ 'Styles', 'Format', 'Font', 'FontSize' ] },
+                    { name: 'colors', items: [ 'TextColor', 'BGColor' ] },
+                    { name: 'tools', items: [ 'Maximize', 'ShowBlocks' ] }
+                  ]
+                }}
+              />
+            )}
             {errors.html_template && (
               <p className="mt-1 text-sm text-red-600">{errors.html_template.message}</p>
             )}
