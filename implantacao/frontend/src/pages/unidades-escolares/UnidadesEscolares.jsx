@@ -75,13 +75,9 @@ const UnidadesEscolares = () => {
     atualizarPaginacao({ itemsPerPage, currentPage: 1 });
   };
 
-  const handleExportXLSX = () => {
-    console.log('Exportar XLSX das unidades escolares consultadas');
-  };
+  const handleExportXLSX = () => {};
 
-  const handleExportPDF = () => {
-    console.log('Exportar PDF das unidades escolares consultadas');
-  };
+  const handleExportPDF = () => {};
 
   // Estados de loading e erro
   if (loading) {

@@ -74,7 +74,6 @@ const ImportarUnidadesEscolares = ({ isOpen, onClose, onImportSuccess }) => {
           onImportSuccess(response.data);
         }
       } else {
-        console.log('Response de erro:', response);
         setErrors(response.validationErrors || []);
         setErrorDetails(response.details || '');
         setErrorsByRow(response.errorsByRow || null);

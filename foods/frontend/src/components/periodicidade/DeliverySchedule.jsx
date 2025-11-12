@@ -170,7 +170,7 @@ const DeliverySchedule = ({ deliveries, isViewMode = false }) => {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => console.log('Ver detalhes da entrega:', delivery.id)}
+                  onClick={() => {}}
                 >
                   <FaEye className="mr-1" />
                   Ver Detalhes
@@ -180,7 +180,7 @@ const DeliverySchedule = ({ deliveries, isViewMode = false }) => {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => console.log('Resolver conflito:', delivery.id)}
+                    onClick={() => {}}
                     className="text-red-600 border-red-300 hover:bg-red-50"
                   >
                     <FaExclamationTriangle className="mr-1" />

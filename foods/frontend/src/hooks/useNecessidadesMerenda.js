@@ -172,14 +172,8 @@ export const useNecessidadesMerenda = () => {
 
   const handlePreviewNecessidade = async (necessidade) => {
     try {
-      console.log('🔍 handlePreviewNecessidade chamado com:', {
-        tem_necessidade: !!necessidade,
-        tem_id: !!(necessidade && necessidade.id)
-      });
-
       // Se a necessidade já tem dados (vem do PDF processado), usar diretamente
       if (necessidade && necessidade.dados_processados) {
-        console.log('✅ Abrindo preview com dados do PDF');
         setEditingNecessidade(necessidade);
         setShowPreviewModal(true);
         return;

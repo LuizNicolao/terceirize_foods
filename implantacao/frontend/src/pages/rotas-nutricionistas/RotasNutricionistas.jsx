@@ -63,13 +63,9 @@ const RotasNutricionistas = () => {
     atualizarPaginacao({ itemsPerPage, currentPage: 1 });
   };
 
-  const handleExportXLSX = () => {
-    console.log('Exportar XLSX das rotas nutricionistas consultadas');
-  };
+  const handleExportXLSX = () => {};
 
-  const handleExportPDF = () => {
-    console.log('Exportar PDF das rotas nutricionistas consultadas');
-  };
+  const handleExportPDF = () => {};
 
   if (loading) {
     return (

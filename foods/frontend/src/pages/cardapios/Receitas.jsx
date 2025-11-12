@@ -142,9 +142,6 @@ const Receitas = () => {
         placeholder="Buscar por unidade escolar..."
       />
       
-      <div className="bg-white p-4 rounded-lg shadow-sm border">
-      </div>
-
       {/* Ações */}
       <div className="mb-4">
         <ExportButtons

@@ -139,7 +139,6 @@ class TiposCardapioService {
         message: 'Tipo de cardápio excluído com sucesso!'
       };
     } catch (error) {
-      console.log('Erro ao excluir tipo de cardápio:', error.response?.data);
       return {
         success: false,
         error: error.response?.data?.message || error.response?.data?.error || 'Erro ao excluir tipo de cardápio'

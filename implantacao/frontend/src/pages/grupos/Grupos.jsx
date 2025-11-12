@@ -34,13 +34,9 @@ const Grupos = () => {
     atualizarFiltros({ search: searchTerm });
   };
 
-  const handleExportXLSX = () => {
-    console.log('Exportar XLSX');
-  };
+  const handleExportXLSX = () => {};
 
-  const handleExportPDF = () => {
-    console.log('Exportar PDF');
-  };
+  const handleExportPDF = () => {};
 
   const handleViewGrupo = (grupo) => {
     setSelectedGrupo(grupo);

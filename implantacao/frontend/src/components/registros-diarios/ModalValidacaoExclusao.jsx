@@ -29,14 +29,11 @@ const ModalValidacaoExclusao = ({
       const response = await RegistrosDiariosService.listarHistorico(escolaId);
       
       if (response.success && response.data) {
-        console.log('📊 Dados recebidos do backend:', response.data);
-        
         // Criar um mapa para agrupar por data única
         const diasMap = new Map();
         
         response.data.forEach(registro => {
           const data = registro.data; // Formato YYYY-MM-DD
-          console.log('📅 Processando registro:', { data, registro });
           
           // Se já existe, mantém os valores; se não, cria novo
           if (!diasMap.has(data)) {
@@ -61,7 +58,6 @@ const ModalValidacaoExclusao = ({
           return new Date(b.data) - new Date(a.data);
         });
         
-        console.log('✅ Dias únicos processados:', diasUnicos);
         setDiasComRegistros(diasUnicos);
       } else {
         toast.error('Erro ao carregar registros');

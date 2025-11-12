@@ -26,19 +26,10 @@ export const useEntregas = (agrupamentoId, mes, ano) => {
         // Converter dados do banco para formato do frontend
         const entregasFormatadas = await Promise.all(
           response.data.map(async (entrega) => {
-            // DEBUG: Log da data que vem do banco
-            console.log('🔍 [DEBUG] useEntregas - Data do banco:', entrega.data_entrega);
-            console.log('🔍 [DEBUG] useEntregas - Tipo da data:', typeof entrega.data_entrega);
-            
             // Converter data_entrega (string) para Date object - CORRIGINDO TIMEZONE
             // Usar parsing manual para evitar problemas de timezone
             const [year, month, day] = entrega.data_entrega.split('-');
             const dataEntrega = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-            
-            // DEBUG: Log da data convertida
-            console.log('🔍 [DEBUG] useEntregas - Data convertida:', dataEntrega);
-            console.log('🔍 [DEBUG] useEntregas - Data convertida (ISO):', dataEntrega.toISOString());
-            console.log('🔍 [DEBUG] useEntregas - Data convertida (local):', dataEntrega.toLocaleDateString());
             
             const entregaFormatada = {
               id: entrega.id,

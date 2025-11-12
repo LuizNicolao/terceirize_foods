@@ -42,15 +42,9 @@ const UnidadesMedida = () => {
     atualizarPaginacao({ itemsPerPage, currentPage: 1 });
   };
 
-  const handleExportXLSX = () => {
-    // TODO: Implementar exportação XLSX dos dados consultados
-    console.log('Exportar XLSX');
-  };
+  const handleExportXLSX = () => {};
 
-  const handleExportPDF = () => {
-    // TODO: Implementar exportação PDF dos dados consultados
-    console.log('Exportar PDF');
-  };
+  const handleExportPDF = () => {};
 
   const handleViewUnidadeMedida = (unidadeMedida) => {
     setSelectedUnidadeMedida(unidadeMedida);

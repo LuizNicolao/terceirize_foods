@@ -77,15 +77,9 @@ const Fornecedores = () => {
     atualizarPaginacao({ itemsPerPage, currentPage: 1 });
   };
 
-  const handleExportXLSX = () => {
-    // TODO: Implementar exportação XLSX dos dados consultados
-    console.log('Exportar XLSX dos fornecedores consultados');
-  };
+  const handleExportXLSX = () => {};
 
-  const handleExportPDF = () => {
-    // TODO: Implementar exportação PDF dos dados consultados
-    console.log('Exportar PDF dos fornecedores consultados');
-  };
+  const handleExportPDF = () => {};
 
   // Estados de loading e erro
   if (loading) {

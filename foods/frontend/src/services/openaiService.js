@@ -156,7 +156,6 @@ class OpenAIService {
       }
 
       // Se o agente atual não conseguiu, usa a IA
-      console.log('🤖 Agente atual não conseguiu processar, usando IA...');
       const resultadoIA = await this.extrairIngredientes(texto);
       
       if (resultadoIA.sucesso) {

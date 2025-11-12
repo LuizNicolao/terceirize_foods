@@ -230,8 +230,8 @@ const AnaliseNutricionista = () => {
             </h2>
             <div className="flex gap-3">
               <ExportButtons
-                onExportXLSX={() => console.log('Export XLSX')}
-                onExportPDF={() => console.log('Export PDF')}
+                onExportXLSX={() => {}}
+                onExportPDF={() => {}}
                 size="sm"
                 variant="outline"
                 showLabels={true}

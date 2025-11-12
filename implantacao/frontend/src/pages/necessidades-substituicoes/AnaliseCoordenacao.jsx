@@ -80,8 +80,8 @@ const AnaliseCoordenacao = () => {
             </h2>
             <div className="flex items-center gap-2">
               <ExportButtons
-                onExportXLSX={() => console.log('Export XLSX')}
-                onExportPDF={() => console.log('Export PDF')}
+                onExportXLSX={() => {}}
+                onExportPDF={() => {}}
                 size="sm"
                 variant="outline"
                 showLabels={true}

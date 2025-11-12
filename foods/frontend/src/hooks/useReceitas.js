@@ -174,16 +174,8 @@ export const useReceitas = () => {
 
   const handlePreviewReceita = async (receita) => {
     try {
-      console.log('🔍 handlePreviewReceita chamado com:', {
-        tem_receita: !!receita,
-        tem_refeicoes: !!(receita && receita.refeicoes),
-        tem_tabela_bruta: !!(receita && receita.tabela_bruta),
-        tem_id: !!(receita && receita.id)
-      });
-
       // Se o receita já tem dados (vem do PDF processado), usar diretamente
       if (receita && (receita.refeicoes || receita.tabela_bruta)) {
-        console.log('✅ Abrindo preview com dados do PDF');
         setEditingReceita(receita);
         setShowPreviewModal(true);
         return;
@@ -191,7 +183,6 @@ export const useReceitas = () => {
 
       // Se é um receita existente, buscar do banco
       if (receita && receita.id) {
-        console.log('🔍 Buscando receita existente no banco');
         const result = await ReceitasService.buscarPorId(receita.id);
         if (result.success) {
           setEditingReceita(result.data);
@@ -222,9 +213,7 @@ export const useReceitas = () => {
 
   // Funções de upload de PDF
   const handleUploadPDF = () => {
-    console.log('🔍 handleUploadPDF chamado');
     setShowUploadModal(true);
-    console.log('🔍 showUploadModal definido como true');
   };
 
   const handleCloseUploadModal = () => {
@@ -233,8 +222,6 @@ export const useReceitas = () => {
 
   const handleProcessarPDF = async (dadosProcessados) => {
     try {
-      console.log('Dados processados do PDF:', dadosProcessados);
-
       setShowUploadModal(false);
 
       if (dadosProcessados?.upload?.duplicate) {

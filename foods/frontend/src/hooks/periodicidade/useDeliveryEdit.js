@@ -356,7 +356,6 @@ export const useDeliveryEdit = (deliveries, setDeliveries, agrupamentoId, carreg
           try {
             const response = await EntregasService.criarEntrega(agrupamentoId, dadosExclusao);
             if (response.success) {
-              console.log('✅ Exclusão salva no banco');
               // Recarregar entregas do banco
               if (carregarEntregas) {
                 await carregarEntregas();
