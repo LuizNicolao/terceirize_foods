@@ -33,15 +33,24 @@ class ClassesListController {
         c.data_atualizacao as atualizado_em,
         s.nome as subgrupo_nome,
         g.nome as grupo_nome,
-        COUNT(DISTINCT po.id) as total_produtos_origem,
-        COUNT(DISTINCT pg.id) as total_produtos_genericos,
-        COUNT(DISTINCT p.id) as total_produtos_finais
+        (
+          SELECT COUNT(*) 
+          FROM produto_origem po 
+          WHERE po.classe_id = c.id
+        ) as total_produtos_origem,
+        (
+          SELECT COUNT(*) 
+          FROM produto_generico pg 
+          WHERE pg.classe_id = c.id
+        ) as total_produtos_genericos,
+        (
+          SELECT COUNT(*) 
+          FROM produtos p 
+          WHERE p.classe_id = c.id
+        ) as total_produtos_finais
       FROM classes c
       LEFT JOIN subgrupos s ON c.subgrupo_id = s.id
       LEFT JOIN grupos g ON s.grupo_id = g.id
-      LEFT JOIN produto_origem po ON c.id = po.classe_id
-      LEFT JOIN produto_generico pg ON c.id = pg.classe_id
-      LEFT JOIN produtos p ON c.id = p.classe_id
       WHERE 1=1
     `;
     
@@ -62,8 +71,6 @@ class ClassesListController {
       baseQuery += ' AND c.subgrupo_id = ?';
       params.push(subgrupo_id);
     }
-
-    baseQuery += ' GROUP BY c.id, c.nome, c.codigo, c.descricao, c.subgrupo_id, c.status, c.data_cadastro, c.data_atualizacao, s.nome, g.nome';
 
     // Aplicar ordenação
     let orderBy = 'c.nome ASC';
@@ -94,17 +101,30 @@ class ClassesListController {
     const classes = await executeQuery(query, params);
 
     // Contar total de registros
-    const countQuery = `SELECT COUNT(DISTINCT c.id) as total FROM classes c WHERE 1=1${search ? ' AND c.nome LIKE ?' : ''}${status !== undefined ? ' AND c.status = ?' : ''}${subgrupo_id ? ' AND c.subgrupo_id = ?' : ''}`;
+    const countQuery = `
+      SELECT COUNT(*) as total 
+      FROM classes c 
+      WHERE 1=1
+      ${search ? ' AND c.nome LIKE ?' : ''}
+      ${status !== undefined ? ' AND c.status = ?' : ''}
+      ${subgrupo_id ? ' AND c.subgrupo_id = ?' : ''}
+    `;
     const countParams = [...params];
     const totalResult = await executeQuery(countQuery, countParams);
     const totalItems = totalResult[0].total;
 
     // Calcular estatísticas
-    const statsQuery = `SELECT 
-      COUNT(*) as total,
-      SUM(CASE WHEN c.status = 'ativo' THEN 1 ELSE 0 END) as ativos,
-      SUM(CASE WHEN c.status = 'inativo' THEN 1 ELSE 0 END) as inativos
-      FROM classes c WHERE 1=1${search ? ' AND c.nome LIKE ?' : ''}${status !== undefined ? ' AND c.status = ?' : ''}${subgrupo_id ? ' AND c.subgrupo_id = ?' : ''}`;
+    const statsQuery = `
+      SELECT 
+        COUNT(*) as total,
+        SUM(CASE WHEN c.status = 'ativo' THEN 1 ELSE 0 END) as ativos,
+        SUM(CASE WHEN c.status = 'inativo' THEN 1 ELSE 0 END) as inativos
+      FROM classes c 
+      WHERE 1=1
+      ${search ? ' AND c.nome LIKE ?' : ''}
+      ${status !== undefined ? ' AND c.status = ?' : ''}
+      ${subgrupo_id ? ' AND c.subgrupo_id = ?' : ''}
+    `;
     const statsParams = [...params];
     const statsResult = await executeQuery(statsQuery, statsParams);
     const statistics = statsResult[0];
