@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Modal, Button, Input, SearchableSelect, ConfirmModal } from '../ui';
 import { FaList, FaChartLine, FaHistory } from 'react-icons/fa';
 import FoodsApiService from '../../services/FoodsApiService';
@@ -45,7 +45,7 @@ const RegistrosDiariosModal = ({
     return `${ano}-${mes}-${dia}`;
   };
   
-  const criarEstadoInicial = () => ({
+  const criarEstadoInicial = useCallback(() => ({
     escola_id: '',
     nutricionista_id: user?.id || '',
     data: getDataAtual(),
@@ -57,7 +57,7 @@ const RegistrosDiariosModal = ({
       parcial_tarde: '',
       eja: ''
     }
-  });
+  }), [user]);
 
   const [tiposAtendimentoEscola, setTiposAtendimentoEscola] = useState([]);
   const [loadingTiposAtendimento, setLoadingTiposAtendimento] = useState(false);
@@ -69,6 +69,15 @@ const RegistrosDiariosModal = ({
       resetDirty();
     }
   }, [isOpen, isViewMode, resetDirty]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setFormData(criarEstadoInicial());
+      setDadosIniciaisCarregados(false);
+      setEscolaInicial(null);
+      setDataInicial(null);
+    }
+  }, [isOpen, criarEstadoInicial]);
   
   // Carregar TODAS as escolas quando modal abrir
   useEffect(() => {
@@ -199,44 +208,61 @@ const RegistrosDiariosModal = ({
   // Carregar registros existentes quando escola e data forem selecionados
   useEffect(() => {
     const carregarRegistrosExistentes = async () => {
-      if (formData.escola_id && formData.data) {
-        // Se está criando novo registro, sempre busca
-        // Se está editando, só busca se escola ou data mudaram
-        const deveBuscar = !registro || 
-          (dadosIniciaisCarregados && 
-           (formData.escola_id !== escolaInicial || formData.data !== dataInicial));
-        
-        if (deveBuscar) {
-          const result = await RegistrosDiariosService.buscarPorEscolaData(
-            formData.escola_id,
-            formData.data
-          );
-          
-          if (result.success && result.data?.quantidades) {
-            const quantidades = result.data.quantidades;
-            const quantidadesNormalizadas = {
-              lanche_manha: quantidades.lanche_manha != null ? String(quantidades.lanche_manha) : '',
-              parcial_manha: quantidades.parcial_manha != null
-                ? String(quantidades.parcial_manha)
-                : quantidades.parcial != null
-                  ? String(quantidades.parcial)
-                  : '',
-              almoco: quantidades.almoco != null ? String(quantidades.almoco) : '',
-              lanche_tarde: quantidades.lanche_tarde != null ? String(quantidades.lanche_tarde) : '',
-              parcial_tarde: quantidades.parcial_tarde != null ? String(quantidades.parcial_tarde) : '',
-              eja: quantidades.eja != null ? String(quantidades.eja) : ''
-            };
-            setFormData(prev => ({
-              ...prev,
-              quantidades: quantidadesNormalizadas
-            }));
-          }
+      if (!isOpen || !formData.escola_id || !formData.data) {
+        return;
+      }
+
+      const estaEditando = Boolean(registro);
+
+      if (estaEditando) {
+        if (!dadosIniciaisCarregados || escolaInicial === null || dataInicial === null) {
+          return;
         }
+
+        const escolaMudou = formData.escola_id !== escolaInicial;
+        const dataMudou = formData.data !== dataInicial;
+
+        if (!escolaMudou && !dataMudou) {
+          return;
+        }
+      }
+
+      const result = await RegistrosDiariosService.buscarPorEscolaData(
+        formData.escola_id,
+        formData.data
+      );
+
+      if (result.success && result.data?.quantidades) {
+        const quantidades = result.data.quantidades;
+        const quantidadesNormalizadas = {
+          lanche_manha: quantidades.lanche_manha != null ? String(quantidades.lanche_manha) : '',
+          parcial_manha: quantidades.parcial_manha != null
+            ? String(quantidades.parcial_manha)
+            : quantidades.parcial != null
+              ? String(quantidades.parcial)
+              : '',
+          almoco: quantidades.almoco != null ? String(quantidades.almoco) : '',
+          lanche_tarde: quantidades.lanche_tarde != null ? String(quantidades.lanche_tarde) : '',
+          parcial_tarde: quantidades.parcial_tarde != null ? String(quantidades.parcial_tarde) : '',
+          eja: quantidades.eja != null ? String(quantidades.eja) : ''
+        };
+        setFormData(prev => ({
+          ...prev,
+          quantidades: quantidadesNormalizadas
+        }));
       }
     };
     
     carregarRegistrosExistentes();
-  }, [formData.escola_id, formData.data, registro, dadosIniciaisCarregados, escolaInicial, dataInicial]);
+  }, [
+    formData.escola_id,
+    formData.data,
+    registro,
+    dadosIniciaisCarregados,
+    escolaInicial,
+    dataInicial,
+    isOpen
+  ]);
 
   // Configuração dos tipos de atendimento exibidos no modal
   const tiposConfig = [
