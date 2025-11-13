@@ -1,7 +1,13 @@
-import React from 'react';
-import { FaCalendarCheck, FaTruck, FaShoppingCart, FaExclamationTriangle, FaCalendarAlt } from 'react-icons/fa';
+import React, { useState } from 'react';
+import { FaCalendarCheck, FaTruck, FaShoppingCart, FaExclamationTriangle, FaCalendarAlt, FaInfoCircle } from 'react-icons/fa';
 
 const CalendarioGrid = ({ dados, ano, mes, loading = false }) => {
+  const [diaDetalhesAtivo, setDiaDetalhesAtivo] = useState(null);
+
+  const handleToggleDetalhes = (diaId) => {
+    setDiaDetalhesAtivo((prev) => (prev === diaId ? null : diaId));
+  };
+
   const gerarMeses = () => {
     return [
       'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
@@ -177,6 +183,11 @@ const CalendarioGrid = ({ dados, ano, mes, loading = false }) => {
                   const badges = obterBadges(dia);
                   const corFundo = obterCorFundo(dia);
                   const dataNormalizada = dia.data ? new Date(`${dia.data}T00:00:00`) : null;
+                  const possuiObservacoes = Boolean(dia.observacoes);
+                  const excecoesComObservacao = Array.isArray(dia.excecoes)
+                    ? dia.excecoes.filter((ex) => ex.observacoes)
+                    : [];
+                  const possuiDetalhes = badges.length > 0 || possuiObservacoes || excecoesComObservacao.length > 0;
 
                   return (
                     <div
@@ -192,40 +203,74 @@ const CalendarioGrid = ({ dados, ano, mes, loading = false }) => {
                         </span>
                       </div>
 
-                      {/* Badges */}
-                      <div className="space-y-1">
-                        {badges.map((badge, badgeIndex) => (
-                          <div
-                            key={badgeIndex}
-                            className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${badge.color}`}
-                          >
-                            <badge.icon className="h-3 w-3 mr-1" />
-                            {badge.text}
-                          </div>
-                        ))}
-                      </div>
+                      {/* Ícones de indicadores */}
+                      {badges.length > 0 && (
+                        <div className="flex items-center flex-wrap gap-2 mb-1">
+                          {badges.map((badge, badgeIndex) => (
+                            <button
+                              key={`${dia.id}-badge-${badgeIndex}`}
+                              type="button"
+                              title={badge.text}
+                              onClick={() => handleToggleDetalhes(dia.id)}
+                              className={`flex items-center justify-center w-7 h-7 rounded-full cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-1 ${badge.color}`}
+                            >
+                              <badge.icon className="h-3.5 w-3.5" />
+                            </button>
+                          ))}
+                        </div>
+                      )}
 
-                      {/* Observações */}
-                        {dia.observacoes && (
-                          <div className="mt-2 text-xs text-gray-600">
-                            {dia.observacoes}
-                          </div>
-                        )}
-                        {Array.isArray(dia.excecoes) &&
-                          dia.excecoes.some((ex) => ex.observacoes) && (
-                            <div className="mt-2 space-y-1">
-                              {dia.excecoes
-                                .filter((ex) => ex.observacoes)
-                                .map((ex) => (
-                                  <div
-                                    key={`excecao-${ex.id}`}
-                                    className="text-xs text-gray-600 italic"
-                                  >
-                                    {ex.observacoes}
-                                  </div>
-                                ))}
+                      {/* Botão de detalhes */}
+                      {possuiDetalhes && (
+                        <button
+                          type="button"
+                          onClick={() => handleToggleDetalhes(dia.id)}
+                          className="mt-1 text-xs text-green-700 hover:text-green-900 flex items-center gap-1 font-medium focus:outline-none focus:underline"
+                        >
+                          <FaInfoCircle className="h-3.5 w-3.5" />
+                          {diaDetalhesAtivo === dia.id ? 'Ocultar detalhes' : 'Ver detalhes'}
+                        </button>
+                      )}
+
+                      {/* Detalhes expandido */}
+                      {diaDetalhesAtivo === dia.id && (
+                        <div className="mt-2 space-y-2 text-xs text-gray-600">
+                          {badges.length > 0 && (
+                            <div className="space-y-1">
+                              {badges.map((badge, badgeIndex) => (
+                                <div
+                                  key={`${dia.id}-badge-detail-${badgeIndex}`}
+                                  className="flex items-start gap-2"
+                                >
+                                  <badge.icon className="h-3.5 w-3.5 mt-0.5 text-green-700" />
+                                  <span>{badge.text}</span>
+                                </div>
+                              ))}
                             </div>
                           )}
+
+                          {dia.observacoes && (
+                            <div>
+                              <span className="font-semibold text-gray-700">Observações:</span>
+                              <p className="mt-1 text-justify">{dia.observacoes}</p>
+                            </div>
+                          )}
+
+                          {excecoesComObservacao.length > 0 && (
+                            <div className="space-y-1">
+                              <span className="font-semibold text-gray-700">Observações das exceções:</span>
+                              {excecoesComObservacao.map((excecao) => (
+                                <div
+                                  key={`excecao-observacao-${excecao.id}`}
+                                  className="italic text-gray-600"
+                                >
+                                  {excecao.observacoes}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   );
                 })}

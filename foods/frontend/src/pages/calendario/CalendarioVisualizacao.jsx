@@ -41,6 +41,16 @@ const CalendarioVisualizacao = () => {
     atualizarFiltros({ mes: novoMes });
   };
 
+  const handleFiltrosChange = (novosFiltros) => {
+    if (novosFiltros?.ano) {
+      setAno(novosFiltros.ano);
+    }
+    if (novosFiltros?.mes) {
+      setMes(novosFiltros.mes);
+    }
+    atualizarFiltros(novosFiltros);
+  };
+
 
   const handleLimparFiltros = () => {
     limparFiltros();
@@ -118,17 +128,6 @@ const CalendarioVisualizacao = () => {
             <p className="text-sm text-gray-600">Visualize e filtre dados do calendário</p>
           </div>
         </div>
-        
-        <div className="flex items-center space-x-3">
-          <Button
-            onClick={() => setMostrarFiltros(!mostrarFiltros)}
-            variant={mostrarFiltros ? "primary" : "outline"}
-            size="sm"
-          >
-            <FaFilter className="h-4 w-4 mr-2" />
-            Filtros
-          </Button>
-        </div>
       </div>
         {/* Controles */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
@@ -141,6 +140,7 @@ const CalendarioVisualizacao = () => {
                   onChange={handleAnoChange}
                   options={gerarAnos()}
                   placeholder="Selecione o ano..."
+                  usePortal={false}
                 />
               </div>
               
@@ -151,6 +151,7 @@ const CalendarioVisualizacao = () => {
                   onChange={handleMesChange}
                   options={gerarMeses()}
                   placeholder="Selecione o mês..."
+                  usePortal={false}
                 />
               </div>
             </div>
