@@ -46,6 +46,7 @@ const CalendarioConfiguracao = () => {
   const [filiais, setFiliais] = useState([]);
   const [unidadesEscolares, setUnidadesEscolares] = useState([]);
   const [loadingListas, setLoadingListas] = useState(false);
+  const [buscaUnidadesTermo, setBuscaUnidadesTermo] = useState('');
 
   const opcoesDiasSemana = [
     { value: 1, label: 'Segunda-feira' },
@@ -79,12 +80,10 @@ const CalendarioConfiguracao = () => {
         ]);
 
         if (filiaisResult.success) {
-          console.log('[CalendarioConfiguracao] Filiais carregadas:', filiaisResult.data?.length || 0);
           setFiliais(filiaisResult.data || []);
         }
 
         if (unidadesResult.success) {
-          console.log('[CalendarioConfiguracao] Unidades escolares carregadas:', unidadesResult.data?.length || 0);
           setUnidadesEscolares(unidadesResult.data || []);
         }
       } catch (error) {
@@ -192,11 +191,11 @@ const CalendarioConfiguracao = () => {
       unidades_escola_ids: [],
       observacoes: ''
     });
+    setBuscaUnidadesTermo('');
     setModalDiaNaoUtil(true);
   };
 
   const handleTipoDestinoChange = (valor) => {
-    console.log('[CalendarioConfiguracao] Tipo de destino selecionado:', valor);
     setFormDiaNaoUtil((prev) => ({
       ...prev,
       tipo_destino: valor,
@@ -275,32 +274,15 @@ const CalendarioConfiguracao = () => {
   };
 
   const handleFilialChangeDiaNaoUtil = (valor) => {
-    const filialSelecionada = filiais.find((filial) => String(filial.id) === String(valor));
-    console.log('[CalendarioConfiguracao] Filial selecionada:', {
-      valor,
-      filialEncontrada: filialSelecionada ? {
-        id: filialSelecionada.id,
-        nome: filialSelecionada.filial,
-        cidade: filialSelecionada.cidade
-      } : null
-    });
     setFormDiaNaoUtil((prev) => ({
       ...prev,
       filial_id: valor,
       unidades_escola_ids: []
     }));
+    setBuscaUnidadesTermo('');
   };
 
   const handleToggleUnidadeSelecionada = (unidadeId) => {
-    const unidadeSelecionada = unidadesEscolares.find((unidade) => String(unidade.id) === String(unidadeId));
-    console.log('[CalendarioConfiguracao] Toggle unidade escolar:', {
-      unidadeId,
-      unidadeEncontrada: unidadeSelecionada ? {
-        id: unidadeSelecionada.id,
-        nome: unidadeSelecionada.nome_escola,
-        filial_id: unidadeSelecionada.filial_id
-      } : null
-    });
     setFormDiaNaoUtil((prev) => {
       const idNumber = parseInt(unidadeId, 10);
       const atual = new Set(prev.unidades_escola_ids || []);
@@ -314,6 +296,30 @@ const CalendarioConfiguracao = () => {
         unidades_escola_ids: Array.from(atual)
       };
     });
+  };
+
+  const handleSelecionarTodasUnidades = (unidadesParaSelecionar = []) => {
+    if (!Array.isArray(unidadesParaSelecionar) || unidadesParaSelecionar.length === 0) {
+      return;
+    }
+
+    setFormDiaNaoUtil((prev) => {
+      const idsAtuais = new Set(prev.unidades_escola_ids || []);
+      unidadesParaSelecionar.forEach((unidade) => {
+        idsAtuais.add(parseInt(unidade.id, 10));
+      });
+      return {
+        ...prev,
+        unidades_escola_ids: Array.from(idsAtuais)
+      };
+    });
+  };
+
+  const handleLimparSelecaoUnidades = () => {
+    setFormDiaNaoUtil((prev) => ({
+      ...prev,
+      unidades_escola_ids: []
+    }));
   };
 
 
@@ -656,7 +662,7 @@ const CalendarioConfiguracao = () => {
         isOpen={modalDiaNaoUtil}
         onClose={() => setModalDiaNaoUtil(false)}
         title="Adicionar Dia Não Útil Personalizado"
-        size="xl"
+        size="6xl"
       >
         <div className="space-y-4">
           <Input
@@ -709,19 +715,36 @@ const CalendarioConfiguracao = () => {
                 options={filiaisOptions}
                 placeholder="Selecione a filial responsável..."
                 loading={loadingListas}
-              usePortal={false}
+                usePortal={false}
               />
 
-              <div className="border border-gray-200 rounded-lg p-4 max-h-64 overflow-y-auto bg-gray-50">
-                <h4 className="text-sm font-semibold text-gray-700 mb-3">
+              <div className="border border-gray-200 rounded-lg p-4 bg-gray-50 space-y-4">
+                <Input
+                  label="Buscar unidades escolares"
+                  value={buscaUnidadesTermo}
+                  onChange={(e) => setBuscaUnidadesTermo(e.target.value)}
+                  placeholder="Digite para buscar por nome, cidade ou código..."
+                  disabled={!formDiaNaoUtil.filial_id}
+                />
+
+                <h4 className="text-sm font-semibold text-gray-700">
                   Unidades Escolares {formDiaNaoUtil.filial_id ? 'da filial selecionada' : '(selecione uma filial)'}
                 </h4>
 
                 {formDiaNaoUtil.filial_id ? (
                   (() => {
-                    const unidadesFiltradas = unidadesEscolares.filter(
-                      (unidade) => String(unidade.filial_id) === String(formDiaNaoUtil.filial_id)
-                    );
+                    const termoBuscaNormalizado = buscaUnidadesTermo.trim().toLowerCase();
+                    const unidadesFiltradas = unidadesEscolares
+                      .filter((unidade) => String(unidade.filial_id) === String(formDiaNaoUtil.filial_id))
+                      .filter((unidade) => {
+                        if (!termoBuscaNormalizado) return true;
+                        const { nome_escola, cidade, codigo_teknisa } = unidade;
+                        return (
+                          (nome_escola && nome_escola.toLowerCase().includes(termoBuscaNormalizado)) ||
+                          (cidade && cidade.toLowerCase().includes(termoBuscaNormalizado)) ||
+                          (codigo_teknisa && codigo_teknisa.toString().toLowerCase().includes(termoBuscaNormalizado))
+                        );
+                      });
 
                     if (unidadesFiltradas.length === 0) {
                       return (
@@ -732,30 +755,56 @@ const CalendarioConfiguracao = () => {
                     }
 
                     return (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        {unidadesFiltradas.map((unidade) => (
-                          <label
-                            key={unidade.id}
-                            className="flex items-start space-x-2 bg-white rounded-lg border border-gray-200 px-3 py-2 hover:border-green-400 transition-colors"
+                      <>
+                        <div className="flex flex-wrap gap-2 justify-end">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleSelecionarTodasUnidades(unidadesFiltradas)}
                           >
-                            <input
-                              type="checkbox"
-                              className="mt-1 h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
-                              checked={formDiaNaoUtil.unidades_escola_ids?.includes(unidade.id) || false}
-                              onChange={() => handleToggleUnidadeSelecionada(unidade.id)}
-                            />
-                            <div>
-                              <div className="text-sm font-medium text-gray-900">{unidade.nome_escola}</div>
-                              {unidade.cidade && (
-                                <div className="text-xs text-gray-500">
-                                  {unidade.cidade}
-                                  {unidade.estado ? ` - ${unidade.estado}` : ''}
-                                </div>
-                              )}
-                            </div>
-                          </label>
-                        ))}
-                      </div>
+                            Selecionar todas
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={handleLimparSelecaoUnidades}
+                          >
+                            Limpar seleção
+                          </Button>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-64 overflow-y-auto pr-1">
+                          {unidadesFiltradas.map((unidade) => (
+                            <label
+                              key={unidade.id}
+                              className="flex items-start space-x-2 bg-white rounded-lg border border-gray-200 px-3 py-2 hover:border-green-400 transition-colors"
+                            >
+                              <input
+                                type="checkbox"
+                                className="mt-1 h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                                checked={formDiaNaoUtil.unidades_escola_ids?.includes(unidade.id) || false}
+                                onChange={() => handleToggleUnidadeSelecionada(unidade.id)}
+                              />
+                              <div>
+                                <div className="text-sm font-medium text-gray-900">{unidade.nome_escola}</div>
+                                {(unidade.cidade || unidade.estado || unidade.codigo_teknisa) && (
+                                  <div className="text-xs text-gray-500 space-x-1">
+                                    {unidade.cidade && <span>{unidade.cidade}</span>}
+                                    {unidade.estado && <span>- {unidade.estado}</span>}
+                                    {unidade.codigo_teknisa && (
+                                      <span className="inline-block text-gray-400">
+                                        Código: {unidade.codigo_teknisa}
+                                      </span>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            </label>
+                          ))}
+                        </div>
+                      </>
                     );
                   })()
                 ) : (
