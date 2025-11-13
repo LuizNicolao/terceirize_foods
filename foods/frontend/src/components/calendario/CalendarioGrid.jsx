@@ -1,5 +1,12 @@
 import React, { useState } from 'react';
-import { FaCalendarCheck, FaTruck, FaShoppingCart, FaExclamationTriangle, FaCalendarAlt, FaInfoCircle } from 'react-icons/fa';
+import {
+  FaCalendarCheck,
+  FaTruck,
+  FaShoppingCart,
+  FaExclamationTriangle,
+  FaCalendarAlt,
+  FaInfoCircle
+} from 'react-icons/fa';
 
 const CalendarioGrid = ({ dados, ano, mes, loading = false }) => {
   const [diaDetalhesAtivo, setDiaDetalhesAtivo] = useState(null);
@@ -40,33 +47,45 @@ const CalendarioGrid = ({ dados, ano, mes, loading = false }) => {
     
     if (dia.dia_util) {
       badges.push({
+        key: `dia-util-${dia.id}`,
         icon: FaCalendarCheck,
         text: 'Útil',
-        color: 'bg-green-100 text-green-800'
+        detailText: 'Dia útil',
+        color: 'bg-green-100 text-green-800',
+        showInline: true
       });
     }
     
     if (dia.dia_abastecimento) {
       badges.push({
+        key: `abastecimento-${dia.id}`,
         icon: FaTruck,
         text: 'Abastecimento',
-        color: 'bg-yellow-100 text-yellow-800'
+        detailText: 'Dia de abastecimento',
+        color: 'bg-yellow-100 text-yellow-800',
+        showInline: true
       });
     }
     
     if (dia.dia_consumo) {
       badges.push({
+        key: `consumo-${dia.id}`,
         icon: FaShoppingCart,
         text: 'Consumo',
-        color: 'bg-purple-100 text-purple-800'
+        detailText: 'Dia de consumo',
+        color: 'bg-purple-100 text-purple-800',
+        showInline: true
       });
     }
     
     if (dia.feriado) {
       badges.push({
+        key: `feriado-${dia.id}`,
         icon: FaExclamationTriangle,
         text: dia.nome_feriado || 'Feriado',
-        color: 'bg-red-100 text-red-800'
+        detailText: dia.nome_feriado || 'Feriado',
+        color: 'bg-red-100 text-red-800',
+        showInline: true
       });
     }
 
@@ -80,9 +99,12 @@ const CalendarioGrid = ({ dados, ano, mes, loading = false }) => {
               : ` - ${excecao.unidade_nome || 'Unidade'}`;
 
         badges.push({
+          key: `excecao-${excecao.id}`,
           icon: FaExclamationTriangle,
           text: `${excecao.descricao}${destino}`,
-          color: 'bg-amber-100 text-amber-800'
+          detailText: `${excecao.descricao}${destino}`,
+          color: 'bg-amber-100 text-amber-800',
+          showInline: false
         });
       });
     }
@@ -119,10 +141,50 @@ const CalendarioGrid = ({ dados, ano, mes, loading = false }) => {
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200">
       {/* Header */}
-      <div className="px-6 py-4 border-b border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-900">
-          {gerarMeses()[mes - 1]} {ano}
-        </h3>
+      <div className="px-6 py-4 border-b border-gray-200 flex flex-col gap-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-gray-900">
+            {gerarMeses()[mes - 1]} {ano}
+          </h3>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3 text-xs sm:text-sm">
+          <span className="font-semibold text-gray-700 mr-2">Legenda:</span>
+          <div className="flex items-center gap-2">
+            <span className="flex items-center px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
+              <FaCalendarCheck className="h-3.5 w-3.5 mr-1" />
+              Útil
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="flex items-center px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">
+              <FaTruck className="h-3.5 w-3.5 mr-1" />
+              Abastecimento
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="flex items-center px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-medium">
+              <FaShoppingCart className="h-3.5 w-3.5 mr-1" />
+              Consumo
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="flex items-center px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">
+              <FaExclamationTriangle className="h-3.5 w-3.5 mr-1" />
+              Feriado
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="flex items-center px-2 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-medium">
+              <FaExclamationTriangle className="h-3.5 w-3.5 mr-1" />
+              Dia não útil personalizado
+            </span>
+          </div>
+          <div className="flex items-center gap-1 text-gray-500 text-xs">
+            <FaInfoCircle className="h-3.5 w-3.5" />
+            Clique nos ícones para ver detalhes
+          </div>
+        </div>
       </div>
 
       {/* Container do Calendário */}
@@ -206,15 +268,18 @@ const CalendarioGrid = ({ dados, ano, mes, loading = false }) => {
                       {/* Ícones de indicadores */}
                       {badges.length > 0 && (
                         <div className="flex items-center flex-wrap gap-2 mb-1">
-                          {badges.map((badge, badgeIndex) => (
+                          {badges.map((badge) => (
                             <button
-                              key={`${dia.id}-badge-${badgeIndex}`}
+                              key={badge.key}
                               type="button"
                               title={badge.text}
                               onClick={() => handleToggleDetalhes(dia.id)}
-                              className={`flex items-center justify-center w-7 h-7 rounded-full cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-1 ${badge.color}`}
+                              className={`inline-flex items-center justify-center rounded-full cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-1 px-2 py-1 text-xs font-medium ${badge.color}`}
                             >
                               <badge.icon className="h-3.5 w-3.5" />
+                              {badge.showInline && (
+                                <span className="ml-1 whitespace-nowrap">{badge.text}</span>
+                              )}
                             </button>
                           ))}
                         </div>
@@ -237,13 +302,13 @@ const CalendarioGrid = ({ dados, ano, mes, loading = false }) => {
                         <div className="mt-2 space-y-2 text-xs text-gray-600">
                           {badges.length > 0 && (
                             <div className="space-y-1">
-                              {badges.map((badge, badgeIndex) => (
+                              {badges.map((badge) => (
                                 <div
-                                  key={`${dia.id}-badge-detail-${badgeIndex}`}
+                                  key={`${badge.key}-detail`}
                                   className="flex items-start gap-2"
                                 >
                                   <badge.icon className="h-3.5 w-3.5 mt-0.5 text-green-700" />
-                                  <span>{badge.text}</span>
+                                  <span>{badge.detailText || badge.text}</span>
                                 </div>
                               ))}
                             </div>
