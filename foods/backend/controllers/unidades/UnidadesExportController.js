@@ -21,7 +21,7 @@ class UnidadesExportController {
       if (search) { where += ' AND (nome LIKE ? OR sigla LIKE ?)'; params.push(`%${search}%`, `%${search}%`); }
       if (status && status !== 'todos') { where += ' AND status = ?'; params.push(status === 'ativo' ? 1 : 0); }
 
-      const unidades = await executeQuery(`SELECT id, nome, sigla, status FROM unidades ${where} ORDER BY nome ASC LIMIT ${parseInt(limit)}`, params);
+      const unidades = await executeQuery(`SELECT id, nome, sigla, status FROM unidades_medida ${where} ORDER BY nome ASC LIMIT ${parseInt(limit)}`, params);
       unidades.forEach(u => ws.addRow({ id: u.id, nome: u.nome, sigla: u.sigla, status: u.status === 1 ? 'Ativo' : 'Inativo' }));
 
       res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
@@ -47,7 +47,7 @@ class UnidadesExportController {
       if (search) { where += ' AND (nome LIKE ? OR sigla LIKE ?)'; params.push(`%${search}%`, `%${search}%`); }
       if (status && status !== 'todos') { where += ' AND status = ?'; params.push(status === 'ativo' ? 1 : 0); }
 
-      const unidades = await executeQuery(`SELECT id, nome, sigla, status FROM unidades ${where} ORDER BY nome ASC LIMIT ${parseInt(limit)}`, params);
+      const unidades = await executeQuery(`SELECT id, nome, sigla, status FROM unidades_medida ${where} ORDER BY nome ASC LIMIT ${parseInt(limit)}`, params);
       unidades.forEach((u, i) => {
         if (i > 0) doc.moveDown(2);
         doc.fontSize(14).font('Helvetica-Bold').text(`${u.nome} (${u.sigla})`);
