@@ -18,7 +18,9 @@ const SearchableSelect = ({
   filterBy = "label", // campo para filtrar (pode ser 'label', 'value', ou função customizada)
   renderOption = null, // função customizada para renderizar opções
   maxHeight = "200px",
-  onSearchChange = null // callback para busca no backend
+  onSearchChange = null, // callback para busca no backend
+  usePortal = true,
+  portalContainer = null
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -99,6 +101,10 @@ const SearchableSelect = ({
 
   // Calcular posição do dropdown quando abrir
   useEffect(() => {
+    if (!usePortal) {
+      return;
+    }
+
     if (isOpen && containerRef.current) {
       const updatePosition = () => {
         const rect = containerRef.current.getBoundingClientRect();
@@ -120,7 +126,7 @@ const SearchableSelect = ({
         window.removeEventListener('resize', updatePosition);
       };
     }
-  }, [isOpen]);
+  }, [isOpen, usePortal]);
 
   // Fechar dropdown quando clicar fora
   useEffect(() => {
@@ -258,53 +264,70 @@ const SearchableSelect = ({
           </div>
         </div>
 
-        {/* Dropdown via Portal - renderiza fora da hierarquia para evitar overflow clipping */}
-        {isOpen && !disabled && typeof document !== 'undefined' && createPortal(
-          <div 
-            data-dropdown-portal
-            className="fixed z-[9999] bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-hidden"
-            style={{
-              top: `${dropdownPosition.top}px`,
-              left: `${dropdownPosition.left}px`,
-              width: `${dropdownPosition.width}px`
-            }}
-          >
-            {/* Lista de opções */}
-            <div className="max-h-60 overflow-y-auto" style={{ maxHeight }}>
-              {loading ? (
-                <div className="p-4 text-center text-gray-500">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600 mx-auto mb-2"></div>
-                  <span className="text-sm">Carregando...</span>
-                </div>
-              ) : filteredOptions.length > 0 ? (
-                filteredOptions.map((option, index) => (
-                  <div
-                    key={option.value || index}
-                    className={`
-                      px-4 py-3 cursor-pointer transition-colors duration-150
-                      ${selectedOption?.value === option.value 
-                        ? 'bg-green-50 border-l-4 border-l-green-500' 
-                        : 'hover:bg-gray-50'
-                      }
-                      ${index < filteredOptions.length - 1 ? 'border-b border-gray-100' : ''}
-                    `}
-                    onClick={() => handleOptionSelect(option)}
-                  >
-                    {renderOptionItem(option)}
+        {/* Dropdown - pode ser renderizado inline ou via portal */}
+        {isOpen && !disabled && (() => {
+          const dropdownElement = (
+            <div
+              data-dropdown-portal={usePortal ? true : undefined}
+              className={`
+                ${usePortal ? 'fixed z-[9999]' : 'absolute left-0 right-0 mt-1 z-50'}
+                bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-hidden
+              `}
+              style={
+                usePortal
+                  ? {
+                      top: `${dropdownPosition.top}px`,
+                      left: `${dropdownPosition.left}px`,
+                      width: `${dropdownPosition.width}px`
+                    }
+                  : undefined
+              }
+            >
+              {/* Lista de opções */}
+              <div className="max-h-60 overflow-y-auto" style={{ maxHeight }}>
+                {loading ? (
+                  <div className="p-4 text-center text-gray-500">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600 mx-auto mb-2"></div>
+                    <span className="text-sm">Carregando...</span>
                   </div>
-                ))
-              ) : (
-                <div className="p-4 text-center text-gray-500">
-                  <FaSearch className="w-4 h-4 mx-auto mb-2 text-gray-400" />
-                  <span className="text-sm">
-                    {searchTerm ? 'Nenhum resultado encontrado' : 'Nenhuma opção disponível'}
-                  </span>
-                </div>
-              )}
+                ) : filteredOptions.length > 0 ? (
+                  filteredOptions.map((option, index) => (
+                    <div
+                      key={option.value || index}
+                      className={`
+                        px-4 py-3 cursor-pointer transition-colors duration-150
+                        ${selectedOption?.value === option.value 
+                          ? 'bg-green-50 border-l-4 border-l-green-500' 
+                          : 'hover:bg-gray-50'
+                        }
+                        ${index < filteredOptions.length - 1 ? 'border-b border-gray-100' : ''}
+                      `}
+                      onClick={() => handleOptionSelect(option)}
+                    >
+                      {renderOptionItem(option)}
+                    </div>
+                  ))
+                ) : (
+                  <div className="p-4 text-center text-gray-500">
+                    <FaSearch className="w-4 h-4 mx-auto mb-2 text-gray-400" />
+                    <span className="text-sm">
+                      {searchTerm ? 'Nenhum resultado encontrado' : 'Nenhuma opção disponível'}
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>,
-          document.body
-        )}
+          );
+
+          if (usePortal) {
+            if (typeof document === 'undefined') {
+              return null;
+            }
+            return createPortal(dropdownElement, portalContainer || document.body);
+          }
+
+          return dropdownElement;
+        })()}
       </div>
 
       {/* Mensagem de erro */}

@@ -696,6 +696,7 @@ const CalendarioConfiguracao = () => {
               options={filiaisOptions}
               placeholder="Selecione uma filial..."
               loading={loadingListas}
+              usePortal={false}
             />
           )}
 
@@ -708,6 +709,7 @@ const CalendarioConfiguracao = () => {
                 options={filiaisOptions}
                 placeholder="Selecione a filial responsável..."
                 loading={loadingListas}
+              usePortal={false}
               />
 
               <div className="border border-gray-200 rounded-lg p-4 max-h-64 overflow-y-auto bg-gray-50">
