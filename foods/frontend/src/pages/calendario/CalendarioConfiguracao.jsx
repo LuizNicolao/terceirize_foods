@@ -296,11 +296,21 @@ const CalendarioConfiguracao = () => {
   };
 
 
-  const filiaisOptions = filiais.map((filial) => ({
-    value: filial.id,
-    label: filial.filial,
-    description: filial.cidade ? `${filial.cidade}${filial.estado ? ` - ${filial.estado}` : ''}` : undefined
-  }));
+  const filiaisOptions = (filiais || [])
+    .map((filial) => {
+      const label = filial.filial || filial.razao_social || `Filial ${filial.id}`;
+      const description = filial.cidade
+        ? `${filial.cidade}${filial.estado ? ` - ${filial.estado}` : ''}`
+        : undefined;
+
+      return {
+        value: filial.id,
+        label,
+        description,
+        searchableText: `${label} ${filial.codigo_filial || ''} ${filial.cnpj || ''}`.trim()
+      };
+    })
+    .sort((a, b) => a.label.localeCompare(b.label));
 
   const diasNaoUteisConfigurados = diasNaoUteis || [];
 
