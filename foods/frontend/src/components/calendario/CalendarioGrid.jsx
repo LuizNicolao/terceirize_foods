@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   FaCalendarCheck,
   FaTruck,
@@ -7,12 +7,17 @@ import {
   FaCalendarAlt,
   FaInfoCircle
 } from 'react-icons/fa';
+import { Button, Modal } from '../ui';
 
 const CalendarioGrid = ({ dados, ano, mes, loading = false }) => {
-  const [diaDetalhesAtivo, setDiaDetalhesAtivo] = useState(null);
+  const [diaSelecionado, setDiaSelecionado] = useState(null);
 
-  const handleToggleDetalhes = (diaId) => {
-    setDiaDetalhesAtivo((prev) => (prev === diaId ? null : diaId));
+  const handleAbrirDetalhes = (dia) => {
+    setDiaSelecionado(dia);
+  };
+
+  const handleFecharModalDetalhes = () => {
+    setDiaSelecionado(null);
   };
 
   const gerarMeses = () => {
@@ -272,8 +277,8 @@ const CalendarioGrid = ({ dados, ano, mes, loading = false }) => {
                             <button
                               key={badge.key}
                               type="button"
-                              title={badge.text}
-                              onClick={() => handleToggleDetalhes(dia.id)}
+                          title={badge.text}
+                          onClick={() => handleAbrirDetalhes(dia)}
                               className={`inline-flex items-center justify-center rounded-full cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-1 px-2 py-1 text-xs font-medium ${badge.color}`}
                             >
                               <badge.icon className="h-3.5 w-3.5" />
@@ -289,52 +294,12 @@ const CalendarioGrid = ({ dados, ano, mes, loading = false }) => {
                       {possuiDetalhes && (
                         <button
                           type="button"
-                          onClick={() => handleToggleDetalhes(dia.id)}
+                          onClick={() => handleAbrirDetalhes(dia)}
                           className="mt-1 text-xs text-green-700 hover:text-green-900 flex items-center gap-1 font-medium focus:outline-none focus:underline"
                         >
                           <FaInfoCircle className="h-3.5 w-3.5" />
-                          {diaDetalhesAtivo === dia.id ? 'Ocultar detalhes' : 'Ver detalhes'}
+                          Ver detalhes
                         </button>
-                      )}
-
-                      {/* Detalhes expandido */}
-                      {diaDetalhesAtivo === dia.id && (
-                        <div className="mt-2 space-y-2 text-xs text-gray-600">
-                          {badges.length > 0 && (
-                            <div className="space-y-1">
-                              {badges.map((badge) => (
-                                <div
-                                  key={`${badge.key}-detail`}
-                                  className="flex items-start gap-2"
-                                >
-                                  <badge.icon className="h-3.5 w-3.5 mt-0.5 text-green-700" />
-                                  <span>{badge.detailText || badge.text}</span>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-
-                          {dia.observacoes && (
-                            <div>
-                              <span className="font-semibold text-gray-700">Observações:</span>
-                              <p className="mt-1 text-justify">{dia.observacoes}</p>
-                            </div>
-                          )}
-
-                          {excecoesComObservacao.length > 0 && (
-                            <div className="space-y-1">
-                              <span className="font-semibold text-gray-700">Observações das exceções:</span>
-                              {excecoesComObservacao.map((excecao) => (
-                                <div
-                                  key={`excecao-observacao-${excecao.id}`}
-                                  className="italic text-gray-600"
-                                >
-                                  {excecao.observacoes}
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
                       )}
                     </div>
                   );
@@ -344,8 +309,192 @@ const CalendarioGrid = ({ dados, ano, mes, loading = false }) => {
           </div>
         ))}
       </div>
+
+      <DetalhesDiaModal
+        dia={diaSelecionado}
+        gerarMeses={gerarMeses}
+        obterBadges={obterBadges}
+        onClose={handleFecharModalDetalhes}
+      />
     </div>
   );
 };
 
 export default CalendarioGrid;
+
+const DetalhesDiaModal = ({ dia, gerarMeses, obterBadges, onClose }) => {
+  const dadosModal = useMemo(() => {
+    if (!dia) return null;
+
+    const data = dia.data ? new Date(`${dia.data}T00:00:00`) : null;
+    const dataFormatada = data
+      ? data.toLocaleDateString('pt-BR', {
+          day: '2-digit',
+          month: 'long',
+          year: 'numeric'
+        })
+      : '-';
+
+    const badges = obterBadges(dia);
+    const excecoes = Array.isArray(dia.excecoes) ? dia.excecoes : [];
+    const excecoesAgrupadas = excecoes.reduce((acc, excecao) => {
+      const tipo = excecao.tipo_destino || 'outros';
+      if (!acc[tipo]) {
+        acc[tipo] = [];
+      }
+      acc[tipo].push(excecao);
+      return acc;
+    }, {});
+
+    const resumoExcecoes = Object.entries(excecoesAgrupadas).map(([tipo, lista]) => ({
+      tipo,
+      quantidade: lista.length
+    }));
+
+    return {
+      dataFormatada,
+      badges,
+      excecoes,
+      excecoesAgrupadas,
+      resumoExcecoes
+    };
+  }, [dia, obterBadges]);
+
+  if (!dia || !dadosModal) {
+    return null;
+  }
+
+  const getTipoLabel = (tipo) => {
+    switch (tipo) {
+      case 'global':
+        return 'Global';
+      case 'filial':
+        return 'Filiais';
+      case 'unidade':
+        return 'Unidades escolares';
+      default:
+        return 'Outros';
+    }
+  };
+
+  const formatarDestino = (excecao) => {
+    if (excecao.tipo_destino === 'global') {
+      return 'Todas as unidades';
+    }
+    if (excecao.tipo_destino === 'filial') {
+      return `Filial: ${excecao.filial_nome || 'Não informada'}${excecao.filial_cidade ? ` (${excecao.filial_cidade})` : ''}`;
+    }
+    return `Unidade: ${excecao.unidade_nome || 'Não informada'}${excecao.unidade_cidade ? ` (${excecao.unidade_cidade})` : ''}`;
+  };
+
+  return (
+    <Modal
+      isOpen={Boolean(dia)}
+      onClose={onClose}
+      size={dadosModal.excecoes.length > 0 ? 'xl' : 'lg'}
+      title={`Detalhes do dia ${dadosModal.dataFormatada}`}
+    >
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+            <span className="text-sm text-gray-500">Dia da semana</span>
+            <p className="text-lg font-semibold text-gray-900">
+              {dia.dia_semana_nome || '-'}
+            </p>
+          </div>
+
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+            <span className="text-sm text-gray-500">Referência</span>
+            <p className="text-lg font-semibold text-gray-900">
+              {gerarMeses()[Math.max(0, (dia.mes_referencia || dia.mes || 1) - 1)]} / {dia.ano || '-'}
+            </p>
+          </div>
+        </div>
+
+        {dadosModal.badges.length > 0 && (
+          <div className="space-y-2">
+            <h3 className="text-sm font-semibold text-gray-800">Indicadores do dia</h3>
+            <div className="flex flex-wrap gap-2">
+              {dadosModal.badges.map((badge) => (
+                <span
+                  key={`${badge.key}-modal`}
+                  className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border ${badge.color}`}
+                >
+                  <badge.icon className="h-4 w-4" />
+                  <span>{badge.detailText || badge.text}</span>
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {dia.observacoes && (
+          <div className="space-y-2">
+            <h3 className="text-sm font-semibold text-gray-800">Observações gerais</h3>
+            <p className="text-sm leading-relaxed text-gray-700 whitespace-pre-line">
+              {dia.observacoes}
+            </p>
+          </div>
+        )}
+
+        {dadosModal.excecoes.length > 0 && (
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-sm font-semibold text-gray-800">Dias não úteis (exceções)</h3>
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center px-3 py-1 rounded-full bg-green-100 text-green-800 text-xs font-medium">
+                  Total: {dadosModal.excecoes.length}
+                </span>
+                {dadosModal.resumoExcecoes.map((resumo) => (
+                  <span
+                    key={`resumo-${resumo.tipo}`}
+                    className="inline-flex items-center px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-xs font-medium"
+                  >
+                    {getTipoLabel(resumo.tipo)}: {resumo.quantidade}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div className="border border-gray-200 rounded-lg overflow-hidden">
+              {Object.entries(dadosModal.excecoesAgrupadas).map(([tipo, lista]) => (
+                <div key={`grupo-${tipo}`} className="border-t border-gray-200 first:border-t-0">
+                  <div className="bg-gray-50 px-4 py-3">
+                    <span className="text-sm font-semibold text-gray-800">
+                      {getTipoLabel(tipo)} ({lista.length})
+                    </span>
+                  </div>
+
+                  <div className="max-h-64 overflow-y-auto divide-y divide-gray-100">
+                    {lista.map((excecao) => (
+                      <div key={`excecao-${excecao.id}`} className="p-4 space-y-2">
+                        <div>
+                          <p className="text-sm font-semibold text-gray-900">
+                            {excecao.descricao || 'Exceção'}
+                          </p>
+                          <p className="text-xs text-gray-600">{formatarDestino(excecao)}</p>
+                        </div>
+
+                        {excecao.observacoes && (
+                          <p className="text-xs text-gray-600 italic whitespace-pre-line">
+                            {excecao.observacoes}
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="flex justify-end">
+          <Button onClick={onClose} variant="outline">
+            Fechar
+          </Button>
+        </div>
+      </div>
+    </Modal>
+  );
+};
