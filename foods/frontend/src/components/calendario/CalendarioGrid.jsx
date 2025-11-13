@@ -95,22 +95,38 @@ const CalendarioGrid = ({ dados, ano, mes, loading = false }) => {
     }
 
     if (Array.isArray(dia.excecoes) && dia.excecoes.length > 0) {
-      dia.excecoes.forEach((excecao) => {
-        const destino =
-          excecao.tipo_destino === 'global'
-            ? ''
-            : excecao.tipo_destino === 'filial'
-              ? ` - ${excecao.filial_nome || 'Filial'}`
-              : ` - ${excecao.unidade_nome || 'Unidade'}`;
+      const totalExcecoes = dia.excecoes.length;
+      const tiposResumo = dia.excecoes.reduce((acc, excecao) => {
+        const tipo = excecao.tipo_destino || 'outros';
+        acc[tipo] = (acc[tipo] || 0) + 1;
+        return acc;
+      }, {});
 
-        badges.push({
-          key: `excecao-${excecao.id}`,
-          icon: FaExclamationTriangle,
-          text: `${excecao.descricao}${destino}`,
-          detailText: `${excecao.descricao}${destino}`,
-          color: 'bg-amber-100 text-amber-800',
-          showInline: false
-        });
+      const detalhesResumo = Object.entries(tiposResumo)
+        .map(([tipo, quantidade]) => {
+          switch (tipo) {
+            case 'global':
+              return `${quantidade} global(is)`;
+            case 'filial':
+              return `${quantidade} filial(is)`;
+            case 'unidade':
+              return `${quantidade} unidade(s)`;
+            default:
+              return `${quantidade} outro(s)`;
+          }
+        })
+        .join(' · ');
+
+      badges.push({
+        key: `excecoes-${dia.id}`,
+        icon: FaExclamationTriangle,
+        text: `Exceções (${totalExcecoes})`,
+        detailText:
+          detalhesResumo.length > 0
+            ? `Registros: ${detalhesResumo}`
+            : `Existem ${totalExcecoes} ${totalExcecoes === 1 ? 'exceção' : 'exceções'} configuradas para este dia`,
+        color: 'bg-amber-100 text-amber-800',
+        showInline: true
       });
     }
     
