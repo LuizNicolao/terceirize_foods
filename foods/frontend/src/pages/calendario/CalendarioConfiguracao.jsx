@@ -1,12 +1,99 @@
-import React, { useState, useEffect } from 'react';
-import { FaCog, FaArrowLeft, FaSave, FaPlus, FaTrash, FaCalendarCheck, FaTruck, FaShoppingCart, FaExclamationTriangle, FaCalendarTimes } from 'react-icons/fa';
+import React, { useState, useEffect, useMemo } from 'react';
+import { FaCog, FaArrowLeft, FaSave, FaPlus, FaTrash, FaCalendarCheck, FaTruck, FaShoppingCart, FaExclamationTriangle, FaCalendarTimes, FaList } from 'react-icons/fa';
 import { useCalendario } from '../../hooks/useCalendario';
 import { usePermissions } from '../../contexts/PermissionsContext';
-import { Button, Input, Modal, SearchableSelect } from '../../components/ui';
+import { Button, ConfirmModal, Input, Modal, SearchableSelect } from '../../components/ui';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import FiliaisService from '../../services/filiais';
 import UnidadesEscolaresService from '../../services/unidadesEscolares';
+
+const tipoBadgeStyles = {
+  global: 'bg-blue-100 text-blue-800',
+  filial: 'bg-purple-100 text-purple-800',
+  unidade: 'bg-amber-100 text-amber-800',
+  outros: 'bg-gray-100 text-gray-700'
+};
+
+const getTipoDestinoLabel = (tipo) => {
+  switch (tipo) {
+    case 'global':
+      return 'Global';
+    case 'filial':
+      return 'Filiais';
+    case 'unidade':
+      return 'Unidades escolares';
+    default:
+      return 'Outros';
+  }
+};
+
+const formatarDestinoDia = (dia) => {
+  if (dia.tipo_destino === 'global') {
+    return 'Global - todas as unidades';
+  }
+  if (dia.tipo_destino === 'filial') {
+    let descricao = `Filial: ${dia.filial_nome || dia.filial_id}`;
+    if (dia.filial_cidade) {
+      descricao += ` (${dia.filial_cidade})`;
+    }
+    return descricao;
+  }
+  if (dia.tipo_destino === 'unidade') {
+    let descricao = `Unidade: ${dia.unidade_nome || dia.unidade_escolar_id}`;
+    if (dia.unidade_cidade) {
+      descricao += ` (${dia.unidade_cidade})`;
+    }
+    return descricao;
+  }
+  return 'Destino não informado';
+};
+
+const DiasNaoUteisResumoChips = ({ resumo }) => {
+  if (!resumo || resumo.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="flex flex-wrap gap-2">
+      {resumo.map((item) => (
+        <span
+          key={`resumo-chip-${item.tipo}`}
+          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${tipoBadgeStyles[item.tipo] || tipoBadgeStyles.outros}`}
+        >
+          {getTipoDestinoLabel(item.tipo)}: {item.quantidade}
+        </span>
+      ))}
+    </div>
+  );
+};
+
+const DiaNaoUtilCard = ({ dia, onRemover, disabled }) => {
+  const dataFormatada = dia.data
+    ? new Date(`${dia.data}T00:00:00`).toLocaleDateString('pt-BR')
+    : '-';
+
+  return (
+    <div className="flex items-start justify-between p-3 bg-amber-50 rounded-lg border border-amber-200">
+      <div className="pr-3">
+        <div className="font-medium text-gray-900">{dia.descricao || 'Dia não útil'}</div>
+        <div className="text-sm text-gray-500">{dataFormatada}</div>
+        <div className="text-xs text-amber-700 mt-1">{formatarDestinoDia(dia)}</div>
+        {dia.observacoes && (
+          <div className="text-xs text-gray-600 mt-1 whitespace-pre-line">{dia.observacoes}</div>
+        )}
+      </div>
+      <Button
+        onClick={() => onRemover(dia)}
+        variant="outline"
+        size="sm"
+        disabled={disabled}
+      >
+        <FaTrash className="h-4 w-4" />
+      </Button>
+    </div>
+  );
+};
 
 const CalendarioConfiguracao = () => {
   const { user } = usePermissions();
@@ -47,6 +134,12 @@ const CalendarioConfiguracao = () => {
   const [unidadesEscolares, setUnidadesEscolares] = useState([]);
   const [loadingListas, setLoadingListas] = useState(false);
   const [buscaUnidadesTermo, setBuscaUnidadesTermo] = useState('');
+  const [confirmacaoDiaNaoUtil, setConfirmacaoDiaNaoUtil] = useState({
+    isOpen: false,
+    dia: null
+  });
+  const [modalListaDiasNaoUteis, setModalListaDiasNaoUteis] = useState(false);
+  const [buscaDiaNaoUtil, setBuscaDiaNaoUtil] = useState('');
 
   const opcoesDiasSemana = [
     { value: 1, label: 'Segunda-feira' },
@@ -227,7 +320,11 @@ const CalendarioConfiguracao = () => {
         return;
       }
 
+      const anoReferencia = formDiaNaoUtil.data
+        ? new Date(`${formDiaNaoUtil.data}T00:00:00`).getFullYear()
+        : ano;
       let sucessoGlobal = true;
+      let sucessoCount = 0;
       for (const unidadeId of unidadesSelecionadas) {
         const payloadUnidade = {
           data: formDiaNaoUtil.data,
@@ -238,14 +335,33 @@ const CalendarioConfiguracao = () => {
           unidade_escolar_id: parseInt(unidadeId, 10)
         };
 
-        const sucesso = await adicionarDiaNaoUtil(payloadUnidade);
-        if (!sucesso) {
+        const sucesso = await adicionarDiaNaoUtil(payloadUnidade, {
+          silent: true,
+          reload: false
+        });
+
+        if (sucesso) {
+          sucessoCount += 1;
+        } else {
           sucessoGlobal = false;
         }
       }
 
+      if (sucessoCount > 0) {
+        await carregarConfiguracao(anoReferencia);
+        toast.success(
+          `Dia não útil configurado para ${sucessoCount} ${sucessoCount === 1 ? 'unidade' : 'unidades'}`
+        );
+      }
+
+      if (!sucessoGlobal) {
+        const falhas = unidadesSelecionadas.length - sucessoCount;
+        toast.error(
+          `Não foi possível configurar ${falhas} ${falhas === 1 ? 'unidade' : 'unidades'}.`
+        );
+      }
+
       if (sucessoGlobal) {
-        toast.success('Dia não útil configurado para as unidades selecionadas');
         setModalDiaNaoUtil(false);
       }
       return;
@@ -266,11 +382,28 @@ const CalendarioConfiguracao = () => {
     }
   };
 
-  const handleRemoverDiaNaoUtil = async (dia) => {
+  const handleSolicitarRemocaoDiaNaoUtil = (dia) => {
     if (!dia || !dia.id) return;
-    if (window.confirm('Tem certeza que deseja remover este dia não útil?')) {
-      await removerDiaNaoUtil(dia.id, dia.data);
-    }
+    setConfirmacaoDiaNaoUtil({
+      isOpen: true,
+      dia
+    });
+  };
+
+  const handleCancelarRemocaoDiaNaoUtil = () => {
+    setConfirmacaoDiaNaoUtil({
+      isOpen: false,
+      dia: null
+    });
+  };
+
+  const handleConfirmarRemocaoDiaNaoUtil = async () => {
+    if (!confirmacaoDiaNaoUtil.dia) return;
+    await removerDiaNaoUtil(
+      confirmacaoDiaNaoUtil.dia.id,
+      confirmacaoDiaNaoUtil.dia.data
+    );
+    handleCancelarRemocaoDiaNaoUtil();
   };
 
   const handleFilialChangeDiaNaoUtil = (valor) => {
@@ -340,6 +473,65 @@ const CalendarioConfiguracao = () => {
     .sort((a, b) => a.label.localeCompare(b.label));
 
   const diasNaoUteisConfigurados = diasNaoUteis || [];
+
+  const resumoDiasNaoUteis = useMemo(() => {
+    if (!diasNaoUteisConfigurados.length) {
+      return [];
+    }
+    const mapa = diasNaoUteisConfigurados.reduce((acc, dia) => {
+      const tipo = dia.tipo_destino || 'global';
+      acc[tipo] = (acc[tipo] || 0) + 1;
+      return acc;
+    }, {});
+    return Object.entries(mapa).map(([tipo, quantidade]) => ({
+      tipo,
+      quantidade
+    }));
+  }, [diasNaoUteisConfigurados]);
+
+  const diasNaoUteisOrdenados = useMemo(() => {
+    return [...diasNaoUteisConfigurados].sort((a, b) => {
+      const dataA = a.data ? new Date(`${a.data}T00:00:00`).getTime() : 0;
+      const dataB = b.data ? new Date(`${b.data}T00:00:00`).getTime() : 0;
+      return dataB - dataA;
+    });
+  }, [diasNaoUteisConfigurados]);
+
+  const diasNaoUteisRecentes = useMemo(() => {
+    return diasNaoUteisOrdenados.slice(0, 5);
+  }, [diasNaoUteisOrdenados]);
+
+  const diasNaoUteisFiltrados = useMemo(() => {
+    if (!buscaDiaNaoUtil.trim()) {
+      return diasNaoUteisOrdenados;
+    }
+    const termo = buscaDiaNaoUtil.toLowerCase();
+    return diasNaoUteisOrdenados.filter((dia) => {
+      const descricao = (dia.descricao || '').toLowerCase();
+      const destino = formatarDestinoDia(dia).toLowerCase();
+      const observacoes = (dia.observacoes || '').toLowerCase();
+      return (
+        descricao.includes(termo) ||
+        destino.includes(termo) ||
+        observacoes.includes(termo)
+      );
+    });
+  }, [buscaDiaNaoUtil, diasNaoUteisOrdenados]);
+
+  const resumoDiasNaoUteisFiltrados = useMemo(() => {
+    if (!diasNaoUteisFiltrados.length) {
+      return [];
+    }
+    const mapa = diasNaoUteisFiltrados.reduce((acc, dia) => {
+      const tipo = dia.tipo_destino || 'global';
+      acc[tipo] = (acc[tipo] || 0) + 1;
+      return acc;
+    }, {});
+    return Object.entries(mapa).map(([tipo, quantidade]) => ({
+      tipo,
+      quantidade
+    }));
+  }, [diasNaoUteisFiltrados]);
 
   const gerarAnos = () => {
     const anos = [];
@@ -558,46 +750,49 @@ const CalendarioConfiguracao = () => {
               </Button>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-4">
               {diasNaoUteisConfigurados.length > 0 ? (
-                diasNaoUteisConfigurados.map((dia) => {
-                  const dataFormatada = dia.data
-                    ? new Date(`${dia.data}T00:00:00`).toLocaleDateString('pt-BR')
-                    : '';
-                  let destinoDescricao = 'Global';
-                  if (dia.tipo_destino === 'filial') {
-                    destinoDescricao = `Filial: ${dia.filial_nome || dia.filial_id}`;
-                    if (dia.filial_cidade) {
-                      destinoDescricao += ` (${dia.filial_cidade})`;
-                    }
-                  } else if (dia.tipo_destino === 'unidade') {
-                    destinoDescricao = `Unidade: ${dia.unidade_nome || dia.unidade_escolar_id}`;
-                    if (dia.unidade_cidade) {
-                      destinoDescricao += ` (${dia.unidade_cidade})`;
-                    }
-                  }
+                <>
+                  <DiasNaoUteisResumoChips resumo={resumoDiasNaoUteis} />
 
-                  return (
-                    <div key={dia.id} className="flex items-center justify-between p-3 bg-amber-50 rounded-lg border border-amber-200">
-                      <div>
-                        <div className="font-medium text-gray-900">{dia.descricao}</div>
-                        <div className="text-sm text-gray-500">{dataFormatada}</div>
-                        <div className="text-xs text-amber-700 mt-1">{destinoDescricao}</div>
-                        {dia.observacoes && (
-                          <div className="text-xs text-gray-600 mt-1">{dia.observacoes}</div>
-                        )}
+                  {diasNaoUteisRecentes.length > 0 && (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-semibold text-gray-700">
+                          Últimos configurados
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          Exibindo {diasNaoUteisRecentes.length} de {diasNaoUteisConfigurados.length}
+                        </span>
                       </div>
-                      <Button
-                        onClick={() => handleRemoverDiaNaoUtil(dia)}
-                        variant="outline"
-                        size="sm"
-                        disabled={loading}
-                      >
-                        <FaTrash className="h-4 w-4" />
-                      </Button>
+                      <div className="space-y-2">
+                        {diasNaoUteisRecentes.map((dia) => (
+                          <DiaNaoUtilCard
+                            key={`recent-${dia.id}`}
+                            dia={dia}
+                            onRemover={handleSolicitarRemocaoDiaNaoUtil}
+                            disabled={loading}
+                          />
+                        ))}
+                      </div>
                     </div>
-                  );
-                })
+                  )}
+
+                  <div className="flex flex-wrap gap-3">
+                    <Button
+                      onClick={() => {
+                        setBuscaDiaNaoUtil('');
+                        setModalListaDiasNaoUteis(true);
+                      }}
+                      variant="outline"
+                      size="sm"
+                      className="flex items-center gap-2"
+                    >
+                      <FaList className="h-4 w-4" />
+                      Ver lista completa ({diasNaoUteisConfigurados.length})
+                    </Button>
+                  </div>
+                </>
               ) : (
                 <div className="text-center py-4 text-gray-500">
                   Nenhum dia não útil personalizado configurado para {ano}
@@ -841,6 +1036,60 @@ const CalendarioConfiguracao = () => {
           </div>
         </div>
       </Modal>
+
+      <Modal
+        isOpen={modalListaDiasNaoUteis}
+        onClose={() => setModalListaDiasNaoUteis(false)}
+        title="Dias não úteis configurados"
+        size="xl"
+      >
+        <div className="space-y-4">
+          <Input
+            label="Buscar dia não útil"
+            value={buscaDiaNaoUtil}
+            onChange={(e) => setBuscaDiaNaoUtil(e.target.value)}
+            placeholder="Busque por descrição, destino ou observações..."
+          />
+
+          <DiasNaoUteisResumoChips resumo={resumoDiasNaoUteisFiltrados} />
+
+          <div className="flex items-center justify-between text-xs text-gray-500">
+            <span>
+              Exibindo {diasNaoUteisFiltrados.length} de {diasNaoUteisConfigurados.length} registros
+            </span>
+          </div>
+
+          <div className="border border-gray-200 rounded-lg overflow-hidden">
+            {diasNaoUteisFiltrados.length > 0 ? (
+              <div className="max-h-[60vh] overflow-y-auto divide-y divide-gray-100">
+                {diasNaoUteisFiltrados.map((dia) => (
+                  <DiaNaoUtilCard
+                    key={`modal-${dia.id}`}
+                    dia={dia}
+                    onRemover={handleSolicitarRemocaoDiaNaoUtil}
+                    disabled={loading}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="p-6 text-center text-sm text-gray-500">
+                Nenhum registro encontrado para "{buscaDiaNaoUtil}"
+              </div>
+            )}
+          </div>
+        </div>
+      </Modal>
+
+      <ConfirmModal
+        isOpen={confirmacaoDiaNaoUtil.isOpen}
+        onClose={handleCancelarRemocaoDiaNaoUtil}
+        onConfirm={handleConfirmarRemocaoDiaNaoUtil}
+        title="Remover dia não útil"
+        message="Tem certeza que deseja remover este dia não útil?"
+        confirmText="Remover"
+        cancelText="Cancelar"
+        type="danger"
+      />
     </div>
   );
 };

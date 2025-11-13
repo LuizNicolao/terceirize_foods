@@ -7,7 +7,7 @@ import {
   FaCalendarAlt,
   FaInfoCircle
 } from 'react-icons/fa';
-import { Button, Modal } from '../ui';
+import { Button, Input, Modal } from '../ui';
 
 const CalendarioGrid = ({ dados, ano, mes, loading = false }) => {
   const [diaSelecionado, setDiaSelecionado] = useState(null);
@@ -346,19 +346,64 @@ const DetalhesDiaModal = ({ dia, gerarMeses, obterBadges, onClose }) => {
       return acc;
     }, {});
 
-    const resumoExcecoes = Object.entries(excecoesAgrupadas).map(([tipo, lista]) => ({
-      tipo,
-      quantidade: lista.length
-    }));
-
     return {
       dataFormatada,
       badges,
       excecoes,
-      excecoesAgrupadas,
-      resumoExcecoes
+      excecoesAgrupadas
     };
   }, [dia, obterBadges]);
+
+  const [searchTerm, setSearchTerm] = useState('');
+  const [gruposExpandidos, setGruposExpandidos] = useState(() => ({
+    global: true,
+    filial: true,
+    unidade: true,
+    outros: true
+  }));
+
+  const excecoesFiltradas = useMemo(() => {
+    if (!dadosModal) return [];
+    if (!searchTerm.trim()) return dadosModal.excecoes;
+
+    const termo = searchTerm.toLowerCase();
+    return dadosModal.excecoes.filter((excecao) => {
+      const destinoTexto = formatarDestino(excecao).toLowerCase();
+      return (
+        (excecao.descricao || '').toLowerCase().includes(termo) ||
+        destinoTexto.includes(termo) ||
+        (excecao.observacoes || '').toLowerCase().includes(termo)
+      );
+    });
+  }, [dadosModal, searchTerm]);
+
+  const excecoesAgrupadasFiltradas = useMemo(() => {
+    return excecoesFiltradas.reduce((acc, excecao) => {
+      const tipo = excecao.tipo_destino || 'outros';
+      if (!acc[tipo]) {
+        acc[tipo] = [];
+      }
+      acc[tipo].push(excecao);
+      return acc;
+    }, {});
+  }, [excecoesFiltradas]);
+
+  const resumoExcecoesFiltradas = useMemo(() => {
+    return Object.entries(excecoesAgrupadasFiltradas).map(([tipo, lista]) => ({
+      tipo,
+      quantidade: lista.length
+    }));
+  }, [excecoesAgrupadasFiltradas]);
+
+  const totalExcecoes = dadosModal.excecoes.length;
+  const totalFiltradas = excecoesFiltradas.length;
+
+  const toggleGrupo = (tipo) => {
+    setGruposExpandidos((prev) => ({
+      ...prev,
+      [tipo]: !prev[tipo]
+    }));
+  };
 
   if (!dia || !dadosModal) {
     return null;
@@ -443,9 +488,14 @@ const DetalhesDiaModal = ({ dia, gerarMeses, obterBadges, onClose }) => {
               <h3 className="text-sm font-semibold text-gray-800">Dias não úteis (exceções)</h3>
               <div className="mt-2 flex flex-wrap items-center gap-2">
                 <span className="inline-flex items-center px-3 py-1 rounded-full bg-green-100 text-green-800 text-xs font-medium">
-                  Total: {dadosModal.excecoes.length}
+                  Total: {totalFiltradas}
+                  {totalFiltradas !== totalExcecoes && (
+                    <span className="ml-1 text-[11px] text-green-700">
+                      (filtrado de {totalExcecoes})
+                    </span>
+                  )}
                 </span>
-                {dadosModal.resumoExcecoes.map((resumo) => (
+                {resumoExcecoesFiltradas.map((resumo) => (
                   <span
                     key={`resumo-${resumo.tipo}`}
                     className="inline-flex items-center px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-xs font-medium"
@@ -456,35 +506,58 @@ const DetalhesDiaModal = ({ dia, gerarMeses, obterBadges, onClose }) => {
               </div>
             </div>
 
+            <Input
+              label="Buscar por descrição, destino ou observações"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Digite para filtrar..."
+            />
+
             <div className="border border-gray-200 rounded-lg overflow-hidden">
-              {Object.entries(dadosModal.excecoesAgrupadas).map(([tipo, lista]) => (
+              {Object.entries(excecoesAgrupadasFiltradas).map(([tipo, lista]) => (
                 <div key={`grupo-${tipo}`} className="border-t border-gray-200 first:border-t-0">
-                  <div className="bg-gray-50 px-4 py-3">
+                  <div className="bg-gray-50 px-4 py-3 flex items-center justify-between">
                     <span className="text-sm font-semibold text-gray-800">
                       {getTipoLabel(tipo)} ({lista.length})
                     </span>
+                    <Button
+                      onClick={() => toggleGrupo(tipo)}
+                      variant="ghost"
+                      size="xs"
+                      className="text-xs"
+                    >
+                      {gruposExpandidos[tipo] ? 'Recolher' : 'Expandir'}
+                    </Button>
                   </div>
 
-                  <div className="max-h-64 overflow-y-auto divide-y divide-gray-100">
-                    {lista.map((excecao) => (
-                      <div key={`excecao-${excecao.id}`} className="p-4 space-y-2">
-                        <div>
-                          <p className="text-sm font-semibold text-gray-900">
-                            {excecao.descricao || 'Exceção'}
-                          </p>
-                          <p className="text-xs text-gray-600">{formatarDestino(excecao)}</p>
+                  {gruposExpandidos[tipo] && (
+                    <div className="max-h-64 overflow-y-auto divide-y divide-gray-100">
+                      {lista.map((excecao) => (
+                        <div key={`excecao-${excecao.id}`} className="p-4 space-y-2">
+                          <div>
+                            <p className="text-sm font-semibold text-gray-900">
+                              {excecao.descricao || 'Exceção'}
+                            </p>
+                            <p className="text-xs text-gray-600">{formatarDestino(excecao)}</p>
+                          </div>
+
+                          {excecao.observacoes && (
+                            <p className="text-xs text-gray-600 italic whitespace-pre-line">
+                              {excecao.observacoes}
+                            </p>
+                          )}
                         </div>
-
-                        {excecao.observacoes && (
-                          <p className="text-xs text-gray-600 italic whitespace-pre-line">
-                            {excecao.observacoes}
-                          </p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               ))}
+
+              {totalFiltradas === 0 && (
+                <div className="p-4 text-center text-sm text-gray-500">
+                  Nenhum resultado encontrado para "{searchTerm}".
+                </div>
+              )}
             </div>
           </div>
         )}
