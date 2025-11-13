@@ -79,10 +79,12 @@ const CalendarioConfiguracao = () => {
         ]);
 
         if (filiaisResult.success) {
+          console.log('[CalendarioConfiguracao] Filiais carregadas:', filiaisResult.data?.length || 0);
           setFiliais(filiaisResult.data || []);
         }
 
         if (unidadesResult.success) {
+          console.log('[CalendarioConfiguracao] Unidades escolares carregadas:', unidadesResult.data?.length || 0);
           setUnidadesEscolares(unidadesResult.data || []);
         }
       } catch (error) {
@@ -194,6 +196,7 @@ const CalendarioConfiguracao = () => {
   };
 
   const handleTipoDestinoChange = (valor) => {
+    console.log('[CalendarioConfiguracao] Tipo de destino selecionado:', valor);
     setFormDiaNaoUtil((prev) => ({
       ...prev,
       tipo_destino: valor,
@@ -272,6 +275,15 @@ const CalendarioConfiguracao = () => {
   };
 
   const handleFilialChangeDiaNaoUtil = (valor) => {
+    const filialSelecionada = filiais.find((filial) => String(filial.id) === String(valor));
+    console.log('[CalendarioConfiguracao] Filial selecionada:', {
+      valor,
+      filialEncontrada: filialSelecionada ? {
+        id: filialSelecionada.id,
+        nome: filialSelecionada.filial,
+        cidade: filialSelecionada.cidade
+      } : null
+    });
     setFormDiaNaoUtil((prev) => ({
       ...prev,
       filial_id: valor,
@@ -280,6 +292,15 @@ const CalendarioConfiguracao = () => {
   };
 
   const handleToggleUnidadeSelecionada = (unidadeId) => {
+    const unidadeSelecionada = unidadesEscolares.find((unidade) => String(unidade.id) === String(unidadeId));
+    console.log('[CalendarioConfiguracao] Toggle unidade escolar:', {
+      unidadeId,
+      unidadeEncontrada: unidadeSelecionada ? {
+        id: unidadeSelecionada.id,
+        nome: unidadeSelecionada.nome_escola,
+        filial_id: unidadeSelecionada.filial_id
+      } : null
+    });
     setFormDiaNaoUtil((prev) => {
       const idNumber = parseInt(unidadeId, 10);
       const atual = new Set(prev.unidades_escola_ids || []);
