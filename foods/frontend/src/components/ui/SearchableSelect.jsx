@@ -40,6 +40,14 @@ const SearchableSelect = ({
   useEffect(() => {
     if (!searchTerm.trim()) {
       setFilteredOptions(options);
+      if (options?.length) {
+        console.log('[SearchableSelect] Reset filtro - opções disponíveis:', {
+          total: options.length,
+          exemplo: options[0]
+        });
+      } else {
+        console.log('[SearchableSelect] Reset filtro - nenhuma opção disponível');
+      }
       return;
     }
 
@@ -65,6 +73,11 @@ const SearchableSelect = ({
     });
 
     setFilteredOptions(filtered);
+    console.log('[SearchableSelect] Filtro aplicado:', {
+      termo: searchTerm,
+      totalResultados: filtered.length,
+      exemplo: filtered[0] || null
+    });
   }, [searchTerm, options, filterBy]);
 
   // Atualizar opção selecionada quando value mudar
@@ -130,6 +143,12 @@ const SearchableSelect = ({
 
   const handleToggle = () => {
     if (disabled) return;
+    console.log('[SearchableSelect] Toggle dropdown', {
+      abrindo: !isOpen,
+      totalOpcoes: options.length,
+      totalFiltradas: filteredOptions.length,
+      labelAtual: selectedOption?.label || null
+    });
     setIsOpen(!isOpen);
     if (!isOpen) {
       setTimeout(() => inputRef.current?.focus(), 100);
@@ -144,6 +163,7 @@ const SearchableSelect = ({
   };
 
   const handleClear = () => {
+    console.log('[SearchableSelect] Limpar seleção');
     setSelectedOption(null);
     setSearchTerm('');
     onChange('');
