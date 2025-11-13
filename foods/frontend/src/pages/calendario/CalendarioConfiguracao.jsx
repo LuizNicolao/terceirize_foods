@@ -40,7 +40,7 @@ const CalendarioConfiguracao = () => {
     descricao: '',
     tipo_destino: 'global',
     filial_id: '',
-    unidade_escolar_id: '',
+    unidades_escola_ids: [],
     observacoes: ''
   });
   const [filiais, setFiliais] = useState([]);
@@ -187,7 +187,7 @@ const CalendarioConfiguracao = () => {
       descricao: '',
       tipo_destino: 'global',
       filial_id: '',
-      unidade_escolar_id: '',
+      unidades_escola_ids: [],
       observacoes: ''
     });
     setModalDiaNaoUtil(true);
@@ -198,7 +198,7 @@ const CalendarioConfiguracao = () => {
       ...prev,
       tipo_destino: valor,
       filial_id: valor === 'filial' ? prev.filial_id : '',
-      unidade_escolar_id: valor === 'unidade' ? prev.unidade_escolar_id : '',
+      unidades_escola_ids: valor === 'unidade' ? prev.unidades_escola_ids : []
     }));
   };
 
@@ -213,8 +213,39 @@ const CalendarioConfiguracao = () => {
       return;
     }
 
-    if (formDiaNaoUtil.tipo_destino === 'unidade' && !formDiaNaoUtil.unidade_escolar_id) {
-      toast.error('Selecione a unidade escolar vinculada ao dia não útil');
+    if (formDiaNaoUtil.tipo_destino === 'unidade') {
+      const unidadesSelecionadas = formDiaNaoUtil.unidades_escola_ids || [];
+      if (!formDiaNaoUtil.filial_id) {
+        toast.error('Selecione a filial para listar as unidades');
+        return;
+      }
+
+      if (unidadesSelecionadas.length === 0) {
+        toast.error('Selecione pelo menos uma unidade escolar');
+        return;
+      }
+
+      let sucessoGlobal = true;
+      for (const unidadeId of unidadesSelecionadas) {
+        const payloadUnidade = {
+          data: formDiaNaoUtil.data,
+          descricao: formDiaNaoUtil.descricao,
+          observacoes: formDiaNaoUtil.observacoes || null,
+          tipo_destino: 'unidade',
+          filial_id: null,
+          unidade_escolar_id: parseInt(unidadeId, 10)
+        };
+
+        const sucesso = await adicionarDiaNaoUtil(payloadUnidade);
+        if (!sucesso) {
+          sucessoGlobal = false;
+        }
+      }
+
+      if (sucessoGlobal) {
+        toast.success('Dia não útil configurado para as unidades selecionadas');
+        setModalDiaNaoUtil(false);
+      }
       return;
     }
 
@@ -224,7 +255,7 @@ const CalendarioConfiguracao = () => {
       observacoes: formDiaNaoUtil.observacoes || null,
       tipo_destino: formDiaNaoUtil.tipo_destino,
       filial_id: formDiaNaoUtil.tipo_destino === 'filial' ? parseInt(formDiaNaoUtil.filial_id, 10) : null,
-      unidade_escolar_id: formDiaNaoUtil.tipo_destino === 'unidade' ? parseInt(formDiaNaoUtil.unidade_escolar_id, 10) : null
+      unidade_escolar_id: null
     };
 
     const sucesso = await adicionarDiaNaoUtil(payload);
@@ -240,16 +271,35 @@ const CalendarioConfiguracao = () => {
     }
   };
 
+  const handleFilialChangeDiaNaoUtil = (valor) => {
+    setFormDiaNaoUtil((prev) => ({
+      ...prev,
+      filial_id: valor,
+      unidades_escola_ids: []
+    }));
+  };
+
+  const handleToggleUnidadeSelecionada = (unidadeId) => {
+    setFormDiaNaoUtil((prev) => {
+      const idNumber = parseInt(unidadeId, 10);
+      const atual = new Set(prev.unidades_escola_ids || []);
+      if (atual.has(idNumber)) {
+        atual.delete(idNumber);
+      } else {
+        atual.add(idNumber);
+      }
+      return {
+        ...prev,
+        unidades_escola_ids: Array.from(atual)
+      };
+    });
+  };
+
+
   const filiaisOptions = filiais.map((filial) => ({
     value: filial.id,
     label: filial.filial,
     description: filial.cidade ? `${filial.cidade}${filial.estado ? ` - ${filial.estado}` : ''}` : undefined
-  }));
-
-  const unidadesEscolaresOptions = unidadesEscolares.map((unidade) => ({
-    value: unidade.id,
-    label: unidade.nome_escola,
-    description: unidade.cidade ? `${unidade.cidade}${unidade.estado ? ` - ${unidade.estado}` : ''}` : undefined
   }));
 
   const diasNaoUteisConfigurados = diasNaoUteis || [];
@@ -575,7 +625,7 @@ const CalendarioConfiguracao = () => {
         isOpen={modalDiaNaoUtil}
         onClose={() => setModalDiaNaoUtil(false)}
         title="Adicionar Dia Não Útil Personalizado"
-        size="md"
+        size="xl"
       >
         <div className="space-y-4">
           <Input
@@ -611,9 +661,7 @@ const CalendarioConfiguracao = () => {
             <SearchableSelect
               label="Filial"
               value={formDiaNaoUtil.filial_id}
-              onChange={(valor) =>
-                setFormDiaNaoUtil((prev) => ({ ...prev, filial_id: valor, unidade_escolar_id: '' }))
-              }
+              onChange={handleFilialChangeDiaNaoUtil}
               options={filiaisOptions}
               placeholder="Selecione uma filial..."
               loading={loadingListas}
@@ -621,16 +669,69 @@ const CalendarioConfiguracao = () => {
           )}
 
           {formDiaNaoUtil.tipo_destino === 'unidade' && (
-            <SearchableSelect
-              label="Unidade Escolar"
-              value={formDiaNaoUtil.unidade_escolar_id}
-              onChange={(valor) =>
-                setFormDiaNaoUtil((prev) => ({ ...prev, unidade_escolar_id: valor, filial_id: '' }))
-              }
-              options={unidadesEscolaresOptions}
-              placeholder="Selecione uma unidade escolar..."
-              loading={loadingListas}
-            />
+            <div className="space-y-4">
+              <SearchableSelect
+                label="Filtrar por Filial"
+                value={formDiaNaoUtil.filial_id}
+                onChange={handleFilialChangeDiaNaoUtil}
+                options={filiaisOptions}
+                placeholder="Selecione a filial responsável..."
+                loading={loadingListas}
+              />
+
+              <div className="border border-gray-200 rounded-lg p-4 max-h-64 overflow-y-auto bg-gray-50">
+                <h4 className="text-sm font-semibold text-gray-700 mb-3">
+                  Unidades Escolares {formDiaNaoUtil.filial_id ? 'da filial selecionada' : '(selecione uma filial)'}
+                </h4>
+
+                {formDiaNaoUtil.filial_id ? (
+                  (() => {
+                    const unidadesFiltradas = unidadesEscolares.filter(
+                      (unidade) => String(unidade.filial_id) === String(formDiaNaoUtil.filial_id)
+                    );
+
+                    if (unidadesFiltradas.length === 0) {
+                      return (
+                        <div className="text-sm text-gray-500">
+                          Nenhuma unidade escolar encontrada para esta filial.
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {unidadesFiltradas.map((unidade) => (
+                          <label
+                            key={unidade.id}
+                            className="flex items-start space-x-2 bg-white rounded-lg border border-gray-200 px-3 py-2 hover:border-green-400 transition-colors"
+                          >
+                            <input
+                              type="checkbox"
+                              className="mt-1 h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                              checked={formDiaNaoUtil.unidades_escola_ids?.includes(unidade.id) || false}
+                              onChange={() => handleToggleUnidadeSelecionada(unidade.id)}
+                            />
+                            <div>
+                              <div className="text-sm font-medium text-gray-900">{unidade.nome_escola}</div>
+                              {unidade.cidade && (
+                                <div className="text-xs text-gray-500">
+                                  {unidade.cidade}
+                                  {unidade.estado ? ` - ${unidade.estado}` : ''}
+                                </div>
+                              )}
+                            </div>
+                          </label>
+                        ))}
+                      </div>
+                    );
+                  })()
+                ) : (
+                  <div className="text-sm text-gray-500">
+                    Selecione uma filial para listar as unidades disponíveis.
+                  </div>
+                )}
+              </div>
+            </div>
           )}
 
           <Input
