@@ -164,6 +164,23 @@ export const useCalendario = () => {
     }
   }, []);
 
+  const carregarConfiguracao = useCallback(async (ano) => {
+    setLoading(true);
+    try {
+      const response = await calendarioService.obterConfiguracao(ano);
+      if (response.success) {
+        setConfiguracao(response.data);
+        setDiasNaoUteis(response.data.dias_nao_uteis || []);
+        return response.data;
+      }
+    } catch (error) {
+      console.error('Erro ao carregar configuração:', error);
+      toast.error('Erro ao carregar configuração');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   const adicionarFeriado = useCallback(async (dados) => {
     setLoading(true);
     try {
@@ -243,23 +260,6 @@ export const useCalendario = () => {
       setLoading(false);
     }
   }, [carregarConfiguracao, configuracao]);
-
-  const carregarConfiguracao = useCallback(async (ano) => {
-    setLoading(true);
-    try {
-      const response = await calendarioService.obterConfiguracao(ano);
-      if (response.success) {
-        setConfiguracao(response.data);
-        setDiasNaoUteis(response.data.dias_nao_uteis || []);
-        return response.data;
-      }
-    } catch (error) {
-      console.error('Erro ao carregar configuração:', error);
-      toast.error('Erro ao carregar configuração');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
 
   // ===== API DE INTEGRAÇÃO =====
   const buscarSemanasConsumo = useCallback(async (ano) => {
