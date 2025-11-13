@@ -16,6 +16,7 @@ export const useRegistrosDiarios = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(20);
+  const MAX_ITEMS_PER_PAGE = 100;
   
   // Estados de filtros
   const [escolaFilter, setEscolaFilter] = useState('');
@@ -35,9 +36,12 @@ export const useRegistrosDiarios = () => {
     try {
       setLoading(true);
       
+      const paginaNormalizada = Math.max(1, page);
+      const limiteNormalizado = Math.max(1, Math.min(itemsPerPage || 20, MAX_ITEMS_PER_PAGE));
+
       const params = {
-        page,
-        limit: itemsPerPage,
+        page: paginaNormalizada,
+        limit: limiteNormalizado,
         escola_id: escolaFilter || undefined,
         data_inicio: dataInicio || undefined,
         data_fim: dataFim || undefined
@@ -158,7 +162,12 @@ export const useRegistrosDiarios = () => {
   };
   
   const handleItemsPerPageChange = (items) => {
-    setItemsPerPage(items);
+    const normalizado = Math.max(1, Math.min(items || 20, MAX_ITEMS_PER_PAGE));
+    if (items >= 999999 && normalizado !== items) {
+      toast.dismiss();
+      toast.success('Mostrando até 100 registros por página (limite máximo permitido).');
+    }
+    setItemsPerPage(normalizado);
     setCurrentPage(1);
   };
   
