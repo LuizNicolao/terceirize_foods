@@ -335,12 +335,11 @@ const CalendarioConfiguracao = () => {
           unidade_escolar_id: parseInt(unidadeId, 10)
         };
 
-        const sucesso = await adicionarDiaNaoUtil(payloadUnidade, {
-          silent: true,
+        const resultado = await adicionarDiaNaoUtil(payloadUnidade, {
           reload: false
         });
 
-        if (sucesso) {
+        if (resultado?.success) {
           sucessoCount += 1;
         } else {
           sucessoGlobal = false;
@@ -376,9 +375,12 @@ const CalendarioConfiguracao = () => {
       unidade_escolar_id: null
     };
 
-    const sucesso = await adicionarDiaNaoUtil(payload);
-    if (sucesso) {
+    const resultado = await adicionarDiaNaoUtil(payload);
+    if (resultado?.success) {
+      toast.success(resultado?.message || 'Dia não útil adicionado com sucesso');
       setModalDiaNaoUtil(false);
+    } else {
+      toast.error(resultado?.message || 'Erro ao adicionar dia não útil');
     }
   };
 

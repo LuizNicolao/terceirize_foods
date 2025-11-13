@@ -364,10 +364,10 @@ const DetalhesDiaModal = ({ dia, gerarMeses, obterBadges, onClose }) => {
 
   const excecoesFiltradas = useMemo(() => {
     if (!dadosModal) return [];
-    if (!searchTerm.trim()) return dadosModal.excecoes;
+    if (!searchTerm.trim()) return dadosModal.excecoes || [];
 
     const termo = searchTerm.toLowerCase();
-    return dadosModal.excecoes.filter((excecao) => {
+    return (dadosModal.excecoes || []).filter((excecao) => {
       const destinoTexto = formatarDestino(excecao).toLowerCase();
       return (
         (excecao.descricao || '').toLowerCase().includes(termo) ||
@@ -395,8 +395,8 @@ const DetalhesDiaModal = ({ dia, gerarMeses, obterBadges, onClose }) => {
     }));
   }, [excecoesAgrupadasFiltradas]);
 
-  const totalExcecoes = dadosModal.excecoes.length;
-  const totalFiltradas = excecoesFiltradas.length;
+  const totalExcecoes = dadosModal?.excecoes?.length || 0;
+  const totalFiltradas = excecoesFiltradas?.length || 0;
 
   const toggleGrupo = (tipo) => {
     setGruposExpandidos((prev) => ({
@@ -436,7 +436,7 @@ const DetalhesDiaModal = ({ dia, gerarMeses, obterBadges, onClose }) => {
     <Modal
       isOpen={Boolean(dia)}
       onClose={onClose}
-      size={dadosModal.excecoes.length > 0 ? 'xl' : 'lg'}
+      size={totalExcecoes > 0 ? 'xl' : 'lg'}
       title={`Detalhes do dia ${dadosModal.dataFormatada}`}
     >
       <div className="space-y-6">
@@ -482,7 +482,7 @@ const DetalhesDiaModal = ({ dia, gerarMeses, obterBadges, onClose }) => {
           </div>
         )}
 
-        {dadosModal.excecoes.length > 0 && (
+        {totalExcecoes > 0 && (
           <div className="space-y-4">
             <div>
               <h3 className="text-sm font-semibold text-gray-800">Dias não úteis (exceções)</h3>

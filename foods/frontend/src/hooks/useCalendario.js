@@ -198,24 +198,29 @@ export const useCalendario = () => {
     }
   }, []);
 
-  const adicionarDiaNaoUtil = useCallback(async (dados) => {
+  const adicionarDiaNaoUtil = useCallback(async (dados, options = {}) => {
+    const { reload = true } = options;
     setLoading(true);
     try {
       const response = await calendarioService.adicionarDiaNaoUtil(dados);
-      if (response.success) {
-        toast.success(response.message || 'Dia não útil adicionado com sucesso');
+      if (response.success && reload) {
         const anoReferencia = dados?.data
           ? new Date(`${dados.data}T00:00:00`).getFullYear()
           : new Date().getFullYear();
         await carregarConfiguracao(anoReferencia);
-        return true;
       }
-      toast.error(response.message || 'Erro ao adicionar dia não útil');
-      return false;
+      return {
+        success: Boolean(response.success),
+        message: response.message,
+        data: response.data || null
+      };
     } catch (error) {
       console.error('Erro ao adicionar dia não útil:', error);
-      toast.error('Erro ao adicionar dia não útil');
-      return false;
+      return {
+        success: false,
+        message: 'Erro ao adicionar dia não útil',
+        error
+      };
     } finally {
       setLoading(false);
     }
