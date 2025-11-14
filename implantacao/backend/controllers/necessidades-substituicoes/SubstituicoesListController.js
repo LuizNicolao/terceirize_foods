@@ -206,30 +206,23 @@ class SubstituicoesListController {
       // Buscar necessidades agrupadas por produto origem + produto genérico
       const necessidades = await executeQuery(`
         SELECT 
-          ns.produto_origem_id AS codigo_origem,
-          ns.produto_origem_nome,
-          ns.produto_origem_unidade,
-          ns.produto_trocado_id,
-          ns.produto_trocado_nome,
-          ns.produto_trocado_unidade,
-          MAX(ns.produto_generico_id) AS produto_generico_id,
-          MAX(ns.produto_generico_codigo) AS produto_generico_codigo,
-          MAX(ns.produto_generico_nome) AS produto_generico_nome,
-          MAX(ns.produto_generico_unidade) AS produto_generico_unidade,
-          SUM(ns.quantidade_origem) AS quantidade_total_origem,
-          GROUP_CONCAT(ns.necessidade_id) AS necessidade_ids,
-          ns.semana_abastecimento,
-          ns.semana_consumo,
-          ns.grupo,
-          ns.grupo_id,
-          GROUP_CONCAT(
-            DISTINCT CONCAT(
-              ns.necessidade_id, '|',
-              ns.escola_id, '|',
-              ns.escola_nome, '|',
-              ns.quantidade_origem
-            ) SEPARATOR '::'
-          ) as escolas_solicitantes
+          dados.codigo_origem,
+          dados.produto_origem_nome,
+          dados.produto_origem_unidade,
+          dados.produto_trocado_id,
+          dados.produto_trocado_nome,
+          dados.produto_trocado_unidade,
+          dados.produto_generico_id,
+          dados.produto_generico_codigo,
+          dados.produto_generico_nome,
+          dados.produto_generico_unidade,
+          dados.quantidade_total_origem,
+          dados.necessidade_ids,
+          dados.semana_abastecimento,
+          dados.semana_consumo,
+          dados.grupo,
+          dados.grupo_id,
+          dados.escolas_solicitantes
         FROM (
           SELECT 
             ns.produto_origem_id AS codigo_origem,
