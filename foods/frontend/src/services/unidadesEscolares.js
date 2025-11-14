@@ -173,26 +173,12 @@ class UnidadesEscolaresService {
     }
   }
 
-  static async buscarAtivas(params = {}) {
+  static async buscarAtivas() {
     try {
-      const queryParams = {
-        page: 1,
-        limit: 1000,
-        ...params
-      };
-
-      const response = await api.get('/unidades-escolares/ativas/listar', { params: queryParams });
-      const payload = response.data?.data;
-      const unidades = Array.isArray(payload)
-        ? payload
-        : Array.isArray(payload?.items)
-          ? payload.items
-          : [];
-
+      const response = await api.get('/unidades-escolares/ativas/listar');
       return {
         success: true,
-        data: unidades,
-        meta: response.data?.meta || null
+        data: response.data.data || []
       };
     } catch (error) {
       return {

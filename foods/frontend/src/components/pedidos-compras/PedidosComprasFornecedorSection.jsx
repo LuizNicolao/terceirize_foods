@@ -43,6 +43,7 @@ const PedidosComprasFornecedorSection = ({
             disabled={isViewMode}
             loading={loadingFornecedores}
             placeholder="Digite para buscar fornecedor (mín. 2 caracteres)"
+          usePortal={false}
           />
         </div>
         <div>

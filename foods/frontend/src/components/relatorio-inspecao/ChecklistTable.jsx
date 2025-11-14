@@ -82,6 +82,7 @@ const ChecklistTable = ({ checklist, grupos, onChange, viewMode = false }) => {
                       placeholder="Selecione..."
                       className="w-full"
                       disabled={viewMode}
+            usePortal={false}
                     />
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap">
@@ -92,6 +93,7 @@ const ChecklistTable = ({ checklist, grupos, onChange, viewMode = false }) => {
                       placeholder="Selecione o grupo..."
                       className="w-full"
                       disabled={viewMode}
+            usePortal={false}
                     />
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap">
@@ -102,6 +104,7 @@ const ChecklistTable = ({ checklist, grupos, onChange, viewMode = false }) => {
                       placeholder="Selecione..."
                       className="w-full"
                       disabled={viewMode}
+            usePortal={false}
                     />
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap">
@@ -112,6 +115,7 @@ const ChecklistTable = ({ checklist, grupos, onChange, viewMode = false }) => {
                       placeholder="Selecione..."
                       className="w-full"
                       disabled={viewMode}
+            usePortal={false}
                     />
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap">
@@ -122,6 +126,7 @@ const ChecklistTable = ({ checklist, grupos, onChange, viewMode = false }) => {
                       placeholder="Selecione..."
                       className="w-full"
                       disabled={viewMode}
+            usePortal={false}
                     />
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap">
@@ -132,6 +137,7 @@ const ChecklistTable = ({ checklist, grupos, onChange, viewMode = false }) => {
                       placeholder="Selecione..."
                       className="w-full"
                       disabled={viewMode}
+            usePortal={false}
                     />
                   </td>
                 </tr>

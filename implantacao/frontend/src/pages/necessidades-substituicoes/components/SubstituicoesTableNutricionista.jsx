@@ -173,10 +173,10 @@ const SubstituicoesTableNutricionista = ({
   // Pré-selecionar produto padrão ou produto já salvo quando produtos genéricos forem carregados
   useEffect(() => {
     necessidades.forEach(necessidade => {
-      const chaveUnica = `${necessidade.codigo_origem}_${necessidade.produto_generico_id || 'novo'}`;
+      const chaveOrigem = getChaveOrigem(necessidade);
       const { id: produtoOrigemAtualId } = getProdutoOrigemSelecionadoInfo(necessidade);
       
-      if (produtosGenericos[produtoOrigemAtualId] && !produtosPadraoSelecionados[chaveUnica]) {
+      if (produtosGenericos[produtoOrigemAtualId] && !produtosPadraoSelecionados[chaveOrigem]) {
         if (necessidade.produto_generico_id) {
           const produtoEspecifico = produtosGenericos[produtoOrigemAtualId].find(
             p => (p.id || p.codigo) == necessidade.produto_generico_id
@@ -186,17 +186,17 @@ const SubstituicoesTableNutricionista = ({
             const unidade = produtoEspecifico.unidade_medida_sigla || produtoEspecifico.unidade || produtoEspecifico.unidade_medida || '';
             const valor = `${produtoEspecifico.id || produtoEspecifico.codigo}|${produtoEspecifico.nome}|${unidade}|${produtoEspecifico.fator_conversao || 1}`;
             
-            setSelectedProdutosGenericos(prev => ({ ...prev, [chaveUnica]: valor }));
-            setUndGenericos(prev => ({ ...prev, [chaveUnica]: unidade }));
+            setSelectedProdutosGenericos(prev => ({ ...prev, [chaveOrigem]: valor }));
+            setUndGenericos(prev => ({ ...prev, [chaveOrigem]: unidade }));
             
             const fatorConversao = produtoEspecifico.fator_conversao || 1;
             if (necessidade.quantidade_total_origem && fatorConversao > 0) {
               const quantidadeCalculada = Math.ceil(parseFloat(necessidade.quantidade_total_origem) / fatorConversao);
-              setQuantidadesGenericos(prev => ({ ...prev, [chaveUnica]: quantidadeCalculada }));
+              setQuantidadesGenericos(prev => ({ ...prev, [chaveOrigem]: quantidadeCalculada }));
             }
             
             necessidade.escolas.forEach(escola => {
-              const chaveEscola = `${chaveUnica}-${escola.escola_id}`;
+              const chaveEscola = `${chaveOrigem}-${escola.escola_id}`;
               setSelectedProdutosPorEscola(prev => ({ ...prev, [chaveEscola]: valor }));
             });
           }
@@ -209,44 +209,44 @@ const SubstituicoesTableNutricionista = ({
             const unidade = produtoPadrao.unidade_medida_sigla || produtoPadrao.unidade || produtoPadrao.unidade_medida || '';
             const valor = `${produtoPadrao.id || produtoPadrao.codigo}|${produtoPadrao.nome}|${unidade}|${produtoPadrao.fator_conversao || 1}`;
             
-            setSelectedProdutosGenericos(prev => ({ ...prev, [chaveUnica]: valor }));
-            setUndGenericos(prev => ({ ...prev, [chaveUnica]: unidade }));
+            setSelectedProdutosGenericos(prev => ({ ...prev, [chaveOrigem]: valor }));
+            setUndGenericos(prev => ({ ...prev, [chaveOrigem]: unidade }));
             
             const fatorConversao = produtoPadrao.fator_conversao || 1;
             if (necessidade.quantidade_total_origem && fatorConversao > 0) {
               const quantidadeCalculada = Math.ceil(parseFloat(necessidade.quantidade_total_origem) / fatorConversao);
-              setQuantidadesGenericos(prev => ({ ...prev, [chaveUnica]: quantidadeCalculada }));
+              setQuantidadesGenericos(prev => ({ ...prev, [chaveOrigem]: quantidadeCalculada }));
             }
             
             necessidade.escolas.forEach(escola => {
-              const chaveEscola = `${chaveUnica}-${escola.escola_id}`;
+              const chaveEscola = `${chaveOrigem}-${escola.escola_id}`;
               setSelectedProdutosPorEscola(prev => ({ ...prev, [chaveEscola]: valor }));
             });
           }
         }
         
-        setProdutosPadraoSelecionados(prev => ({ ...prev, [chaveUnica]: true }));
+        setProdutosPadraoSelecionados(prev => ({ ...prev, [chaveOrigem]: true }));
       }
     });
   }, [produtosGenericos, necessidades, produtosPadraoSelecionados, selectedProdutosOrigem]);
 
-  const handleToggleExpand = (chaveUnica) => {
+  const handleToggleExpand = (chaveOrigem) => {
     setExpandedRows(prev => ({
       ...prev,
-      [chaveUnica]: !prev[chaveUnica]
+      [chaveOrigem]: !prev[chaveOrigem]
     }));
   };
 
   const handleSaveConsolidated = async (necessidade) => {
-    const chaveUnica = `${necessidade.codigo_origem}_${necessidade.produto_generico_id || 'novo'}`;
+    const chaveOrigem = getChaveOrigem(necessidade);
     const produtoOrigemAtualId = getProdutoOrigemSelecionadoInfo(necessidade).id;
     
-    if (!selectedProdutosGenericos[chaveUnica]) {
+    if (!selectedProdutosGenericos[chaveOrigem]) {
       toast.error('Selecione um produto genérico antes de salvar!');
       return;
     }
 
-    const produtoSelecionado = selectedProdutosGenericos[chaveUnica];
+    const produtoSelecionado = selectedProdutosGenericos[chaveOrigem];
     const partes = produtoSelecionado.split('|');
     const [produto_generico_id, produto_generico_nome, produto_generico_unidade] = partes;
 
@@ -266,11 +266,11 @@ const SubstituicoesTableNutricionista = ({
         escola_id: escola.escola_id,
         escola_nome: escola.escola_nome,
         quantidade_origem: escola.quantidade_origem,
-        quantidade_generico: quantidadesGenericos[chaveUnica] || escola.quantidade_origem
+      quantidade_generico: quantidadesGenericos[chaveOrigem] || escola.quantidade_origem
       }))
     };
 
-    const response = await onSaveConsolidated(dados, chaveUnica);
+    const response = await onSaveConsolidated(dados, chaveOrigem);
     
     if (response && response.success) {
       if (produtosGenericos[produtoOrigemAtualId]) {
@@ -289,7 +289,7 @@ const SubstituicoesTableNutricionista = ({
       return;
     }
 
-    const chaveUnica = `${necessidade.codigo_origem}_${necessidade.produto_generico_id || 'novo'}`;
+    const chaveOrigem = getChaveOrigem(necessidade);
     const produtoOrigemAtualId = getProdutoOrigemSelecionadoInfo(necessidade).id;
     const partes = escola.selectedProdutoGenerico.split('|');
     const [produto_generico_id, produto_generico_nome, produto_generico_unidade] = partes;
@@ -323,21 +323,21 @@ const SubstituicoesTableNutricionista = ({
       
       setSelectedProdutosGenericos(prev => ({ 
         ...prev, 
-        [chaveUnica]: escola.selectedProdutoGenerico 
+        [chaveOrigem]: escola.selectedProdutoGenerico 
       }));
       
       const fatorConversao = parseFloat(partes[3]) || 1;
       setUndGenericos(prev => ({ 
         ...prev, 
-        [chaveUnica]: produto_generico_unidade 
+        [chaveOrigem]: produto_generico_unidade 
       }));
       
       if (necessidade.quantidade_total_origem && fatorConversao > 0) {
         const quantidadeCalculada = Math.ceil(parseFloat(necessidade.quantidade_total_origem) / fatorConversao);
-        setQuantidadesGenericos(prev => ({ 
-          ...prev, 
-          [chaveUnica]: quantidadeCalculada 
-        }));
+      setQuantidadesGenericos(prev => ({ 
+        ...prev, 
+        [chaveOrigem]: quantidadeCalculada 
+      }));
       }
 
       await processarTrocaProdutoOrigem(necessidade, [dados.necessidade_id]);
@@ -374,20 +374,20 @@ const SubstituicoesTableNutricionista = ({
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {necessidades.map((necessidade) => {
-              const chaveUnica = `${necessidade.codigo_origem}_${necessidade.produto_generico_id || 'novo'}`;
+              const chaveOrigem = getChaveOrigem(necessidade);
               const produtoOrigemAtual = getProdutoOrigemSelecionadoInfo(necessidade);
               const produtoOrigemAtualId = produtoOrigemAtual.id;
               const loadingKey = getLoadingKey(produtoOrigemAtualId, necessidade.grupo);
               return (
-              <React.Fragment key={chaveUnica}>
+              <React.Fragment key={chaveOrigem}>
                 {/* Linha Consolidada */}
                 <tr className="hover:bg-gray-50">
                   <td className="px-4 py-2 whitespace-nowrap text-center">
                     <button
-                      onClick={() => handleToggleExpand(chaveUnica)}
+                      onClick={() => handleToggleExpand(chaveOrigem)}
                       className="text-green-600 hover:text-green-700 focus:outline-none transition-colors"
                     >
-                      {expandedRows[chaveUnica] ? (
+                      {expandedRows[chaveOrigem] ? (
                         <FaChevronUp className="w-4 h-4" />
                       ) : (
                         <FaChevronDown className="w-4 h-4" />
@@ -402,8 +402,8 @@ const SubstituicoesTableNutricionista = ({
                       <div className="flex items-center gap-2">
                         <div className="flex-1">
                           <SearchableSelect
-                            value={selectedProdutosOrigem[getChaveOrigem(necessidade)] || ''}
-                            onChange={(value) => handleProdutoOrigemChange(getChaveOrigem(necessidade), value)}
+                            value={selectedProdutosOrigem[chaveOrigem] || ''}
+                            onChange={(value) => handleProdutoOrigemChange(chaveOrigem, value)}
                             options={(() => {
                               const produtosGrupo = necessidade.produtos_grupo || [];
                               const options = produtosGrupo.map(produto => {
@@ -489,14 +489,14 @@ const SubstituicoesTableNutricionista = ({
                   </td>
                   <td className="px-4 py-2 whitespace-nowrap">
                     <span className="text-xs text-purple-600">
-                      {selectedProdutosGenericos[chaveUnica]?.split('|')[0] || necessidade.produto_generico_codigo || '-'}
+                      {selectedProdutosGenericos[chaveOrigem]?.split('|')[0] || necessidade.produto_generico_codigo || '-'}
                     </span>
                   </td>
                   <td className="px-4 py-2 whitespace-nowrap relative z-10">
                     <div className="relative z-10">
                       <SearchableSelect
-                        value={selectedProdutosGenericos[chaveUnica] || ''}
-                        onChange={(value) => handleProdutoGenericoChange(chaveUnica, value, necessidade.quantidade_total_origem)}
+                        value={selectedProdutosGenericos[chaveOrigem] || ''}
+                        onChange={(value) => handleProdutoGenericoChange(chaveOrigem, value, necessidade.quantidade_total_origem)}
                         options={produtosGenericos[produtoOrigemAtualId]?.map(produto => ({
                           value: `${produto.id || produto.codigo}|${produto.nome}|${produto.unidade_medida_sigla || produto.unidade || produto.unidade_medida || ''}|${produto.fator_conversao || 1}`,
                           label: produto.nome
@@ -512,13 +512,13 @@ const SubstituicoesTableNutricionista = ({
                   </td>
                   <td className="px-4 py-2 whitespace-nowrap text-center">
                     <span className="text-xs text-gray-700">
-                      {undGenericos[chaveUnica] || necessidade.produto_generico_unidade || '-'}
+                      {undGenericos[chaveOrigem] || necessidade.produto_generico_unidade || '-'}
                     </span>
                   </td>
                   <td className="px-4 py-2 whitespace-nowrap text-center">
                     <span className="text-xs text-cyan-600 font-semibold">
-                      {quantidadesGenericos[chaveUnica] !== undefined ? 
-                        quantidadesGenericos[chaveUnica] : 
+                      {quantidadesGenericos[chaveOrigem] !== undefined ? 
+                        quantidadesGenericos[chaveOrigem] : 
                         '0,000'
                       }
                     </span>
@@ -539,7 +539,7 @@ const SubstituicoesTableNutricionista = ({
                 </tr>
 
                 {/* Linha Expandida (Detalhes) */}
-                {expandedRows[chaveUnica] && (
+                {expandedRows[chaveOrigem] && (
                   <tr className="bg-gray-50">
                     <td colSpan="12" className="px-6 py-4">
                       <div className="bg-gray-50 border-l-4 border-green-600 p-4">
@@ -561,7 +561,7 @@ const SubstituicoesTableNutricionista = ({
                           </thead>
                           <tbody className="bg-white divide-y divide-gray-200">
                             {necessidade.escolas.map((escola, idx) => {
-                              const chaveEscola = `${chaveUnica}-${escola.escola_id}`;
+                              const chaveEscola = `${chaveOrigem}-${escola.escola_id}`;
                               const produtoSelecionado = selectedProdutosPorEscola[chaveEscola] || (escola.substituicao ? 
                                 `${escola.substituicao.produto_generico_id}|${escola.substituicao.produto_generico_nome}|${escola.substituicao.produto_generico_unidade}` 
                                 : '');

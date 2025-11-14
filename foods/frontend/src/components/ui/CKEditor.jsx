@@ -108,13 +108,13 @@ const CKEditor = ({
       existingScript.onerror = () => console.error('Erro ao carregar CKEditor');
       return;
     }
-
-    const script = document.createElement('script');
+          
+          const script = document.createElement('script');
     script.src = scriptSrc;
-    script.async = true;
-    script.onload = () => setScriptLoaded(true);
+          script.async = true;
+          script.onload = () => setScriptLoaded(true);
     script.onerror = () => console.error(`Erro ao carregar CKEditor a partir de ${scriptSrc}`);
-    document.head.appendChild(script);
+          document.head.appendChild(script);
   }, [basePath]);
 
   // Inicializar editor quando script estiver carregado

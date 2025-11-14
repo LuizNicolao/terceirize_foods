@@ -395,6 +395,7 @@ const RelatorioInspecaoModal = ({ isOpen, onClose, onSubmit, rir, viewMode, grup
                   options={getPedidoOptions()}
                   placeholder="Selecione o pedido..."
                   disabled={loadingPedidos || isViewMode}
+                usePortal={false}
                 />
               </div>
 

@@ -781,19 +781,19 @@ const CalendarioConfiguracao = () => {
                   )}
 
                   <div className="flex flex-wrap gap-3">
-                    <Button
+                      <Button
                       onClick={() => {
                         setBuscaDiaNaoUtil('');
                         setModalListaDiasNaoUteis(true);
                       }}
-                      variant="outline"
-                      size="sm"
+                        variant="outline"
+                        size="sm"
                       className="flex items-center gap-2"
-                    >
+                      >
                       <FaList className="h-4 w-4" />
                       Ver lista completa ({diasNaoUteisConfigurados.length})
-                    </Button>
-                  </div>
+                      </Button>
+                    </div>
                 </>
               ) : (
                 <div className="text-center py-4 text-gray-500">

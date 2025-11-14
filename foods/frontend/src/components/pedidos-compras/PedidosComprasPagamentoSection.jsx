@@ -25,6 +25,7 @@ const PedidosComprasPagamentoSection = ({
           }}
           disabled={isViewMode}
           placeholder="Selecione uma forma de pagamento"
+          usePortal={false}
         />
       </div>
       <div>
@@ -42,6 +43,7 @@ const PedidosComprasPagamentoSection = ({
           }}
           disabled={isViewMode}
           placeholder="Selecione um prazo de pagamento"
+          usePortal={false}
         />
       </div>
     </div>

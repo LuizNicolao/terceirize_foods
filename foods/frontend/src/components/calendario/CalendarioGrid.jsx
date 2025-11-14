@@ -117,15 +117,15 @@ const CalendarioGrid = ({ dados, ano, mes, loading = false }) => {
         })
         .join(' · ');
 
-      badges.push({
+        badges.push({
         key: `excecoes-${dia.id}`,
-        icon: FaExclamationTriangle,
+          icon: FaExclamationTriangle,
         text: `Exceções (${totalExcecoes})`,
         detailText:
           detalhesResumo.length > 0
             ? `Registros: ${detalhesResumo}`
             : `Existem ${totalExcecoes} ${totalExcecoes === 1 ? 'exceção' : 'exceções'} configuradas para este dia`,
-        color: 'bg-amber-100 text-amber-800',
+          color: 'bg-amber-100 text-amber-800',
         showInline: true
       });
     }
@@ -293,7 +293,7 @@ const CalendarioGrid = ({ dados, ano, mes, loading = false }) => {
                             <button
                               key={badge.key}
                               type="button"
-                          title={badge.text}
+                              title={badge.text}
                           onClick={() => handleAbrirDetalhes(dia)}
                               className={`inline-flex items-center justify-center rounded-full cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-1 px-2 py-1 text-xs font-medium ${badge.color}`}
                             >

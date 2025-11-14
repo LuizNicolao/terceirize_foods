@@ -126,6 +126,7 @@ const PedidosComprasItensTable = ({
                         }))}
                       placeholder="Selecione um produto genérico..."
                       className="w-full min-w-[300px]"
+                      usePortal={false}
                     />
                   ) : (
                     <>

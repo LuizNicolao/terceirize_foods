@@ -93,26 +93,12 @@ class FiliaisService {
     }
   }
 
-  async buscarAtivas(params = {}) {
+  async buscarAtivas() {
     try {
-      const queryParams = {
-        page: 1,
-        limit: 1000,
-        ...params
-      };
-
-      const response = await api.get('/filiais/ativas/listar', { params: queryParams });
-      const payload = response.data?.data;
-      const filiais = Array.isArray(payload)
-        ? payload
-        : Array.isArray(payload?.items)
-          ? payload.items
-          : [];
-
+      const response = await api.get('/filiais/ativas/listar');
       return {
         success: true,
-        data: filiais,
-        meta: response.data?.meta || null
+        data: response.data.data || response.data
       };
     } catch (error) {
       return {

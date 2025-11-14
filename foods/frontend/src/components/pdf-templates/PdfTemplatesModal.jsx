@@ -266,6 +266,7 @@ const PdfTemplatesModal = ({
               error={errors.tela_vinculada?.message}
               disabled={isViewMode || saving}
               required
+            usePortal={false}
             />
           </div>
 

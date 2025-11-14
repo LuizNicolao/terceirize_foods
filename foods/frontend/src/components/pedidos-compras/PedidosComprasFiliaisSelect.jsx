@@ -48,6 +48,7 @@ const PedidosComprasFiliaisSelect = ({
             disabled={viewMode || isReadonly}
             placeholder="Selecione uma filial"
             error={error}
+            usePortal={false}
           />
         </div>
       )}

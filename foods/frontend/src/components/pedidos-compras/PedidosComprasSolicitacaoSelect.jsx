@@ -28,6 +28,7 @@ const PedidosComprasSolicitacaoSelect = ({
         disabled={isViewMode}
         placeholder="Selecione uma solicitação"
         error={errors.solicitacao_compras_id?.message}
+        usePortal={false}
       />
     </div>
   );

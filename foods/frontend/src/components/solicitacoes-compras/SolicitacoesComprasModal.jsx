@@ -482,6 +482,7 @@ const SolicitacoesComprasModal = ({
                                 }))}
                                 placeholder="Selecione um produto..."
                                 className="w-full"
+                                usePortal={false}
                               />
                             )}
                           </td>
