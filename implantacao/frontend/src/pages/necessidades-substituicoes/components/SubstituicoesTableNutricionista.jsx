@@ -7,6 +7,7 @@ const SubstituicoesTableNutricionista = ({
   necessidades,
   produtosGenericos,
   loadingGenericos,
+  onBuscarProdutosGenericos,
   ajustesAtivados = false,
   onExpand,
   onSaveConsolidated,
@@ -23,6 +24,28 @@ const SubstituicoesTableNutricionista = ({
   const [selectedProdutosOrigem, setSelectedProdutosOrigem] = useState({});
   const [trocaLoading, setTrocaLoading] = useState({});
   const getChaveOrigem = (necessidade) => `${necessidade.codigo_origem}_${necessidade.semana_abastecimento}_${necessidade.semana_consumo}`;
+
+  const getProdutoOrigemSelecionadoInfo = (necessidade) => {
+    const chave = getChaveOrigem(necessidade);
+    const selecionado = selectedProdutosOrigem[chave];
+
+    if (selecionado) {
+      const [id, nome, unidade] = selecionado.split('|');
+      return {
+        id: id || necessidade.codigo_origem,
+        nome: nome || necessidade.produto_origem_nome,
+        unidade: unidade || necessidade.produto_origem_unidade || ''
+      };
+    }
+
+    return {
+      id: necessidade.codigo_origem,
+      nome: necessidade.produto_origem_nome,
+      unidade: necessidade.produto_origem_unidade || ''
+    };
+  };
+
+  const getLoadingKey = (produtoId, grupo, search = '') => `${produtoId}_${grupo || ''}_${search}`;
 
   useEffect(() => {
     const valoresIniciais = {};
@@ -49,12 +72,17 @@ const SubstituicoesTableNutricionista = ({
   }, [necessidades]);
   const handleProdutoOrigemChange = (chaveOrigem, valor) => {
     setSelectedProdutosOrigem(prev => ({ ...prev, [chaveOrigem]: valor }));
+    setProdutosPadraoSelecionados(prev => ({ ...prev, [chaveOrigem]: false }));
 
     const necessidade = necessidades.find(item => getChaveOrigem(item) === chaveOrigem);
     if (!necessidade || !valor || !necessidade.produtos_grupo) return;
 
     const [produtoId] = valor.split('|');
     if (!produtoId) return;
+
+    if (onBuscarProdutosGenericos && !produtosGenericos[produtoId]) {
+      onBuscarProdutosGenericos(produtoId, necessidade.grupo);
+    }
 
     const produtosGrupo = necessidade.produtos_grupo || [];
     const produtoSelecionado = produtosGrupo.find(prod => String(prod.produto_id || prod.id || prod.codigo) === String(produtoId));
@@ -146,10 +174,11 @@ const SubstituicoesTableNutricionista = ({
   useEffect(() => {
     necessidades.forEach(necessidade => {
       const chaveUnica = `${necessidade.codigo_origem}_${necessidade.produto_generico_id || 'novo'}`;
+      const { id: produtoOrigemAtualId } = getProdutoOrigemSelecionadoInfo(necessidade);
       
-      if (produtosGenericos[necessidade.codigo_origem] && !produtosPadraoSelecionados[chaveUnica]) {
+      if (produtosGenericos[produtoOrigemAtualId] && !produtosPadraoSelecionados[chaveUnica]) {
         if (necessidade.produto_generico_id) {
-          const produtoEspecifico = produtosGenericos[necessidade.codigo_origem].find(
+          const produtoEspecifico = produtosGenericos[produtoOrigemAtualId].find(
             p => (p.id || p.codigo) == necessidade.produto_generico_id
           );
           
@@ -172,7 +201,7 @@ const SubstituicoesTableNutricionista = ({
             });
           }
         } else {
-          const produtoPadrao = produtosGenericos[necessidade.codigo_origem].find(
+          const produtoPadrao = produtosGenericos[produtoOrigemAtualId].find(
             p => p.produto_padrao === 'Sim'
           );
           
@@ -199,7 +228,7 @@ const SubstituicoesTableNutricionista = ({
         setProdutosPadraoSelecionados(prev => ({ ...prev, [chaveUnica]: true }));
       }
     });
-  }, [produtosGenericos, necessidades, produtosPadraoSelecionados]);
+  }, [produtosGenericos, necessidades, produtosPadraoSelecionados, selectedProdutosOrigem]);
 
   const handleToggleExpand = (chaveUnica) => {
     setExpandedRows(prev => ({
@@ -210,6 +239,7 @@ const SubstituicoesTableNutricionista = ({
 
   const handleSaveConsolidated = async (necessidade) => {
     const chaveUnica = `${necessidade.codigo_origem}_${necessidade.produto_generico_id || 'novo'}`;
+    const produtoOrigemAtualId = getProdutoOrigemSelecionadoInfo(necessidade).id;
     
     if (!selectedProdutosGenericos[chaveUnica]) {
       toast.error('Selecione um produto genérico antes de salvar!');
@@ -243,8 +273,8 @@ const SubstituicoesTableNutricionista = ({
     const response = await onSaveConsolidated(dados, chaveUnica);
     
     if (response && response.success) {
-      if (produtosGenericos[necessidade.codigo_origem]) {
-        produtosGenericos[necessidade.codigo_origem].forEach(produto => {
+      if (produtosGenericos[produtoOrigemAtualId]) {
+        produtosGenericos[produtoOrigemAtualId].forEach(produto => {
           produto.produto_padrao = (produto.id || produto.codigo) == produto_generico_id ? 'Sim' : 'Não';
         });
       }
@@ -260,6 +290,7 @@ const SubstituicoesTableNutricionista = ({
     }
 
     const chaveUnica = `${necessidade.codigo_origem}_${necessidade.produto_generico_id || 'novo'}`;
+    const produtoOrigemAtualId = getProdutoOrigemSelecionadoInfo(necessidade).id;
     const partes = escola.selectedProdutoGenerico.split('|');
     const [produto_generico_id, produto_generico_nome, produto_generico_unidade] = partes;
 
@@ -284,8 +315,8 @@ const SubstituicoesTableNutricionista = ({
     const response = await onSaveIndividual(dados, escola.escola_id);
     
     if (response && response.success) {
-      if (produtosGenericos[necessidade.codigo_origem]) {
-        produtosGenericos[necessidade.codigo_origem].forEach(produto => {
+      if (produtosGenericos[produtoOrigemAtualId]) {
+        produtosGenericos[produtoOrigemAtualId].forEach(produto => {
           produto.produto_padrao = (produto.id || produto.codigo) == produto_generico_id ? 'Sim' : 'Não';
         });
       }
@@ -342,8 +373,11 @@ const SubstituicoesTableNutricionista = ({
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {necessidades.map((necessidade, index) => {
+            {necessidades.map((necessidade) => {
               const chaveUnica = `${necessidade.codigo_origem}_${necessidade.produto_generico_id || 'novo'}`;
+              const produtoOrigemAtual = getProdutoOrigemSelecionadoInfo(necessidade);
+              const produtoOrigemAtualId = produtoOrigemAtual.id;
+              const loadingKey = getLoadingKey(produtoOrigemAtualId, necessidade.grupo);
               return (
               <React.Fragment key={chaveUnica}>
                 {/* Linha Consolidada */}
@@ -463,12 +497,12 @@ const SubstituicoesTableNutricionista = ({
                       <SearchableSelect
                         value={selectedProdutosGenericos[chaveUnica] || ''}
                         onChange={(value) => handleProdutoGenericoChange(chaveUnica, value, necessidade.quantidade_total_origem)}
-                        options={produtosGenericos[necessidade.codigo_origem]?.map(produto => ({
+                        options={produtosGenericos[produtoOrigemAtualId]?.map(produto => ({
                           value: `${produto.id || produto.codigo}|${produto.nome}|${produto.unidade_medida_sigla || produto.unidade || produto.unidade_medida || ''}|${produto.fator_conversao || 1}`,
                           label: produto.nome
                         })) || []}
                         placeholder="Selecione..."
-                        disabled={!ajustesAtivados || loadingGenericos[necessidade.codigo_origem]}
+                        disabled={!ajustesAtivados || loadingGenericos[loadingKey]}
                         className="text-xs"
                         filterBy={(option, searchTerm) => {
                           return option.label.toLowerCase().includes(searchTerm.toLowerCase());
@@ -560,7 +594,7 @@ const SubstituicoesTableNutricionista = ({
                                           setSelectedProdutosPorEscola(prev => ({ ...prev, [chaveEscola]: value }));
                                           escola.selectedProdutoGenerico = value;
                                         }}
-                                        options={produtosGenericos[necessidade.codigo_origem]?.map(produto => {
+                                        options={produtosGenericos[produtoOrigemAtualId]?.map(produto => {
                                           const unidade = produto.unidade_medida_sigla || produto.unidade || produto.unidade_medida || '';
                                           return {
                                             value: `${produto.id || produto.codigo}|${produto.nome}|${unidade}|${produto.fator_conversao || 1}`,

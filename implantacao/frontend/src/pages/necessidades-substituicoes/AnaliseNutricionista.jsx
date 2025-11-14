@@ -282,6 +282,7 @@ const AnaliseNutricionista = () => {
           necessidades={necessidades}
           produtosGenericos={produtosGenericos}
           loadingGenericos={loadingGenericos}
+          onBuscarProdutosGenericos={buscarProdutosGenericos}
           ajustesAtivados={ajustesAtivados}
           onExpand={() => {}}
           onSaveConsolidated={handleSaveConsolidated}
