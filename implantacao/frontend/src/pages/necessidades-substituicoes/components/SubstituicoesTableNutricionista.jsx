@@ -67,10 +67,11 @@ const SubstituicoesTableNutricionista = ({
         quantidadesIniciais[chaveOrigem] = necessidade.quantidade_total_origem || '';
       }
     });
+
     setSelectedProdutosOrigem(valoresIniciais);
-    setSelectedProdutosGenericos(prev => ({ ...prev, ...genericosIniciais }));
-    setUndGenericos(prev => ({ ...prev, ...unidadesIniciais }));
-    setQuantidadesGenericos(prev => ({ ...prev, ...quantidadesIniciais }));
+    setSelecionadosByOrigem(genericosIniciais);
+    setUndGenericos(unidadesIniciais);
+    setQuantidadesGenericos(quantidadesIniciais);
     setProdutosPadraoSelecionados(mapaProdutosPadrao);
   }, [necessidades]);
   const handleProdutoOrigemChange = (chaveOrigem, valor) => {
@@ -179,54 +180,41 @@ const SubstituicoesTableNutricionista = ({
       const chaveOrigem = getChaveOrigem(necessidade);
       const { id: produtoOrigemAtualId } = getProdutoOrigemSelecionadoInfo(necessidade);
       
-      if (produtosGenericos[produtoOrigemAtualId] && !produtosPadraoSelecionados[chaveOrigem]) {
+      if (!produtosGenericos[produtoOrigemAtualId] || produtosPadraoSelecionados[chaveOrigem]) {
+        return;
+      }
+
+      const lista = produtosGenericos[produtoOrigemAtualId];
+      let produtoSelecionado = null;
+
         if (necessidade.produto_generico_id) {
-          const produtoEspecifico = produtosGenericos[produtoOrigemAtualId].find(
+        produtoSelecionado = lista.find(
             p => (p.id || p.codigo) == necessidade.produto_generico_id
           );
-          
-          if (produtoEspecifico) {
-            const unidade = produtoEspecifico.unidade_medida_sigla || produtoEspecifico.unidade || produtoEspecifico.unidade_medida || '';
-            const valor = `${produtoEspecifico.id || produtoEspecifico.codigo}|${produtoEspecifico.nome}|${unidade}|${produtoEspecifico.fator_conversao || 1}`;
+      }
+
+      if (!produtoSelecionado) {
+        produtoSelecionado = lista.find(p => p.produto_padrao === 'Sim') || lista[0];
+      }
+
+      if (produtoSelecionado) {
+        const unidade = produtoSelecionado.unidade_medida_sigla || produtoSelecionado.unidade || produtoSelecionado.unidade_medida || '';
+        const fator = produtoSelecionado.fator_conversao || 1;
+        const valor = `${produtoSelecionado.id || produtoSelecionado.codigo}|${produtoSelecionado.nome}|${unidade}|${fator}`;
             
-            setSelectedProdutosGenericos(prev => ({ ...prev, [chaveOrigem]: valor }));
-            setUndGenericos(prev => ({ ...prev, [chaveOrigem]: unidade }));
+        setSelectedProdutosGenericos(prev => ({ ...prev, [chaveOrigem]: valor }));
+        setUndGenericos(prev => ({ ...prev, [chaveOrigem]: unidade }));
             
-            const fatorConversao = produtoEspecifico.fator_conversao || 1;
-            if (necessidade.quantidade_total_origem && fatorConversao > 0) {
-              const quantidadeCalculada = Math.ceil(parseFloat(necessidade.quantidade_total_origem) / fatorConversao);
-              setQuantidadesGenericos(prev => ({ ...prev, [chaveOrigem]: quantidadeCalculada }));
+        if (necessidade.quantidade_total_origem && fator > 0) {
+          const quantidadeCalculada = Math.ceil(parseFloat(necessidade.quantidade_total_origem) / fator);
+          setQuantidadesGenericos(prev => ({ ...prev, [chaveOrigem]: quantidadeCalculada }));
             }
             
             necessidade.escolas.forEach(escola => {
-              const chaveEscola = `${chaveOrigem}-${escola.escola_id}`;
+          const chaveEscola = `${chaveOrigem}-${escola.escola_id}`;
               setSelectedProdutosPorEscola(prev => ({ ...prev, [chaveEscola]: valor }));
+          escola.selectedProdutoGenerico = valor;
             });
-          }
-        } else {
-          const produtoPadrao = produtosGenericos[produtoOrigemAtualId].find(
-            p => p.produto_padrao === 'Sim'
-          ) || produtosGenericos[produtoOrigemAtualId][0];
-          
-          if (produtoPadrao) {
-            const unidade = produtoPadrao.unidade_medida_sigla || produtoPadrao.unidade || produtoPadrao.unidade_medida || '';
-            const valor = `${produtoPadrao.id || produtoPadrao.codigo}|${produtoPadrao.nome}|${unidade}|${produtoPadrao.fator_conversao || 1}`;
-            
-            setSelectedProdutosGenericos(prev => ({ ...prev, [chaveOrigem]: valor }));
-            setUndGenericos(prev => ({ ...prev, [chaveOrigem]: unidade }));
-            
-            const fatorConversao = produtoPadrao.fator_conversao || 1;
-            if (necessidade.quantidade_total_origem && fatorConversao > 0) {
-              const quantidadeCalculada = Math.ceil(parseFloat(necessidade.quantidade_total_origem) / fatorConversao);
-              setQuantidadesGenericos(prev => ({ ...prev, [chaveOrigem]: quantidadeCalculada }));
-            }
-            
-            necessidade.escolas.forEach(escola => {
-              const chaveEscola = `${chaveOrigem}-${escola.escola_id}`;
-              setSelectedProdutosPorEscola(prev => ({ ...prev, [chaveEscola]: valor }));
-            });
-          }
-        }
         
         setProdutosPadraoSelecionados(prev => ({ ...prev, [chaveOrigem]: true }));
       }

@@ -206,16 +206,16 @@ class SubstituicoesListController {
       // Buscar necessidades agrupadas por produto origem + produto genérico
       const necessidades = await executeQuery(`
         SELECT 
-          n.produto_id as codigo_origem,
-          n.produto as produto_origem_nome,
-          n.produto_unidade as produto_origem_unidade,
+          COALESCE(MAX(ns.produto_origem_id), n.produto_id) as codigo_origem,
+          COALESCE(MAX(ns.produto_origem_nome), n.produto) as produto_origem_nome,
+          COALESCE(MAX(ns.produto_origem_unidade), n.produto_unidade) as produto_origem_unidade,
           COALESCE(MAX(ns.produto_trocado_id), NULL) as produto_trocado_id,
           COALESCE(MAX(ns.produto_trocado_nome), '') as produto_trocado_nome,
           COALESCE(MAX(ns.produto_trocado_unidade), '') as produto_trocado_unidade,
-          COALESCE(ns.produto_generico_id, '') as produto_generico_id,
-          COALESCE(ns.produto_generico_codigo, '') as produto_generico_codigo,
-          COALESCE(ns.produto_generico_nome, '') as produto_generico_nome,
-          COALESCE(ns.produto_generico_unidade, '') as produto_generico_unidade,
+          COALESCE(MAX(ns.produto_generico_id), '') as produto_generico_id,
+          COALESCE(MAX(ns.produto_generico_codigo), '') as produto_generico_codigo,
+          COALESCE(MAX(ns.produto_generico_nome), '') as produto_generico_nome,
+          COALESCE(MAX(ns.produto_generico_unidade), '') as produto_generico_unidade,
           SUM(n.ajuste_conf_coord) as quantidade_total_origem,
           GROUP_CONCAT(DISTINCT n.necessidade_id) as necessidade_ids,
           n.semana_abastecimento,
@@ -238,10 +238,8 @@ class SubstituicoesListController {
         )
         WHERE ${whereConditions.join(' AND ')}
         GROUP BY n.produto_id, n.produto, n.produto_unidade, n.semana_abastecimento, n.semana_consumo, n.grupo,
-                 COALESCE(n.grupo_id, ns.grupo_id),
-                 COALESCE(ns.produto_generico_id, ''), COALESCE(ns.produto_generico_codigo, ''), 
-                 COALESCE(ns.produto_generico_nome, ''), COALESCE(ns.produto_generico_unidade, '')
-        ORDER BY n.produto ASC, COALESCE(ns.produto_generico_nome, '') ASC
+                 COALESCE(n.grupo_id, ns.grupo_id)
+        ORDER BY produto_origem_nome ASC, COALESCE(MAX(ns.produto_generico_nome), '') ASC
       `, params);
 
       // Buscar substituições existentes para cada produto
