@@ -230,69 +230,47 @@ class SubstituicoesListController {
               base.quantidade_origem
             ) SEPARATOR '::'
           ) as escolas_solicitantes
-        FROM (
-          SELECT 
-            ns.necessidade_id,
-            ns.produto_origem_id AS codigo_origem,
-            ns.produto_origem_nome,
-            ns.produto_origem_unidade,
-            ns.produto_trocado_id,
-            ns.produto_trocado_nome,
-            ns.produto_trocado_unidade,
-            ns.produto_generico_id,
-            ns.produto_generico_codigo,
-            ns.produto_generico_nome,
-            ns.produto_generico_unidade,
-            ns.quantidade_origem,
-            ns.semana_abastecimento,
-            ns.semana_consumo,
-            ns.grupo,
-            ns.grupo_id,
-            ns.escola_id,
-            ns.escola_nome
-          FROM necessidades_substituicoes ns
-          WHERE ns.ativo = 1 
+        FROM necessidades_substituicoes ns
+        INNER JOIN necessidades n ON n.id = ns.necessidade_id
+        WHERE ns.ativo = 1 
           AND (ns.status IS NULL OR ns.status = 'conf')
-          
-          UNION ALL
-          
-          SELECT 
-            n.id AS necessidade_id,
-            n.produto_id AS codigo_origem,
-            n.produto AS produto_origem_nome,
-            n.produto_unidade AS produto_origem_unidade,
-            NULL AS produto_trocado_id,
-            '' AS produto_trocado_nome,
-            '' AS produto_trocado_unidade,
-            NULL AS produto_generico_id,
-            NULL AS produto_generico_codigo,
-            NULL AS produto_generico_nome,
-            NULL AS produto_generico_unidade,
-            n.ajuste_conf_coord AS quantidade_origem,
-            n.semana_abastecimento,
-            n.semana_consumo,
-            n.grupo,
-            n.grupo_id,
-            n.escola_id,
-            n.escola AS escola_nome
-          FROM necessidades n
-          WHERE n.status = 'CONF'
-            AND (n.substituicao_processada = 0 OR n.substituicao_processada IS NULL)
-        ) base
-        INNER JOIN necessidades n ON n.id = base.necessidade_id
+        UNION ALL
+        SELECT 
+          n.produto_id AS codigo_origem,
+          n.produto AS produto_origem_nome,
+          n.produto_unidade AS produto_origem_unidade,
+          NULL AS produto_trocado_id,
+          '' AS produto_trocado_nome,
+          '' AS produto_trocado_unidade,
+          NULL AS produto_generico_id,
+          NULL AS produto_generico_codigo,
+          NULL AS produto_generico_nome,
+          NULL AS produto_generico_unidade,
+          n.ajuste_conf_coord AS quantidade_total_origem,
+          GROUP_CONCAT(n.necessidade_id) AS necessidade_ids,
+          n.semana_abastecimento,
+          n.semana_consumo,
+          n.grupo,
+          n.grupo_id,
+          GROUP_CONCAT(
+            DISTINCT CONCAT(
+              n.id, '|',
+              n.escola_id, '|',
+              n.escola, '|',
+              n.ajuste_conf_coord
+            ) SEPARATOR '::'
+          ) as escolas_solicitantes
+        FROM necessidades n
         WHERE ${whereConditions.join(' AND ')}
-        GROUP BY 
-          base.codigo_origem,
-          base.produto_origem_nome,
-          base.produto_origem_unidade,
-          base.produto_trocado_id,
-          base.produto_trocado_nome,
-          base.produto_trocado_unidade,
-          base.semana_abastecimento,
-          base.semana_consumo,
-          base.grupo,
-          base.grupo_id
-        ORDER BY base.produto_origem_nome ASC, base.semana_abastecimento ASC
+          AND NOT EXISTS (
+            SELECT 1 
+            FROM necessidades_substituicoes ns2 
+            WHERE ns2.necessidade_id = n.id 
+              AND ns2.ativo = 1 
+              AND (ns2.status IS NULL OR ns2.status = 'conf')
+          )
+        GROUP BY n.produto_id, n.produto, n.produto_unidade, n.semana_abastecimento, n.semana_consumo, n.grupo, n.grupo_id
+        ORDER BY produto_origem_nome ASC, semana_abastecimento ASC
       `, params);
 
       // Buscar substituições existentes para cada produto
