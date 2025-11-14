@@ -3,7 +3,48 @@ const axios = require('axios');
 
 const produtosGrupoCache = {};
 
-const buscarProdutosDoGrupo = async (grupoId, grupoNome) => {
+const normalizarProdutosOrigem = (produtos) => {
+  return produtos.map(produto => {
+    const produtoOrigemId = produto.id || produto.produto_id || produto.codigo;
+
+    let produtoGenericoPadrao = null;
+    if (produto.produto_generico_padrao) {
+      const padrao = produto.produto_generico_padrao;
+      produtoGenericoPadrao = {
+        id: padrao.id || padrao.codigo,
+        codigo: padrao.codigo || padrao.id,
+        nome: padrao.nome,
+        unidade_medida: padrao.unidade_medida_sigla || padrao.unidade_medida || padrao.unidade || '',
+        unidade_medida_sigla: padrao.unidade_medida_sigla || padrao.unidade_medida || padrao.unidade || '',
+        fator_conversao: padrao.fator_conversao || 1
+      };
+    } else if (
+      produto.produto_generico_padrao_id ||
+      produto.produto_generico_padrao_nome ||
+      produto.produto_generico_padrao_unidade
+    ) {
+      produtoGenericoPadrao = {
+        id: produto.produto_generico_padrao_id || produto.produto_generico_padrao_codigo,
+        codigo: produto.produto_generico_padrao_codigo || produto.produto_generico_padrao_id,
+        nome: produto.produto_generico_padrao_nome,
+        unidade_medida: produto.produto_generico_padrao_unidade || '',
+        unidade_medida_sigla: produto.produto_generico_padrao_unidade || '',
+        fator_conversao: produto.produto_generico_padrao_fator || 1
+      };
+    }
+
+    return {
+      produto_id: produtoOrigemId,
+      produto_codigo: produto.codigo || produto.produto_codigo || produtoOrigemId,
+      produto_nome: produto.nome || produto.produto_nome,
+      unidade_medida: produto.unidade_medida_sigla || produto.unidade_medida || produto.unidade || '',
+      grupo_id: produto.grupo_id,
+      produto_generico_padrao: produtoGenericoPadrao
+    };
+  });
+};
+
+const buscarProdutosDoGrupo = async (grupoId, grupoNome, authHeader) => {
   const cacheKey = grupoId || grupoNome;
 
   if (!cacheKey) {
@@ -28,45 +69,68 @@ const buscarProdutosDoGrupo = async (grupoId, grupoNome) => {
     return [];
   }
 
-  const produtos = await executeQuery(
-    `
-      SELECT 
-        po.id AS produto_id,
-        po.codigo AS produto_codigo,
-        po.nome AS produto_nome,
-        COALESCE(um.sigla, um.nome, '') AS unidade_medida,
-        po.grupo_id,
-        po.produto_generico_padrao_id,
-        pg.codigo AS produto_generico_padrao_codigo,
-        pg.nome AS produto_generico_padrao_nome,
-        COALESCE(um_pg.sigla, um_pg.nome, '') AS produto_generico_padrao_unidade,
-        pg.fator_conversao AS produto_generico_padrao_fator
-      FROM foods_db.produto_origem po
-      LEFT JOIN foods_db.unidades_medida um ON po.unidade_medida_id = um.id
-      LEFT JOIN foods_db.produto_generico pg ON po.produto_generico_padrao_id = pg.id
-      LEFT JOIN foods_db.unidades_medida um_pg ON pg.unidade_medida_id = um_pg.id
-      WHERE po.grupo_id = ? AND po.status = 1
-      ORDER BY po.nome ASC
-    `,
-    [resolvedGrupoId]
-  );
+  const foodsApiUrl = process.env.FOODS_API_URL || 'http://localhost:3001';
 
-  const mapped = produtos.map(produto => ({
-    ...produto,
-    produto_generico_padrao: produto.produto_generico_padrao_id
-      ? {
-          id: produto.produto_generico_padrao_id,
-          codigo: produto.produto_generico_padrao_codigo,
-          nome: produto.produto_generico_padrao_nome,
-          unidade_medida: produto.produto_generico_padrao_unidade,
-          unidade_medida_sigla: produto.produto_generico_padrao_unidade_sigla,
-          fator_conversao: produto.produto_generico_padrao_fator || 1
-        }
-      : null
-  }));
+  try {
+    const response = await axios.get(
+      `${foodsApiUrl}/produto-origem/grupo/${resolvedGrupoId}?limit=1000`,
+      {
+        headers: {
+          Authorization: authHeader
+        },
+        timeout: 10000
+      }
+    );
 
-  produtosGrupoCache[cacheKey] = mapped;
-  return mapped;
+    let produtos = [];
+
+    if (response.data?.data) {
+      produtos = Array.isArray(response.data.data)
+        ? response.data.data
+        : response.data.data.items || [];
+    } else if (Array.isArray(response.data)) {
+      produtos = response.data;
+    }
+
+    const mapped = normalizarProdutosOrigem(produtos);
+    produtosGrupoCache[cacheKey] = mapped;
+    return mapped;
+  } catch (error) {
+    console.error('[Substituições] Erro ao buscar produtos do grupo no Foods:', error.message);
+
+    // Fallback para banco local caso a API do Foods esteja indisponível
+    try {
+      const produtosFallback = await executeQuery(
+        `
+          SELECT 
+            po.id AS produto_id,
+            po.codigo AS produto_codigo,
+            po.nome AS produto_nome,
+            COALESCE(um.sigla, um.nome, '') AS unidade_medida,
+            po.grupo_id,
+            po.produto_generico_padrao_id,
+            pg.codigo AS produto_generico_padrao_codigo,
+            pg.nome AS produto_generico_padrao_nome,
+            COALESCE(um_pg.sigla, um_pg.nome, '') AS produto_generico_padrao_unidade,
+            pg.fator_conversao AS produto_generico_padrao_fator
+          FROM foods_db.produto_origem po
+          LEFT JOIN foods_db.unidades_medida um ON po.unidade_medida_id = um.id
+          LEFT JOIN foods_db.produto_generico pg ON po.produto_generico_padrao_id = pg.id
+          LEFT JOIN foods_db.unidades_medida um_pg ON pg.unidade_medida_id = um_pg.id
+          WHERE po.grupo_id = ? AND po.status = 1
+          ORDER BY po.nome ASC
+        `,
+        [resolvedGrupoId]
+      );
+
+      const mappedFallback = normalizarProdutosOrigem(produtosFallback);
+      produtosGrupoCache[cacheKey] = mappedFallback;
+      return mappedFallback;
+    } catch (fallbackError) {
+      console.error('[Substituições] Erro no fallback local de produtos do grupo:', fallbackError.message);
+      return [];
+    }
+  }
 };
 
 /**
@@ -249,7 +313,11 @@ class SubstituicoesListController {
             escola.substituicao = substituicao || null;
           });
 
-          const produtosGrupo = await buscarProdutosDoGrupo(necessidade.grupo_id, necessidade.grupo);
+          const produtosGrupo = await buscarProdutosDoGrupo(
+            necessidade.grupo_id,
+            necessidade.grupo,
+            req.headers.authorization
+          );
 
           return {
             ...necessidade,
@@ -512,7 +580,11 @@ class SubstituicoesListController {
           ]);
 
 
-          const produtosGrupo = await buscarProdutosDoGrupo(necessidade.grupo_id, necessidade.grupo);
+          const produtosGrupo = await buscarProdutosDoGrupo(
+            necessidade.grupo_id,
+            necessidade.grupo,
+            req.headers.authorization
+          );
 
           return {
             ...necessidade,
