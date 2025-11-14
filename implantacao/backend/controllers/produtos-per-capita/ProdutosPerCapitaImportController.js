@@ -290,7 +290,7 @@ const importarExcel = async (req, res) => {
               per_capita_parcial_manha, per_capita_parcial_tarde, per_capita_lanche_manha, per_capita_lanche_tarde,
               per_capita_almoco, per_capita_eja, descricao, ativo, grupo_id,
               data_cadastro, data_atualizacao
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
             [
               novoId,
               produto_id,
