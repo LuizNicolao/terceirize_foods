@@ -24,9 +24,9 @@ const AnaliseNutricionista = () => {
     loadingGenericos,
     buscarProdutosGenericos,
     salvarSubstituicao,
+    liberarAnalise,
     trocarProdutoOrigem,
     desfazerTrocaProduto,
-    liberarAnalise,
     atualizarFiltros,
     limparFiltros
   } = useSubstituicoesNecessidades();
@@ -287,7 +287,7 @@ const AnaliseNutricionista = () => {
           onSaveConsolidated={handleSaveConsolidated}
           onSaveIndividual={handleSaveIndividual}
           onTrocarProdutoOrigem={trocarProdutoOrigem}
-          onDesfazerTrocaProduto={desfazerTrocaProduto}
+          onDesfazerTroca={desfazerTrocaProduto}
         />
       )}
 

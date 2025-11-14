@@ -274,261 +274,6 @@ class SubstituicoesCRUDController {
   }
 
   /**
-   * Trocar produto origem por outro produto do mesmo grupo
-   */
-  static async trocarProdutoOrigem(req, res) {
-    try {
-      const { necessidade_ids, novo_produto_id } = req.body;
-      const usuario_id = req.user.id;
-
-      if (!Array.isArray(necessidade_ids) || necessidade_ids.length === 0) {
-        return res.status(400).json({
-          success: false,
-          message: 'Informe as necessidades que terão o produto origem alterado'
-        });
-      }
-
-      if (!novo_produto_id) {
-        return res.status(400).json({
-          success: false,
-          message: 'Informe o novo produto origem'
-        });
-      }
-
-      const ids = necessidade_ids
-        .map(id => parseInt(id, 10))
-        .filter(id => !Number.isNaN(id));
-
-      if (ids.length === 0) {
-        return res.status(400).json({
-          success: false,
-          message: 'Nenhum identificador de necessidade válido foi informado'
-        });
-      }
-
-      const placeholders = ids.map(() => '?').join(',');
-      const necessidades = await executeQuery(`
-        SELECT
-          id,
-          produto_id,
-          produto,
-          produto_unidade,
-          grupo_id,
-          produto_trocado_id
-        FROM necessidades
-        WHERE id IN (${placeholders})
-      `, ids);
-
-      if (necessidades.length === 0) {
-        return res.status(404).json({
-          success: false,
-          message: 'Nenhuma necessidade encontrada para os identificadores informados'
-        });
-      }
-
-      const jaAlteradas = necessidades.filter(item => item.produto_trocado_id !== null && item.produto_trocado_id !== undefined);
-      if (jaAlteradas.length > 0) {
-        return res.status(400).json({
-          success: false,
-          message: 'Já existe uma substituição aplicada. Desfaça a troca antes de aplicar um novo produto.'
-        });
-      }
-
-      const gruposEncontrados = [...new Set(necessidades.map(item => item.grupo_id).filter(Boolean))];
-
-      const novoProdutoResult = await executeQuery(`
-        SELECT 
-          p.id,
-          p.nome,
-          COALESCE(p.unidade_medida_sigla, p.unidade_medida, '') AS unidade,
-          p.grupo_id
-        FROM foods_db.produtos p
-        WHERE p.id = ?
-        LIMIT 1
-      `, [novo_produto_id]);
-
-      if (novoProdutoResult.length === 0) {
-        return res.status(404).json({
-          success: false,
-          message: 'Novo produto origem não foi encontrado no Foods'
-        });
-      }
-
-      const novoProduto = novoProdutoResult[0];
-      if (gruposEncontrados.length > 0 && novoProduto.grupo_id && gruposEncontrados.includes(null) === false) {
-        const grupoReferencia = gruposEncontrados[0];
-        if (String(grupoReferencia) !== String(novoProduto.grupo_id)) {
-          return res.status(400).json({
-            success: false,
-            message: 'O novo produto deve pertencer ao mesmo grupo do produto atual'
-          });
-        }
-      }
-
-      let necessidadesAtualizadas = 0;
-
-      for (const necessidade of necessidades) {
-        await executeQuery(`
-          UPDATE necessidades
-          SET
-            produto_trocado_id = ?,
-            produto_trocado_nome = ?,
-            produto_trocado_unidade = ?,
-            produto_id = ?,
-            produto = ?,
-            produto_unidade = ?,
-            usuario_id = ?,
-            data_atualizacao = NOW()
-          WHERE id = ?
-        `, [
-          necessidade.produto_id,
-          necessidade.produto,
-          necessidade.produto_unidade,
-          novo_produto_id,
-          novoProduto.nome,
-          novoProduto.unidade || '',
-          usuario_id,
-          necessidade.id
-        ]);
-
-        await executeQuery(`
-          UPDATE necessidades_substituicoes
-          SET 
-            produto_origem_id = ?,
-            produto_origem_nome = ?,
-            produto_origem_unidade = ?,
-            data_atualizacao = NOW()
-          WHERE necessidade_id = ?
-            AND ativo = 1
-        `, [
-          novo_produto_id,
-          novoProduto.nome,
-          novoProduto.unidade || '',
-          necessidade.id
-        ]);
-
-        necessidadesAtualizadas++;
-      }
-
-      res.json({
-        success: true,
-        message: 'Produto origem atualizado com sucesso',
-        necessidades_atualizadas: necessidadesAtualizadas
-      });
-    } catch (error) {
-      console.error('Erro ao trocar produto origem:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Erro ao trocar produto origem'
-      });
-    }
-  }
-
-  /**
-   * Desfazer troca do produto origem
-   */
-  static async desfazerTrocaProduto(req, res) {
-    try {
-      const { necessidade_ids } = req.body;
-
-      if (!Array.isArray(necessidade_ids) || necessidade_ids.length === 0) {
-        return res.status(400).json({
-          success: false,
-          message: 'Informe as necessidades que devem ser restauradas'
-        });
-      }
-
-      const ids = necessidade_ids
-        .map(id => parseInt(id, 10))
-        .filter(id => !Number.isNaN(id));
-
-      if (ids.length === 0) {
-        return res.status(400).json({
-          success: false,
-          message: 'Nenhum identificador de necessidade válido foi informado'
-        });
-      }
-
-      const placeholders = ids.map(() => '?').join(',');
-      const necessidades = await executeQuery(`
-        SELECT
-          id,
-          produto_trocado_id,
-          produto_trocado_nome,
-          produto_trocado_unidade
-        FROM necessidades
-        WHERE id IN (${placeholders})
-      `, ids);
-
-      if (necessidades.length === 0) {
-        return res.status(404).json({
-          success: false,
-          message: 'Nenhuma necessidade encontrada para os identificadores informados'
-        });
-      }
-
-      const semTroca = necessidades.filter(item => !item.produto_trocado_id);
-      if (semTroca.length === necessidades.length) {
-        return res.status(400).json({
-          success: false,
-          message: 'Nenhuma das necessidades informadas possui substituição registrada'
-        });
-      }
-
-      let restauradas = 0;
-
-      for (const necessidade of necessidades) {
-        if (!necessidade.produto_trocado_id) {
-          continue;
-        }
-
-        await executeQuery(`
-          UPDATE necessidades
-          SET
-            produto_id = produto_trocado_id,
-            produto = produto_trocado_nome,
-            produto_unidade = produto_trocado_unidade,
-            produto_trocado_id = NULL,
-            produto_trocado_nome = NULL,
-            produto_trocado_unidade = NULL,
-            data_atualizacao = NOW()
-          WHERE id = ?
-        `, [necessidade.id]);
-
-        await executeQuery(`
-          UPDATE necessidades_substituicoes
-          SET
-            produto_origem_id = ?,
-            produto_origem_nome = ?,
-            produto_origem_unidade = ?,
-            data_atualizacao = NOW()
-          WHERE necessidade_id = ?
-            AND ativo = 1
-        `, [
-          necessidade.produto_trocado_id,
-          necessidade.produto_trocado_nome,
-          necessidade.produto_trocado_unidade,
-          necessidade.id
-        ]);
-
-        restauradas++;
-      }
-
-      res.json({
-        success: true,
-        message: 'Produto origem restaurado com sucesso',
-        necessidades_atualizadas: restauradas
-      });
-    } catch (error) {
-      console.error('Erro ao desfazer troca do produto origem:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Erro ao desfazer troca do produto origem'
-      });
-    }
-  }
-
-  /**
    * Liberar análise (conf → conf log)
    */
   static async liberarAnalise(req, res) {
@@ -581,6 +326,179 @@ class SubstituicoesCRUDController {
     }
   }
 
+  static async trocarProdutoOrigem(req, res) {
+    try {
+      const { necessidade_ids, novo_produto_id } = req.body;
+
+      if (!Array.isArray(necessidade_ids) || necessidade_ids.length === 0 || !novo_produto_id) {
+        return res.status(400).json({
+          success: false,
+          message: 'Necessidade(s) e novo produto são obrigatórios.'
+        });
+      }
+
+      const placeholders = necessidade_ids.map(() => '?').join(',');
+      const registros = await executeQuery(
+        `
+          SELECT 
+            necessidade_id,
+            produto_origem_id,
+            produto_origem_nome,
+            produto_origem_unidade,
+            produto_trocado_id,
+            grupo
+          FROM necessidades_substituicoes
+          WHERE necessidade_id IN (${placeholders})
+            AND ativo = 1
+        `,
+        necessidade_ids
+      );
+
+      if (!registros.length) {
+        return res.status(400).json({
+          success: false,
+          message: 'Nenhuma substituição encontrada. Salve a necessidade antes de trocar o produto.'
+        });
+      }
+
+      const jaSubstituido = registros.some(registro => registro.produto_trocado_id);
+      if (jaSubstituido) {
+        return res.status(400).json({
+          success: false,
+          message: 'Já existe uma substituição ativa para este produto. Desfaça antes de aplicar uma nova troca.'
+        });
+      }
+
+      const grupoReferencia = registros[0].grupo || null;
+      const [novoProduto] = await executeQuery(
+        `
+          SELECT 
+            produto_id,
+            produto_nome,
+            unidade_medida,
+            grupo
+          FROM produtos_per_capita
+          WHERE (produto_id = ? OR produto_origem_id = ?)
+            AND ativo = 1
+          LIMIT 1
+        `,
+        [novo_produto_id, novo_produto_id]
+      );
+
+      if (!novoProduto) {
+        return res.status(404).json({
+          success: false,
+          message: 'Produto selecionado não encontrado.'
+        });
+      }
+
+      if (grupoReferencia && novoProduto.grupo && grupoReferencia !== novoProduto.grupo) {
+        return res.status(400).json({
+          success: false,
+          message: 'O novo produto deve pertencer ao mesmo grupo.'
+        });
+      }
+
+      await executeQuery(
+        `
+          UPDATE necessidades_substituicoes
+          SET
+            produto_trocado_id = produto_origem_id,
+            produto_trocado_nome = produto_origem_nome,
+            produto_trocado_unidade = produto_origem_unidade,
+            produto_origem_id = ?,
+            produto_origem_nome = ?,
+            produto_origem_unidade = ?,
+            data_atualizacao = NOW()
+          WHERE necessidade_id IN (${placeholders})
+            AND ativo = 1
+        `,
+        [novoProduto.produto_id, novoProduto.produto_nome, novoProduto.unidade_medida, ...necessidade_ids]
+      );
+
+      return res.json({
+        success: true,
+        message: 'Produto origem substituído com sucesso.'
+      });
+    } catch (error) {
+      console.error('Erro ao trocar produto origem:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Erro ao trocar produto origem'
+      });
+    }
+  }
+
+  static async desfazerTrocaProduto(req, res) {
+    try {
+      const { necessidade_ids } = req.body;
+
+      if (!Array.isArray(necessidade_ids) || necessidade_ids.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Necessidade(s) são obrigatórias.'
+        });
+      }
+
+      const placeholders = necessidade_ids.map(() => '?').join(',');
+      const registros = await executeQuery(
+        `
+          SELECT 
+            necessidade_id,
+            produto_trocado_id,
+            produto_trocado_nome,
+            produto_trocado_unidade
+          FROM necessidades_substituicoes
+          WHERE necessidade_id IN (${placeholders})
+            AND ativo = 1
+        `,
+        necessidade_ids
+      );
+
+      if (!registros.length) {
+        return res.status(400).json({
+          success: false,
+          message: 'Nenhuma substituição encontrada.'
+        });
+      }
+
+      const possuiTroca = registros.some(registro => registro.produto_trocado_id);
+      if (!possuiTroca) {
+        return res.status(400).json({
+          success: false,
+          message: 'Não há troca registrada para desfazer.'
+        });
+      }
+
+      await executeQuery(
+        `
+          UPDATE necessidades_substituicoes
+          SET
+            produto_origem_id = produto_trocado_id,
+            produto_origem_nome = produto_trocado_nome,
+            produto_origem_unidade = produto_trocado_unidade,
+            produto_trocado_id = NULL,
+            produto_trocado_nome = NULL,
+            produto_trocado_unidade = NULL,
+            data_atualizacao = NOW()
+          WHERE necessidade_id IN (${placeholders})
+            AND ativo = 1
+        `,
+        necessidade_ids
+      );
+
+      return res.json({
+        success: true,
+        message: 'Troca desfeita com sucesso.'
+      });
+    } catch (error) {
+      console.error('Erro ao desfazer troca de produto:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Erro ao desfazer troca de produto'
+      });
+    }
+  }
 }
 
 module.exports = SubstituicoesCRUDController;

@@ -231,6 +231,50 @@ export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
   }, [carregarNecessidades]);
 
   /**
+   * Trocar produto origem
+   */
+  const trocarProdutoOrigem = useCallback(async (dados) => {
+    try {
+      const response = await SubstituicoesNecessidadesService.trocarProdutoOrigem(dados);
+
+      if (response.success) {
+        toast.success(response.message || 'Produto origem substituído com sucesso!');
+        carregarNecessidades();
+        return response;
+      }
+
+      toast.error(response.message || 'Erro ao trocar produto origem');
+      return response;
+    } catch (error) {
+      console.error('Erro ao trocar produto origem:', error);
+      toast.error('Erro ao trocar produto origem');
+      return { success: false, error: error.message };
+    }
+  }, [carregarNecessidades]);
+
+  /**
+   * Desfazer troca de produto
+   */
+  const desfazerTrocaProduto = useCallback(async (dados) => {
+    try {
+      const response = await SubstituicoesNecessidadesService.desfazerTrocaProduto(dados);
+
+      if (response.success) {
+        toast.success(response.message || 'Troca desfeita com sucesso!');
+        carregarNecessidades();
+        return response;
+      }
+
+      toast.error(response.message || 'Erro ao desfazer troca');
+      return response;
+    } catch (error) {
+      console.error('Erro ao desfazer troca de produto:', error);
+      toast.error('Erro ao desfazer troca');
+      return { success: false, error: error.message };
+    }
+  }, [carregarNecessidades]);
+
+  /**
    * Liberar análise (conf → conf log)
    */
   const liberarAnalise = useCallback(async (dados) => {
@@ -248,50 +292,6 @@ export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
     } catch (error) {
       console.error('Erro ao liberar análise:', error);
       toast.error('Erro ao liberar análise');
-      return { success: false, error: error.message };
-    }
-  }, [carregarNecessidades]);
-
-  /**
-   * Trocar produto origem
-   */
-  const trocarProdutoOrigem = useCallback(async (dados) => {
-    try {
-      const response = await SubstituicoesNecessidadesService.trocarProdutoOrigem(dados);
-
-      if (response.success) {
-        toast.success(response.message || 'Produto origem atualizado com sucesso!');
-        carregarNecessidades();
-        return response;
-      }
-
-      toast.error(response.message || 'Não foi possível trocar o produto origem');
-      return response;
-    } catch (error) {
-      console.error('Erro ao trocar produto origem:', error);
-      toast.error('Erro ao trocar produto origem');
-      return { success: false, error: error.message };
-    }
-  }, [carregarNecessidades]);
-
-  /**
-   * Desfazer troca do produto origem
-   */
-  const desfazerTrocaProduto = useCallback(async (dados) => {
-    try {
-      const response = await SubstituicoesNecessidadesService.desfazerTrocaProduto(dados);
-
-      if (response.success) {
-        toast.success(response.message || 'Produto origem restaurado com sucesso!');
-        carregarNecessidades();
-        return response;
-      }
-
-      toast.error(response.message || 'Não foi possível desfazer a troca');
-      return response;
-    } catch (error) {
-      console.error('Erro ao desfazer troca do produto origem:', error);
-      toast.error('Erro ao desfazer troca do produto origem');
       return { success: false, error: error.message };
     }
   }, [carregarNecessidades]);

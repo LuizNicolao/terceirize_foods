@@ -115,16 +115,14 @@ router.post(
   SubstituicoesController.liberarAnalise
 );
 
-// POST /api/necessidades-substituicoes/trocar-produto-origem
 router.post(
-  '/trocar-produto-origem',
+  '/trocar-produto',
   checkScreenPermission('necessidades', 'editar'),
   SubstituicoesController.trocarProdutoOrigem
 );
 
-// POST /api/necessidades-substituicoes/desfazer-troca-produto
 router.post(
-  '/desfazer-troca-produto',
+  '/desfazer-troca',
   checkScreenPermission('necessidades', 'editar'),
   SubstituicoesController.desfazerTrocaProduto
 );

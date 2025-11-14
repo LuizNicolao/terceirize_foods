@@ -71,6 +71,16 @@ class SubstituicoesNecessidadesService {
     return response.data;
   }
 
+  static async trocarProdutoOrigem(dados) {
+    const response = await api.post('/necessidades-substituicoes/trocar-produto', dados);
+    return response.data;
+  }
+
+  static async desfazerTrocaProduto(dados) {
+    const response = await api.post('/necessidades-substituicoes/desfazer-troca', dados);
+    return response.data;
+  }
+
   /**
    * Deletar substituição
    * @param {Number} id - ID da substituição
@@ -86,16 +96,6 @@ class SubstituicoesNecessidadesService {
    */
   static async liberarAnalise(dados) {
     const response = await api.post('/necessidades-substituicoes/liberar-analise', dados);
-    return response.data;
-  }
-
-  static async trocarProdutoOrigem(dados) {
-    const response = await api.post('/necessidades-substituicoes/trocar-produto-origem', dados);
-    return response.data;
-  }
-
-  static async desfazerTrocaProduto(dados) {
-    const response = await api.post('/necessidades-substituicoes/desfazer-troca-produto', dados);
     return response.data;
   }
 

@@ -1,6 +1,35 @@
 const { executeQuery } = require('../../config/database');
 const axios = require('axios');
 
+const produtosGrupoCache = {};
+
+const buscarProdutosDoGrupo = async (grupo) => {
+  if (!grupo) {
+    return [];
+  }
+
+  if (produtosGrupoCache[grupo]) {
+    return produtosGrupoCache[grupo];
+  }
+
+  const produtos = await executeQuery(
+    `
+      SELECT 
+        produto_id,
+        produto_nome,
+        unidade_medida,
+        grupo
+      FROM produtos_per_capita
+      WHERE grupo = ? AND ativo = 1
+      ORDER BY produto_nome ASC
+    `,
+    [grupo]
+  );
+
+  produtosGrupoCache[grupo] = produtos;
+  return produtos;
+};
+
 /**
  * Controller para listagem de substituições de necessidades
  * Busca necessidades com status CONF e agrupa por produto origem
@@ -77,9 +106,9 @@ class SubstituicoesListController {
           n.produto_id as codigo_origem,
           n.produto as produto_origem_nome,
           n.produto_unidade as produto_origem_unidade,
-          MAX(n.produto_trocado_id) as produto_trocado_id,
-          MAX(n.produto_trocado_nome) as produto_trocado_nome,
-          MAX(n.produto_trocado_unidade) as produto_trocado_unidade,
+          COALESCE(MAX(ns.produto_trocado_id), NULL) as produto_trocado_id,
+          COALESCE(MAX(ns.produto_trocado_nome), '') as produto_trocado_nome,
+          COALESCE(MAX(ns.produto_trocado_unidade), '') as produto_trocado_unidade,
           COALESCE(ns.produto_generico_id, '') as produto_generico_id,
           COALESCE(ns.produto_generico_codigo, '') as produto_generico_codigo,
           COALESCE(ns.produto_generico_nome, '') as produto_generico_nome,
@@ -179,11 +208,17 @@ class SubstituicoesListController {
             escola.substituicao = substituicao || null;
           });
 
+          const produtosGrupo = await buscarProdutosDoGrupo(necessidade.grupo);
+
           return {
             ...necessidade,
             escolas,
             substituicoes_existentes: substituicoes.length > 0,
-            produto_padrao_id: produtoPadraoId
+            produto_padrao_id: produtoPadraoId,
+            produtos_grupo: produtosGrupo,
+            produto_trocado_id: necessidade.produto_trocado_id,
+            produto_trocado_nome: necessidade.produto_trocado_nome,
+            produto_trocado_unidade: necessidade.produto_trocado_unidade
           };
         })
       );
@@ -313,14 +348,14 @@ class SubstituicoesListController {
       const { grupo, semana_abastecimento, semana_consumo, tipo_rota_id, rota_id } = req.query;
 
       // Construir query base
-      let whereConditions = ['ns.status = "conf log"', 'ns.ativo = 1'];
+      let whereConditions = ['status = "conf log"', 'ativo = 1'];
       const params = [];
 
       // Filtro por tipo de rota
       if (tipo_rota_id) {
         // Buscar IDs das rotas vinculadas a este tipo de rota
         // Depois buscar escolas que têm alguma dessas rotas no rota_id
-        whereConditions.push(`ns.escola_id IN (
+        whereConditions.push(`escola_id IN (
           SELECT DISTINCT ue.id
           FROM foods_db.unidades_escolares ue
           INNER JOIN foods_db.rotas r ON FIND_IN_SET(r.id, ue.rota_id) > 0
@@ -335,7 +370,7 @@ class SubstituicoesListController {
       // Filtro por rota específica
       if (rota_id) {
         // Buscar escolas que têm esta rota específica no rota_id
-        whereConditions.push(`ns.escola_id IN (
+        whereConditions.push(`escola_id IN (
           SELECT DISTINCT ue.id
           FROM foods_db.unidades_escolares ue
           WHERE FIND_IN_SET(?, ue.rota_id) > 0
@@ -347,46 +382,44 @@ class SubstituicoesListController {
       }
 
       if (grupo) {
-        whereConditions.push('ns.grupo = ?');
+        whereConditions.push('grupo = ?');
         params.push(grupo);
       }
 
       if (semana_abastecimento) {
-        whereConditions.push('ns.semana_abastecimento = ?');
+        whereConditions.push('semana_abastecimento = ?');
         params.push(semana_abastecimento);
       }
 
       if (semana_consumo) {
-        whereConditions.push('ns.semana_consumo = ?');
+        whereConditions.push('semana_consumo = ?');
         params.push(semana_consumo);
       }
 
       // Buscar necessidades agrupadas por produto origem e produto genérico
       const necessidades = await executeQuery(`
         SELECT 
-          ns.produto_origem_id as codigo_origem,
-          ns.produto_origem_nome,
-          ns.produto_origem_unidade,
-          ns.grupo,
-          ns.grupo_id,
-          ns.semana_abastecimento,
-          ns.semana_consumo,
-          SUM(ns.quantidade_origem) as quantidade_total_origem,
-          ns.produto_generico_id,
-          ns.produto_generico_codigo,
-          ns.produto_generico_nome,
-          ns.produto_generico_unidade,
-          GROUP_CONCAT(DISTINCT ns.necessidade_id) as necessidade_ids,
-          MAX(n.produto_trocado_id) as produto_trocado_id,
-          MAX(n.produto_trocado_nome) as produto_trocado_nome,
-          MAX(n.produto_trocado_unidade) as produto_trocado_unidade
-        FROM necessidades_substituicoes ns
-        LEFT JOIN necessidades n ON n.id = ns.necessidade_id
+          produto_origem_id as codigo_origem,
+          produto_origem_nome,
+          produto_origem_unidade,
+          COALESCE(MAX(produto_trocado_id), NULL) as produto_trocado_id,
+          COALESCE(MAX(produto_trocado_nome), '') as produto_trocado_nome,
+          COALESCE(MAX(produto_trocado_unidade), '') as produto_trocado_unidade,
+          grupo,
+          grupo_id,
+          semana_abastecimento,
+          semana_consumo,
+          SUM(quantidade_origem) as quantidade_total_origem,
+          produto_generico_id,
+          produto_generico_codigo,
+          produto_generico_nome,
+          produto_generico_unidade
+        FROM necessidades_substituicoes
         WHERE ${whereConditions.join(' AND ')}
-        GROUP BY ns.produto_origem_id, ns.produto_origem_nome, ns.produto_origem_unidade, ns.grupo, ns.grupo_id,
-                 ns.semana_abastecimento, ns.semana_consumo, ns.produto_generico_id, 
-                 ns.produto_generico_codigo, ns.produto_generico_nome, ns.produto_generico_unidade
-        ORDER BY ns.produto_origem_nome ASC, ns.produto_generico_nome ASC
+        GROUP BY produto_origem_id, produto_origem_nome, produto_origem_unidade, grupo, grupo_id,
+                 semana_abastecimento, semana_consumo, produto_generico_id, 
+                 produto_generico_codigo, produto_generico_nome, produto_generico_unidade
+        ORDER BY produto_origem_nome ASC, produto_generico_nome ASC
       `, params);
 
       // Buscar substituições existentes para cada produto
@@ -437,9 +470,12 @@ class SubstituicoesListController {
             necessidade.semana_consumo
           ]);
 
+          const produtosGrupo = await buscarProdutosDoGrupo(necessidade.grupo);
+
           return {
             ...necessidade,
             produto_padrao_id: produtoPadraoId,
+            produtos_grupo: produtosGrupo,
             escolas: substituicoes.map(sub => ({
               necessidade_id: sub.necessidade_id,
               escola_id: sub.escola_id,
@@ -452,7 +488,10 @@ class SubstituicoesListController {
                 data_criacao: sub.data_criacao,
                 data_atualizacao: sub.data_atualizacao
               }
-            }))
+            })),
+            produto_trocado_id: necessidade.produto_trocado_id,
+            produto_trocado_nome: necessidade.produto_trocado_nome,
+            produto_trocado_unidade: necessidade.produto_trocado_unidade
           };
         })
       );
