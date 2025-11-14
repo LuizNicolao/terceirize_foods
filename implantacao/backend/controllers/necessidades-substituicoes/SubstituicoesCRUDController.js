@@ -339,7 +339,7 @@ class SubstituicoesCRUDController {
       }
 
         const placeholders = necessidade_ids.map(() => '?').join(',');
-      const registros = await executeQuery(
+      let registros = await executeQuery(
         `
           SELECT 
             necessidade_id,
@@ -356,10 +356,103 @@ class SubstituicoesCRUDController {
       );
 
       if (!registros.length) {
+        // Criar registros base automaticamente para necessidades que ainda não possuem substituição
+        const placeholdersBase = necessidade_ids.map(() => '?').join(',');
+        const necessidadesBase = await executeQuery(
+          `
+            SELECT 
+              n.id AS necessidade_id,
+              COALESCE(n.necessidade_id, n.id) AS necessidade_id_grupo,
+              n.produto_id AS produto_origem_id,
+              n.produto AS produto_origem_nome,
+              n.produto_unidade AS produto_origem_unidade,
+              n.ajuste_conf_coord AS quantidade_origem,
+              n.escola_id,
+              n.escola AS escola_nome,
+              n.semana_abastecimento,
+              n.semana_consumo,
+              n.grupo,
+              n.grupo_id
+            FROM necessidades n
+            WHERE n.id IN (${placeholdersBase})
+          `,
+          necessidade_ids
+        );
+
+        if (!necessidadesBase.length) {
         return res.status(400).json({
           success: false,
           message: 'Nenhuma substituição encontrada. Salve a necessidade antes de trocar o produto.'
         });
+        }
+
+        for (const necessidade of necessidadesBase) {
+          await executeQuery(
+            `
+              INSERT INTO necessidades_substituicoes (
+                necessidade_id,
+                necessidade_id_grupo,
+                produto_origem_id,
+                produto_origem_nome,
+                produto_origem_unidade,
+                produto_generico_id,
+                produto_generico_codigo,
+                produto_generico_nome,
+                produto_generico_unidade,
+                quantidade_origem,
+                quantidade_generico,
+                escola_id,
+                escola_nome,
+                semana_abastecimento,
+                semana_consumo,
+                grupo,
+                grupo_id,
+                usuario_criador_id,
+                status,
+                ativo
+              ) VALUES (?, ?, ?, ?, ?, NULL, NULL, NULL, NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'conf', 1)
+            `,
+            [
+              necessidade.necessidade_id,
+              necessidade.necessidade_id_grupo || necessidade.necessidade_id,
+              necessidade.produto_origem_id,
+              necessidade.produto_origem_nome,
+              necessidade.produto_origem_unidade,
+              necessidade.quantidade_origem || 0,
+              necessidade.quantidade_origem || 0,
+              necessidade.escola_id,
+              necessidade.escola_nome,
+              necessidade.semana_abastecimento,
+              necessidade.semana_consumo,
+              necessidade.grupo,
+              necessidade.grupo_id,
+              req.user.id
+            ]
+          );
+        }
+
+        registros = await executeQuery(
+          `
+            SELECT 
+              necessidade_id,
+              produto_origem_id,
+              produto_origem_nome,
+              produto_origem_unidade,
+              produto_trocado_id,
+              grupo
+            FROM necessidades_substituicoes
+            WHERE necessidade_id IN (${placeholders})
+              AND ativo = 1
+          `,
+          necessidade_ids
+        );
+
+        if (!registros.length) {
+          return res.status(400).json({
+            success: false,
+            message: 'Nenhuma substituição encontrada. Salve a necessidade antes de trocar o produto.'
+          });
+        }
       }
 
       const jaSubstituido = registros.some(registro => registro.produto_trocado_id);
