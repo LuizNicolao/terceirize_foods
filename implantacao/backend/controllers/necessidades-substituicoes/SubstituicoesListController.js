@@ -251,8 +251,8 @@ class SubstituicoesListController {
             ns.escola_id,
             ns.escola_nome
           FROM necessidades_substituicoes ns
-          WHERE ns.ativo = 1 
-          AND (ns.status IS NULL OR ns.status = 'conf')
+          WHERE ns.ativo = 1
+            AND (ns.status IS NULL OR ns.status = 'conf')
           
           UNION ALL
           
@@ -278,6 +278,13 @@ class SubstituicoesListController {
           FROM necessidades n
           WHERE n.status = 'CONF'
             AND (n.substituicao_processada = 0 OR n.substituicao_processada IS NULL)
+            AND NOT EXISTS (
+              SELECT 1
+              FROM necessidades_substituicoes ns2
+              WHERE ns2.necessidade_id = n.id
+                AND ns2.ativo = 1
+                AND (ns2.status IS NULL OR ns2.status = 'conf')
+            )
         ) base
         INNER JOIN necessidades n ON n.id = base.necessidade_id
         WHERE ${whereConditions.join(' AND ')}
