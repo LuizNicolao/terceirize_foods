@@ -115,4 +115,11 @@ router.post(
   SubstituicoesController.liberarAnalise
 );
 
+// POST /api/necessidades-substituicoes/desfazer
+router.post(
+  '/desfazer',
+  checkScreenPermission('necessidades', 'editar'),
+  SubstituicoesController.desfazerSubstituicao
+);
+
 module.exports = router;

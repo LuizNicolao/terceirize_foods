@@ -70,17 +70,33 @@ class SubstituicoesCRUDController {
               necessidade_id: necId
             } = escola_data;
 
-            // Verificar se já existe substituição para esta necessidade
             const existing = await executeQuery(`
-              SELECT id FROM necessidades_substituicoes 
+              SELECT 
+                id,
+                produto_origem_id,
+                produto_origem_nome,
+                produto_origem_unidade,
+                produto_trocado_id
+              FROM necessidades_substituicoes 
               WHERE necessidade_id = ? AND ativo = 1
+              LIMIT 1
             `, [necId]);
 
-            let result;
             if (existing.length > 0) {
-              // Atualizar existente
-              result = await executeQuery(`
+              const registro = existing[0];
+
+              if (registro.produto_trocado_id) {
+                throw new Error('Já existe uma substituição ativa para esta necessidade. Desfaça antes de aplicar uma nova troca.');
+              }
+
+              await executeQuery(`
                 UPDATE necessidades_substituicoes SET
+                  produto_trocado_id = ?,
+                  produto_trocado_nome = ?,
+                  produto_trocado_unidade = ?,
+                  produto_origem_id = ?,
+                  produto_origem_nome = ?,
+                  produto_origem_unidade = ?,
                   produto_generico_id = ?,
                   produto_generico_codigo = ?,
                   produto_generico_nome = ?,
@@ -90,6 +106,9 @@ class SubstituicoesCRUDController {
                   data_atualizacao = NOW()
                 WHERE necessidade_id = ?
               `, [
+                registro.produto_origem_id,
+                registro.produto_origem_nome,
+                registro.produto_origem_unidade,
                 produto_generico_id,
                 produto_generico_codigo,
                 produto_generico_nome,
@@ -99,7 +118,6 @@ class SubstituicoesCRUDController {
                 necId
               ]);
             } else {
-              // Buscar grupo e grupo_id da tabela necessidades
               const grupoResult = await executeQuery(`
                 SELECT n.grupo, n.grupo_id 
                 FROM necessidades n 
@@ -110,20 +128,23 @@ class SubstituicoesCRUDController {
               const grupo = grupoResult.length > 0 ? grupoResult[0].grupo : null;
               const grupo_id = grupoResult.length > 0 ? grupoResult[0].grupo_id : null;
 
-              // Criar nova
-              result = await executeQuery(`
+              await executeQuery(`
                 INSERT INTO necessidades_substituicoes (
                   necessidade_id, necessidade_id_grupo,
                   produto_origem_id, produto_origem_nome, produto_origem_unidade,
+                  produto_trocado_id, produto_trocado_nome, produto_trocado_unidade,
                   produto_generico_id, produto_generico_codigo, produto_generico_nome, produto_generico_unidade,
                   quantidade_origem, quantidade_generico,
                   escola_id, escola_nome,
                   semana_abastecimento, semana_consumo,
                   grupo, grupo_id, usuario_criador_id, status, ativo
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'conf', 1)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'conf', 1)
               `, [
                 necId,
-                necId, // necessidade_id_grupo usa o mesmo necessidade_id
+                necId,
+                produto_generico_id,
+                produto_generico_nome,
+                produto_generico_unidade,
                 produto_origem_id,
                 produto_origem_nome,
                 produto_origem_unidade,
@@ -156,17 +177,33 @@ class SubstituicoesCRUDController {
       } else {
         // Salvar individual (uma escola)
         try {
-          // Verificar se já existe
           const existing = await executeQuery(`
-            SELECT id FROM necessidades_substituicoes 
+            SELECT 
+              id,
+              produto_origem_id,
+              produto_origem_nome,
+              produto_origem_unidade,
+              produto_trocado_id
+            FROM necessidades_substituicoes 
             WHERE necessidade_id = ? AND ativo = 1
+            LIMIT 1
           `, [necessidade_id]);
 
-          let result;
           if (existing.length > 0) {
-            // Atualizar
-            result = await executeQuery(`
+            const registro = existing[0];
+
+            if (registro.produto_trocado_id) {
+              throw new Error('Já existe uma substituição ativa para esta necessidade. Desfaça antes de aplicar uma nova troca.');
+            }
+
+            await executeQuery(`
               UPDATE necessidades_substituicoes SET
+                produto_trocado_id = ?,
+                produto_trocado_nome = ?,
+                produto_trocado_unidade = ?,
+                produto_origem_id = ?,
+                produto_origem_nome = ?,
+                produto_origem_unidade = ?,
                 produto_generico_id = ?,
                 produto_generico_codigo = ?,
                 produto_generico_nome = ?,
@@ -176,6 +213,9 @@ class SubstituicoesCRUDController {
                 data_atualizacao = NOW()
               WHERE necessidade_id = ?
             `, [
+              registro.produto_origem_id,
+              registro.produto_origem_nome,
+              registro.produto_origem_unidade,
               produto_generico_id,
               produto_generico_codigo,
               produto_generico_nome,
@@ -185,20 +225,23 @@ class SubstituicoesCRUDController {
               necessidade_id
             ]);
           } else {
-            // Criar nova
-            result = await executeQuery(`
+            await executeQuery(`
               INSERT INTO necessidades_substituicoes (
                 necessidade_id, necessidade_id_grupo,
                 produto_origem_id, produto_origem_nome, produto_origem_unidade,
+                produto_trocado_id, produto_trocado_nome, produto_trocado_unidade,
                 produto_generico_id, produto_generico_codigo, produto_generico_nome, produto_generico_unidade,
                 quantidade_origem, quantidade_generico,
                 escola_id, escola_nome,
                 semana_abastecimento, semana_consumo,
                 usuario_criador_id, status, ativo
-              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'conf', 1)
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'conf', 1)
             `, [
               necessidade_id,
-              necessidade_id, // necessidade_id_grupo usa o mesmo necessidade_id
+              necessidade_id,
+              produto_generico_id,
+              produto_generico_nome,
+              produto_generico_unidade,
               produto_origem_id,
               produto_origem_nome,
               produto_origem_unidade,
@@ -322,6 +365,88 @@ class SubstituicoesCRUDController {
         success: false,
         error: 'Erro interno do servidor',
         message: 'Erro ao liberar análise'
+      });
+    }
+  }
+
+  /**
+   * Desfazer substituição e restaurar produto original
+   */
+  static async desfazerSubstituicao(req, res) {
+    try {
+      const { necessidade_ids = [], produto_origem_id, semana_abastecimento, semana_consumo } = req.body;
+
+      if ((!necessidade_ids || necessidade_ids.length === 0) && (!produto_origem_id || !semana_abastecimento || !semana_consumo)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Informe necessidade_ids ou dados do produto/semana para desfazer a substituição'
+        });
+      }
+
+      let whereClause = 'ativo = 1';
+      let whereParams = [];
+
+      if (necessidade_ids && necessidade_ids.length > 0) {
+        const placeholders = necessidade_ids.map(() => '?').join(',');
+        whereClause += ` AND necessidade_id IN (${placeholders})`;
+        whereParams = necessidade_ids;
+      } else {
+        whereClause += ' AND produto_origem_id = ? AND semana_abastecimento = ? AND semana_consumo = ?';
+        whereParams = [produto_origem_id, semana_abastecimento, semana_consumo];
+      }
+
+      const registros = await executeQuery(
+        `SELECT id, necessidade_id, produto_trocado_id FROM necessidades_substituicoes WHERE ${whereClause}`,
+        [...whereParams]
+      );
+
+      if (!registros.length) {
+        return res.status(404).json({
+          success: false,
+          message: 'Nenhuma substituição encontrada para os filtros informados'
+        });
+      }
+
+      const possuiSubstituicaoAtiva = registros.some(reg => reg.produto_trocado_id);
+      if (!possuiSubstituicaoAtiva) {
+        return res.status(400).json({
+          success: false,
+          message: 'Não há substituições ativas para desfazer'
+        });
+      }
+
+      await executeQuery(
+        `
+          UPDATE necessidades_substituicoes
+          SET
+            produto_origem_id = produto_trocado_id,
+            produto_origem_nome = produto_trocado_nome,
+            produto_origem_unidade = produto_trocado_unidade,
+            produto_trocado_id = NULL,
+            produto_trocado_nome = NULL,
+            produto_trocado_unidade = NULL,
+            produto_generico_id = NULL,
+            produto_generico_codigo = NULL,
+            produto_generico_nome = NULL,
+            produto_generico_unidade = NULL,
+            quantidade_generico = quantidade_origem,
+            data_atualizacao = NOW()
+          WHERE ${whereClause}
+        `,
+        [...whereParams]
+      );
+
+      res.json({
+        success: true,
+        message: 'Substituição desfeita com sucesso',
+        registros_afetados: registros.length
+      });
+    } catch (error) {
+      console.error('Erro ao desfazer substituição:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro interno do servidor',
+        message: 'Erro ao desfazer substituição'
       });
     }
   }

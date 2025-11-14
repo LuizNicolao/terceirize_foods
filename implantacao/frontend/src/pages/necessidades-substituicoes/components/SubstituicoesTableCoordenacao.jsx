@@ -10,7 +10,8 @@ const SubstituicoesTableCoordenacao = ({
   ajustesAtivados = false,
   onExpand,
   onSaveConsolidated,
-  onSaveIndividual
+  onSaveIndividual,
+  onUndoSubstitution = () => {}
 }) => {
   const [expandedRows, setExpandedRows] = useState({});
   const [selectedProdutosGenericos, setSelectedProdutosGenericos] = useState({});
@@ -240,6 +241,24 @@ const SubstituicoesTableCoordenacao = ({
           <tbody className="bg-white divide-y divide-gray-200">
             {necessidades.map((necessidade, index) => {
               const chaveUnica = `${necessidade.codigo_origem}_${necessidade.produto_generico_id || 'novo'}`;
+              const substituicaoAtiva = Boolean(necessidade.produto_trocado_id);
+              const produtoAtualNome = necessidade.produto_origem_nome;
+              const produtoAtualUnidade = necessidade.produto_origem_unidade;
+              const produtoOriginalNome = necessidade.produto_trocado_nome || necessidade.produto_original_nome || necessidade.produto_origem_nome;
+              const produtoOriginalUnidade = necessidade.produto_trocado_unidade || necessidade.produto_original_unidade || necessidade.produto_origem_unidade;
+              const codigoSelecionado = substituicaoAtiva
+                ? necessidade.codigo_origem
+                : selectedProdutosGenericos[chaveUnica]?.split('|')[0] || necessidade.produto_generico_codigo || '-';
+              const unidadeSelecionada = substituicaoAtiva
+                ? produtoAtualUnidade
+                : undGenericos[chaveUnica] || necessidade.produto_generico_unidade || '-';
+              const quantidadeSelecionada = substituicaoAtiva
+                ? (necessidade.quantidade_total_origem
+                  ? parseFloat(necessidade.quantidade_total_origem).toFixed(3).replace('.', ',')
+                  : '0,000')
+                : (quantidadesGenericos[chaveUnica] !== undefined
+                  ? quantidadesGenericos[chaveUnica]
+                  : '0,000');
               return (
               <React.Fragment key={chaveUnica}>
                 {/* Linha Consolidada */}
@@ -260,10 +279,20 @@ const SubstituicoesTableCoordenacao = ({
                     <span className="text-xs font-semibold text-cyan-600">{necessidade.codigo_origem}</span>
                   </td>
                   <td className="px-4 py-2 whitespace-nowrap">
-                    <span className="text-xs font-medium text-gray-900">{necessidade.produto_origem_nome}</span>
+                    <div className="text-xs font-medium text-gray-900">{produtoAtualNome}</div>
+                    {substituicaoAtiva && (
+                      <div className="text-[11px] text-gray-500 line-through">
+                        Original: {produtoOriginalNome}
+                      </div>
+                    )}
                   </td>
                   <td className="px-4 py-2 whitespace-nowrap text-center">
-                    <span className="text-xs text-gray-700">{necessidade.produto_origem_unidade}</span>
+                    <div className="text-xs text-gray-700">{produtoAtualUnidade || '-'}</div>
+                    {substituicaoAtiva && (
+                      <div className="text-[11px] text-gray-500">
+                        Orig.: {produtoOriginalUnidade || '-'}
+                      </div>
+                    )}
                   </td>
                   <td className="px-4 py-2 whitespace-nowrap text-center">
                     <span className="text-xs text-gray-900">
@@ -285,51 +314,63 @@ const SubstituicoesTableCoordenacao = ({
                   </td>
                   <td className="px-4 py-2 whitespace-nowrap">
                     <span className="text-xs text-purple-600">
-                      {selectedProdutosGenericos[chaveUnica]?.split('|')[0] || necessidade.produto_generico_codigo || '-'}
+                      {codigoSelecionado}
                     </span>
                   </td>
                   <td className="px-4 py-2 whitespace-nowrap relative z-10">
                     <div className="relative z-10">
-                      <SearchableSelect
-                        value={selectedProdutosGenericos[chaveUnica] || ''}
-                        onChange={(value) => handleProdutoGenericoChange(chaveUnica, value, necessidade.quantidade_total_origem)}
-                        options={produtosGenericos[necessidade.codigo_origem]?.map(produto => ({
-                          value: `${produto.id || produto.codigo}|${produto.nome}|${produto.unidade_medida_sigla || produto.unidade || produto.unidade_medida || ''}|${produto.fator_conversao || 1}`,
-                          label: produto.nome
-                        })) || []}
-                        placeholder="Selecione..."
-                        disabled={!ajustesAtivados || loadingGenericos[necessidade.codigo_origem]}
-                        className="text-xs"
-                        filterBy={(option, searchTerm) => {
-                          return option.label.toLowerCase().includes(searchTerm.toLowerCase());
-                        }}
-                      />
+                      {substituicaoAtiva ? (
+                        <div className="text-[11px] text-gray-500">
+                          Substituição aplicada. Desfaça para alterar novamente.
+                        </div>
+                      ) : (
+                        <SearchableSelect
+                          value={selectedProdutosGenericos[chaveUnica] || ''}
+                          onChange={(value) => handleProdutoGenericoChange(chaveUnica, value, necessidade.quantidade_total_origem)}
+                          options={produtosGenericos[necessidade.codigo_origem]?.map(produto => ({
+                            value: `${produto.id || produto.codigo}|${produto.nome}|${produto.unidade_medida_sigla || produto.unidade || produto.unidade_medida || ''}|${produto.fator_conversao || 1}`,
+                            label: produto.nome
+                          })) || []}
+                          placeholder="Selecione..."
+                          disabled={!ajustesAtivados || loadingGenericos[necessidade.codigo_origem]}
+                          className="text-xs"
+                          filterBy={(option, searchTerm) => option.label.toLowerCase().includes(searchTerm.toLowerCase())}
+                        />
+                      )}
                     </div>
                   </td>
                   <td className="px-4 py-2 whitespace-nowrap text-center">
                     <span className="text-xs text-gray-700">
-                      {undGenericos[chaveUnica] || necessidade.produto_generico_unidade || '-'}
+                      {unidadeSelecionada}
                     </span>
                   </td>
                   <td className="px-4 py-2 whitespace-nowrap text-center">
                     <span className="text-xs text-cyan-600 font-semibold">
-                      {quantidadesGenericos[chaveUnica] !== undefined ? 
-                        quantidadesGenericos[chaveUnica] : 
-                        '0,000'
-                      }
+                      {quantidadeSelecionada}
                     </span>
                   </td>
                   <td className="px-4 py-2 whitespace-nowrap text-center">
-                    {ajustesAtivados && (
+                    {substituicaoAtiva ? (
                       <Button
                         size="xs"
-                        variant="success"
-                        onClick={() => handleSaveConsolidated(necessidade)}
+                        variant="warning"
+                        onClick={() => onUndoSubstitution(necessidade)}
                         className="flex items-center gap-1"
                       >
-                        <FaSave className="w-3 h-3" />
-                        Salvar
+                        Desfazer
                       </Button>
+                    ) : (
+                      ajustesAtivados && (
+                        <Button
+                          size="xs"
+                          variant="success"
+                          onClick={() => handleSaveConsolidated(necessidade)}
+                          className="flex items-center gap-1"
+                        >
+                          <FaSave className="w-3 h-3" />
+                          Salvar
+                        </Button>
+                      )
                     )}
                   </td>
                 </tr>
@@ -358,9 +399,13 @@ const SubstituicoesTableCoordenacao = ({
                           <tbody className="bg-white divide-y divide-gray-200">
                             {necessidade.escolas.map((escola, idx) => {
                               const chaveEscola = `${chaveUnica}-${escola.escola_id}`;
-                              const produtoSelecionado = selectedProdutosPorEscola[chaveEscola] || (escola.substituicao ? 
-                                `${escola.substituicao.produto_generico_id}|${escola.substituicao.produto_generico_nome}|${escola.substituicao.produto_generico_unidade}` 
-                                : '');
+                              const produtoSelecionado = selectedProdutosPorEscola[chaveEscola] || (
+                                substituicaoAtiva
+                                  ? `${necessidade.codigo_origem}|${necessidade.produto_origem_nome}|${necessidade.produto_origem_unidade || ''}|1`
+                                  : escola.substituicao 
+                                    ? `${escola.substituicao.produto_generico_id}|${escola.substituicao.produto_generico_nome}|${escola.substituicao.produto_generico_unidade}|1`
+                                    : ''
+                              );
                               const partes = produtoSelecionado ? produtoSelecionado.split('|') : [];
                               const codigoProduto = partes[0] || '';
                               const nomeProduto = partes[1] || '';
@@ -384,25 +429,29 @@ const SubstituicoesTableCoordenacao = ({
                                   </td>
                                   <td className="px-4 py-2 whitespace-nowrap relative z-10">
                                     <div className="relative z-10">
-                                      <SearchableSelect
-                                        value={produtoSelecionado}
-                                        onChange={(value) => {
-                                          setSelectedProdutosPorEscola(prev => ({ ...prev, [chaveEscola]: value }));
-                                          escola.selectedProdutoGenerico = value;
-                                        }}
-                                        options={produtosGenericos[necessidade.codigo_origem]?.map(produto => {
-                                          const unidade = produto.unidade_medida_sigla || produto.unidade || produto.unidade_medida || '';
-                                          return {
-                                            value: `${produto.id || produto.codigo}|${produto.nome}|${unidade}|${produto.fator_conversao || 1}`,
-                                            label: produto.nome
-                                          };
-                                        }) || []}
-                                        placeholder="Selecione..."
-                                        disabled={!ajustesAtivados}
-                                        filterBy={(option, searchTerm) => {
-                                          return option.label.toLowerCase().includes(searchTerm.toLowerCase());
-                                        }}
-                                      />
+                                      {substituicaoAtiva ? (
+                                        <div className="text-[11px] text-gray-500">
+                                          Substituição ativa para este produto.
+                                        </div>
+                                      ) : (
+                                        <SearchableSelect
+                                          value={produtoSelecionado}
+                                          onChange={(value) => {
+                                            setSelectedProdutosPorEscola(prev => ({ ...prev, [chaveEscola]: value }));
+                                            escola.selectedProdutoGenerico = value;
+                                          }}
+                                          options={produtosGenericos[necessidade.codigo_origem]?.map(produto => {
+                                            const unidade = produto.unidade_medida_sigla || produto.unidade || produto.unidade_medida || '';
+                                            return {
+                                              value: `${produto.id || produto.codigo}|${produto.nome}|${unidade}|${produto.fator_conversao || 1}`,
+                                              label: produto.nome
+                                            };
+                                          }) || []}
+                                          placeholder="Selecione..."
+                                          disabled={!ajustesAtivados}
+                                          filterBy={(option, searchTerm) => option.label.toLowerCase().includes(searchTerm.toLowerCase())}
+                                        />
+                                      )}
                                     </div>
                                   </td>
                                   <td className="px-4 py-2 whitespace-nowrap text-center">
@@ -414,7 +463,7 @@ const SubstituicoesTableCoordenacao = ({
                                     {quantidadeGenerica || '0,000'}
                                   </td>
                                   <td className="px-4 py-2 whitespace-nowrap text-center">
-                                    {ajustesAtivados && (
+                                    {!substituicaoAtiva && ajustesAtivados && (
                                       <Button
                                         size="xs"
                                         variant="success"

@@ -22,6 +22,7 @@ module.exports = {
   salvarSubstituicao: SubstituicoesCRUDController.salvarSubstituicao,
   deletarSubstituicao: SubstituicoesCRUDController.deletarSubstituicao,
   liberarAnalise: SubstituicoesCRUDController.liberarAnalise,
+  desfazerSubstituicao: SubstituicoesCRUDController.desfazerSubstituicao,
 
   // Impressão
   buscarDadosImpressao: SubstituicoesImpressaoController.buscarDadosImpressao,

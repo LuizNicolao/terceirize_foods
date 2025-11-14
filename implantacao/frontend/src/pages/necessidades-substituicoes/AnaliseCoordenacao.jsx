@@ -21,6 +21,7 @@ const AnaliseCoordenacao = () => {
     loadingGenericos,
     buscarProdutosGenericos,
     salvarSubstituicao,
+    desfazerSubstituicao,
     atualizarFiltros,
     limparFiltros
   } = useSubstituicoesNecessidades('coordenacao');
@@ -54,6 +55,33 @@ const AnaliseCoordenacao = () => {
   const handleSaveIndividual = async (dados, escolaId) => {
     const response = await salvarSubstituicao(dados);
     return response;
+  };
+
+  const handleDesfazerSubstituicao = async (necessidade) => {
+    if (!necessidade?.produto_trocado_id) {
+      return;
+    }
+
+    let payload = {};
+    if (necessidade.necessidade_ids) {
+      const ids = necessidade.necessidade_ids
+        .split(',')
+        .map(id => parseInt(id.trim(), 10))
+        .filter(id => !Number.isNaN(id));
+      if (ids.length > 0) {
+        payload.necessidade_ids = ids;
+      }
+    }
+
+    if (!payload.necessidade_ids || payload.necessidade_ids.length === 0) {
+      payload = {
+        produto_origem_id: necessidade.codigo_origem,
+        semana_abastecimento: necessidade.semana_abastecimento,
+        semana_consumo: necessidade.semana_consumo
+      };
+    }
+
+    await desfazerSubstituicao(payload);
   };
 
   return (
@@ -116,6 +144,7 @@ const AnaliseCoordenacao = () => {
           onExpand={() => {}}
           onSaveConsolidated={handleSaveConsolidated}
           onSaveIndividual={handleSaveIndividual}
+          onUndoSubstitution={handleDesfazerSubstituicao}
         />
       )}
 

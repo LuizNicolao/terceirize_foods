@@ -74,9 +74,16 @@ class SubstituicoesListController {
       // Buscar necessidades agrupadas por produto origem + produto genérico
       const necessidades = await executeQuery(`
         SELECT 
-          n.produto_id as codigo_origem,
-          n.produto as produto_origem_nome,
-          n.produto_unidade as produto_origem_unidade,
+          COALESCE(ns.produto_origem_id, n.produto_id) as codigo_origem,
+          COALESCE(ns.produto_origem_nome, n.produto) as produto_origem_nome,
+          COALESCE(ns.produto_origem_unidade, n.produto_unidade) as produto_origem_unidade,
+          n.produto_id as produto_original_id,
+          n.produto as produto_original_nome,
+          n.produto_unidade as produto_original_unidade,
+          ns.produto_trocado_id,
+          ns.produto_trocado_nome,
+          ns.produto_trocado_unidade,
+          COALESCE(ns.id, NULL) as substituicao_id,
           COALESCE(ns.produto_generico_id, '') as produto_generico_id,
           COALESCE(ns.produto_generico_codigo, '') as produto_generico_codigo,
           COALESCE(ns.produto_generico_nome, '') as produto_generico_nome,
@@ -101,9 +108,23 @@ class SubstituicoesListController {
           AND (ns.status IS NULL OR ns.status = 'conf')
         )
         WHERE ${whereConditions.join(' AND ')}
-        GROUP BY n.produto_id, n.produto, n.produto_unidade, n.semana_abastecimento, n.semana_consumo, n.grupo,
-                 COALESCE(ns.produto_generico_id, ''), COALESCE(ns.produto_generico_codigo, ''), 
-                 COALESCE(ns.produto_generico_nome, ''), COALESCE(ns.produto_generico_unidade, '')
+        GROUP BY COALESCE(ns.produto_origem_id, n.produto_id),
+                 COALESCE(ns.produto_origem_nome, n.produto),
+                 COALESCE(ns.produto_origem_unidade, n.produto_unidade),
+                 n.produto_id,
+                 n.produto,
+                 n.produto_unidade,
+                 ns.produto_trocado_id,
+                 ns.produto_trocado_nome,
+                 ns.produto_trocado_unidade,
+                 COALESCE(ns.id, NULL),
+                 n.semana_abastecimento,
+                 n.semana_consumo,
+                 n.grupo,
+                 COALESCE(ns.produto_generico_id, ''),
+                 COALESCE(ns.produto_generico_codigo, ''),
+                 COALESCE(ns.produto_generico_nome, ''),
+                 COALESCE(ns.produto_generico_unidade, '')
         ORDER BY n.produto ASC, COALESCE(ns.produto_generico_nome, '') ASC
       `, params);
 
@@ -361,9 +382,25 @@ class SubstituicoesListController {
       // Buscar necessidades agrupadas por produto origem e produto genérico
       const necessidades = await executeQuery(`
         SELECT 
-          produto_origem_id as codigo_origem,
+          COALESCE(produto_origem_id, produto_generico_id) as codigo_origem,
+          produto_origem_id,
           produto_origem_nome,
           produto_origem_unidade,
+          produto_trocado_id,
+          produto_trocado_nome,
+          produto_trocado_unidade,
+          CASE 
+            WHEN produto_trocado_id IS NOT NULL THEN produto_trocado_id 
+            ELSE produto_origem_id 
+          END as produto_original_id,
+          CASE 
+            WHEN produto_trocado_nome IS NOT NULL THEN produto_trocado_nome 
+            ELSE produto_origem_nome 
+          END as produto_original_nome,
+          CASE 
+            WHEN produto_trocado_unidade IS NOT NULL THEN produto_trocado_unidade 
+            ELSE produto_origem_unidade 
+          END as produto_original_unidade,
           grupo,
           grupo_id,
           semana_abastecimento,
@@ -375,9 +412,24 @@ class SubstituicoesListController {
           produto_generico_unidade
         FROM necessidades_substituicoes
         WHERE ${whereConditions.join(' AND ')}
-        GROUP BY produto_origem_id, produto_origem_nome, produto_origem_unidade, grupo, grupo_id,
-                 semana_abastecimento, semana_consumo, produto_generico_id, 
-                 produto_generico_codigo, produto_generico_nome, produto_generico_unidade
+        GROUP BY COALESCE(produto_origem_id, produto_generico_id),
+                 produto_origem_id,
+                 produto_origem_nome,
+                 produto_origem_unidade,
+                 produto_trocado_id,
+                 produto_trocado_nome,
+                 produto_trocado_unidade,
+                 produto_original_id,
+                 produto_original_nome,
+                 produto_original_unidade,
+                 grupo,
+                 grupo_id,
+                 semana_abastecimento,
+                 semana_consumo,
+                 produto_generico_id,
+                 produto_generico_codigo,
+                 produto_generico_nome,
+                 produto_generico_unidade
         ORDER BY produto_origem_nome ASC, produto_generico_nome ASC
       `, params);
 

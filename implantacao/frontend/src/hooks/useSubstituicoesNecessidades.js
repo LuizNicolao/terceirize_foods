@@ -253,6 +253,28 @@ export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
   }, [carregarNecessidades]);
 
   /**
+   * Desfazer substituição e restaurar produto original
+   */
+  const desfazerSubstituicao = useCallback(async (dados) => {
+    try {
+      const response = await SubstituicoesNecessidadesService.desfazerSubstituicao(dados);
+      
+      if (response.success) {
+        toast.success(response.message || 'Substituição desfeita com sucesso!');
+        carregarNecessidades();
+        return response;
+      } else {
+        toast.error(response.message || 'Erro ao desfazer substituição');
+        return response;
+      }
+    } catch (error) {
+      console.error('Erro ao desfazer substituição:', error);
+      toast.error('Erro ao desfazer substituição');
+      return { success: false, error: error.message };
+    }
+  }, [carregarNecessidades]);
+
+  /**
    * Atualizar filtros
    */
   const atualizarFiltros = useCallback((novosFiltros) => {
@@ -352,6 +374,7 @@ export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
     salvarSubstituicao,
     deletarSubstituicao,
     liberarAnalise,
+    desfazerSubstituicao,
     atualizarFiltros,
     limparFiltros
   };

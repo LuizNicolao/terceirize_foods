@@ -90,6 +90,14 @@ class SubstituicoesNecessidadesService {
   }
 
   /**
+   * Desfazer substituição e restaurar produto original
+   */
+  static async desfazerSubstituicao(dados) {
+    const response = await api.post('/necessidades-substituicoes/desfazer', dados);
+    return response.data;
+  }
+
+  /**
    * Buscar grupos disponíveis para substituição
    * @param {String} aba - 'nutricionista' ou 'coordenacao'
    * @param {String|Number} tipoRotaId - ID do tipo de rota (opcional)
