@@ -10,9 +10,7 @@ const SubstituicoesTable = ({
   ajustesAtivados = false,
   onExpand,
   onSaveConsolidated,
-  onSaveIndividual,
-  onTrocarProdutoOrigem = async () => ({}),
-  onDesfazerTrocaProduto = async () => ({})
+  onSaveIndividual
 }) => {
   const [expandedRows, setExpandedRows] = useState({});
   const [selectedProdutosGenericos, setSelectedProdutosGenericos] = useState({});
@@ -20,8 +18,6 @@ const SubstituicoesTable = ({
   const [undGenericos, setUndGenericos] = useState({});
   const [produtosPadraoSelecionados, setProdutosPadraoSelecionados] = useState({});
   const [selectedProdutosPorEscola, setSelectedProdutosPorEscola] = useState({});
-  const [selectedProdutosOrigem, setSelectedProdutosOrigem] = useState({});
-  const [savingTrocaOrigem, setSavingTrocaOrigem] = useState({});
 
   const handleProdutoGenericoChange = (codigo, valor, quantidadeOrigem) => {
     if (!valor) {
@@ -111,10 +107,6 @@ const SubstituicoesTable = ({
       }
     });
   }, [produtosGenericos, necessidades, produtosPadraoSelecionados]);
-
-  useEffect(() => {
-    setSelectedProdutosOrigem({});
-  }, [necessidades]);
 
   const handleToggleExpand = (chaveUnica) => {
     setExpandedRows(prev => ({
@@ -230,75 +222,6 @@ const SubstituicoesTable = ({
     }
   };
 
-  const getNecessidadeIds = (necessidade) => {
-    if (Array.isArray(necessidade.escolas) && necessidade.escolas.length > 0) {
-      return necessidade.escolas
-        .map(escola => escola.necessidade_id)
-        .filter(id => !!id);
-    }
-
-    if (necessidade.necessidade_ids) {
-      return necessidade.necessidade_ids
-        .split(',')
-        .map(id => parseInt(id, 10))
-        .filter(id => !Number.isNaN(id));
-    }
-
-    return [];
-  };
-
-  const handleTrocarProdutoOrigemRow = async (necessidade) => {
-    const chaveOrigem = necessidade.codigo_origem;
-    const valorSelecionado = selectedProdutosOrigem[chaveOrigem];
-
-    if (!valorSelecionado) {
-      toast.error('Selecione um produto para aplicar a troca.');
-      return;
-    }
-
-    const [novoProdutoId] = valorSelecionado.split('|');
-    if (!novoProdutoId) {
-      toast.error('Produto selecionado inválido.');
-      return;
-    }
-
-    const necessidadeIds = getNecessidadeIds(necessidade);
-    if (necessidadeIds.length === 0) {
-      toast.error('Não foi possível identificar as necessidades relacionadas.');
-      return;
-    }
-
-    setSavingTrocaOrigem(prev => ({ ...prev, [chaveOrigem]: true }));
-    const response = await onTrocarProdutoOrigem({
-      necessidade_ids: necessidadeIds,
-      novo_produto_id: parseInt(novoProdutoId, 10)
-    });
-    setSavingTrocaOrigem(prev => ({ ...prev, [chaveOrigem]: false }));
-
-    if (response?.success) {
-      setSelectedProdutosOrigem(prev => ({ ...prev, [chaveOrigem]: '' }));
-    }
-  };
-
-  const handleDesfazerTroca = async (necessidade) => {
-    const necessidadeIds = getNecessidadeIds(necessidade);
-    if (necessidadeIds.length === 0) {
-      toast.error('Não foi possível identificar as necessidades relacionadas.');
-      return;
-    }
-
-    const chaveOrigem = necessidade.codigo_origem;
-    setSavingTrocaOrigem(prev => ({ ...prev, [chaveOrigem]: true }));
-    const response = await onDesfazerTrocaProduto({
-      necessidade_ids: necessidadeIds
-    });
-    setSavingTrocaOrigem(prev => ({ ...prev, [chaveOrigem]: false }));
-
-    if (response?.success) {
-      setSelectedProdutosOrigem(prev => ({ ...prev, [chaveOrigem]: '' }));
-    }
-  };
-
   if (necessidades.length === 0) {
     return (
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
@@ -330,9 +253,6 @@ const SubstituicoesTable = ({
           <tbody className="bg-white divide-y divide-gray-200">
             {necessidades.map((necessidade, index) => {
               const chaveUnica = `${necessidade.codigo_origem}_${necessidade.produto_generico_id || 'novo'}`;
-              const chaveOrigem = necessidade.codigo_origem;
-              const produtosDisponiveis = produtosGenericos[necessidade.codigo_origem] || [];
-              const carregandoProdutosOrigem = Boolean(loadingGenericos[necessidade.codigo_origem]);
               return (
               <React.Fragment key={chaveUnica}>
                 {/* Linha Consolidada */}
@@ -353,63 +273,7 @@ const SubstituicoesTable = ({
                     <span className="text-xs font-semibold text-cyan-600">{necessidade.codigo_origem}</span>
                   </td>
                   <td className="px-4 py-2 whitespace-nowrap">
-                    <div className="flex flex-col gap-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-semibold text-gray-900">
-                          {necessidade.produto_origem_nome}
-                        </span>
-                        {necessidade.produto_trocado_id && (
-                          <span className="text-[10px] font-semibold text-amber-600 bg-amber-100 px-2 py-0.5 rounded-full">
-                            Substituído
-                          </span>
-                        )}
-                      </div>
-
-                      {!necessidade.produto_trocado_id ? (
-                        <div className="flex flex-col gap-2">
-                          <SearchableSelect
-                            value={selectedProdutosOrigem[chaveOrigem] || ''}
-                            onChange={(value) => setSelectedProdutosOrigem(prev => ({ ...prev, [chaveOrigem]: value }))}
-                            options={produtosDisponiveis.map(produto => ({
-                              value: `${produto.id || produto.codigo}|${produto.nome}|${produto.unidade_medida_sigla || produto.unidade || produto.unidade_medida || ''}`,
-                              label: produto.nome
-                            }))}
-                            placeholder={
-                              carregandoProdutosOrigem
-                                ? 'Carregando opções...'
-                                : produtosDisponiveis.length > 0
-                                  ? 'Selecione novo produto origem'
-                                  : 'Nenhum produto disponível'
-                            }
-                            disabled={carregandoProdutosOrigem || produtosDisponiveis.length === 0 || savingTrocaOrigem[chaveOrigem]}
-                            className="text-xs"
-                            filterBy={(option, searchTerm) => option.label.toLowerCase().includes(searchTerm.toLowerCase())}
-                          />
-                          <Button
-                            size="xs"
-                            variant="primary"
-                            onClick={() => handleTrocarProdutoOrigemRow(necessidade)}
-                            disabled={!selectedProdutosOrigem[chaveOrigem] || savingTrocaOrigem[chaveOrigem]}
-                          >
-                            {savingTrocaOrigem[chaveOrigem] ? 'Aplicando...' : 'Trocar produto'}
-                          </Button>
-                        </div>
-                      ) : (
-                        <div className="flex flex-col gap-2">
-                          <span className="text-[11px] text-gray-600">
-                            Produto original: <strong>{necessidade.produto_trocado_nome}</strong> ({necessidade.produto_trocado_unidade || '-'})
-                          </span>
-                          <Button
-                            size="xs"
-                            variant="outline"
-                            onClick={() => handleDesfazerTroca(necessidade)}
-                            disabled={savingTrocaOrigem[chaveOrigem]}
-                          >
-                            {savingTrocaOrigem[chaveOrigem] ? 'Restaurando...' : 'Desfazer troca'}
-                          </Button>
-                        </div>
-                      )}
-                    </div>
+                    <span className="text-xs font-medium text-gray-900">{necessidade.produto_origem_nome}</span>
                   </td>
                   <td className="px-4 py-2 whitespace-nowrap text-center">
                     <span className="text-xs text-gray-700">{necessidade.produto_origem_unidade}</span>

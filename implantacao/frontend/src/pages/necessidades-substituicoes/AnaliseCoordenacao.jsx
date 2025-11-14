@@ -21,8 +21,6 @@ const AnaliseCoordenacao = () => {
     loadingGenericos,
     buscarProdutosGenericos,
     salvarSubstituicao,
-    trocarProdutoOrigem,
-    desfazerTrocaProduto,
     atualizarFiltros,
     limparFiltros
   } = useSubstituicoesNecessidades('coordenacao');
@@ -118,8 +116,6 @@ const AnaliseCoordenacao = () => {
           onExpand={() => {}}
           onSaveConsolidated={handleSaveConsolidated}
           onSaveIndividual={handleSaveIndividual}
-          onTrocarProdutoOrigem={trocarProdutoOrigem}
-          onDesfazerTrocaProduto={desfazerTrocaProduto}
         />
       )}
 

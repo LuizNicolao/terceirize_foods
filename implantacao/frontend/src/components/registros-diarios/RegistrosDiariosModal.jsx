@@ -221,35 +221,35 @@ const RegistrosDiariosModal = ({
 
         const escolaMudou = formData.escola_id !== escolaInicial;
         const dataMudou = formData.data !== dataInicial;
-
+        
         if (!escolaMudou && !dataMudou) {
           return;
         }
       }
 
-      const result = await RegistrosDiariosService.buscarPorEscolaData(
-        formData.escola_id,
-        formData.data
-      );
-
-      if (result.success && result.data?.quantidades) {
-        const quantidades = result.data.quantidades;
-        const quantidadesNormalizadas = {
-          lanche_manha: quantidades.lanche_manha != null ? String(quantidades.lanche_manha) : '',
-          parcial_manha: quantidades.parcial_manha != null
-            ? String(quantidades.parcial_manha)
-            : quantidades.parcial != null
-              ? String(quantidades.parcial)
-              : '',
-          almoco: quantidades.almoco != null ? String(quantidades.almoco) : '',
-          lanche_tarde: quantidades.lanche_tarde != null ? String(quantidades.lanche_tarde) : '',
-          parcial_tarde: quantidades.parcial_tarde != null ? String(quantidades.parcial_tarde) : '',
-          eja: quantidades.eja != null ? String(quantidades.eja) : ''
-        };
-        setFormData(prev => ({
-          ...prev,
-          quantidades: quantidadesNormalizadas
-        }));
+          const result = await RegistrosDiariosService.buscarPorEscolaData(
+            formData.escola_id,
+            formData.data
+          );
+          
+          if (result.success && result.data?.quantidades) {
+            const quantidades = result.data.quantidades;
+            const quantidadesNormalizadas = {
+              lanche_manha: quantidades.lanche_manha != null ? String(quantidades.lanche_manha) : '',
+              parcial_manha: quantidades.parcial_manha != null
+                ? String(quantidades.parcial_manha)
+                : quantidades.parcial != null
+                  ? String(quantidades.parcial)
+                  : '',
+              almoco: quantidades.almoco != null ? String(quantidades.almoco) : '',
+              lanche_tarde: quantidades.lanche_tarde != null ? String(quantidades.lanche_tarde) : '',
+              parcial_tarde: quantidades.parcial_tarde != null ? String(quantidades.parcial_tarde) : '',
+              eja: quantidades.eja != null ? String(quantidades.eja) : ''
+            };
+            setFormData(prev => ({
+              ...prev,
+              quantidades: quantidadesNormalizadas
+            }));
       }
     };
     

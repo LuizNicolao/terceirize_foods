@@ -26,15 +26,53 @@ const SubstituicoesTableNutricionista = ({
 
   useEffect(() => {
     const valoresIniciais = {};
+    const genericosIniciais = {};
+    const unidadesIniciais = {};
+    const quantidadesIniciais = {};
+
     necessidades.forEach((necessidade) => {
       const chaveOrigem = getChaveOrigem(necessidade);
       const unidade = necessidade.produto_origem_unidade || '';
       valoresIniciais[chaveOrigem] = `${necessidade.codigo_origem}|${necessidade.produto_origem_nome}|${unidade}`;
+
+      if (necessidade.produto_generico_id) {
+        const valorGenerico = `${necessidade.produto_generico_id}|${necessidade.produto_generico_nome}|${necessidade.produto_generico_unidade || ''}|1`;
+        genericosIniciais[chaveOrigem] = valorGenerico;
+        unidadesIniciais[chaveOrigem] = necessidade.produto_generico_unidade || '';
+        quantidadesIniciais[chaveOrigem] = necessidade.quantidade_total_origem || '';
+      }
     });
     setSelectedProdutosOrigem(valoresIniciais);
+    setSelectedProdutosGenericos(prev => ({ ...genericosIniciais, ...prev }));
+    setUndGenericos(prev => ({ ...unidadesIniciais, ...prev }));
+    setQuantidadesGenericos(prev => ({ ...quantidadesIniciais, ...prev }));
   }, [necessidades]);
   const handleProdutoOrigemChange = (chaveOrigem, valor) => {
     setSelectedProdutosOrigem(prev => ({ ...prev, [chaveOrigem]: valor }));
+
+    const necessidade = necessidades.find(item => getChaveOrigem(item) === chaveOrigem);
+    if (!necessidade || !valor || !necessidade.produtos_grupo) return;
+
+    const [produtoId] = valor.split('|');
+    if (!produtoId) return;
+
+    const produtosGrupo = necessidade.produtos_grupo || [];
+    const produtoSelecionado = produtosGrupo.find(prod => String(prod.produto_id || prod.id || prod.codigo) === String(produtoId));
+
+    if (produtoSelecionado && produtoSelecionado.produto_generico_padrao) {
+      const { produto_generico_padrao } = produtoSelecionado;
+      const unidadePadrao = produto_generico_padrao.unidade_medida_sigla || produto_generico_padrao.unidade || produto_generico_padrao.unidade_medida || '';
+      const valorGenerico = `${produto_generico_padrao.id || produto_generico_padrao.codigo}|${produto_generico_padrao.nome}|${unidadePadrao}|${produto_generico_padrao.fator_conversao || 1}`;
+
+      setSelectedProdutosGenericos(prev => ({ ...prev, [chaveOrigem]: valorGenerico }));
+      setUndGenericos(prev => ({ ...prev, [chaveOrigem]: unidadePadrao }));
+
+      const fator = produto_generico_padrao.fator_conversao || 1;
+      if (necessidade.quantidade_total_origem && fator > 0) {
+        const quantidadeCalculada = Math.ceil(parseFloat(necessidade.quantidade_total_origem) / fator);
+        setQuantidadesGenericos(prev => ({ ...prev, [chaveOrigem]: quantidadeCalculada }));
+      }
+    }
   };
 
   const handleDesfazerOrigem = async (necessidade) => {
