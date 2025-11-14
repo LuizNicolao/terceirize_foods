@@ -322,83 +322,83 @@ const SubstituicoesTableNutricionista = ({
                   </td>
                   <td className="px-4 py-2 whitespace-nowrap">
                     <div className="space-y-2">
-                      <SearchableSelect
-                        value={selectedProdutosOrigem[getChaveOrigem(necessidade)] || ''}
-                        onChange={(value) => handleProdutoOrigemChange(getChaveOrigem(necessidade), value)}
-                        options={(() => {
-                          const produtosGrupo = necessidade.produtos_grupo || [];
-                          const options = produtosGrupo.map(produto => {
-                            const id = produto.produto_id || produto.id || produto.codigo;
-                            const nome = produto.produto_nome || produto.nome;
-                            const unidade = produto.unidade_medida || produto.unidade || '';
-                            return {
-                              value: `${id}|${nome}|${unidade}`,
-                              label: `${nome}`,
-                              description: unidade
-                            };
-                          });
-                          const valorAtual = `${necessidade.codigo_origem}|${necessidade.produto_origem_nome}|${necessidade.produto_origem_unidade || ''}`;
-                          const jaExiste = options.some(opt => opt.value === valorAtual);
-                          if (!jaExiste) {
-                            options.unshift({
-                              value: valorAtual,
-                              label: necessidade.produto_origem_nome,
-                              description: necessidade.produto_origem_unidade || ''
-                            });
-                          }
-                          return options;
-                        })()}
-                        placeholder="Selecione um produto..."
-                        disabled={
-                          !necessidade.substituicoes_existentes ||
-                          Boolean(necessidade.produto_trocado_id) ||
-                          !ajustesAtivados
-                        }
-                        filterBy={(option, searchTerm) =>
-                          option.label.toLowerCase().includes(searchTerm.toLowerCase())
-                        }
-                        className="text-xs"
-                      />
-                      <div className="flex flex-wrap gap-2">
-                        <Button
-                          size="xs"
-                          variant="outline"
-                          onClick={() => handleTrocarOrigem(necessidade)}
-                          disabled={
-                            !necessidade.substituicoes_existentes ||
-                            Boolean(necessidade.produto_trocado_id) ||
-                            trocaLoading[getChaveOrigem(necessidade)] ||
-                            !ajustesAtivados
-                          }
-                          className="flex items-center gap-1"
-                        >
-                          {trocaLoading[getChaveOrigem(necessidade)] ? (
-                            'Processando...'
-                          ) : (
-                            <>
-                              <FaExchangeAlt className="w-3 h-3" />
-                              Trocar
-                            </>
-                          )}
-                        </Button>
-                        {necessidade.produto_trocado_id && (
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1">
+                          <SearchableSelect
+                            value={selectedProdutosOrigem[getChaveOrigem(necessidade)] || ''}
+                            onChange={(value) => handleProdutoOrigemChange(getChaveOrigem(necessidade), value)}
+                            options={(() => {
+                              const produtosGrupo = necessidade.produtos_grupo || [];
+                              const options = produtosGrupo.map(produto => {
+                                const id = produto.produto_id || produto.id || produto.codigo;
+                                const nome = produto.produto_nome || produto.nome;
+                                const unidade = produto.unidade_medida || produto.unidade || '';
+                                return {
+                                  value: `${id}|${nome}|${unidade}`,
+                                  label: `${nome}`,
+                                  description: unidade
+                                };
+                              });
+                              const valorAtual = `${necessidade.codigo_origem}|${necessidade.produto_origem_nome}|${necessidade.produto_origem_unidade || ''}`;
+                              const jaExiste = options.some(opt => opt.value === valorAtual);
+                              if (!jaExiste) {
+                                options.unshift({
+                                  value: valorAtual,
+                                  label: necessidade.produto_origem_nome,
+                                  description: necessidade.produto_origem_unidade || ''
+                                });
+                              }
+                              return options;
+                            })()}
+                            placeholder="Selecione um produto..."
+                            disabled={
+                              !necessidade.substituicoes_existentes ||
+                              Boolean(necessidade.produto_trocado_id) ||
+                              !ajustesAtivados
+                            }
+                            filterBy={(option, searchTerm) =>
+                              option.label.toLowerCase().includes(searchTerm.toLowerCase())
+                            }
+                            className="text-xs"
+                          />
+                        </div>
+                        <div className="flex items-center gap-1">
                           <Button
                             size="xs"
-                            variant="danger"
-                            onClick={() => handleDesfazerOrigem(necessidade)}
-                            disabled={trocaLoading[getChaveOrigem(necessidade)]}
-                            className="flex items-center gap-1"
+                            variant="ghost"
+                            onClick={() => handleTrocarOrigem(necessidade)}
+                            disabled={
+                              !necessidade.substituicoes_existentes ||
+                              Boolean(necessidade.produto_trocado_id) ||
+                              trocaLoading[getChaveOrigem(necessidade)] ||
+                              !ajustesAtivados
+                            }
+                            className="p-2"
+                            title="Trocar produto origem"
                           >
                             {trocaLoading[getChaveOrigem(necessidade)] ? (
-                              'Processando...'
+                              <span className="text-[10px] text-gray-500">...</span>
                             ) : (
-                              <>
-                                <FaUndo className="w-3 h-3" />
-                                Desfazer
-                              </>
+                              <FaExchangeAlt className="w-3.5 h-3.5 text-blue-600" />
                             )}
                           </Button>
-                        )}
+                          {necessidade.produto_trocado_id && (
+                            <Button
+                              size="xs"
+                              variant="ghost"
+                              onClick={() => handleDesfazerOrigem(necessidade)}
+                              disabled={trocaLoading[getChaveOrigem(necessidade)]}
+                              className="p-2"
+                              title="Desfazer troca"
+                            >
+                              {trocaLoading[getChaveOrigem(necessidade)] ? (
+                                <span className="text-[10px] text-gray-500">...</span>
+                              ) : (
+                                <FaUndo className="w-3.5 h-3.5 text-amber-700" />
+                              )}
+                            </Button>
+                          )}
+                        </div>
                       </div>
                       {!necessidade.substituicoes_existentes && (
                         <p className="text-[11px] text-gray-500">
