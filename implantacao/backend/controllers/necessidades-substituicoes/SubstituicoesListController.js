@@ -147,7 +147,7 @@ class SubstituicoesListController {
       const { grupo, semana_abastecimento, semana_consumo, tipo_rota_id, rota_id } = req.query;
 
       let whereConditions = ["n.status = 'CONF'"];
-      let whereConditionsSemSubstituicao = ["n.status = 'CONF'", "(n.substituicao_processada = 0 OR n.substituicao_processada IS NULL)"];
+      let whereConditionsSemSubstituicao = ["n.status = 'CONF'"];
       let params = [];
       let paramsSemSubstituicao = [];
 
