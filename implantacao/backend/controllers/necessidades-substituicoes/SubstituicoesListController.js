@@ -217,6 +217,10 @@ class SubstituicoesListController {
       }
 
       // Buscar necessidades agrupadas por produto origem + produto genérico
+      console.log('[Substituicoes] >>> Iniciando consulta listarParaSubstituicao', {
+        filtrosRecebidos: { grupo, semana_abastecimento, semana_consumo, tipo_rota_id, rota_id }
+      });
+
       const necessidades = await executeQuery(`
         SELECT 
           base.codigo_origem,
@@ -314,9 +318,28 @@ class SubstituicoesListController {
         ORDER BY base.produto_origem_nome ASC, base.semana_abastecimento ASC
       `, [...paramsSemSubstituicao, ...params]);
 
+      console.log('[Substituicoes] <<< Consulta concluída', {
+        filtros: { grupo, semana_abastecimento, semana_consumo, tipo_rota_id, rota_id },
+        whereConditions,
+        whereConditionsSemSubstituicao,
+        paramsSemSubstituicao,
+        paramsPrincipal: params,
+        totalNecessidades: necessidades.length,
+        amostraNecessidades: necessidades.slice(0, 3).map(n => ({
+          codigo_origem: n.codigo_origem,
+          produto_generico_id: n.produto_generico_id,
+          necessidade_ids: n.necessidade_ids
+        }))
+      });
+
       // Buscar substituições existentes para cada produto
       const produtosComSubstituicoes = await Promise.all(
         necessidades.map(async (necessidade) => {
+          console.log('[Substituicoes] -> Processando necessidade agrupada', {
+            codigo_origem: necessidade.codigo_origem,
+            necessidade_ids: necessidade.necessidade_ids,
+            produto_generico_id: necessidade.produto_generico_id
+          });
           // Buscar produto padrão do produto origem no Foods
           let produtoPadraoId = null;
           try {
@@ -388,6 +411,14 @@ class SubstituicoesListController {
             necessidade.grupo,
             req.headers.authorization
           );
+          console.log('[Substituicoes] -> Substituições recuperadas', {
+            codigo_origem: necessidade.codigo_origem,
+            totalSubstituicoes: substituicoes.length,
+            amostra: substituicoes.slice(0, 3).map((s) => ({
+              necessidade_id: s.necessidade_id,
+              produto_generico_id: s.produto_generico_id
+            }))
+          });
 
           return {
             ...necessidade,
@@ -407,7 +438,11 @@ class SubstituicoesListController {
         data: produtosComSubstituicoes
       });
     } catch (error) {
-      console.error('Erro ao listar necessidades para substituição:', error);
+      console.error('[Substituicoes] Erro ao listar necessidades para substituição:', {
+        message: error.message,
+        filtros: req.query,
+        stack: error.stack
+      });
       res.status(500).json({
         success: false,
         error: 'Erro interno do servidor',
