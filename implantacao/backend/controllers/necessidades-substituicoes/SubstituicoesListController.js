@@ -74,16 +74,12 @@ class SubstituicoesListController {
       // Buscar necessidades agrupadas por produto origem + produto genérico
       const necessidades = await executeQuery(`
         SELECT 
-          COALESCE(ns.produto_origem_id, n.produto_id) as codigo_origem,
-          COALESCE(ns.produto_origem_nome, n.produto) as produto_origem_nome,
-          COALESCE(ns.produto_origem_unidade, n.produto_unidade) as produto_origem_unidade,
-          n.produto_id as produto_original_id,
-          n.produto as produto_original_nome,
-          n.produto_unidade as produto_original_unidade,
-          ns.produto_trocado_id,
-          ns.produto_trocado_nome,
-          ns.produto_trocado_unidade,
-          COALESCE(ns.id, NULL) as substituicao_id,
+          n.produto_id as codigo_origem,
+          n.produto as produto_origem_nome,
+          n.produto_unidade as produto_origem_unidade,
+          MAX(n.produto_trocado_id) as produto_trocado_id,
+          MAX(n.produto_trocado_nome) as produto_trocado_nome,
+          MAX(n.produto_trocado_unidade) as produto_trocado_unidade,
           COALESCE(ns.produto_generico_id, '') as produto_generico_id,
           COALESCE(ns.produto_generico_codigo, '') as produto_generico_codigo,
           COALESCE(ns.produto_generico_nome, '') as produto_generico_nome,
@@ -108,23 +104,9 @@ class SubstituicoesListController {
           AND (ns.status IS NULL OR ns.status = 'conf')
         )
         WHERE ${whereConditions.join(' AND ')}
-        GROUP BY COALESCE(ns.produto_origem_id, n.produto_id),
-                 COALESCE(ns.produto_origem_nome, n.produto),
-                 COALESCE(ns.produto_origem_unidade, n.produto_unidade),
-                 n.produto_id,
-                 n.produto,
-                 n.produto_unidade,
-                 ns.produto_trocado_id,
-                 ns.produto_trocado_nome,
-                 ns.produto_trocado_unidade,
-                 COALESCE(ns.id, NULL),
-                 n.semana_abastecimento,
-                 n.semana_consumo,
-                 n.grupo,
-                 COALESCE(ns.produto_generico_id, ''),
-                 COALESCE(ns.produto_generico_codigo, ''),
-                 COALESCE(ns.produto_generico_nome, ''),
-                 COALESCE(ns.produto_generico_unidade, '')
+        GROUP BY n.produto_id, n.produto, n.produto_unidade, n.semana_abastecimento, n.semana_consumo, n.grupo,
+                 COALESCE(ns.produto_generico_id, ''), COALESCE(ns.produto_generico_codigo, ''), 
+                 COALESCE(ns.produto_generico_nome, ''), COALESCE(ns.produto_generico_unidade, '')
         ORDER BY n.produto ASC, COALESCE(ns.produto_generico_nome, '') ASC
       `, params);
 
@@ -331,14 +313,14 @@ class SubstituicoesListController {
       const { grupo, semana_abastecimento, semana_consumo, tipo_rota_id, rota_id } = req.query;
 
       // Construir query base
-      let whereConditions = ['status = "conf log"', 'ativo = 1'];
+      let whereConditions = ['ns.status = "conf log"', 'ns.ativo = 1'];
       const params = [];
 
       // Filtro por tipo de rota
       if (tipo_rota_id) {
         // Buscar IDs das rotas vinculadas a este tipo de rota
         // Depois buscar escolas que têm alguma dessas rotas no rota_id
-        whereConditions.push(`escola_id IN (
+        whereConditions.push(`ns.escola_id IN (
           SELECT DISTINCT ue.id
           FROM foods_db.unidades_escolares ue
           INNER JOIN foods_db.rotas r ON FIND_IN_SET(r.id, ue.rota_id) > 0
@@ -353,7 +335,7 @@ class SubstituicoesListController {
       // Filtro por rota específica
       if (rota_id) {
         // Buscar escolas que têm esta rota específica no rota_id
-        whereConditions.push(`escola_id IN (
+        whereConditions.push(`ns.escola_id IN (
           SELECT DISTINCT ue.id
           FROM foods_db.unidades_escolares ue
           WHERE FIND_IN_SET(?, ue.rota_id) > 0
@@ -365,72 +347,46 @@ class SubstituicoesListController {
       }
 
       if (grupo) {
-        whereConditions.push('grupo = ?');
+        whereConditions.push('ns.grupo = ?');
         params.push(grupo);
       }
 
       if (semana_abastecimento) {
-        whereConditions.push('semana_abastecimento = ?');
+        whereConditions.push('ns.semana_abastecimento = ?');
         params.push(semana_abastecimento);
       }
 
       if (semana_consumo) {
-        whereConditions.push('semana_consumo = ?');
+        whereConditions.push('ns.semana_consumo = ?');
         params.push(semana_consumo);
       }
 
       // Buscar necessidades agrupadas por produto origem e produto genérico
       const necessidades = await executeQuery(`
         SELECT 
-          COALESCE(produto_origem_id, produto_generico_id) as codigo_origem,
-          produto_origem_id,
-          produto_origem_nome,
-          produto_origem_unidade,
-          produto_trocado_id,
-          produto_trocado_nome,
-          produto_trocado_unidade,
-          CASE 
-            WHEN produto_trocado_id IS NOT NULL THEN produto_trocado_id 
-            ELSE produto_origem_id 
-          END as produto_original_id,
-          CASE 
-            WHEN produto_trocado_nome IS NOT NULL THEN produto_trocado_nome 
-            ELSE produto_origem_nome 
-          END as produto_original_nome,
-          CASE 
-            WHEN produto_trocado_unidade IS NOT NULL THEN produto_trocado_unidade 
-            ELSE produto_origem_unidade 
-          END as produto_original_unidade,
-          grupo,
-          grupo_id,
-          semana_abastecimento,
-          semana_consumo,
-          SUM(quantidade_origem) as quantidade_total_origem,
-          produto_generico_id,
-          produto_generico_codigo,
-          produto_generico_nome,
-          produto_generico_unidade
-        FROM necessidades_substituicoes
+          ns.produto_origem_id as codigo_origem,
+          ns.produto_origem_nome,
+          ns.produto_origem_unidade,
+          ns.grupo,
+          ns.grupo_id,
+          ns.semana_abastecimento,
+          ns.semana_consumo,
+          SUM(ns.quantidade_origem) as quantidade_total_origem,
+          ns.produto_generico_id,
+          ns.produto_generico_codigo,
+          ns.produto_generico_nome,
+          ns.produto_generico_unidade,
+          GROUP_CONCAT(DISTINCT ns.necessidade_id) as necessidade_ids,
+          MAX(n.produto_trocado_id) as produto_trocado_id,
+          MAX(n.produto_trocado_nome) as produto_trocado_nome,
+          MAX(n.produto_trocado_unidade) as produto_trocado_unidade
+        FROM necessidades_substituicoes ns
+        LEFT JOIN necessidades n ON n.id = ns.necessidade_id
         WHERE ${whereConditions.join(' AND ')}
-        GROUP BY COALESCE(produto_origem_id, produto_generico_id),
-                 produto_origem_id,
-                 produto_origem_nome,
-                 produto_origem_unidade,
-                 produto_trocado_id,
-                 produto_trocado_nome,
-                 produto_trocado_unidade,
-                 produto_original_id,
-                 produto_original_nome,
-                 produto_original_unidade,
-                 grupo,
-                 grupo_id,
-                 semana_abastecimento,
-                 semana_consumo,
-                 produto_generico_id,
-                 produto_generico_codigo,
-                 produto_generico_nome,
-                 produto_generico_unidade
-        ORDER BY produto_origem_nome ASC, produto_generico_nome ASC
+        GROUP BY ns.produto_origem_id, ns.produto_origem_nome, ns.produto_origem_unidade, ns.grupo, ns.grupo_id,
+                 ns.semana_abastecimento, ns.semana_consumo, ns.produto_generico_id, 
+                 ns.produto_generico_codigo, ns.produto_generico_nome, ns.produto_generico_unidade
+        ORDER BY ns.produto_origem_nome ASC, ns.produto_generico_nome ASC
       `, params);
 
       // Buscar substituições existentes para cada produto

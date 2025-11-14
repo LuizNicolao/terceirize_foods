@@ -89,11 +89,13 @@ class SubstituicoesNecessidadesService {
     return response.data;
   }
 
-  /**
-   * Desfazer substituição e restaurar produto original
-   */
-  static async desfazerSubstituicao(dados) {
-    const response = await api.post('/necessidades-substituicoes/desfazer', dados);
+  static async trocarProdutoOrigem(dados) {
+    const response = await api.post('/necessidades-substituicoes/trocar-produto-origem', dados);
+    return response.data;
+  }
+
+  static async desfazerTrocaProduto(dados) {
+    const response = await api.post('/necessidades-substituicoes/desfazer-troca-produto', dados);
     return response.data;
   }
 

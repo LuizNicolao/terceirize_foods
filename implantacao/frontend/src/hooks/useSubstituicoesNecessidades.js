@@ -253,23 +253,45 @@ export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
   }, [carregarNecessidades]);
 
   /**
-   * Desfazer substituição e restaurar produto original
+   * Trocar produto origem
    */
-  const desfazerSubstituicao = useCallback(async (dados) => {
+  const trocarProdutoOrigem = useCallback(async (dados) => {
     try {
-      const response = await SubstituicoesNecessidadesService.desfazerSubstituicao(dados);
-      
+      const response = await SubstituicoesNecessidadesService.trocarProdutoOrigem(dados);
+
       if (response.success) {
-        toast.success(response.message || 'Substituição desfeita com sucesso!');
+        toast.success(response.message || 'Produto origem atualizado com sucesso!');
         carregarNecessidades();
         return response;
-      } else {
-        toast.error(response.message || 'Erro ao desfazer substituição');
+      }
+
+      toast.error(response.message || 'Não foi possível trocar o produto origem');
+      return response;
+    } catch (error) {
+      console.error('Erro ao trocar produto origem:', error);
+      toast.error('Erro ao trocar produto origem');
+      return { success: false, error: error.message };
+    }
+  }, [carregarNecessidades]);
+
+  /**
+   * Desfazer troca do produto origem
+   */
+  const desfazerTrocaProduto = useCallback(async (dados) => {
+    try {
+      const response = await SubstituicoesNecessidadesService.desfazerTrocaProduto(dados);
+
+      if (response.success) {
+        toast.success(response.message || 'Produto origem restaurado com sucesso!');
+        carregarNecessidades();
         return response;
       }
+
+      toast.error(response.message || 'Não foi possível desfazer a troca');
+      return response;
     } catch (error) {
-      console.error('Erro ao desfazer substituição:', error);
-      toast.error('Erro ao desfazer substituição');
+      console.error('Erro ao desfazer troca do produto origem:', error);
+      toast.error('Erro ao desfazer troca do produto origem');
       return { success: false, error: error.message };
     }
   }, [carregarNecessidades]);
@@ -374,7 +396,8 @@ export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
     salvarSubstituicao,
     deletarSubstituicao,
     liberarAnalise,
-    desfazerSubstituicao,
+    trocarProdutoOrigem,
+    desfazerTrocaProduto,
     atualizarFiltros,
     limparFiltros
   };

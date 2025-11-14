@@ -115,11 +115,18 @@ router.post(
   SubstituicoesController.liberarAnalise
 );
 
-// POST /api/necessidades-substituicoes/desfazer
+// POST /api/necessidades-substituicoes/trocar-produto-origem
 router.post(
-  '/desfazer',
+  '/trocar-produto-origem',
   checkScreenPermission('necessidades', 'editar'),
-  SubstituicoesController.desfazerSubstituicao
+  SubstituicoesController.trocarProdutoOrigem
+);
+
+// POST /api/necessidades-substituicoes/desfazer-troca-produto
+router.post(
+  '/desfazer-troca-produto',
+  checkScreenPermission('necessidades', 'editar'),
+  SubstituicoesController.desfazerTrocaProduto
 );
 
 module.exports = router;
