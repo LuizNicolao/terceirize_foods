@@ -206,7 +206,7 @@ const SubstituicoesTableNutricionista = ({
         } else {
           const produtoPadrao = produtosGenericos[produtoOrigemAtualId].find(
             p => p.produto_padrao === 'Sim'
-          );
+          ) || produtosGenericos[produtoOrigemAtualId][0];
           
           if (produtoPadrao) {
             const unidade = produtoPadrao.unidade_medida_sigla || produtoPadrao.unidade || produtoPadrao.unidade_medida || '';
