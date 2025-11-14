@@ -464,7 +464,7 @@ class SubstituicoesCRUDController {
       }
 
       const grupoReferencia = registros[0].grupo || null;
-      const [novoProduto] = await executeQuery(
+      let [novoProduto] = await executeQuery(
         `
           SELECT 
             produto_id,
@@ -480,10 +480,31 @@ class SubstituicoesCRUDController {
       );
 
       if (!novoProduto) {
-        return res.status(404).json({
-          success: false,
-          message: 'Produto selecionado não encontrado.'
-        });
+        // Fallback para buscar diretamente no produto origem do Foods
+        const [produtoOrigemFallback] = await executeQuery(
+          `
+            SELECT 
+              po.id AS produto_id,
+              po.nome AS produto_nome,
+              COALESCE(um.sigla, um.nome, '') AS unidade_medida,
+              g.nome AS grupo
+            FROM foods_db.produto_origem po
+            LEFT JOIN foods_db.unidades_medida um ON po.unidade_medida_id = um.id
+            LEFT JOIN foods_db.grupos g ON po.grupo_id = g.id
+            WHERE po.id = ?
+            LIMIT 1
+          `,
+          [novo_produto_id]
+        );
+
+        if (!produtoOrigemFallback) {
+          return res.status(404).json({
+            success: false,
+            message: 'Produto selecionado não encontrado.'
+          });
+        }
+
+        novoProduto = produtoOrigemFallback;
       }
 
       if (grupoReferencia && novoProduto.grupo && grupoReferencia !== novoProduto.grupo) {
