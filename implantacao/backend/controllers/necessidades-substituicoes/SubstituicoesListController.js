@@ -146,14 +146,14 @@ class SubstituicoesListController {
     try {
       const { grupo, semana_abastecimento, semana_consumo, tipo_rota_id, rota_id } = req.query;
 
-      let whereConditions = ["n.status = 'CONF'"];
-      let whereConditionsSemSubstituicao = ["n.status = 'CONF'"];
+      let whereConditions = ["n.status = 'CONF'", "(n.substituicao_processada = 0 OR n.substituicao_processada IS NULL)"];
       let params = [];
-      let paramsSemSubstituicao = [];
 
       // Filtro por tipo de rota
       if (tipo_rota_id) {
-        const filtroTipoRota = `n.escola_id IN (
+        // Buscar IDs das rotas vinculadas a este tipo de rota
+        // Depois buscar escolas que têm alguma dessas rotas no rota_id
+        whereConditions.push(`n.escola_id IN (
           SELECT DISTINCT ue.id
           FROM foods_db.unidades_escolares ue
           INNER JOIN foods_db.rotas r ON FIND_IN_SET(r.id, ue.rota_id) > 0
@@ -161,66 +161,49 @@ class SubstituicoesListController {
             AND ue.status = 'ativo'
             AND ue.rota_id IS NOT NULL
             AND ue.rota_id != ''
-        )`;
-        whereConditions.push(filtroTipoRota);
-        whereConditionsSemSubstituicao.push(filtroTipoRota);
+        )`);
         params.push(tipo_rota_id);
-        paramsSemSubstituicao.push(tipo_rota_id);
       }
 
       // Filtro por rota específica
       if (rota_id) {
         // Buscar escolas que têm esta rota específica no rota_id
-        const filtroRota = `n.escola_id IN (
+        whereConditions.push(`n.escola_id IN (
           SELECT DISTINCT ue.id
           FROM foods_db.unidades_escolares ue
           WHERE FIND_IN_SET(?, ue.rota_id) > 0
             AND ue.status = 'ativo'
             AND ue.rota_id IS NOT NULL
             AND ue.rota_id != ''
-        )`;
-        whereConditions.push(filtroRota);
-        whereConditionsSemSubstituicao.push(filtroRota);
+        )`);
         params.push(rota_id);
-        paramsSemSubstituicao.push(rota_id);
       }
 
       // Filtro por grupo
       if (grupo) {
-        const filtroGrupo = `n.produto_id IN (
+        whereConditions.push(`n.produto_id IN (
           SELECT DISTINCT ppc.produto_id 
           FROM produtos_per_capita ppc 
           WHERE ppc.grupo = ?
-        )`;
-        whereConditions.push(filtroGrupo);
-        whereConditionsSemSubstituicao.push(filtroGrupo);
+        )`);
         params.push(grupo);
-        paramsSemSubstituicao.push(grupo);
       }
 
       // Filtro por semana de abastecimento
       if (semana_abastecimento) {
         // Buscar exatamente a semana fornecida (já no formato correto)
         whereConditions.push("n.semana_abastecimento = ?");
-        whereConditionsSemSubstituicao.push("n.semana_abastecimento = ?");
         params.push(semana_abastecimento);
-        paramsSemSubstituicao.push(semana_abastecimento);
       }
 
       // Filtro por semana de consumo
       if (semana_consumo) {
         // Buscar exatamente a semana fornecida (já no formato correto)
         whereConditions.push("n.semana_consumo = ?");
-        whereConditionsSemSubstituicao.push("n.semana_consumo = ?");
         params.push(semana_consumo);
-        paramsSemSubstituicao.push(semana_consumo);
       }
 
       // Buscar necessidades agrupadas por produto origem + produto genérico
-      console.log('[Substituicoes] >>> Iniciando consulta listarParaSubstituicao', {
-        filtrosRecebidos: { grupo, semana_abastecimento, semana_consumo, tipo_rota_id, rota_id }
-      });
-
       const necessidades = await executeQuery(`
         SELECT 
           base.codigo_origem,
@@ -293,14 +276,8 @@ class SubstituicoesListController {
             n.escola_id,
             n.escola AS escola_nome
           FROM necessidades n
-          WHERE ${whereConditionsSemSubstituicao.join(' AND ')}
-            AND NOT EXISTS (
-              SELECT 1 
-              FROM necessidades_substituicoes ns2 
-              WHERE ns2.necessidade_id = n.id 
-                AND ns2.ativo = 1 
-                AND (ns2.status IS NULL OR ns2.status = 'conf')
-            )
+          WHERE n.status = 'CONF'
+            AND (n.substituicao_processada = 0 OR n.substituicao_processada IS NULL)
         ) base
         INNER JOIN necessidades n ON n.id = base.necessidade_id
         WHERE ${whereConditions.join(' AND ')}
@@ -316,30 +293,11 @@ class SubstituicoesListController {
           base.grupo,
           base.grupo_id
         ORDER BY base.produto_origem_nome ASC, base.semana_abastecimento ASC
-      `, [...paramsSemSubstituicao, ...params]);
-
-      console.log('[Substituicoes] <<< Consulta concluída', {
-        filtros: { grupo, semana_abastecimento, semana_consumo, tipo_rota_id, rota_id },
-        whereConditions,
-        whereConditionsSemSubstituicao,
-        paramsSemSubstituicao,
-        paramsPrincipal: params,
-        totalNecessidades: necessidades.length,
-        amostraNecessidades: necessidades.slice(0, 3).map(n => ({
-          codigo_origem: n.codigo_origem,
-          produto_generico_id: n.produto_generico_id,
-          necessidade_ids: n.necessidade_ids
-        }))
-      });
+      `, params);
 
       // Buscar substituições existentes para cada produto
       const produtosComSubstituicoes = await Promise.all(
         necessidades.map(async (necessidade) => {
-          console.log('[Substituicoes] -> Processando necessidade agrupada', {
-            codigo_origem: necessidade.codigo_origem,
-            necessidade_ids: necessidade.necessidade_ids,
-            produto_generico_id: necessidade.produto_generico_id
-          });
           // Buscar produto padrão do produto origem no Foods
           let produtoPadraoId = null;
           try {
@@ -411,14 +369,6 @@ class SubstituicoesListController {
             necessidade.grupo,
             req.headers.authorization
           );
-          console.log('[Substituicoes] -> Substituições recuperadas', {
-            codigo_origem: necessidade.codigo_origem,
-            totalSubstituicoes: substituicoes.length,
-            amostra: substituicoes.slice(0, 3).map((s) => ({
-              necessidade_id: s.necessidade_id,
-              produto_generico_id: s.produto_generico_id
-            }))
-          });
 
           return {
             ...necessidade,
@@ -438,11 +388,7 @@ class SubstituicoesListController {
         data: produtosComSubstituicoes
       });
     } catch (error) {
-      console.error('[Substituicoes] Erro ao listar necessidades para substituição:', {
-        message: error.message,
-        filtros: req.query,
-        stack: error.stack
-      });
+      console.error('Erro ao listar necessidades para substituição:', error);
       res.status(500).json({
         success: false,
         error: 'Erro interno do servidor',
