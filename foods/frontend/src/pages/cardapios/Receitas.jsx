@@ -8,13 +8,11 @@ import ReceitasService from '../../services/receitas';
 import { Button, ValidationErrorModal, ConfirmModal } from '../../components/ui';
 import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
-import { 
-  ReceitaModal, 
-  ReceitaTable,
-  ReceitaStats,
-  ReceitaPreviewModal,
-  ReceitaUploadModal
-} from '../../components/cardapios';
+import ReceitaModal from '../../components/cardapios/ReceitaModal';
+import ReceitaTable from '../../components/cardapios/ReceitaTable';
+import ReceitaStats from '../../components/cardapios/ReceitaStats';
+import ReceitaPreviewModal from '../../components/cardapios/ReceitaPreviewModal';
+import ReceitaUploadModal from '../../components/cardapios/ReceitaUploadModal';
 import { AuditModal, ExportButtons } from '../../components/shared';
 
 const Receitas = () => {
