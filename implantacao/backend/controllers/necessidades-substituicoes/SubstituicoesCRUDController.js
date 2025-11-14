@@ -1,4 +1,5 @@
 const { executeQuery } = require('../../config/database');
+const axios = require('axios');
 
 /**
  * Controller para operações CRUD de substituições
@@ -337,7 +338,7 @@ class SubstituicoesCRUDController {
         });
       }
 
-      const placeholders = necessidade_ids.map(() => '?').join(',');
+        const placeholders = necessidade_ids.map(() => '?').join(',');
       const registros = await executeQuery(
         `
           SELECT 
@@ -415,6 +416,64 @@ class SubstituicoesCRUDController {
         `,
         [novoProduto.produto_id, novoProduto.produto_nome, novoProduto.unidade_medida, ...necessidade_ids]
       );
+
+      let produtoGenericoPadrao = null;
+      try {
+        const foodsApiUrl = process.env.FOODS_API_URL || 'http://localhost:3001';
+        const response = await axios.get(
+          `${foodsApiUrl}/produto-generico?status=1&limit=10000&produto_origem_id=${novoProduto.produto_id}`,
+          {
+            headers: {
+              Authorization: req.headers.authorization
+            },
+            timeout: 5000
+          }
+        );
+
+        let lista = [];
+        if (response.data) {
+          if (response.data.data && response.data.data.items) {
+            lista = response.data.data.items;
+          } else if (Array.isArray(response.data.data)) {
+            lista = response.data.data;
+          } else if (Array.isArray(response.data)) {
+            lista = response.data;
+      }
+        }
+
+        produtoGenericoPadrao =
+          lista.find(item => item.produto_padrao === 'Sim') ||
+          lista[0] ||
+          null;
+      } catch (error) {
+        console.error('Erro ao buscar produto genérico padrão:', error.message);
+      }
+
+      if (produtoGenericoPadrao) {
+        await executeQuery(
+          `
+            UPDATE necessidades_substituicoes
+            SET
+              produto_generico_id = ?,
+              produto_generico_codigo = ?,
+              produto_generico_nome = ?,
+              produto_generico_unidade = ?,
+              data_atualizacao = NOW()
+            WHERE necessidade_id IN (${placeholders})
+              AND ativo = 1
+          `,
+          [
+            produtoGenericoPadrao.id || produtoGenericoPadrao.codigo,
+            produtoGenericoPadrao.codigo || produtoGenericoPadrao.id,
+            produtoGenericoPadrao.nome,
+            produtoGenericoPadrao.unidade_medida_sigla ||
+              produtoGenericoPadrao.unidade ||
+              produtoGenericoPadrao.unidade_medida ||
+              '',
+            ...necessidade_ids
+          ]
+        );
+      }
 
       return res.json({
         success: true,
