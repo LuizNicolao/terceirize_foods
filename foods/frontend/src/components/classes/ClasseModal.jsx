@@ -13,6 +13,7 @@ const ClasseModal = ({
 }) => {
   const [codigoGerado, setCodigoGerado] = useState('');
   const [carregandoCodigo, setCarregandoCodigo] = useState(false);
+  const [selectedSubgrupo, setSelectedSubgrupo] = useState('');
 
   useEffect(() => {
     const carregarProximoCodigo = async () => {
@@ -38,6 +39,14 @@ const ClasseModal = ({
     };
 
     carregarProximoCodigo();
+  }, [classe, isOpen]);
+
+  useEffect(() => {
+    if (classe?.subgrupo_id) {
+      setSelectedSubgrupo(classe.subgrupo_id.toString());
+    } else {
+      setSelectedSubgrupo('');
+    }
   }, [classe, isOpen]);
 
   return (
@@ -81,16 +90,9 @@ const ClasseModal = ({
           <div>
             <SearchableSelect
               label="Subgrupo *"
-              value={classe?.subgrupo_id?.toString() || ''}
+              value={selectedSubgrupo}
               onChange={(value) => {
-                // Atualizar o valor no formulário
-                const form = document.querySelector('form');
-                if (form) {
-                  const subgrupoInput = form.querySelector('input[name="subgrupo_id"]');
-                  if (subgrupoInput) {
-                    subgrupoInput.value = value;
-                  }
-                }
+                setSelectedSubgrupo(value);
               }}
               options={[
                 { value: '', label: 'Selecione um subgrupo' },
@@ -118,7 +120,7 @@ const ClasseModal = ({
               )}
             />
             {/* Campo hidden para o formulário */}
-            <input type="hidden" name="subgrupo_id" value={classe?.subgrupo_id?.toString() || ''} />
+            <input type="hidden" name="subgrupo_id" value={selectedSubgrupo} />
           </div>
           <Input
             label="Status"
