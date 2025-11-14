@@ -3,30 +3,48 @@ const axios = require('axios');
 
 const produtosGrupoCache = {};
 
-const buscarProdutosDoGrupo = async (grupo) => {
-  if (!grupo) {
+const buscarProdutosDoGrupo = async (grupoId, grupoNome) => {
+  const cacheKey = grupoId || grupoNome;
+
+  if (!cacheKey) {
     return [];
   }
 
-  if (produtosGrupoCache[grupo]) {
-    return produtosGrupoCache[grupo];
+  if (produtosGrupoCache[cacheKey]) {
+    return produtosGrupoCache[cacheKey];
+  }
+
+  let resolvedGrupoId = grupoId;
+
+  if (!resolvedGrupoId && grupoNome) {
+    const grupoResult = await executeQuery(
+      'SELECT id FROM foods_db.grupos WHERE nome = ? LIMIT 1',
+      [grupoNome]
+    );
+    resolvedGrupoId = grupoResult[0]?.id || null;
+  }
+
+  if (!resolvedGrupoId) {
+    return [];
   }
 
   const produtos = await executeQuery(
     `
       SELECT 
-        produto_id,
-        produto_nome,
-        unidade_medida,
-        grupo
-      FROM produtos_per_capita
-      WHERE grupo = ? AND ativo = 1
-      ORDER BY produto_nome ASC
+        po.id AS produto_id,
+        po.codigo AS produto_codigo,
+        po.nome AS produto_nome,
+        COALESCE(um.sigla, um.nome, '') AS unidade_medida,
+        po.grupo_id
+      FROM foods_db.produto_origem po
+      LEFT JOIN foods_db.unidades_medida um ON po.unidade_medida_id = um.id
+      WHERE po.grupo_id = ? AND po.status = 1
+      ORDER BY po.nome ASC
     `,
-    [grupo]
+    [resolvedGrupoId]
   );
 
-  produtosGrupoCache[grupo] = produtos;
+  produtosGrupoCache[cacheKey] = produtos;
   return produtos;
 };
 
@@ -118,6 +136,7 @@ class SubstituicoesListController {
           n.semana_abastecimento,
           n.semana_consumo,
           n.grupo,
+          COALESCE(n.grupo_id, ns.grupo_id) as grupo_id,
           GROUP_CONCAT(
             DISTINCT CONCAT(
               n.id, '|',
@@ -134,6 +153,7 @@ class SubstituicoesListController {
         )
         WHERE ${whereConditions.join(' AND ')}
         GROUP BY n.produto_id, n.produto, n.produto_unidade, n.semana_abastecimento, n.semana_consumo, n.grupo,
+                 COALESCE(n.grupo_id, ns.grupo_id),
                  COALESCE(ns.produto_generico_id, ''), COALESCE(ns.produto_generico_codigo, ''), 
                  COALESCE(ns.produto_generico_nome, ''), COALESCE(ns.produto_generico_unidade, '')
         ORDER BY n.produto ASC, COALESCE(ns.produto_generico_nome, '') ASC
@@ -208,7 +228,7 @@ class SubstituicoesListController {
             escola.substituicao = substituicao || null;
           });
 
-          const produtosGrupo = await buscarProdutosDoGrupo(necessidade.grupo);
+          const produtosGrupo = await buscarProdutosDoGrupo(necessidade.grupo_id, necessidade.grupo);
 
           return {
             ...necessidade,
@@ -470,7 +490,8 @@ class SubstituicoesListController {
             necessidade.semana_consumo
           ]);
 
-          const produtosGrupo = await buscarProdutosDoGrupo(necessidade.grupo);
+
+          const produtosGrupo = await buscarProdutosDoGrupo(necessidade.grupo_id, necessidade.grupo);
 
           return {
             ...necessidade,

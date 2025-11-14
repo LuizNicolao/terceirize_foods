@@ -400,11 +400,6 @@ const SubstituicoesTableNutricionista = ({
                           )}
                         </div>
                       </div>
-                      {!necessidade.substituicoes_existentes && (
-                        <p className="text-[11px] text-gray-500">
-                          Salve as substituições antes de trocar o produto origem.
-                        </p>
-                      )}
                       {necessidade.produto_trocado_nome && (
                         <p className="text-[11px] text-amber-700">
                           Original: {necessidade.produto_trocado_nome}
