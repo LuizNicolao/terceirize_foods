@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaChevronDown, FaChevronUp, FaSave, FaExchangeAlt, FaUndo } from 'react-icons/fa';
+import { FaChevronDown, FaChevronUp, FaSave, FaUndo } from 'react-icons/fa';
 import { Button, Input, SearchableSelect } from '../../../components/ui';
 import toast from 'react-hot-toast';
 
@@ -37,39 +37,6 @@ const SubstituicoesTableNutricionista = ({
     setSelectedProdutosOrigem(prev => ({ ...prev, [chaveOrigem]: valor }));
   };
 
-  const handleTrocarOrigem = async (necessidade) => {
-    if (!onTrocarProdutoOrigem) return;
-    if (!necessidade.substituicoes_existentes) {
-      toast.error('Salve as substituições antes de trocar o produto.');
-      return;
-    }
-
-    const chaveOrigem = getChaveOrigem(necessidade);
-    const selecionado = selectedProdutosOrigem[chaveOrigem];
-    if (!selecionado) {
-      toast.error('Selecione um produto para realizar a troca.');
-      return;
-    }
-
-    const [novoProdutoId, novoProdutoNome, novoProdutoUnidade] = selecionado.split('|');
-    if (!novoProdutoId) {
-      toast.error('Selecione um produto válido.');
-      return;
-    }
-
-    if (String(novoProdutoId) === String(necessidade.codigo_origem)) {
-      toast.error('Escolha um produto diferente do atual.');
-      return;
-    }
-
-    setTrocaLoading(prev => ({ ...prev, [chaveOrigem]: true }));
-    await onTrocarProdutoOrigem({
-      necessidade_ids: necessidade.escolas.map(escola => escola.necessidade_id),
-      novo_produto_id: novoProdutoId
-    });
-    setTrocaLoading(prev => ({ ...prev, [chaveOrigem]: false }));
-  };
-
   const handleDesfazerOrigem = async (necessidade) => {
     if (!onDesfazerTroca) return;
     const chaveOrigem = getChaveOrigem(necessidade);
@@ -78,6 +45,31 @@ const SubstituicoesTableNutricionista = ({
       necessidade_ids: necessidade.escolas.map(escola => escola.necessidade_id)
     });
     setTrocaLoading(prev => ({ ...prev, [chaveOrigem]: false }));
+  };
+
+  const processarTrocaProdutoOrigem = async (necessidade, necessidadeIdsOverride = null) => {
+    if (!onTrocarProdutoOrigem) return;
+    const chaveOrigem = getChaveOrigem(necessidade);
+    const selecionado = selectedProdutosOrigem[chaveOrigem];
+    if (!selecionado) return;
+
+    const [novoProdutoId] = selecionado.split('|');
+    if (!novoProdutoId || String(novoProdutoId) === String(necessidade.codigo_origem)) {
+      return;
+    }
+
+    const ids = necessidadeIdsOverride && necessidadeIdsOverride.length
+      ? necessidadeIdsOverride
+      : necessidade.escolas.map(escola => escola.necessidade_id);
+
+    if (!ids || ids.length === 0) {
+      return;
+    }
+
+    await onTrocarProdutoOrigem({
+      necessidade_ids: ids,
+      novo_produto_id: novoProdutoId
+    });
   };
 
   const handleProdutoGenericoChange = (codigo, valor, quantidadeOrigem) => {
@@ -209,6 +201,8 @@ const SubstituicoesTableNutricionista = ({
           produto.produto_padrao = (produto.id || produto.codigo) == produto_generico_id ? 'Sim' : 'Não';
         });
       }
+
+      await processarTrocaProdutoOrigem(necessidade);
     }
   };
 
@@ -267,6 +261,8 @@ const SubstituicoesTableNutricionista = ({
           [chaveUnica]: quantidadeCalculada 
         }));
       }
+
+      await processarTrocaProdutoOrigem(necessidade, [dados.necessidade_id]);
     }
   };
 
@@ -363,25 +359,6 @@ const SubstituicoesTableNutricionista = ({
                           />
                         </div>
                         <div className="flex items-center gap-1">
-                          <Button
-                            size="xs"
-                            variant="ghost"
-                            onClick={() => handleTrocarOrigem(necessidade)}
-                            disabled={
-                              !necessidade.substituicoes_existentes ||
-                              Boolean(necessidade.produto_trocado_id) ||
-                              trocaLoading[getChaveOrigem(necessidade)] ||
-                              !ajustesAtivados
-                            }
-                            className="p-2"
-                            title="Trocar produto origem"
-                          >
-                            {trocaLoading[getChaveOrigem(necessidade)] ? (
-                              <span className="text-[10px] text-gray-500">...</span>
-                            ) : (
-                              <FaExchangeAlt className="w-3.5 h-3.5 text-blue-600" />
-                            )}
-                          </Button>
                           {necessidade.produto_trocado_id && (
                             <Button
                               size="xs"
