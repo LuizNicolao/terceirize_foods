@@ -59,20 +59,29 @@ const SubstituicoesTableNutricionista = ({
     const produtosGrupo = necessidade.produtos_grupo || [];
     const produtoSelecionado = produtosGrupo.find(prod => String(prod.produto_id || prod.id || prod.codigo) === String(produtoId));
 
-    if (produtoSelecionado && produtoSelecionado.produto_generico_padrao) {
-      const { produto_generico_padrao } = produtoSelecionado;
-      const unidadePadrao = produto_generico_padrao.unidade_medida_sigla || produto_generico_padrao.unidade || produto_generico_padrao.unidade_medida || '';
-      const valorGenerico = `${produto_generico_padrao.id || produto_generico_padrao.codigo}|${produto_generico_padrao.nome}|${unidadePadrao}|${produto_generico_padrao.fator_conversao || 1}`;
+    const padrao = produtoSelecionado?.produto_generico_padrao || null;
 
-      setSelectedProdutosGenericos(prev => ({ ...prev, [chaveOrigem]: valorGenerico }));
-      setUndGenericos(prev => ({ ...prev, [chaveOrigem]: unidadePadrao }));
-
-      const fator = produto_generico_padrao.fator_conversao || 1;
-      if (necessidade.quantidade_total_origem && fator > 0) {
-        const quantidadeCalculada = Math.ceil(parseFloat(necessidade.quantidade_total_origem) / fator);
-        setQuantidadesGenericos(prev => ({ ...prev, [chaveOrigem]: quantidadeCalculada }));
-      }
+    if (!padrao) {
+      return;
     }
+
+    const unidadePadrao = padrao.unidade_medida_sigla || padrao.unidade_medida || padrao.unidade || '';
+    const valorGenerico = `${padrao.id || padrao.codigo}|${padrao.nome}|${unidadePadrao}|${padrao.fator_conversao || 1}`;
+
+    setSelectedProdutosGenericos(prev => ({ ...prev, [chaveOrigem]: valorGenerico }));
+    setUndGenericos(prev => ({ ...prev, [chaveOrigem]: unidadePadrao }));
+
+    const fator = padrao.fator_conversao || 1;
+    if (necessidade.quantidade_total_origem && fator > 0) {
+      const quantidadeCalculada = Math.ceil(parseFloat(necessidade.quantidade_total_origem) / fator);
+      setQuantidadesGenericos(prev => ({ ...prev, [chaveOrigem]: quantidadeCalculada }));
+    }
+
+    necessidade.escolas.forEach(escola => {
+      const chaveEscola = `${chaveOrigem}-${escola.escola_id}`;
+      setSelectedProdutosPorEscola(prev => ({ ...prev, [chaveEscola]: valorGenerico }));
+      escola.selectedProdutoGenerico = valorGenerico;
+    });
   };
 
   const handleDesfazerOrigem = async (necessidade) => {

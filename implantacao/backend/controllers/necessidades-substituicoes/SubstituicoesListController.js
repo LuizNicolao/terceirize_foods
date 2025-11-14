@@ -35,17 +35,38 @@ const buscarProdutosDoGrupo = async (grupoId, grupoNome) => {
         po.codigo AS produto_codigo,
         po.nome AS produto_nome,
         COALESCE(um.sigla, um.nome, '') AS unidade_medida,
-        po.grupo_id
+        po.grupo_id,
+        po.produto_generico_padrao_id,
+        pg.codigo AS produto_generico_padrao_codigo,
+        pg.nome AS produto_generico_padrao_nome,
+        pg.unidade_medida AS produto_generico_padrao_unidade,
+        pg.unidade_medida_sigla AS produto_generico_padrao_unidade_sigla,
+        pg.fator_conversao AS produto_generico_padrao_fator
       FROM foods_db.produto_origem po
       LEFT JOIN foods_db.unidades_medida um ON po.unidade_medida_id = um.id
+      LEFT JOIN produto_generico pg ON po.produto_generico_padrao_id = pg.id
       WHERE po.grupo_id = ? AND po.status = 1
       ORDER BY po.nome ASC
     `,
     [resolvedGrupoId]
   );
 
-  produtosGrupoCache[cacheKey] = produtos;
-  return produtos;
+  const mapped = produtos.map(produto => ({
+    ...produto,
+    produto_generico_padrao: produto.produto_generico_padrao_id
+      ? {
+          id: produto.produto_generico_padrao_id,
+          codigo: produto.produto_generico_padrao_codigo,
+          nome: produto.produto_generico_padrao_nome,
+          unidade_medida: produto.produto_generico_padrao_unidade,
+          unidade_medida_sigla: produto.produto_generico_padrao_unidade_sigla,
+          fator_conversao: produto.produto_generico_padrao_fator || 1
+        }
+      : null
+  }));
+
+  produtosGrupoCache[cacheKey] = mapped;
+  return mapped;
 };
 
 /**
