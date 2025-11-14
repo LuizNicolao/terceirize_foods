@@ -39,12 +39,12 @@ const buscarProdutosDoGrupo = async (grupoId, grupoNome) => {
         po.produto_generico_padrao_id,
         pg.codigo AS produto_generico_padrao_codigo,
         pg.nome AS produto_generico_padrao_nome,
-        pg.unidade_medida AS produto_generico_padrao_unidade,
-        pg.unidade_medida_sigla AS produto_generico_padrao_unidade_sigla,
+        COALESCE(um_pg.sigla, um_pg.nome, '') AS produto_generico_padrao_unidade,
         pg.fator_conversao AS produto_generico_padrao_fator
       FROM foods_db.produto_origem po
       LEFT JOIN foods_db.unidades_medida um ON po.unidade_medida_id = um.id
       LEFT JOIN foods_db.produto_generico pg ON po.produto_generico_padrao_id = pg.id
+      LEFT JOIN foods_db.unidades_medida um_pg ON pg.unidade_medida_id = um_pg.id
       WHERE po.grupo_id = ? AND po.status = 1
       ORDER BY po.nome ASC
     `,
