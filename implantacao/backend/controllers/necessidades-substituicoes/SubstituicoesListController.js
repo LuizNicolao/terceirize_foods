@@ -44,7 +44,7 @@ const buscarProdutosDoGrupo = async (grupoId, grupoNome) => {
         pg.fator_conversao AS produto_generico_padrao_fator
       FROM foods_db.produto_origem po
       LEFT JOIN foods_db.unidades_medida um ON po.unidade_medida_id = um.id
-      LEFT JOIN produto_generico pg ON po.produto_generico_padrao_id = pg.id
+      LEFT JOIN foods_db.produto_generico pg ON po.produto_generico_padrao_id = pg.id
       WHERE po.grupo_id = ? AND po.status = 1
       ORDER BY po.nome ASC
     `,
