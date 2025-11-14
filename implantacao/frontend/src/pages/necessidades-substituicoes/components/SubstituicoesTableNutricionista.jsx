@@ -52,11 +52,13 @@ const SubstituicoesTableNutricionista = ({
     const genericosIniciais = {};
     const unidadesIniciais = {};
     const quantidadesIniciais = {};
+    const mapaProdutosPadrao = {};
 
     necessidades.forEach((necessidade) => {
       const chaveOrigem = getChaveOrigem(necessidade);
       const unidade = necessidade.produto_origem_unidade || '';
       valoresIniciais[chaveOrigem] = `${necessidade.codigo_origem}|${necessidade.produto_origem_nome}|${unidade}`;
+      mapaProdutosPadrao[chaveOrigem] = false;
 
       if (necessidade.produto_generico_id) {
         const valorGenerico = `${necessidade.produto_generico_id}|${necessidade.produto_generico_nome}|${necessidade.produto_generico_unidade || ''}|1`;
@@ -69,6 +71,7 @@ const SubstituicoesTableNutricionista = ({
     setSelectedProdutosGenericos(prev => ({ ...genericosIniciais, ...prev }));
     setUndGenericos(prev => ({ ...unidadesIniciais, ...prev }));
     setQuantidadesGenericos(prev => ({ ...quantidadesIniciais, ...prev }));
+    setProdutosPadraoSelecionados(mapaProdutosPadrao);
   }, [necessidades]);
   const handleProdutoOrigemChange = (chaveOrigem, valor) => {
     setSelectedProdutosOrigem(prev => ({ ...prev, [chaveOrigem]: valor }));
@@ -334,10 +337,10 @@ const SubstituicoesTableNutricionista = ({
       
       if (necessidade.quantidade_total_origem && fatorConversao > 0) {
         const quantidadeCalculada = Math.ceil(parseFloat(necessidade.quantidade_total_origem) / fatorConversao);
-      setQuantidadesGenericos(prev => ({ 
-        ...prev, 
+        setQuantidadesGenericos(prev => ({ 
+          ...prev, 
         [chaveOrigem]: quantidadeCalculada 
-      }));
+        }));
       }
 
       await processarTrocaProdutoOrigem(necessidade, [dados.necessidade_id]);
