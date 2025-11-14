@@ -10,11 +10,11 @@ import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
 import { 
   ReceitaModal, 
-  ReceitaTable, 
+  ReceitaTable,
   ReceitaStats,
   ReceitaPreviewModal,
   ReceitaUploadModal
-} from '../../components/receitas';
+} from '../../components/cardapios';
 import { AuditModal, ExportButtons } from '../../components/shared';
 
 const Receitas = () => {
@@ -47,7 +47,6 @@ const Receitas = () => {
     onSubmit,
     handleDeleteReceita,
     confirmDeleteReceita,
-    handleAddReceita,
     handleDuplicateReceita,
     handleViewReceita,
     handleEditReceita,
@@ -120,13 +119,6 @@ const Receitas = () => {
               <span className="sm:hidden">PDF</span>
             </Button>
           )}
-          {canCreate('receitas') && (
-            <Button onClick={handleAddReceita} size="sm">
-              <FaPlus className="mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">Nova Receita</span>
-              <span className="sm:hidden">Nova</span>
-            </Button>
-          )}
         </div>
       </div>
 
@@ -176,7 +168,7 @@ const Receitas = () => {
         onItemsPerPageChange={handleItemsPerPageChange}
       />
 
-      {/* Modal de Cardápio */}
+      {/* Modal de Preview */}
       <ReceitaModal
         isOpen={showModal}
         onClose={handleCloseModal}
@@ -185,8 +177,6 @@ const Receitas = () => {
         isViewMode={viewMode}
       />
 
-
-      {/* Modal de Preview */}
       <ReceitaPreviewModal
         isOpen={showPreviewModal}
         onClose={handleClosePreviewModal}

@@ -31,7 +31,7 @@ import TiposCardapio from './pages/tipos-cardapio/TiposCardapio';
 import PeriodosRefeicao from './pages/periodos-refeicao/PeriodosRefeicao';
 import Periodicidade from './pages/periodicidade/Periodicidade';
 import FaturamentoPage from './pages/faturamento/FaturamentoPage';
-import Receitas from './pages/receitas/Receitas';
+import Receitas from './pages/cardapios/Receitas';
 import NecessidadesMerenda from './pages/necessidades-merenda/NecessidadesMerenda';
 import PlanoAmostragem from './pages/plano-amostragem/PlanoAmostragem';
 import RelatorioInspecao from './pages/relatorio-inspecao/RelatorioInspecao';
