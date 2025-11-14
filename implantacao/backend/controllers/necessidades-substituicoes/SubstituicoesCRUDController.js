@@ -498,10 +498,10 @@ class SubstituicoesCRUDController {
         );
 
         if (!produtoOrigemFallback) {
-          return res.status(404).json({
-            success: false,
-            message: 'Produto selecionado não encontrado.'
-          });
+        return res.status(404).json({
+          success: false,
+          message: 'Produto selecionado não encontrado.'
+        });
         }
 
         novoProduto = produtoOrigemFallback;
