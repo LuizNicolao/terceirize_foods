@@ -68,9 +68,9 @@ const SubstituicoesTableNutricionista = ({
       }
     });
     setSelectedProdutosOrigem(valoresIniciais);
-    setSelectedProdutosGenericos(prev => ({ ...genericosIniciais, ...prev }));
-    setUndGenericos(prev => ({ ...unidadesIniciais, ...prev }));
-    setQuantidadesGenericos(prev => ({ ...quantidadesIniciais, ...prev }));
+    setSelectedProdutosGenericos(prev => ({ ...prev, ...genericosIniciais }));
+    setUndGenericos(prev => ({ ...prev, ...unidadesIniciais }));
+    setQuantidadesGenericos(prev => ({ ...prev, ...quantidadesIniciais }));
     setProdutosPadraoSelecionados(mapaProdutosPadrao);
   }, [necessidades]);
   const handleProdutoOrigemChange = (chaveOrigem, valor) => {
