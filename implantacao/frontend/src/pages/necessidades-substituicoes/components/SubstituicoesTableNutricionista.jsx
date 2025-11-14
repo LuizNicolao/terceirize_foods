@@ -69,7 +69,7 @@ const SubstituicoesTableNutricionista = ({
     });
 
     setSelectedProdutosOrigem(valoresIniciais);
-    setSelecionadosByOrigem(genericosIniciais);
+    setSelectedProdutosGenericos(genericosIniciais);
     setUndGenericos(unidadesIniciais);
     setQuantidadesGenericos(quantidadesIniciais);
     setProdutosPadraoSelecionados(mapaProdutosPadrao);
