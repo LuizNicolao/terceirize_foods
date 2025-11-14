@@ -206,108 +206,89 @@ class SubstituicoesListController {
       // Buscar necessidades agrupadas por produto origem + produto genérico
       const necessidades = await executeQuery(`
         SELECT 
-          dados.codigo_origem,
-          dados.produto_origem_nome,
-          dados.produto_origem_unidade,
-          dados.produto_trocado_id,
-          dados.produto_trocado_nome,
-          dados.produto_trocado_unidade,
-          dados.produto_generico_id,
-          dados.produto_generico_codigo,
-          dados.produto_generico_nome,
-          dados.produto_generico_unidade,
-          dados.quantidade_total_origem,
-          dados.necessidade_ids,
-          dados.semana_abastecimento,
-          dados.semana_consumo,
-          dados.grupo,
-          dados.grupo_id,
-          dados.escolas_solicitantes
-        FROM (
-          SELECT 
-            ns.produto_origem_id AS codigo_origem,
-            ns.produto_origem_nome,
-            ns.produto_origem_unidade,
-            ns.produto_trocado_id,
-            ns.produto_trocado_nome,
-            ns.produto_trocado_unidade,
-            MAX(ns.produto_generico_id) AS produto_generico_id,
-            MAX(ns.produto_generico_codigo) AS produto_generico_codigo,
-            MAX(ns.produto_generico_nome) AS produto_generico_nome,
-            MAX(ns.produto_generico_unidade) AS produto_generico_unidade,
-            SUM(ns.quantidade_origem) AS quantidade_total_origem,
-            GROUP_CONCAT(ns.necessidade_id) AS necessidade_ids,
-            ns.semana_abastecimento,
-            ns.semana_consumo,
-            ns.grupo,
-            ns.grupo_id,
-            GROUP_CONCAT(
-              DISTINCT CONCAT(
-                ns.necessidade_id, '|',
-                ns.escola_id, '|',
-                ns.escola_nome, '|',
-                ns.quantidade_origem
-              ) SEPARATOR '::'
-            ) as escolas_solicitantes
-          FROM necessidades_substituicoes ns
-          INNER JOIN necessidades n ON n.id = ns.necessidade_id
-          WHERE ns.ativo = 1 
-            AND (ns.status IS NULL OR ns.status = 'conf')
-            AND ${whereConditions.join(' AND ')}
-          GROUP BY 
-            ns.produto_origem_id,
-            ns.produto_origem_nome,
-            ns.produto_origem_unidade,
-            ns.produto_trocado_id,
-            ns.produto_trocado_nome,
-            ns.produto_trocado_unidade,
-            ns.semana_abastecimento,
-            ns.semana_consumo,
-            ns.grupo,
-            ns.grupo_id
-          
-          UNION ALL
-          
-          SELECT 
-            n.produto_id AS codigo_origem,
-            n.produto AS produto_origem_nome,
-            n.produto_unidade AS produto_origem_unidade,
-            NULL AS produto_trocado_id,
-            '' AS produto_trocado_nome,
-            '' AS produto_trocado_unidade,
-            NULL AS produto_generico_id,
-            NULL AS produto_generico_codigo,
-            NULL AS produto_generico_nome,
-            NULL AS produto_generico_unidade,
-            SUM(n.ajuste_conf_coord) AS quantidade_total_origem,
-            GROUP_CONCAT(n.necessidade_id) AS necessidade_ids,
-            n.semana_abastecimento,
-            n.semana_consumo,
-            n.grupo,
-            n.grupo_id,
-            GROUP_CONCAT(
-              DISTINCT CONCAT(
-                n.id, '|',
-                n.escola_id, '|',
-                n.escola, '|',
-                n.ajuste_conf_coord
-              ) SEPARATOR '::'
-            ) as escolas_solicitantes
-          FROM necessidades n
-          WHERE ${whereConditions.join(' AND ')}
-            AND NOT EXISTS (
-              SELECT 1 
-              FROM necessidades_substituicoes ns2 
-              WHERE ns2.necessidade_id = n.id 
-                AND ns2.ativo = 1 
-                AND (ns2.status IS NULL OR ns2.status = 'conf')
-            )
-          GROUP BY 
-            n.produto_id, n.produto, n.produto_unidade, 
-            n.semana_abastecimento, n.semana_consumo, 
-            n.grupo, n.grupo_id
-        ) dados
-        ORDER BY dados.produto_origem_nome ASC, dados.semana_abastecimento ASC
+          ns.produto_origem_id AS codigo_origem,
+          ns.produto_origem_nome,
+          ns.produto_origem_unidade,
+          ns.produto_trocado_id,
+          ns.produto_trocado_nome,
+          ns.produto_trocado_unidade,
+          MAX(ns.produto_generico_id) AS produto_generico_id,
+          MAX(ns.produto_generico_codigo) AS produto_generico_codigo,
+          MAX(ns.produto_generico_nome) AS produto_generico_nome,
+          MAX(ns.produto_generico_unidade) AS produto_generico_unidade,
+          SUM(ns.quantidade_origem) AS quantidade_total_origem,
+          GROUP_CONCAT(ns.necessidade_id) AS necessidade_ids,
+          ns.semana_abastecimento,
+          ns.semana_consumo,
+          ns.grupo,
+          ns.grupo_id,
+          GROUP_CONCAT(
+            DISTINCT CONCAT(
+              ns.necessidade_id, '|',
+              ns.escola_id, '|',
+              ns.escola_nome, '|',
+              ns.quantidade_origem
+            ) SEPARATOR '::'
+          ) as escolas_solicitantes
+        FROM necessidades_substituicoes ns
+        INNER JOIN necessidades n ON n.id = ns.necessidade_id
+        WHERE ns.ativo = 1 
+          AND (ns.status IS NULL OR ns.status = 'conf')
+          AND ${whereConditions.join(' AND ')}
+        GROUP BY 
+          ns.produto_origem_id,
+          ns.produto_origem_nome,
+          ns.produto_origem_unidade,
+          ns.produto_trocado_id,
+          ns.produto_trocado_nome,
+          ns.produto_trocado_unidade,
+          ns.semana_abastecimento,
+          ns.semana_consumo,
+          ns.grupo,
+          ns.grupo_id
+        
+        UNION ALL
+        
+        SELECT 
+          n.produto_id AS codigo_origem,
+          n.produto AS produto_origem_nome,
+          n.produto_unidade AS produto_origem_unidade,
+          NULL AS produto_trocado_id,
+          '' AS produto_trocado_nome,
+          '' AS produto_trocado_unidade,
+          NULL AS produto_generico_id,
+          NULL AS produto_generico_codigo,
+          NULL AS produto_generico_nome,
+          NULL AS produto_generico_unidade,
+          SUM(n.ajuste_conf_coord) AS quantidade_total_origem,
+          GROUP_CONCAT(n.necessidade_id) AS necessidade_ids,
+          n.semana_abastecimento,
+          n.semana_consumo,
+          n.grupo,
+          n.grupo_id,
+          GROUP_CONCAT(
+            DISTINCT CONCAT(
+              n.id, '|',
+              n.escola_id, '|',
+              n.escola, '|',
+              n.ajuste_conf_coord
+            ) SEPARATOR '::'
+          ) as escolas_solicitantes
+        FROM necessidades n
+        WHERE ${whereConditions.join(' AND ')}
+          AND NOT EXISTS (
+            SELECT 1 
+            FROM necessidades_substituicoes ns2 
+            WHERE ns2.necessidade_id = n.id 
+              AND ns2.ativo = 1 
+              AND (ns2.status IS NULL OR ns2.status = 'conf')
+          )
+        GROUP BY 
+          n.produto_id, n.produto, n.produto_unidade, 
+          n.semana_abastecimento, n.semana_consumo, 
+          n.grupo, n.grupo_id
+        ORDER BY 
+          codigo_origem ASC, semana_abastecimento ASC
       `, params);
 
       // Buscar substituições existentes para cada produto
