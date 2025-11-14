@@ -362,7 +362,7 @@ class SubstituicoesCRUDController {
           `
             SELECT 
               n.id AS necessidade_id,
-              COALESCE(n.necessidade_id, n.id) AS necessidade_id_grupo,
+              COALESCE(n.necessidade_id_grupo, n.id) AS necessidade_id_grupo,
               n.produto_id AS produto_origem_id,
               n.produto AS produto_origem_nome,
               n.produto_unidade AS produto_origem_unidade,
@@ -426,7 +426,7 @@ class SubstituicoesCRUDController {
               necessidade.semana_consumo,
               necessidade.grupo,
               necessidade.grupo_id,
-              req.user.id
+              req.user?.id || null
             ]
           );
         }
