@@ -312,7 +312,7 @@ class SubstituicoesListController {
           base.grupo,
           base.grupo_id
         ORDER BY base.produto_origem_nome ASC, base.semana_abastecimento ASC
-      `, [...params, ...paramsSemSubstituicao]);
+      `, [...paramsSemSubstituicao, ...params]);
 
       // Buscar substituições existentes para cada produto
       const produtosComSubstituicoes = await Promise.all(
