@@ -97,12 +97,20 @@ const importarExcel = async (req, res) => {
 
     // Processar arquivo Excel
     const workbook = new ExcelJS.Workbook();
+    console.log('📥 [ImportPerCapita] Lendo arquivo Excel recebido...');
     await workbook.xlsx.load(req.file.buffer);
     
     const worksheet = workbook.getWorksheet(1);
     if (!worksheet) {
       return errorResponse(res, 'Planilha não encontrada no arquivo', 400);
     }
+
+    console.log('📊 [ImportPerCapita] Planilha detectada com', worksheet.rowCount, 'linhas (incluindo cabeçalho)');
+    const headers = [];
+    worksheet.getRow(1).eachCell((cell, colNumber) => {
+      headers.push({ col: colNumber, header: cell.value });
+    });
+    console.log('🔎 [ImportPerCapita] Cabeçalho lido:', headers);
 
     const resultados = {
       sucesso: [],
@@ -115,6 +123,10 @@ const importarExcel = async (req, res) => {
     
     for (let rowNumber = 2; rowNumber <= totalRows; rowNumber++) {
       const row = worksheet.getRow(rowNumber);
+      if (!row || row.cellCount === 0 || row.actualCellCount === 0) {
+        console.log(`⚠️ [ImportPerCapita] Linha ${rowNumber} está vazia. Pulando...`);
+        continue;
+      }
       
       resultados.total++;
 
@@ -127,6 +139,8 @@ const importarExcel = async (req, res) => {
             valores[header] = cell.value;
           }
         });
+
+        console.log(`📝 [ImportPerCapita] Linha ${rowNumber} valores extraídos:`, valores);
 
         // Extrair valores (apenas campos essenciais)
         const produto_id = valores.produto_id ? parseInt(valores.produto_id) : null;
