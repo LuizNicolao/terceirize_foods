@@ -465,6 +465,7 @@ const SubstituicoesTableNutricionista = ({
                               option.label.toLowerCase().includes(searchTerm.toLowerCase())
                             }
                             className="text-xs"
+                            usePortal={false}
                           />
                         </div>
                         <div className="flex items-center gap-1">
@@ -535,6 +536,7 @@ const SubstituicoesTableNutricionista = ({
                         filterBy={(option, searchTerm) => {
                           return option.label.toLowerCase().includes(searchTerm.toLowerCase());
                         }}
+                        usePortal={false}
                       />
                     </div>
                   </td>
@@ -616,40 +618,29 @@ const SubstituicoesTableNutricionista = ({
                                     {codigoProduto}
                                   </td>
                                   <td className="px-4 py-2 whitespace-nowrap">
-                                    <div className="flex items-center gap-2">
-                                      <SearchableSelect
-                                        value={selectedProdutosOrigemPorEscola[chaveEscola] || origemInicialPorEscola[chaveEscola] || ''}
-                                        onChange={(value) => {
-                                          setSelectedProdutosOrigemPorEscola(prev => ({ ...prev, [chaveEscola]: value }));
-                                        }}
-                                        options={(necessidade.produtos_grupo || []).map(produto => {
-                                          const id = produto.produto_id || produto.id || produto.codigo;
-                                          const nome = produto.produto_nome || produto.nome;
-                                          const unidade = produto.unidade_medida || produto.unidade || '';
-                                          return {
-                                            value: `${id}|${nome}|${unidade}`,
-                                            label: nome,
-                                            description: unidade
-                                          };
-                                        })}
-                                        placeholder="Produto origem..."
-                                        disabled={!ajustesAtivados}
-                                        className="text-xs"
-                                        filterBy={(option, searchTerm) =>
-                                          option.label.toLowerCase().includes(searchTerm.toLowerCase())
-                                        }
-                                      />
-                                      {ajustesAtivados && (
-                                        <Button
-                                          size="xs"
-                                          variant="ghost"
-                                          onClick={() => handleTrocaOrigemIndividual(necessidade, escola)}
-                                          disabled={trocaLoading[`${chaveEscola}-origem`]}
-                                        >
-                                          {trocaLoading[`${chaveEscola}-origem`] ? '...' : 'Trocar'}
-                                        </Button>
-                                      )}
-                                    </div>
+                                    <SearchableSelect
+                                      value={selectedProdutosOrigemPorEscola[chaveEscola] || origemInicialPorEscola[chaveEscola] || selectedProdutosOrigem[chaveOrigem] || ''}
+                                      onChange={(value) => {
+                                        setSelectedProdutosOrigemPorEscola(prev => ({ ...prev, [chaveEscola]: value }));
+                                      }}
+                                      options={(necessidade.produtos_grupo || []).map(produto => {
+                                        const id = produto.produto_id || produto.id || produto.codigo;
+                                        const nome = produto.produto_nome || produto.nome;
+                                        const unidade = produto.unidade_medida || produto.unidade || '';
+                                        return {
+                                          value: `${id}|${nome}|${unidade}`,
+                                          label: nome,
+                                          description: unidade
+                                        };
+                                      })}
+                                      placeholder="Produto origem..."
+                                      disabled={!ajustesAtivados}
+                                      className="text-xs"
+                                      filterBy={(option, searchTerm) =>
+                                        option.label.toLowerCase().includes(searchTerm.toLowerCase())
+                                      }
+                                      usePortal={false}
+                                    />
                                   </td>
                                   <td className="px-4 py-2 whitespace-nowrap relative z-10">
                                     <div className="relative z-10">
@@ -671,6 +662,7 @@ const SubstituicoesTableNutricionista = ({
                                         filterBy={(option, searchTerm) => {
                                           return option.label.toLowerCase().includes(searchTerm.toLowerCase());
                                         }}
+                                        usePortal={false}
                                       />
                                     </div>
                                   </td>
