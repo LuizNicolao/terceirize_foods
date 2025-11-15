@@ -201,19 +201,12 @@ const SubstituicoesTableNutricionista = ({
     const chaveOrigem = getChaveOrigem(necessidade);
     const chaveEscola = `${chaveOrigem}-${escola.escola_id}`;
 
-    console.log('[Substituicoes] handleProdutoOrigemIndividualChange', {
-      chaveOrigem,
-      chaveEscola,
-      valorRecebido: valor
-    });
-
     setSelectedProdutosOrigemPorEscola(prev => ({
       ...prev,
       [chaveEscola]: valor || ''
     }));
 
     if (!valor) {
-      console.log('[Substituicoes] valor vazio para origem individual, aplicando fallback');
       const fallbackValor = selectedProdutosGenericos[chaveOrigem] || '';
       setSelectedProdutosPorEscola(prev => ({
         ...prev,
@@ -251,11 +244,6 @@ const SubstituicoesTableNutricionista = ({
     }));
     escola.selectedProdutoGenerico = valorGenerico;
 
-    console.log('[Substituicoes] origem individual atualizada', {
-      chaveEscola,
-      novoProdutoOrigem: valor,
-      produtoGenericoPadrao: valorGenerico
-    });
   };
 
   // Pré-selecionar produto padrão ou produto já salvo quando produtos genéricos forem carregados
@@ -675,7 +663,22 @@ const SubstituicoesTableNutricionista = ({
                               const unidadeProduto = partes[2] || '';
                               const fatorConversao = partes.length >= 4 ? parseFloat(partes[3]) : 0;
                               const produtoOrigemEscolaId = valorOrigemAtual?.split('|')[0];
-                              const opcoesGenericos = produtosGenericos[produtoOrigemEscolaId] || produtosGenericos[produtoOrigemAtualId] || [];
+                              const opcoesGenericosBase = produtosGenericos[produtoOrigemEscolaId] || produtosGenericos[produtoOrigemAtualId] || [];
+                              const opcoesGenericos = [...opcoesGenericosBase];
+                              if (
+                                produtoSelecionado &&
+                                !opcoesGenericos.some(opt => `${opt.id || opt.codigo}` === codigoProduto)
+                              ) {
+                                opcoesGenericos.unshift({
+                                  id: codigoProduto,
+                                  codigo: codigoProduto,
+                                  nome: nomeProduto || 'Produto selecionado',
+                                  unidade: unidadeProduto,
+                                  unidade_medida: unidadeProduto,
+                                  unidade_medida_sigla: unidadeProduto,
+                                  fator_conversao: partes.length >= 4 ? parseFloat(partes[3]) : 1
+                                });
+                              }
                               
                               const quantidadeGenerica = produtoSelecionado && fatorConversao > 0 && escola.quantidade_origem 
                                 ? Math.ceil(parseFloat(escola.quantidade_origem) / fatorConversao)
