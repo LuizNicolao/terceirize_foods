@@ -207,11 +207,12 @@ const SubstituicoesTableNutricionista = ({
     }));
 
     if (!valor) {
+      const fallbackValor = selectedProdutosGenericos[chaveOrigem] || '';
       setSelectedProdutosPorEscola(prev => ({
         ...prev,
-        [chaveEscola]: ''
+        [chaveEscola]: fallbackValor
       }));
-      escola.selectedProdutoGenerico = '';
+      escola.selectedProdutoGenerico = fallbackValor;
       return;
     }
 
@@ -681,7 +682,6 @@ const SubstituicoesTableNutricionista = ({
                                     <SearchableSelect
                                       value={valorOrigemAtual || ''}
                                       onChange={(value) => handleProdutoOrigemIndividualChange(necessidade, escola, value)}
-                                      showClearButton={ajustesAtivados}
                                       options={(() => {
                                         const baseOptions = (necessidade.produtos_grupo || []).map(produto => {
                                           const id = produto.produto_id || produto.id || produto.codigo;
