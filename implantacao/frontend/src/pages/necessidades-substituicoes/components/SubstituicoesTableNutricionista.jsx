@@ -149,14 +149,24 @@ const SubstituicoesTableNutricionista = ({
     setTrocaLoading(prev => ({ ...prev, [chaveOrigem]: false }));
   };
 
-  const processarTrocaProdutoOrigem = async (necessidade, necessidadeIdsOverride = null, produtoOrigemOverride = null) => {
+  const processarTrocaProdutoOrigem = async (
+    necessidade,
+    necessidadeIdsOverride = null,
+    produtoOrigemOverride = null,
+    options = {}
+  ) => {
+    const { permitirMesmoProduto = false } = options;
     if (!onTrocarProdutoOrigem) return;
     const chaveOrigem = getChaveOrigem(necessidade);
     const selecionado = produtoOrigemOverride || selectedProdutosOrigem[chaveOrigem];
     if (!selecionado) return;
 
     const [novoProdutoId] = selecionado.split('|');
-    if (!novoProdutoId || String(novoProdutoId) === String(necessidade.codigo_origem)) {
+    if (!novoProdutoId) {
+      return;
+    }
+
+    if (!permitirMesmoProduto && String(novoProdutoId) === String(necessidade.codigo_origem)) {
       return;
     }
 
@@ -412,7 +422,12 @@ const SubstituicoesTableNutricionista = ({
         }));
       }
 
-      await processarTrocaProdutoOrigem(necessidade, [dados.necessidade_id], origemSelecionada);
+      await processarTrocaProdutoOrigem(
+        necessidade,
+        [dados.necessidade_id],
+        origemSelecionada,
+        { permitirMesmoProduto: true }
+      );
 
       if (origemSelecionada) {
         setOrigemInicialPorEscola(prev => ({ ...prev, [chaveEscola]: origemSelecionada }));
