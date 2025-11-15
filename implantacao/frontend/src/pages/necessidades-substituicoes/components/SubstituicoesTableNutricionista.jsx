@@ -377,9 +377,9 @@ const SubstituicoesTableNutricionista = ({
     const [produto_generico_id, produto_generico_nome, produto_generico_unidade] = partes;
     const chaveEscola = `${chaveOrigem}-${escola.escola_id}`;
     const origemSelecionada =
-      selectedProdutosOrigemPorEscola[chaveEscola] ||
-      origemInicialPorEscola[chaveEscola] ||
-      selectedProdutosOrigem[chaveOrigem] ||
+      (selectedProdutosOrigemPorEscola[chaveEscola] ??
+        origemInicialPorEscola[chaveEscola] ??
+        selectedProdutosOrigem[chaveOrigem]) ??
       `${necessidade.codigo_origem}|${necessidade.produto_origem_nome}|${necessidade.produto_origem_unidade || ''}`;
     const [produto_origem_id, produto_origem_nome, produto_origem_unidade] = origemSelecionada
       ? origemSelecionada.split('|')
@@ -660,10 +660,11 @@ const SubstituicoesTableNutricionista = ({
                           <tbody className="bg-white divide-y divide-gray-200">
                             {necessidade.escolas.map((escola, idx) => {
                               const chaveEscola = `${chaveOrigem}-${escola.escola_id}`;
-                              const valorOrigemAtual = selectedProdutosOrigemPorEscola[chaveEscola]
-                                || origemInicialPorEscola[chaveEscola]
-                                || selectedProdutosOrigem[chaveOrigem]
-                                || `${necessidade.codigo_origem}|${necessidade.produto_origem_nome}|${necessidade.produto_origem_unidade || ''}`;
+                              const valorOrigemAtual =
+                                (selectedProdutosOrigemPorEscola[chaveEscola] ??
+                                  origemInicialPorEscola[chaveEscola] ??
+                                  selectedProdutosOrigem[chaveOrigem]) ??
+                                `${necessidade.codigo_origem}|${necessidade.produto_origem_nome}|${necessidade.produto_origem_unidade || ''}`;
 
                               const produtoSelecionado = selectedProdutosPorEscola[chaveEscola] || (escola.substituicao ? 
                                 `${escola.substituicao.produto_generico_id}|${escola.substituicao.produto_generico_nome}|${escola.substituicao.produto_generico_unidade || ''}` 
