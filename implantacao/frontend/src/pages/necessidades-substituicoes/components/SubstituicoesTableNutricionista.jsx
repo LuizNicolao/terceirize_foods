@@ -149,24 +149,14 @@ const SubstituicoesTableNutricionista = ({
     setTrocaLoading(prev => ({ ...prev, [chaveOrigem]: false }));
   };
 
-  const processarTrocaProdutoOrigem = async (
-    necessidade,
-    necessidadeIdsOverride = null,
-    produtoOrigemOverride = null,
-    options = {}
-  ) => {
-    const { permitirMesmoProduto = false } = options;
+  const processarTrocaProdutoOrigem = async (necessidade, necessidadeIdsOverride = null, produtoOrigemOverride = null) => {
     if (!onTrocarProdutoOrigem) return;
     const chaveOrigem = getChaveOrigem(necessidade);
     const selecionado = produtoOrigemOverride || selectedProdutosOrigem[chaveOrigem];
     if (!selecionado) return;
 
     const [novoProdutoId] = selecionado.split('|');
-    if (!novoProdutoId) {
-      return;
-    }
-
-    if (!permitirMesmoProduto && String(novoProdutoId) === String(necessidade.codigo_origem)) {
+    if (!novoProdutoId || String(novoProdutoId) === String(necessidade.codigo_origem)) {
       return;
     }
 
@@ -217,6 +207,11 @@ const SubstituicoesTableNutricionista = ({
     }));
 
     if (!valor) {
+      setSelectedProdutosPorEscola(prev => ({
+        ...prev,
+        [chaveEscola]: ''
+      }));
+      escola.selectedProdutoGenerico = '';
       return;
     }
 
@@ -422,12 +417,7 @@ const SubstituicoesTableNutricionista = ({
         }));
       }
 
-      await processarTrocaProdutoOrigem(
-        necessidade,
-        [dados.necessidade_id],
-        origemSelecionada,
-        { permitirMesmoProduto: true }
-      );
+      await processarTrocaProdutoOrigem(necessidade, [dados.necessidade_id], origemSelecionada);
 
       if (origemSelecionada) {
         setOrigemInicialPorEscola(prev => ({ ...prev, [chaveEscola]: origemSelecionada }));
@@ -691,6 +681,7 @@ const SubstituicoesTableNutricionista = ({
                                     <SearchableSelect
                                       value={valorOrigemAtual || ''}
                                       onChange={(value) => handleProdutoOrigemIndividualChange(necessidade, escola, value)}
+                                      showClearButton={ajustesAtivados}
                                       options={(() => {
                                         const baseOptions = (necessidade.produtos_grupo || []).map(produto => {
                                           const id = produto.produto_id || produto.id || produto.codigo;
