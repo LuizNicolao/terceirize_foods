@@ -22,7 +22,9 @@ const SubstituicoesTableNutricionista = ({
   const [produtosPadraoSelecionados, setProdutosPadraoSelecionados] = useState({});
   const [selectedProdutosPorEscola, setSelectedProdutosPorEscola] = useState({});
   const [selectedProdutosOrigem, setSelectedProdutosOrigem] = useState({});
+  const [selectedProdutosOrigemPorEscola, setSelectedProdutosOrigemPorEscola] = useState({});
   const [trocaLoading, setTrocaLoading] = useState({});
+  const [origemInicialPorEscola, setOrigemInicialPorEscola] = useState({});
   const getChaveOrigem = (necessidade) => `${necessidade.codigo_origem}_${necessidade.semana_abastecimento}_${necessidade.semana_consumo}`;
 
   const getProdutoOrigemSelecionadoInfo = (necessidade) => {
@@ -53,12 +55,19 @@ const SubstituicoesTableNutricionista = ({
     const unidadesIniciais = {};
     const quantidadesIniciais = {};
     const mapaProdutosPadrao = {};
+    const origemEscolasIniciais = {};
 
     necessidades.forEach((necessidade) => {
       const chaveOrigem = getChaveOrigem(necessidade);
       const unidade = necessidade.produto_origem_unidade || '';
       valoresIniciais[chaveOrigem] = `${necessidade.codigo_origem}|${necessidade.produto_origem_nome}|${unidade}`;
       mapaProdutosPadrao[chaveOrigem] = false;
+      const valorOrigem = `${necessidade.codigo_origem}|${necessidade.produto_origem_nome}|${unidade}`;
+      
+      necessidade.escolas.forEach(escola => {
+        const chaveEscola = `${chaveOrigem}-${escola.escola_id}`;
+        origemEscolasIniciais[chaveEscola] = valorOrigem;
+      });
 
       if (necessidade.produto_generico_id) {
         const valorGenerico = `${necessidade.produto_generico_id}|${necessidade.produto_generico_nome}|${necessidade.produto_generico_unidade || ''}|1`;
@@ -73,6 +82,8 @@ const SubstituicoesTableNutricionista = ({
     setUndGenericos(unidadesIniciais);
     setQuantidadesGenericos(quantidadesIniciais);
     setProdutosPadraoSelecionados(mapaProdutosPadrao);
+    setSelectedProdutosOrigemPorEscola(origemEscolasIniciais);
+    setOrigemInicialPorEscola(origemEscolasIniciais);
   }, [necessidades]);
   const handleProdutoOrigemChange = (chaveOrigem, valor) => {
     setSelectedProdutosOrigem(prev => ({ ...prev, [chaveOrigem]: valor }));
@@ -126,10 +137,10 @@ const SubstituicoesTableNutricionista = ({
     setTrocaLoading(prev => ({ ...prev, [chaveOrigem]: false }));
   };
 
-  const processarTrocaProdutoOrigem = async (necessidade, necessidadeIdsOverride = null) => {
+  const processarTrocaProdutoOrigem = async (necessidade, necessidadeIdsOverride = null, produtoOrigemOverride = null) => {
     if (!onTrocarProdutoOrigem) return;
     const chaveOrigem = getChaveOrigem(necessidade);
-    const selecionado = selectedProdutosOrigem[chaveOrigem];
+    const selecionado = produtoOrigemOverride || selectedProdutosOrigem[chaveOrigem];
     if (!selecionado) return;
 
     const [novoProdutoId] = selecionado.split('|');
@@ -172,6 +183,32 @@ const SubstituicoesTableNutricionista = ({
         setQuantidadesGenericos(prev => ({ ...prev, [codigo]: quantidadeCalculada }));
       }
     }
+  };
+
+  const handleTrocaOrigemIndividual = async (necessidade, escola) => {
+    if (!onTrocarProdutoOrigem) return;
+    const chaveOrigem = getChaveOrigem(necessidade);
+    const chaveEscola = `${chaveOrigem}-${escola.escola_id}`;
+    const selecionado = selectedProdutosOrigemPorEscola[chaveEscola] || origemInicialPorEscola[chaveEscola];
+
+    if (!selecionado) {
+      toast.error('Selecione um produto origem para trocar.');
+      return;
+    }
+
+    const [novoProdutoId] = selecionado.split('|');
+    if (!novoProdutoId || String(novoProdutoId) === String(necessidade.codigo_origem)) {
+      toast.error('Selecione um produto origem diferente para aplicar a troca.');
+      return;
+    }
+
+    const loadingKey = `${chaveEscola}-origem`;
+    setTrocaLoading(prev => ({ ...prev, [loadingKey]: true }));
+
+    await processarTrocaProdutoOrigem(necessidade, [escola.necessidade_id], selecionado);
+
+    setTrocaLoading(prev => ({ ...prev, [loadingKey]: false }));
+    toast.success('Produto origem atualizado para a escola selecionada.');
   };
 
   // Pré-selecionar produto padrão ou produto já salvo quando produtos genéricos forem carregados
@@ -544,6 +581,7 @@ const SubstituicoesTableNutricionista = ({
                               <th style={{ width: '100px' }} className="px-4 py-2 text-left text-xs font-medium text-gray-700 uppercase">Cód. Escola</th>
                               <th style={{ minWidth: '250px' }} className="px-4 py-2 text-left text-xs font-medium text-gray-700 uppercase">Unidade Escolar</th>
                               <th style={{ width: '100px' }} className="px-4 py-2 text-left text-xs font-medium text-gray-700 uppercase">Código</th>
+                              <th style={{ minWidth: '220px' }} className="px-4 py-2 text-left text-xs font-medium text-gray-700 uppercase">Produto Origem</th>
                               <th style={{ minWidth: '250px' }} className="px-4 py-2 text-left text-xs font-medium text-gray-700 uppercase">Produto Genérico</th>
                               <th style={{ width: '100px' }} className="px-4 py-2 text-center text-xs font-medium text-gray-700 uppercase">Unid. Med.</th>
                               <th style={{ width: '100px' }} className="px-4 py-2 text-center text-xs font-medium text-gray-700 uppercase">Quantidade</th>
@@ -576,6 +614,42 @@ const SubstituicoesTableNutricionista = ({
                                   </td>
                                   <td className="px-4 py-2 whitespace-nowrap text-xs font-semibold text-purple-600">
                                     {codigoProduto}
+                                  </td>
+                                  <td className="px-4 py-2 whitespace-nowrap">
+                                    <div className="flex items-center gap-2">
+                                      <SearchableSelect
+                                        value={selectedProdutosOrigemPorEscola[chaveEscola] || origemInicialPorEscola[chaveEscola] || ''}
+                                        onChange={(value) => {
+                                          setSelectedProdutosOrigemPorEscola(prev => ({ ...prev, [chaveEscola]: value }));
+                                        }}
+                                        options={(necessidade.produtos_grupo || []).map(produto => {
+                                          const id = produto.produto_id || produto.id || produto.codigo;
+                                          const nome = produto.produto_nome || produto.nome;
+                                          const unidade = produto.unidade_medida || produto.unidade || '';
+                                          return {
+                                            value: `${id}|${nome}|${unidade}`,
+                                            label: nome,
+                                            description: unidade
+                                          };
+                                        })}
+                                        placeholder="Produto origem..."
+                                        disabled={!ajustesAtivados}
+                                        className="text-xs"
+                                        filterBy={(option, searchTerm) =>
+                                          option.label.toLowerCase().includes(searchTerm.toLowerCase())
+                                        }
+                                      />
+                                      {ajustesAtivados && (
+                                        <Button
+                                          size="xs"
+                                          variant="ghost"
+                                          onClick={() => handleTrocaOrigemIndividual(necessidade, escola)}
+                                          disabled={trocaLoading[`${chaveEscola}-origem`]}
+                                        >
+                                          {trocaLoading[`${chaveEscola}-origem`] ? '...' : 'Trocar'}
+                                        </Button>
+                                      )}
+                                    </div>
                                   </td>
                                   <td className="px-4 py-2 whitespace-nowrap relative z-10">
                                     <div className="relative z-10">

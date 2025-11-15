@@ -252,7 +252,7 @@ class SubstituicoesListController {
             ns.escola_nome
           FROM necessidades_substituicoes ns
           WHERE ns.ativo = 1
-            AND (ns.status IS NULL OR ns.status = 'conf')
+          AND (ns.status IS NULL OR ns.status = 'conf')
           
           UNION ALL
           
