@@ -201,12 +201,19 @@ const SubstituicoesTableNutricionista = ({
     const chaveOrigem = getChaveOrigem(necessidade);
     const chaveEscola = `${chaveOrigem}-${escola.escola_id}`;
 
+    console.log('[Substituicoes] handleProdutoOrigemIndividualChange', {
+      chaveOrigem,
+      chaveEscola,
+      valorRecebido: valor
+    });
+
     setSelectedProdutosOrigemPorEscola(prev => ({
       ...prev,
       [chaveEscola]: valor || ''
     }));
 
     if (!valor) {
+      console.log('[Substituicoes] valor vazio para origem individual, aplicando fallback');
       const fallbackValor = selectedProdutosGenericos[chaveOrigem] || '';
       setSelectedProdutosPorEscola(prev => ({
         ...prev,
@@ -243,6 +250,12 @@ const SubstituicoesTableNutricionista = ({
       [chaveEscola]: valorGenerico
     }));
     escola.selectedProdutoGenerico = valorGenerico;
+
+    console.log('[Substituicoes] origem individual atualizada', {
+      chaveEscola,
+      novoProdutoOrigem: valor,
+      produtoGenericoPadrao: valorGenerico
+    });
   };
 
   // Pré-selecionar produto padrão ou produto já salvo quando produtos genéricos forem carregados
