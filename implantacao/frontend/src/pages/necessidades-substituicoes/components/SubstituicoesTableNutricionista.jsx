@@ -233,18 +233,64 @@ const SubstituicoesTableNutricionista = ({
     const padrao = produtoSelecionado?.produto_generico_padrao || null;
 
     if (!padrao) {
+      // Se não tem padrão, limpar o genérico selecionado
+      setSelectedProdutosPorEscola(prev => ({
+        ...prev,
+        [chaveEscola]: ''
+      }));
+      escola.selectedProdutoGenerico = '';
       return;
     }
 
     const unidade = padrao.unidade_medida_sigla || padrao.unidade_medida || padrao.unidade || '';
     const valorGenerico = `${padrao.id || padrao.codigo}|${padrao.nome}|${unidade}|${padrao.fator_conversao || 1}`;
 
-    setSelectedProdutosPorEscola(prev => ({
-      ...prev,
-      [chaveEscola]: valorGenerico
-    }));
+    // Atualizar estado de forma síncrona para garantir que o select seja atualizado
+    setSelectedProdutosPorEscola(prev => {
+      const novo = { ...prev };
+      novo[chaveEscola] = valorGenerico;
+      return novo;
+    });
     escola.selectedProdutoGenerico = valorGenerico;
   };
+
+  // Sincronizar produto genérico padrão quando produto origem individual muda
+  useEffect(() => {
+    necessidades.forEach(necessidade => {
+      const chaveOrigem = getChaveOrigem(necessidade);
+      necessidade.escolas.forEach(escola => {
+        const chaveEscola = `${chaveOrigem}-${escola.escola_id}`;
+        const origemIndividual = selectedProdutosOrigemPorEscola[chaveEscola];
+        
+        if (!origemIndividual) return;
+        
+        const [produtoId] = origemIndividual.split('|');
+        if (!produtoId) return;
+        
+        const produtosGrupo = necessidade.produtos_grupo || [];
+        const produtoOrigemEscola = produtosGrupo.find(
+          prod => String(prod.produto_id || prod.id || prod.codigo) === String(produtoId)
+        );
+        
+        const padrao = produtoOrigemEscola?.produto_generico_padrao;
+        if (!padrao) return;
+        
+        const unidade = padrao.unidade_medida_sigla || padrao.unidade_medida || padrao.unidade || '';
+        const valorGenerico = `${padrao.id || padrao.codigo}|${padrao.nome}|${unidade}|${padrao.fator_conversao || 1}`;
+        
+        // Só atualizar se ainda não está definido ou se mudou
+        const atual = selectedProdutosPorEscola[chaveEscola];
+        if (!atual || atual !== valorGenerico) {
+          setSelectedProdutosPorEscola(prev => {
+            const novo = { ...prev };
+            novo[chaveEscola] = valorGenerico;
+            return novo;
+          });
+          escola.selectedProdutoGenerico = valorGenerico;
+        }
+      });
+    });
+  }, [selectedProdutosOrigemPorEscola, necessidades, produtosGenericos]);
 
   // Pré-selecionar produto padrão ou produto já salvo quando produtos genéricos forem carregados
   useEffect(() => {
@@ -284,21 +330,24 @@ const SubstituicoesTableNutricionista = ({
             
            necessidade.escolas.forEach(escola => {
           const chaveEscola = `${chaveOrigem}-${escola.escola_id}`;
-              setSelectedProdutosPorEscola(prev => ({ ...prev, [chaveEscola]: valor }));
-          escola.selectedProdutoGenerico = valor;
+          // Só atualizar se não tiver produto origem individual definido
+          if (!selectedProdutosOrigemPorEscola[chaveEscola]) {
+            setSelectedProdutosPorEscola(prev => ({ ...prev, [chaveEscola]: valor }));
+            escola.selectedProdutoGenerico = valor;
+          }
             });
         
         setProdutosPadraoSelecionados(prev => ({ ...prev, [chaveOrigem]: true }));
         necessidade.escolas.forEach(escola => {
           const chaveEscola = `${chaveOrigem}-${escola.escola_id}`;
-          if (!escola.substituicao?.produto_generico_id) {
+          if (!escola.substituicao?.produto_generico_id && !selectedProdutosOrigemPorEscola[chaveEscola]) {
             setSelectedProdutosPorEscola(prev => ({ ...prev, [chaveEscola]: valor }));
             escola.selectedProdutoGenerico = valor;
           }
         });
       }
     });
-  }, [produtosGenericos, necessidades, produtosPadraoSelecionados, selectedProdutosOrigem]);
+  }, [produtosGenericos, necessidades, produtosPadraoSelecionados, selectedProdutosOrigem, selectedProdutosOrigemPorEscola]);
 
   const handleToggleExpand = (chaveOrigem) => {
     setExpandedRows(prev => ({
@@ -664,9 +713,9 @@ const SubstituicoesTableNutricionista = ({
                               const fatorConversao = partes.length >= 4 ? parseFloat(partes[3]) : 0;
                               const produtoOrigemEscolaId = valorOrigemAtual?.split('|')[0];
                               
-                              // Buscar produto genérico padrão do novo produto origem se ainda não foi carregado
+                              // Buscar produto genérico padrão do produto origem individual
                               let produtoGenericoPadrao = null;
-                              if (produtoOrigemEscolaId && produtoOrigemEscolaId !== produtoOrigemAtualId) {
+                              if (produtoOrigemEscolaId) {
                                 const produtosGrupo = necessidade.produtos_grupo || [];
                                 const produtoOrigemEscola = produtosGrupo.find(
                                   prod => String(prod.produto_id || prod.id || prod.codigo) === String(produtoOrigemEscolaId)
@@ -688,6 +737,23 @@ const SubstituicoesTableNutricionista = ({
                                   unidade_medida_sigla: produtoGenericoPadrao.unidade_medida_sigla || produtoGenericoPadrao.unidade_medida || produtoGenericoPadrao.unidade || '',
                                   fator_conversao: produtoGenericoPadrao.fator_conversao || 1
                                 });
+                              }
+                              
+                              // Se o produto selecionado é o padrão mas ainda não está nas opções, garantir que está
+                              if (produtoSelecionado && produtoGenericoPadrao) {
+                                const [produtoSelecionadoId] = produtoSelecionado.split('|');
+                                const padraoId = String(produtoGenericoPadrao.id || produtoGenericoPadrao.codigo);
+                                if (produtoSelecionadoId === padraoId && !opcoesGenericos.some(opt => `${opt.id || opt.codigo}` === padraoId)) {
+                                  opcoesGenericos.unshift({
+                                    id: produtoGenericoPadrao.id || produtoGenericoPadrao.codigo,
+                                    codigo: produtoGenericoPadrao.id || produtoGenericoPadrao.codigo,
+                                    nome: produtoGenericoPadrao.nome,
+                                    unidade: produtoGenericoPadrao.unidade_medida_sigla || produtoGenericoPadrao.unidade_medida || produtoGenericoPadrao.unidade || '',
+                                    unidade_medida: produtoGenericoPadrao.unidade_medida_sigla || produtoGenericoPadrao.unidade_medida || produtoGenericoPadrao.unidade || '',
+                                    unidade_medida_sigla: produtoGenericoPadrao.unidade_medida_sigla || produtoGenericoPadrao.unidade_medida || produtoGenericoPadrao.unidade || '',
+                                    fator_conversao: produtoGenericoPadrao.fator_conversao || 1
+                                  });
+                                }
                               }
                               
                               if (
