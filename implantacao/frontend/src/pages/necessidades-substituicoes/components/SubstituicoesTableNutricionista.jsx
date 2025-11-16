@@ -660,15 +660,6 @@ const SubstituicoesTableNutricionista = ({
                                   selectedProdutosOrigem[chaveOrigem]) ??
                                 `${necessidade.codigo_origem}|${necessidade.produto_origem_nome}|${necessidade.produto_origem_unidade || ''}`;
 
-                              // Priorizar estado React sobre propriedade mutável do objeto
-                              const produtoSelecionado = selectedProdutosPorEscola[chaveEscola] || escola.selectedProdutoGenerico || (escola.substituicao ? 
-                                `${escola.substituicao.produto_generico_id}|${escola.substituicao.produto_generico_nome}|${escola.substituicao.produto_generico_unidade || ''}` 
-                                : '');
-                              const partes = produtoSelecionado ? produtoSelecionado.split('|') : [];
-                              const codigoProduto = partes[0] || '';
-                              const nomeProduto = partes[1] || '';
-                              const unidadeProduto = partes[2] || '';
-                              const fatorConversao = partes.length >= 4 ? parseFloat(partes[3]) : 0;
                               const produtoOrigemEscolaId = valorOrigemAtual?.split('|')[0];
                               
                               // Buscar produto genérico padrão do novo produto origem se ainda não foi carregado
@@ -697,9 +688,23 @@ const SubstituicoesTableNutricionista = ({
                                 });
                               }
                               
+                              // Priorizar estado React sobre propriedade mutável do objeto
+                              const produtoSelecionado = selectedProdutosPorEscola[chaveEscola] || escola.selectedProdutoGenerico || (escola.substituicao ? 
+                                `${escola.substituicao.produto_generico_id}|${escola.substituicao.produto_generico_nome}|${escola.substituicao.produto_generico_unidade || ''}` 
+                                : '');
+                              const partes = produtoSelecionado ? produtoSelecionado.split('|') : [];
+                              const codigoProduto = partes[0] || '';
+                              const nomeProduto = partes[1] || '';
+                              const unidadeProduto = partes[2] || '';
+                              const fatorConversao = partes.length >= 4 ? parseFloat(partes[3]) : 0;
+                              
+                              // Se produtoSelecionado existe mas não está nas opções, adicionar
                               if (
                                 produtoSelecionado &&
-                                !opcoesGenericos.some(opt => `${opt.id || opt.codigo}` === codigoProduto)
+                                !opcoesGenericos.some(opt => {
+                                  const optValue = `${opt.id || opt.codigo}|${opt.nome}|${opt.unidade_medida_sigla || opt.unidade || opt.unidade_medida || ''}|${opt.fator_conversao || 1}`;
+                                  return optValue === produtoSelecionado;
+                                })
                               ) {
                                 opcoesGenericos.unshift({
                                   id: codigoProduto,
@@ -708,7 +713,7 @@ const SubstituicoesTableNutricionista = ({
                                   unidade: unidadeProduto,
                                   unidade_medida: unidadeProduto,
                                   unidade_medida_sigla: unidadeProduto,
-                                  fator_conversao: partes.length >= 4 ? parseFloat(partes[3]) : 1
+                                  fator_conversao: fatorConversao || 1
                                 });
                               }
                               
