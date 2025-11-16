@@ -620,7 +620,8 @@ class SubstituicoesCRUDController {
             necessidade_id,
             produto_trocado_id,
             produto_trocado_nome,
-            produto_trocado_unidade
+            produto_trocado_unidade,
+            grupo_id
           FROM necessidades_substituicoes
           WHERE necessidade_id IN (${placeholders})
             AND ativo = 1
@@ -643,43 +644,77 @@ class SubstituicoesCRUDController {
         });
       }
 
-      // Buscar produto origem original da tabela necessidades para garantir que volta ao consolidado correto
-      const necessidadesOriginais = await executeQuery(
-        `
-          SELECT 
-            n.id AS necessidade_id,
-            n.produto_id AS produto_origem_id_original,
-            n.produto AS produto_origem_nome_original,
-            n.produto_unidade AS produto_origem_unidade_original
-          FROM necessidades n
-          WHERE n.id IN (${placeholders})
-        `,
-        necessidade_ids
-      );
+      // Buscar produto genérico padrão do produto origem original (produto_trocado_id)
+      const produtoTrocadoIds = [...new Set(registros.map(r => r.produto_trocado_id).filter(Boolean))];
+      const produtosGenericosPadrao = {};
+      
+      for (const produtoTrocadoId of produtoTrocadoIds) {
+        // Buscar na tabela foods_db.produto_origem que tem produto_generico_padrao_id
+        const produtoOrigem = await executeQuery(
+          `SELECT 
+            po.id,
+            po.produto_generico_padrao_id,
+            pg.codigo AS produto_generico_codigo,
+            pg.nome AS produto_generico_nome,
+            COALESCE(um.sigla, um.nome, '') AS produto_generico_unidade
+          FROM foods_db.produto_origem po
+          LEFT JOIN foods_db.produto_generico pg ON po.produto_generico_padrao_id = pg.id
+          LEFT JOIN foods_db.unidades_medida um ON pg.unidade_medida_id = um.id
+          WHERE po.id = ?
+          LIMIT 1`,
+          [produtoTrocadoId]
+        );
 
-      // Criar mapa de necessidade_id -> produto origem original
-      const mapaOriginais = {};
-      necessidadesOriginais.forEach(nec => {
-        mapaOriginais[nec.necessidade_id] = {
-          produto_origem_id: nec.produto_origem_id_original,
-          produto_origem_nome: nec.produto_origem_nome_original,
-          produto_origem_unidade: nec.produto_origem_unidade_original
-        };
-      });
+        if (produtoOrigem.length > 0 && produtoOrigem[0].produto_generico_padrao_id) {
+          produtosGenericosPadrao[produtoTrocadoId] = {
+            id: produtoOrigem[0].produto_generico_padrao_id,
+            codigo: produtoOrigem[0].produto_generico_codigo,
+            nome: produtoOrigem[0].produto_generico_nome,
+            unidade: produtoOrigem[0].produto_generico_unidade || ''
+          };
+        } else {
+          // Se não encontrar em produto_origem, buscar na API do Foods
+          try {
+            const foodsApiUrl = process.env.FOODS_API_URL || 'http://foods_backend:3001';
+            const response = await axios.get(
+              `${foodsApiUrl}/api/produtos-genericos/produto-origem/${produtoTrocadoId}`,
+              {
+                headers: {
+                  'Authorization': req.headers.authorization || ''
+                }
+              }
+            );
 
-      // Para cada necessidade, sempre usar o produto origem original da tabela necessidades
-      // para garantir que volta ao consolidado correto
-      for (const necessidade_id of necessidade_ids) {
-        const original = mapaOriginais[necessidade_id];
-        
-        if (original && original.produto_origem_id) {
+            if (response.data && response.data.length > 0) {
+              const produtoPadrao = response.data.find(p => p.produto_padrao === 'Sim') || response.data[0];
+              produtosGenericosPadrao[produtoTrocadoId] = {
+                id: produtoPadrao.id || produtoPadrao.codigo,
+                codigo: produtoPadrao.codigo || produtoPadrao.id,
+                nome: produtoPadrao.nome,
+                unidade: produtoPadrao.unidade_medida_sigla || produtoPadrao.unidade_medida || produtoPadrao.unidade || ''
+              };
+            }
+          } catch (apiError) {
+            console.error(`Erro ao buscar produto genérico padrão para produto ${produtoTrocadoId}:`, apiError.message);
+          }
+        }
+      }
+
+      // Atualizar cada registro com o produto genérico padrão correspondente
+      for (const registro of registros) {
+        if (registro.produto_trocado_id && produtosGenericosPadrao[registro.produto_trocado_id]) {
+          const produtoGenerico = produtosGenericosPadrao[registro.produto_trocado_id];
           await executeQuery(
             `
               UPDATE necessidades_substituicoes
               SET
-                produto_origem_id = ?,
-                produto_origem_nome = ?,
-                produto_origem_unidade = ?,
+                produto_origem_id = produto_trocado_id,
+                produto_origem_nome = produto_trocado_nome,
+                produto_origem_unidade = produto_trocado_unidade,
+                produto_generico_id = ?,
+                produto_generico_codigo = ?,
+                produto_generico_nome = ?,
+                produto_generico_unidade = ?,
                 produto_trocado_id = NULL,
                 produto_trocado_nome = NULL,
                 produto_trocado_unidade = NULL,
@@ -687,7 +722,31 @@ class SubstituicoesCRUDController {
               WHERE necessidade_id = ?
                 AND ativo = 1
             `,
-            [original.produto_origem_id, original.produto_origem_nome, original.produto_origem_unidade, necessidade_id]
+            [
+              produtoGenerico.id,
+              produtoGenerico.codigo,
+              produtoGenerico.nome,
+              produtoGenerico.unidade,
+              registro.necessidade_id
+            ]
+          );
+        } else {
+          // Se não encontrar produto genérico padrão, apenas restaura o produto origem
+          await executeQuery(
+            `
+              UPDATE necessidades_substituicoes
+              SET
+                produto_origem_id = produto_trocado_id,
+                produto_origem_nome = produto_trocado_nome,
+                produto_origem_unidade = produto_trocado_unidade,
+                produto_trocado_id = NULL,
+                produto_trocado_nome = NULL,
+                produto_trocado_unidade = NULL,
+                data_atualizacao = NOW()
+              WHERE necessidade_id = ?
+                AND ativo = 1
+            `,
+            [registro.necessidade_id]
           );
         }
       }
