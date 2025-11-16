@@ -22,7 +22,9 @@ const AnaliseCoordenacao = () => {
     buscarProdutosGenericos,
     salvarSubstituicao,
     atualizarFiltros,
-    limparFiltros
+    limparFiltros,
+    trocarProdutoOrigem,
+    desfazerTrocaProduto
   } = useSubstituicoesNecessidades('coordenacao');
 
   // Carregar produtos genéricos quando necessário
@@ -116,6 +118,9 @@ const AnaliseCoordenacao = () => {
           onExpand={() => {}}
           onSaveConsolidated={handleSaveConsolidated}
           onSaveIndividual={handleSaveIndividual}
+          onBuscarProdutosGenericos={buscarProdutosGenericos}
+          onTrocarProdutoOrigem={trocarProdutoOrigem}
+          onDesfazerTroca={desfazerTrocaProduto}
         />
       )}
 
