@@ -643,22 +643,54 @@ class SubstituicoesCRUDController {
         });
       }
 
-      await executeQuery(
+      // Buscar produto origem original da tabela necessidades para garantir que volta ao consolidado correto
+      const necessidadesOriginais = await executeQuery(
         `
-          UPDATE necessidades_substituicoes
-          SET
-            produto_origem_id = produto_trocado_id,
-            produto_origem_nome = produto_trocado_nome,
-            produto_origem_unidade = produto_trocado_unidade,
-            produto_trocado_id = NULL,
-            produto_trocado_nome = NULL,
-            produto_trocado_unidade = NULL,
-            data_atualizacao = NOW()
-          WHERE necessidade_id IN (${placeholders})
-            AND ativo = 1
+          SELECT 
+            n.id AS necessidade_id,
+            n.produto_id AS produto_origem_id_original,
+            n.produto AS produto_origem_nome_original,
+            n.produto_unidade AS produto_origem_unidade_original
+          FROM necessidades n
+          WHERE n.id IN (${placeholders})
         `,
         necessidade_ids
       );
+
+      // Criar mapa de necessidade_id -> produto origem original
+      const mapaOriginais = {};
+      necessidadesOriginais.forEach(nec => {
+        mapaOriginais[nec.necessidade_id] = {
+          produto_origem_id: nec.produto_origem_id_original,
+          produto_origem_nome: nec.produto_origem_nome_original,
+          produto_origem_unidade: nec.produto_origem_unidade_original
+        };
+      });
+
+      // Para cada necessidade, sempre usar o produto origem original da tabela necessidades
+      // para garantir que volta ao consolidado correto
+      for (const necessidade_id of necessidade_ids) {
+        const original = mapaOriginais[necessidade_id];
+        
+        if (original && original.produto_origem_id) {
+          await executeQuery(
+            `
+              UPDATE necessidades_substituicoes
+              SET
+                produto_origem_id = ?,
+                produto_origem_nome = ?,
+                produto_origem_unidade = ?,
+                produto_trocado_id = NULL,
+                produto_trocado_nome = NULL,
+                produto_trocado_unidade = NULL,
+                data_atualizacao = NOW()
+              WHERE necessidade_id = ?
+                AND ativo = 1
+            `,
+            [original.produto_origem_id, original.produto_origem_nome, original.produto_origem_unidade, necessidade_id]
+          );
+        }
+      }
 
       return res.json({
         success: true,
