@@ -1,10 +1,11 @@
 import React from 'react';
-import { FaPlus, FaQuestionCircle } from 'react-icons/fa';
+import { FaPlus, FaQuestionCircle, FaUpload } from 'react-icons/fa';
 import { Button } from '../ui';
 
 const TipoAtendimentoEscolaHeader = ({
   canCreate,
   onAdd,
+  onImport,
   onShowHelp,
   loading = false
 }) => {
@@ -21,6 +22,18 @@ const TipoAtendimentoEscolaHeader = ({
           >
             <FaQuestionCircle className="mr-1 sm:mr-2" />
             <span className="hidden sm:inline">Auditoria</span>
+          </Button>
+        )}
+        {canCreate && onImport && (
+          <Button
+            onClick={onImport}
+            disabled={loading}
+            size="sm"
+            variant="outline"
+          >
+            <FaUpload className="mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Importar</span>
+            <span className="sm:hidden">Importar</span>
           </Button>
         )}
         {canCreate && (

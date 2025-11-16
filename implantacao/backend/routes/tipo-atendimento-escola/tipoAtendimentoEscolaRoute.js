@@ -6,6 +6,7 @@ const { auditMiddleware, AUDIT_ACTIONS } = require('../../utils/audit');
 const { createEntityValidationHandler } = require('../../middleware/validationHandler');
 const { commonValidations, tipoAtendimentoEscolaValidations } = require('./tipoAtendimentoEscolaValidator');
 const TipoAtendimentoEscolaController = require('../../controllers/tipo-atendimento-escola');
+const TipoAtendimentoEscolaImportController = require('../../controllers/tipo-atendimento-escola/TipoAtendimentoEscolaImportController');
 
 const router = express.Router();
 
@@ -23,6 +24,18 @@ router.get('/por-escola/:escola_id',
 router.get('/por-tipo/:tipo_atendimento',
   checkScreenPermission('tipo_atendimento_escola', 'visualizar'),
   TipoAtendimentoEscolaController.buscarEscolasPorTipo
+);
+
+// ===== ROTAS DE IMPORTAÇÃO =====
+router.get('/importar/modelo',
+  checkScreenPermission('tipo_atendimento_escola', 'criar'),
+  TipoAtendimentoEscolaImportController.baixarModelo
+);
+
+router.post('/importar',
+  checkScreenPermission('tipo_atendimento_escola', 'criar'),
+  TipoAtendimentoEscolaImportController.uploadMiddleware,
+  TipoAtendimentoEscolaImportController.importarExcel
 );
 
 // ===== ROTAS CRUD =====

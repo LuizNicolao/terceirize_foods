@@ -144,6 +144,61 @@ class TipoAtendimentoEscolaService {
       };
     }
   }
+
+  /**
+   * Baixar modelo de planilha para importação
+   */
+  static async baixarModelo() {
+    try {
+      const response = await api.get('/tipo-atendimento-escola/importar/modelo', {
+        responseType: 'blob'
+      });
+      
+      // Criar link para download
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'modelo_tipo_atendimento_escola.xlsx');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+
+      return {
+        success: true,
+        message: 'Modelo baixado com sucesso'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao baixar modelo'
+      };
+    }
+  }
+
+  /**
+   * Importar tipo de atendimento por escola via Excel
+   */
+  static async importarExcel(formData) {
+    try {
+      const response = await api.post('/tipo-atendimento-escola/importar', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      return {
+        success: true,
+        data: response.data.data || response.data,
+        message: response.data.message || 'Importação realizada com sucesso'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao importar planilha',
+        data: null
+      };
+    }
+  }
 }
 
 export default TipoAtendimentoEscolaService;

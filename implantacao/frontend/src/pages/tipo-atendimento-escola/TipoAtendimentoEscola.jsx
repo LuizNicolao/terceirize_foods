@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { useTipoAtendimentoEscola } from '../../hooks/useTipoAtendimentoEscola';
 import { ConfirmModal, Pagination } from '../../components/ui';
@@ -6,7 +6,8 @@ import {
   TipoAtendimentoEscolaHeader,
   TipoAtendimentoEscolaFilters,
   TipoAtendimentoEscolaTable,
-  TipoAtendimentoEscolaModal
+  TipoAtendimentoEscolaModal,
+  ImportTipoAtendimentoEscolaModal
 } from '../../components/tipo-atendimento-escola';
 
 /**
@@ -15,6 +16,7 @@ import {
  */
 const TipoAtendimentoEscola = () => {
   const { canCreate, canEdit, canDelete, canView, loading: permissionsLoading } = usePermissions();
+  const [showImportModal, setShowImportModal] = useState(false);
 
   const {
     vinculos,
@@ -52,7 +54,8 @@ const TipoAtendimentoEscola = () => {
     setEscolaFilter,
     setTipoAtendimentoFilter,
     setAtivoFilter,
-    buscarPorEscola
+    buscarPorEscola,
+    carregarVinculos
   } = useTipoAtendimentoEscola();
 
   // Verificar permissões específicas
@@ -76,6 +79,12 @@ const TipoAtendimentoEscola = () => {
     setEscolaFilter('');
     setTipoAtendimentoFilter('');
     setAtivoFilter('todos');
+  };
+
+  // Handler para sucesso na importação
+  const handleImportSuccess = () => {
+    setShowImportModal(false);
+    carregarVinculos();
   };
 
   if (permissionsLoading) {
@@ -108,6 +117,7 @@ const TipoAtendimentoEscola = () => {
       <TipoAtendimentoEscolaHeader
         canCreate={canCreateVinculos}
         onAdd={handleAdd}
+        onImport={() => setShowImportModal(true)}
         loading={loading}
       />
 
@@ -181,6 +191,13 @@ const TipoAtendimentoEscola = () => {
         confirmText="Excluir"
         cancelText="Cancelar"
         variant="danger"
+      />
+
+      {/* Modal de Importação */}
+      <ImportTipoAtendimentoEscolaModal
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        onImportSuccess={handleImportSuccess}
       />
     </div>
   );
