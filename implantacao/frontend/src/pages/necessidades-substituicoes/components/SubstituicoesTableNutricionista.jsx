@@ -143,9 +143,40 @@ const SubstituicoesTableNutricionista = ({
     if (!onDesfazerTroca) return;
     const chaveOrigem = getChaveOrigem(necessidade);
     setTrocaLoading(prev => ({ ...prev, [chaveOrigem]: true }));
+    
     await onDesfazerTroca({
       necessidade_ids: necessidade.escolas.map(escola => escola.necessidade_id)
     });
+    
+    // Limpar estados locais das escolas que foram desfeitas
+    necessidade.escolas.forEach(escola => {
+      const chaveEscola = `${chaveOrigem}-${escola.escola_id}`;
+      
+      // Limpar produto origem individual - volta para o consolidado
+      setSelectedProdutosOrigemPorEscola(prev => {
+        const novo = { ...prev };
+        delete novo[chaveEscola];
+        return novo;
+      });
+      
+      // Limpar origem inicial individual
+      setOrigemInicialPorEscola(prev => {
+        const novo = { ...prev };
+        delete novo[chaveEscola];
+        return novo;
+      });
+      
+      // Limpar produto genérico individual - volta para o consolidado
+      setSelectedProdutosPorEscola(prev => {
+        const novo = { ...prev };
+        delete novo[chaveEscola];
+        return novo;
+      });
+      
+      // Limpar propriedade mutável do objeto
+      delete escola.selectedProdutoGenerico;
+    });
+    
     setTrocaLoading(prev => ({ ...prev, [chaveOrigem]: false }));
   };
 
