@@ -120,17 +120,23 @@ const importarExcel = async (req, res) => {
         
         // Para quantidade, sempre tentar ler como texto primeiro para preservar vírgula
         if (colIndex === 6) { // coluna de quantidade
-          // Tentar ler o valor formatado (texto) primeiro
-          if (cell.text) {
+          // SEMPRE tentar ler o valor formatado (texto) primeiro - isso preserva vírgulas
+          if (cell.text && cell.text.trim() !== '') {
             return cell.text.trim();
           }
           // Se não tiver texto formatado, tentar valor numérico
           if (cell.type === ExcelJS.ValueType.Number) {
+            // Se o número é 0 mas o texto não é vazio, pode ser que seja "0,5" formatado
+            // Nesse caso, tentar ler o texto novamente ou retornar o número
             return cell.value;
           }
           // Se é string, retornar como string
           if (cell.type === ExcelJS.ValueType.String || cell.type === ExcelJS.ValueType.RichText) {
             return cell.value ? cell.value.toString() : null;
+          }
+          // Último recurso: tentar texto novamente
+          if (cell.text !== undefined && cell.text !== null) {
+            return cell.text.toString().trim();
           }
         }
         
@@ -154,7 +160,41 @@ const importarExcel = async (req, res) => {
         const escolaNome = (getCellValue(3) || rowData[3]) ? (getCellValue(3) || rowData[3]).toString().trim() : ''; // escola_nome
         const produtoId = getCellValue(4) || rowData[4]; // produto_id
         const produtoNome = (getCellValue(5) || rowData[5]) ? (getCellValue(5) || rowData[5]).toString().trim() : ''; // produto_nome
-        let quantidade = getCellValue(6) || rowData[6]; // quantidade
+        // Ler quantidade com tratamento especial para preservar vírgulas
+        let quantidade = null;
+        const quantidadeCell = row.getCell(6);
+        if (quantidadeCell) {
+          // Tentar múltiplas formas de ler o valor para garantir que pegamos "0,5" corretamente
+          // 1. Tentar texto formatado (preserva vírgulas) - PRIORIDADE MÁXIMA
+          if (quantidadeCell.text !== undefined && quantidadeCell.text !== null && quantidadeCell.text.toString().trim() !== '') {
+            const textValue = quantidadeCell.text.toString().trim();
+            // Se o texto não é "0" ou vazio, usar ele (pode ser "0,5", "0.5", etc)
+            if (textValue !== '0' || (quantidadeCell.type === ExcelJS.ValueType.String)) {
+              quantidade = textValue;
+            } else {
+              // Se texto é "0" mas pode ser um número formatado, tentar valor numérico
+              quantidade = quantidadeCell.value;
+            }
+          }
+          // 2. Se não tem texto ou texto é vazio, tentar valor numérico
+          else if (quantidadeCell.type === ExcelJS.ValueType.Number) {
+            quantidade = quantidadeCell.value;
+          }
+          // 3. Tentar valor como string
+          else if (quantidadeCell.type === ExcelJS.ValueType.String || quantidadeCell.type === ExcelJS.ValueType.RichText) {
+            quantidade = quantidadeCell.value ? quantidadeCell.value.toString() : null;
+          }
+          // 4. Tentar valor direto
+          else if (quantidadeCell.value !== undefined && quantidadeCell.value !== null) {
+            quantidade = quantidadeCell.value;
+          }
+          // 5. Último recurso: usar rowData
+          else {
+            quantidade = rowData[6];
+          }
+        } else {
+          quantidade = rowData[6];
+        }
 
         // Converter quantidade para string e tratar vírgula como separador decimal
         // O Excel pode retornar números com ponto ou strings com vírgula
@@ -446,8 +486,9 @@ const importarExcel = async (req, res) => {
         } catch (error) {
           // Usar valores padrão em caso de erro
         }
-        // Usar o mesmo ID para todas as necessidades desta importação
-        const necessidadeId = proximoId.toString().padStart(2, '0'); // Formato 01, 02, etc.
+        
+        // Usar o necessidade_id da planilha (já formatado)
+        const necessidadeIdFormatado = necessidade.necessidade_id;
 
         const query = `
           INSERT INTO necessidades (
@@ -474,7 +515,7 @@ const importarExcel = async (req, res) => {
           necessidade.semana_consumo,
           necessidade.status,
           necessidade.observacoes,
-          necessidadeId,
+          necessidadeIdFormatado,
           null, // ajuste_nutricionista = NULL (como no sistema)
           null, // ajuste_coordenacao = NULL (como no sistema)
           1, // substituicao_processada = 1 (como no sistema)
