@@ -112,21 +112,82 @@ const importarExcel = async (req, res) => {
       
       linha = rowNumber;
       const rowData = row.values;
+      
+      // Ler valores brutos das células para evitar problemas com formatação
+      const getCellValue = (colIndex) => {
+        const cell = row.getCell(colIndex);
+        if (!cell) return null;
+        // Se a célula tem valor numérico, retornar o número
+        if (cell.type === ExcelJS.ValueType.Number) {
+          return cell.value;
+        }
+        // Se é texto, retornar como string
+        if (cell.type === ExcelJS.ValueType.String || cell.type === ExcelJS.ValueType.RichText) {
+          return cell.value ? cell.value.toString() : null;
+        }
+        // Caso padrão, retornar o valor
+        return cell.value;
+      };
 
       try {
-        // Validar dados obrigatórios
-        const necessidadeId = rowData[1]; // necessidade_id
-        const escolaId = rowData[2]; // escola_id
-        const escolaNome = rowData[3]; // escola_nome
-        const produtoId = rowData[4]; // produto_id
-        const produtoNome = rowData[5]; // produto_nome
-        const quantidade = rowData[6]; // quantidade
+        // Validar dados obrigatórios - usar getCellValue para ler valores brutos
+        const necessidadeId = getCellValue(1) || rowData[1]; // necessidade_id
+        const escolaId = getCellValue(2) || rowData[2]; // escola_id
+        const escolaNome = (getCellValue(3) || rowData[3]) ? (getCellValue(3) || rowData[3]).toString().trim() : ''; // escola_nome
+        const produtoId = getCellValue(4) || rowData[4]; // produto_id
+        const produtoNome = (getCellValue(5) || rowData[5]) ? (getCellValue(5) || rowData[5]).toString().trim() : ''; // produto_nome
+        let quantidade = getCellValue(6) || rowData[6]; // quantidade
 
-        if (!necessidadeId || !escolaId || !produtoId || !quantidade) {
+        // Converter quantidade para string e tratar vírgula como separador decimal
+        // O Excel pode retornar números com ponto ou strings com vírgula
+        if (quantidade !== null && quantidade !== undefined) {
+          // Se já é um número, usar diretamente
+          if (typeof quantidade === 'number') {
+            // Número já está correto (Excel converte vírgula para ponto automaticamente)
+            quantidade = quantidade.toString();
+          } else {
+            // É string, precisa converter vírgula para ponto
+            quantidade = quantidade.toString().trim();
+            // Substituir vírgula por ponto para parseFloat funcionar corretamente
+            quantidade = quantidade.replace(',', '.');
+            // Remover espaços e caracteres não numéricos (exceto ponto)
+            quantidade = quantidade.replace(/[^\d.]/g, '');
+          }
+        }
+
+        // Validar campos obrigatórios (verificar se não são null, undefined, vazios ou zero inválido)
+        if (!necessidadeId || necessidadeId === null || necessidadeId === undefined || necessidadeId === '') {
           erros.push({
             linha: linha,
-            erro: 'Campos obrigatórios não preenchidos (necessidade_id, escola_id, produto_id, quantidade)',
-            dados: { necessidadeId, escolaId, produtoId, quantidade }
+            erro: 'Campo obrigatório não preenchido: necessidade_id',
+            dados: { necessidadeId, escolaId, produtoId, quantidade: rowData[6] }
+          });
+          return;
+        }
+
+        if (!escolaId || escolaId === null || escolaId === undefined || escolaId === '') {
+          erros.push({
+            linha: linha,
+            erro: 'Campo obrigatório não preenchido: escola_id',
+            dados: { necessidadeId, escolaId, produtoId, quantidade: rowData[6] }
+          });
+          return;
+        }
+
+        if (!produtoId || produtoId === null || produtoId === undefined || produtoId === '') {
+          erros.push({
+            linha: linha,
+            erro: 'Campo obrigatório não preenchido: produto_id',
+            dados: { necessidadeId, escolaId, produtoId, quantidade: rowData[6] }
+          });
+          return;
+        }
+
+        if (!quantidade || quantidade === null || quantidade === undefined || quantidade === '') {
+          erros.push({
+            linha: linha,
+            erro: 'Campo obrigatório não preenchido: quantidade',
+            dados: { necessidadeId, escolaId, produtoId, quantidade: rowData[6] }
           });
           return;
         }
@@ -153,13 +214,13 @@ const importarExcel = async (req, res) => {
           return;
         }
 
-        // Validar quantidade
+        // Validar quantidade (agora já convertida para usar ponto como separador)
         const qtd = parseFloat(quantidade);
         if (isNaN(qtd) || qtd <= 0) {
           erros.push({
             linha: linha,
             erro: 'Quantidade deve ser um número positivo',
-            dados: { quantidade }
+            dados: { quantidade: rowData[6], quantidadeConvertida: quantidade, qtd }
           });
           return;
         }
@@ -167,11 +228,13 @@ const importarExcel = async (req, res) => {
         // Converter formato das semanas de YYYY-MM-DD para (DD/MM a DD/MM/YY)
         const converterSemana = (semana) => {
           if (!semana) return null;
+          // Converter para string se necessário
+          const semanaStr = semana.toString().trim();
           // Se já está no formato (DD/MM a DD/MM/YY), retornar como está
-          if (semana.includes('(') && semana.includes(')')) return semana;
+          if (semanaStr.includes('(') && semanaStr.includes(')')) return semanaStr;
           // Se está no formato DD/MM a DD/MM, adicionar parênteses e ano
-          if (semana.includes('/') && !semana.includes('(')) {
-            const match = semana.match(/(\d{1,2})\/(\d{1,2}) a (\d{1,2})\/(\d{1,2})/);
+          if (semanaStr.includes('/') && !semanaStr.includes('(')) {
+            const match = semanaStr.match(/(\d{1,2})\/(\d{1,2}) a (\d{1,2})\/(\d{1,2})/);
             if (match) {
               const [, dia1, mes1, dia2, mes2] = match;
               const ano = new Date().getFullYear().toString().slice(-2);
@@ -179,16 +242,20 @@ const importarExcel = async (req, res) => {
             }
           }
           // Converter de YYYY-MM-DD a YYYY-MM-DD para (DD/MM a DD/MM/YY)
-          const match = semana.match(/(\d{4})-(\d{2})-(\d{2}) a (\d{4})-(\d{2})-(\d{2})/);
+          const match = semanaStr.match(/(\d{4})-(\d{2})-(\d{2}) a (\d{4})-(\d{2})-(\d{2})/);
           if (match) {
             const [, ano1, mes1, dia1, ano2, mes2, dia2] = match;
             const ano = ano2.toString().slice(-2);
             return `(${dia1}/${mes1} a ${dia2}/${mes2}/${ano})`;
           }
-          return semana;
+          return semanaStr;
         };
 
         // Adicionar à lista de necessidades válidas
+        const semanaAbastecimento = getCellValue(7) || rowData[7];
+        const semanaConsumo = getCellValue(8) || rowData[8];
+        const observacoes = getCellValue(9) || rowData[9];
+        
         necessidades.push({
           necessidade_id: necessidadeId.toString().padStart(2, '0'), // Usar o ID da planilha
           escola_id: parseInt(escolaId),
@@ -196,9 +263,9 @@ const importarExcel = async (req, res) => {
           produto_id: parseInt(produtoId),
           produto_nome: produtoNome,
           quantidade: qtd,
-          semana_abastecimento: converterSemana(rowData[7]),
-          semana_consumo: converterSemana(rowData[8]),
-          observacoes: rowData[9] || null,
+          semana_abastecimento: converterSemana(semanaAbastecimento),
+          semana_consumo: converterSemana(semanaConsumo),
+          observacoes: observacoes ? observacoes.toString().trim() : null,
           status: 'NEC', // Status padrão para necessidades importadas
           usuario_id: req.user.id, // Será substituído pelo nutricionista da escola
           usuario_email: req.user.email
