@@ -326,15 +326,6 @@ const buscarProdutosParaModal = async (req, res) => {
   try {
     const { grupo, escola_id, search, consumo_de, consumo_ate, semana_consumo } = req.query;
 
-    console.log('[buscarProdutosParaModal] Requisição recebida:', {
-      grupo,
-      escola_id,
-      search,
-      consumo_de,
-      consumo_ate,
-      semana_consumo
-    });
-
     // Validar parâmetros obrigatórios
     if (!grupo) {
       return res.status(400).json({
@@ -343,24 +334,6 @@ const buscarProdutosParaModal = async (req, res) => {
         message: 'grupo é obrigatório'
       });
     }
-
-    // Primeiro, verificar todos os produtos do grupo (antes de filtrar)
-    const todosProdutosGrupo = await executeQuery(`
-      SELECT DISTINCT ppc.produto_id, ppc.produto_codigo, ppc.produto_nome, ppc.unidade_medida, ppc.ativo, ppc.grupo
-      FROM produtos_per_capita ppc
-      WHERE ppc.grupo = ?
-    `, [grupo]);
-
-    console.log('[buscarProdutosParaModal] Todos os produtos do grupo (antes de filtrar):', {
-      grupo,
-      total: todosProdutosGrupo.length,
-      produtos: todosProdutosGrupo.map(p => ({ 
-        id: p.produto_id, 
-        codigo: p.produto_codigo, 
-        nome: p.produto_nome,
-        ativo: p.ativo 
-      }))
-    });
 
     let query = `
       SELECT DISTINCT ppc.produto_id, ppc.produto_codigo, ppc.produto_nome, ppc.unidade_medida
@@ -390,13 +363,6 @@ const buscarProdutosParaModal = async (req, res) => {
           AND n.status != 'EXCLUÍDO'
       `, [escola_id, semana_consumo]);
 
-      console.log('[buscarProdutosParaModal] Produtos já incluídos (não excluídos):', {
-        escola_id,
-        semana_consumo,
-        encontrados: produtosIncluidos.length,
-        produtos: produtosIncluidos.map(p => ({ id: p.produto_id, nome: p.produto, status: p.status }))
-      });
-
       // Usar semana_consumo diretamente - comparar produto_id da necessidades com produto_id da produtos_per_capita
       // Excluir apenas produtos com status ativos (não excluídos)
       // IMPORTANTE: Produtos com status 'EXCLUÍDO' devem aparecer no modal para poderem ser reativados
@@ -418,14 +384,6 @@ const buscarProdutosParaModal = async (req, res) => {
           AND n.status != 'EXCLUÍDO'
       `, [escola_id, consumo_de, consumo_ate]);
 
-      console.log('[buscarProdutosParaModal] Produtos já incluídos (não excluídos):', {
-        escola_id,
-        consumo_de,
-        consumo_ate,
-        encontrados: produtosIncluidos.length,
-        produtos: produtosIncluidos.map(p => ({ id: p.produto_id, nome: p.produto, status: p.status }))
-      });
-
       // Excluir apenas produtos com status ativos (não excluídos)
       // IMPORTANTE: Produtos com status 'EXCLUÍDO' devem aparecer no modal para poderem ser reativados
       query += ` AND ppc.produto_id NOT IN (
@@ -437,11 +395,6 @@ const buscarProdutosParaModal = async (req, res) => {
       )`;
       params.push(escola_id, consumo_de, consumo_ate);
     }
-
-    console.log('[buscarProdutosParaModal] Query final:', {
-      query,
-      params
-    });
 
     query += ` ORDER BY ppc.produto_nome ASC`;
 
@@ -496,15 +449,6 @@ const buscarProdutosParaModal = async (req, res) => {
       `, [escola_id, consumo_de, consumo_ate, grupo, grupo]);
     }
 
-    console.log('[buscarProdutosParaModal] Produtos excluídos encontrados (não em produtos_per_capita):', {
-      encontrados: produtosExcluidos.length,
-      produtos: produtosExcluidos.map(p => ({ 
-        id: p.produto_id, 
-        codigo: p.produto_codigo, 
-        nome: p.produto_nome 
-      }))
-    });
-
     // Combinar produtos de produtos_per_capita com produtos excluídos
     const produtosCombinados = [...produtos];
     
@@ -518,37 +462,6 @@ const buscarProdutosParaModal = async (req, res) => {
           unidade_medida: prodExcluido.unidade_medida || 'UN'
         });
       }
-    });
-
-    // Verificar especificamente o produto 157 (AGUA SANITARIA)
-    const produto157 = await executeQuery(`
-      SELECT ppc.produto_id, ppc.produto_codigo, ppc.produto_nome, ppc.ativo, ppc.grupo
-      FROM produtos_per_capita ppc
-      WHERE ppc.produto_id = 157
-    `, []);
-
-    console.log('[buscarProdutosParaModal] Verificação específica do produto 157 (AGUA SANITARIA):', {
-      encontrado: produto157.length > 0,
-      dados: produto157[0] || null
-    });
-
-    // Verificar se o produto 157 está na lista de produtos já incluídos
-    const produto157Incluido = produtosIncluidos.find(p => p.produto_id === 157);
-    console.log('[buscarProdutosParaModal] Produto 157 na lista de incluídos:', {
-      encontrado: !!produto157Incluido,
-      dados: produto157Incluido || null
-    });
-
-    // Verificar se o produto 157 está na lista de excluídos
-    const produto157Excluido = produtosExcluidos.find(p => p.produto_id === 157);
-    console.log('[buscarProdutosParaModal] Produto 157 na lista de excluídos:', {
-      encontrado: !!produto157Excluido,
-      dados: produto157Excluido || null
-    });
-
-    console.log('[buscarProdutosParaModal] Produtos encontrados (após combinar):', {
-      total: produtosCombinados.length,
-      produtos: produtosCombinados.map(p => ({ id: p.produto_id, codigo: p.produto_codigo, nome: p.produto_nome }))
     });
 
     res.json({

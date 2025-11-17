@@ -145,7 +145,7 @@ const importarExcel = async (req, res) => {
       });
       
       if (temValor) {
-        linhas.push({ row, rowNumber });
+      linhas.push({ row, rowNumber });
       }
     });
 
