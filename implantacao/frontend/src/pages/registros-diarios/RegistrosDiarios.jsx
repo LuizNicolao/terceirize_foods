@@ -5,8 +5,6 @@ import { useRegistrosDiarios } from '../../hooks/useRegistrosDiarios';
 import { Button, ConfirmModal } from '../../components/ui';
 import { Pagination } from '../../components/ui';
 import { ExportButtons } from '../../components/shared';
-import { useExport } from '../../hooks/common/useExport';
-import RegistrosDiariosService from '../../services/registrosDiarios';
 import { 
   RegistrosDiariosModal, 
   RegistrosDiariosTable, 
@@ -15,6 +13,7 @@ import {
   ModalValidacaoExclusao
 } from '../../components/registros-diarios';
 import ImportRegistrosModal from '../../components/registros-diarios/ImportRegistrosModal';
+import ModalExportRegistros from '../../components/registros-diarios/ModalExportRegistros';
 
 const RegistrosDiarios = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
@@ -45,16 +44,18 @@ const RegistrosDiarios = () => {
     handleEscolaFilterChange,
     handleDataInicioChange,
     handleDataFimChange,
-    clearFiltros
+    clearFiltros,
+    loadRegistros,
+    loadEstatisticas
   } = useRegistrosDiarios();
-
-  const { handleExportXLSX, handleExportPDF } = useExport(RegistrosDiariosService);
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deletingRegistro, setDeletingRegistro] = useState(null);
   const [showImportModal, setShowImportModal] = useState(false);
   const [showValidacaoExclusao, setShowValidacaoExclusao] = useState(false);
   const [escolaParaExclusao, setEscolaParaExclusao] = useState(null);
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [tipoFormatoExport, setTipoFormatoExport] = useState(null); // 'xlsx' ou 'pdf'
   
   const handleDeleteClick = (escolaId, data, escolaNome) => {
     // Usar o novo modal de validação em vez do modal simples
@@ -151,8 +152,14 @@ const RegistrosDiarios = () => {
       {/* Botões de Exportação */}
       <div className="mb-4">
         <ExportButtons
-          onExportXLSX={() => handleExportXLSX(filtrosExportacao)}
-          onExportPDF={() => handleExportPDF(filtrosExportacao)}
+          onExportXLSX={() => {
+            setTipoFormatoExport('xlsx');
+            setShowExportModal(true);
+          }}
+          onExportPDF={() => {
+            setTipoFormatoExport('pdf');
+            setShowExportModal(true);
+          }}
           disabled={!canView('registros_diarios')}
         />
       </div>
@@ -218,6 +225,17 @@ const RegistrosDiarios = () => {
         escolaId={escolaParaExclusao?.id}
         escolaNome={escolaParaExclusao?.nome}
         onConfirmExclusao={handleConfirmExclusao}
+      />
+
+      {/* Modal de Exportação */}
+      <ModalExportRegistros
+        isOpen={showExportModal}
+        onClose={() => {
+          setShowExportModal(false);
+          setTipoFormatoExport(null);
+        }}
+        filtros={filtrosExportacao}
+        tipoFormato={tipoFormatoExport}
       />
     </div>
   );
