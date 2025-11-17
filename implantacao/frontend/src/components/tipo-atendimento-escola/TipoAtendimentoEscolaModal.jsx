@@ -617,17 +617,17 @@ const TipoAtendimentoEscolaModal = ({
         {isEditing && !isViewMode && (
           <div className="flex items-center gap-3">
             <span className="text-sm font-medium text-gray-700">Status</span>
-            <select
-              value={statusAtivo ? 'ativo' : 'inativo'}
-              onChange={handleStatusChange}
-              disabled={loading}
-              className={`px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 ${
-                loading ? 'bg-gray-100 cursor-not-allowed' : ''
-              }`}
-            >
-              <option value="ativo">Ativo</option>
-              <option value="inativo">Inativo</option>
-            </select>
+                <select
+                  value={statusAtivo ? 'ativo' : 'inativo'}
+                  onChange={handleStatusChange}
+                  disabled={loading}
+                  className={`px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 ${
+                    loading ? 'bg-gray-100 cursor-not-allowed' : ''
+                  }`}
+                >
+                  <option value="ativo">Ativo</option>
+                  <option value="inativo">Inativo</option>
+                </select>
           </div>
         )}
 
