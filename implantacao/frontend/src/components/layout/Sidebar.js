@@ -313,7 +313,8 @@ const Sidebar = ({ collapsed, onToggle }) => {
                   const isActive = location.pathname === item.path;
                   
                   // Verificar se o usuário pode visualizar este item
-                  const canViewItem = item.screen === 'dashboard' || canView(item.screen);
+                  // Se screen é null ou undefined, sempre mostrar (sem verificação de permissão)
+                  const canViewItem = !item.screen || item.screen === 'dashboard' || canView(item.screen);
                   
                   if (!canViewItem) {
                     return null;
