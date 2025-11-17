@@ -30,6 +30,9 @@ export const useRotasNutricionistasConsulta = () => {
     coordenador: ''
   });
 
+  // Estado separado para o termo de busca (muda a cada letra)
+  const [searchTerm, setSearchTerm] = useState('');
+
   // Estados de estatísticas
   const [stats, setStats] = useState({
     total: 0,
@@ -77,6 +80,28 @@ export const useRotasNutricionistasConsulta = () => {
   }, []);
 
   /**
+   * Filtrar dados localmente
+   */
+  const filtrarDadosLocalmente = useCallback((dados, filtros) => {
+    if (!filtros.search) {
+      return dados;
+    }
+    
+    const searchLower = filtros.search.toLowerCase();
+    return dados.filter(rota => {
+      const nomeRota = (rota.nome || '').toLowerCase();
+      const nutricionista = (rota.usuario_nome || rota.nutricionista_nome || '').toLowerCase();
+      const supervisor = (rota.supervisor_nome || '').toLowerCase();
+      const coordenador = (rota.coordenador_nome || '').toLowerCase();
+      
+      return nomeRota.includes(searchLower) ||
+             nutricionista.includes(searchLower) ||
+             supervisor.includes(searchLower) ||
+             coordenador.includes(searchLower);
+    });
+  }, []);
+
+  /**
    * Carregar rotas nutricionistas
    */
   const carregarRotasNutricionistas = useCallback(async (params = {}) => {
@@ -92,11 +117,14 @@ export const useRotasNutricionistasConsulta = () => {
       }
 
 
-      // Preparar parâmetros da consulta
+      // Preparar parâmetros da consulta (não incluir search, pois busca é local)
       const queryParams = {
         ...filters,
         ...params
       };
+      
+      // Remover search dos parâmetros da API (busca é feita localmente)
+      delete queryParams.search;
 
       // Remover parâmetros vazios
       Object.keys(queryParams).forEach(key => {
@@ -148,15 +176,18 @@ export const useRotasNutricionistasConsulta = () => {
         // Garantir que result.data seja sempre um array
         const rotasData = Array.isArray(result.data) ? result.data : [];
         
+        // Aplicar filtro de busca localmente se houver
+        const dadosFiltrados = filtrarDadosLocalmente(rotasData, filters);
+        
         // Sempre aplicar paginação no frontend (como no fornecedores)
         setAllRotasNutricionistas(rotasData);
         
-        const totalItems = rotasData.length;
+        const totalItems = dadosFiltrados.length;
         const totalPages = Math.ceil(totalItems / pagination.itemsPerPage) || 1;
         const currentPage = Math.min(pagination.currentPage, totalPages);
         
-        // Aplicar paginação
-        const paginatedData = applyFrontendPagination(rotasData, currentPage, pagination.itemsPerPage);
+        // Aplicar paginação nos dados filtrados
+        const paginatedData = applyFrontendPagination(dadosFiltrados, currentPage, pagination.itemsPerPage);
         
         setRotasNutricionistas(paginatedData);
         setPagination(prev => ({
@@ -179,7 +210,7 @@ export const useRotasNutricionistasConsulta = () => {
     } finally {
       setLoading(false);
     }
-  }, [pagination.currentPage, pagination.itemsPerPage, filters, checkConnection]);
+  }, [pagination.currentPage, pagination.itemsPerPage, filters.status, filters.nutricionista, filters.supervisor, filters.coordenador, checkConnection, filtrarDadosLocalmente]);
 
   /**
    * Carregar estatísticas
@@ -218,10 +249,49 @@ export const useRotasNutricionistasConsulta = () => {
   }, []);
 
   /**
+   * Atualizar termo de busca (sem aplicar filtro)
+   */
+  const atualizarSearchTerm = useCallback((termo) => {
+    setSearchTerm(termo);
+  }, []);
+
+  /**
+   * Aplicar busca (chamado quando pressiona Enter)
+   */
+  const aplicarBusca = useCallback(() => {
+    const novosFiltros = { ...filters, search: searchTerm };
+    setFilters(novosFiltros);
+    
+    // Filtrar dados localmente
+    const dadosFiltrados = filtrarDadosLocalmente(allRotasNutricionistas, novosFiltros);
+    
+    setPagination(prev => {
+      const updatedPagination = { ...prev, currentPage: 1 }; // Reset para primeira página
+      
+      const totalItems = dadosFiltrados.length;
+      const totalPages = Math.ceil(totalItems / updatedPagination.itemsPerPage) || 1;
+      
+      // Aplicar paginação no frontend com os dados filtrados
+      const paginatedData = applyFrontendPagination(dadosFiltrados, updatedPagination.currentPage, updatedPagination.itemsPerPage);
+      setRotasNutricionistas(paginatedData);
+      
+      return {
+        ...updatedPagination,
+        totalItems,
+        totalPages
+      };
+    });
+  }, [searchTerm, filters, allRotasNutricionistas, filtrarDadosLocalmente, applyFrontendPagination]);
+
+  /**
    * Atualizar filtros
    */
   const atualizarFiltros = useCallback((novosFiltros) => {
     setFilters(prev => ({ ...prev, ...novosFiltros }));
+    // Se atualizou o search, também atualiza o searchTerm
+    if (novosFiltros.search !== undefined) {
+      setSearchTerm(novosFiltros.search);
+    }
     setPagination(prev => {
       const updatedPagination = { ...prev, currentPage: 1 }; // Reset para primeira página
       
@@ -288,11 +358,14 @@ export const useRotasNutricionistasConsulta = () => {
     error,
     pagination,
     filters,
+    searchTerm,
     
     // Ações
     carregarRotasNutricionistas,
     buscarRotaNutricionistaPorId,
     atualizarFiltros,
+    atualizarSearchTerm,
+    aplicarBusca,
     atualizarPaginacao,
     recarregar,
 

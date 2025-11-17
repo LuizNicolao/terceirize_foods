@@ -26,9 +26,12 @@ const RotasNutricionistas = () => {
     error,
     pagination,
     filters,
+    searchTerm,
     carregarRotasNutricionistas,
     buscarRotaNutricionistaPorId,
     atualizarFiltros,
+    atualizarSearchTerm,
+    aplicarBusca,
     atualizarPaginacao,
     recarregar,
     isConnected,
@@ -51,8 +54,12 @@ const RotasNutricionistas = () => {
     setSelectedRotaNutricionista(null);
   };
 
-  const handleSearch = (searchTerm) => {
-    atualizarFiltros({ search: searchTerm });
+  const handleSearchChange = (termo) => {
+    atualizarSearchTerm(termo);
+  };
+
+  const handleSearchSubmit = () => {
+    aplicarBusca();
   };
 
   const handlePageChange = (page) => {
@@ -131,8 +138,13 @@ const RotasNutricionistas = () => {
 
       {/* Filtros */}
       <CadastroFilterBar
-        searchTerm={filters.search}
-        onSearchChange={handleSearch}
+        searchTerm={searchTerm}
+        onSearchChange={handleSearchChange}
+        onKeyPress={(e) => {
+          if (e.key === 'Enter') {
+            handleSearchSubmit();
+          }
+        }}
         placeholder="Buscar por nome da rota, nutricionista, supervisor ou coordenador..."
       />
 
