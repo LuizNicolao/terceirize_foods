@@ -117,6 +117,24 @@ const importarExcel = async (req, res) => {
       const getCellValue = (colIndex) => {
         const cell = row.getCell(colIndex);
         if (!cell) return null;
+        
+        // Para quantidade, sempre tentar ler como texto primeiro para preservar vírgula
+        if (colIndex === 6) { // coluna de quantidade
+          // Tentar ler o valor formatado (texto) primeiro
+          if (cell.text) {
+            return cell.text.trim();
+          }
+          // Se não tiver texto formatado, tentar valor numérico
+          if (cell.type === ExcelJS.ValueType.Number) {
+            return cell.value;
+          }
+          // Se é string, retornar como string
+          if (cell.type === ExcelJS.ValueType.String || cell.type === ExcelJS.ValueType.RichText) {
+            return cell.value ? cell.value.toString() : null;
+          }
+        }
+        
+        // Para outras colunas, comportamento padrão
         // Se a célula tem valor numérico, retornar o número
         if (cell.type === ExcelJS.ValueType.Number) {
           return cell.value;
@@ -140,18 +158,19 @@ const importarExcel = async (req, res) => {
 
         // Converter quantidade para string e tratar vírgula como separador decimal
         // O Excel pode retornar números com ponto ou strings com vírgula
+        // IMPORTANTE: Sempre tentar ler como texto primeiro para preservar vírgula
         if (quantidade !== null && quantidade !== undefined) {
-          // Se já é um número, usar diretamente
-          if (typeof quantidade === 'number') {
-            // Número já está correto (Excel converte vírgula para ponto automaticamente)
-            quantidade = quantidade.toString();
+          // Converter para string primeiro
+          quantidade = quantidade.toString().trim();
+          
+          // Se a string está vazia após trim, considerar inválido
+          if (quantidade === '') {
+            quantidade = null;
           } else {
-            // É string, precisa converter vírgula para ponto
-            quantidade = quantidade.toString().trim();
             // Substituir vírgula por ponto para parseFloat funcionar corretamente
             quantidade = quantidade.replace(',', '.');
-            // Remover espaços e caracteres não numéricos (exceto ponto)
-            quantidade = quantidade.replace(/[^\d.]/g, '');
+            // Remover espaços extras, mas manter números e ponto
+            quantidade = quantidade.replace(/\s+/g, '');
           }
         }
 
@@ -216,10 +235,24 @@ const importarExcel = async (req, res) => {
 
         // Validar quantidade (agora já convertida para usar ponto como separador)
         const qtd = parseFloat(quantidade);
-        if (isNaN(qtd) || qtd <= 0) {
+        if (isNaN(qtd)) {
           erros.push({
             linha: linha,
-            erro: 'Quantidade deve ser um número positivo',
+            erro: `Quantidade inválida: "${quantidade}" não é um número válido`,
+            dados: { 
+              quantidadeOriginal: rowData[6], 
+              quantidadeConvertida: quantidade, 
+              qtd,
+              tipoQuantidade: typeof rowData[6],
+              cellText: row.getCell(6)?.text
+            }
+          });
+          return;
+        }
+        if (qtd <= 0) {
+          erros.push({
+            linha: linha,
+            erro: 'Quantidade deve ser um número positivo (maior que zero)',
             dados: { quantidade: rowData[6], quantidadeConvertida: quantidade, qtd }
           });
           return;
@@ -294,64 +327,34 @@ const importarExcel = async (req, res) => {
           // Tentar buscar nutricionista da escola usando a estrutura correta da tabela
           let nutricionistaEscola = [];
           
-          // Primeiro, tentar buscar por escola_id (coluna mais comum)
+          // A tabela rotas_nutricionistas tem 'escolas_responsaveis' (texto com IDs separados por vírgula)
           try {
             nutricionistaEscola = await executeQuery(`
               SELECT 
                 u.id as usuario_id,
                 u.email as usuario_email
               FROM foods_db.rotas_nutricionistas rn
-              JOIN implantacao_db.usuarios u ON u.email = rn.email_nutricionista
-              WHERE rn.escola_id = ?
+              JOIN implantacao_db.usuarios u ON u.id = rn.usuario_id
+              WHERE FIND_IN_SET(?, rn.escolas_responsaveis) > 0
+                AND (rn.status = 'ativo' OR rn.status = '1')
+              LIMIT 1
             `, [necessidade.escola_id]);
-          } catch (error) {
-            // Ignorar erro e tentar próxima opção
-          }
-          
-          // Se não encontrar, tentar com unidade_escolar_id
-          if (nutricionistaEscola.length === 0) {
-            try {
-              nutricionistaEscola = await executeQuery(`
-                SELECT 
-                  u.id as usuario_id,
-                  u.email as usuario_email
-                FROM foods_db.rotas_nutricionistas rn
-                JOIN implantacao_db.usuarios u ON u.email = rn.email_nutricionista
-                WHERE rn.unidade_escolar_id = ?
-              `, [necessidade.escola_id]);
-            } catch (error) {
-              // Ignorar erro e tentar próxima opção
-            }
-          }
-          
-          // Se ainda não encontrar, tentar buscar usando a estrutura correta da tabela
-          if (nutricionistaEscola.length === 0) {
-            try {
-              // A tabela rotas_nutricionistas tem 'escolas_responsaveis' que pode conter o ID da escola
+            
+            // Se não encontrar, tentar buscar por qualquer nutricionista ativo
+            if (nutricionistaEscola.length === 0) {
               nutricionistaEscola = await executeQuery(`
                 SELECT 
                   u.id as usuario_id,
                   u.email as usuario_email
                 FROM foods_db.rotas_nutricionistas rn
                 JOIN implantacao_db.usuarios u ON u.id = rn.usuario_id
-                WHERE rn.escolas_responsaveis LIKE ?
-              `, [`%${necessidade.escola_id}%`]);
-              
-              // Se não encontrar, tentar buscar por qualquer nutricionista ativo
-              if (nutricionistaEscola.length === 0) {
-                nutricionistaEscola = await executeQuery(`
-                  SELECT 
-                    u.id as usuario_id,
-                    u.email as usuario_email
-                  FROM foods_db.rotas_nutricionistas rn
-                  JOIN implantacao_db.usuarios u ON u.id = rn.usuario_id
-                  WHERE rn.status = 'ativo' OR rn.status = '1'
-                  LIMIT 1
-                `);
-              }
-            } catch (error) {
-              // Ignorar erro e usar usuário atual
+                WHERE (rn.status = 'ativo' OR rn.status = '1')
+                LIMIT 1
+              `);
             }
+          } catch (error) {
+            console.error('Erro ao buscar nutricionista:', error);
+            // Ignorar erro e usar usuário atual
           }
           
           if (nutricionistaEscola.length > 0) {
@@ -385,14 +388,15 @@ const importarExcel = async (req, res) => {
         try {
           let produtoInfo = [];
           
-          // Tentar diferentes nomes de colunas para unidade_medida
+          // Buscar unidade_medida através de JOIN com unidades_medida
           try {
             produtoInfo = await executeQuery(`
               SELECT 
-                po.unidade_medida_nome as unidade_medida,
+                COALESCE(um.sigla, um.nome, 'UN') as unidade_medida,
                 g.nome as grupo,
                 g.id as grupo_id
               FROM foods_db.produto_origem po
+              LEFT JOIN foods_db.unidades_medida um ON po.unidade_medida_id = um.id
               LEFT JOIN foods_db.grupos g ON po.grupo_id = g.id
               WHERE po.id = ?
             `, [necessidade.produto_id]);
