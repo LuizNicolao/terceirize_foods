@@ -60,7 +60,9 @@ export const useAcoesNecessidades = ({
         
         if (ajusteLocal !== undefined && ajusteLocal !== '') {
           // Tem ajuste local (foi digitado)
-          valorFinal = parseFloat(ajusteLocal) || 0;
+          // Normalizar vírgula para ponto antes de converter
+          const ajusteNormalizado = String(ajusteLocal).replace(',', '.');
+          valorFinal = parseFloat(ajusteNormalizado) || 0;
         } else {
           // Não tem ajuste local, preservar valor existente no banco
           if (activeTab === 'nutricionista') {

@@ -35,7 +35,15 @@ const salvarAjustes = async (req, res) => {
       if (currentRecord.length > 0) {
         const currentValue = currentRecord[0].ajuste_nutricionista;
         const currentAjusteConfNutri = currentRecord[0].ajuste_conf_nutri;
-        const newValue = ajuste_nutricionista || null;
+        // Normalizar vírgula para ponto antes de processar
+        let newValue = ajuste_nutricionista || null;
+        if (newValue !== null && typeof newValue === 'string') {
+          newValue = newValue.replace(',', '.');
+          newValue = parseFloat(newValue);
+          if (isNaN(newValue)) {
+            newValue = null;
+          }
+        }
         const currentStatus = currentRecord[0].status;
         
         // Determinar qual valor atual preservar em ajuste_anterior

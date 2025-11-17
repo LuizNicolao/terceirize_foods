@@ -47,7 +47,8 @@ export const useAjustesLocais = (necessidades, activeTab) => {
       
       // Usar chave composta (escola_id + produto_id) ao invés de apenas necessidade.id
       const chave = `${necessidade.escola_id}_${necessidade.produto_id}`;
-      const valor = necessidade.valor === '' ? '' : parseFloat(necessidade.valor) || '';
+      // Manter como string durante a digitação para permitir valores como "0," ou "0."
+      const valor = necessidade.valor === '' ? '' : necessidade.valor;
       
       novosAjustes[chave] = valor;
       

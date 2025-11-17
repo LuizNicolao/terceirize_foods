@@ -99,17 +99,25 @@ const AjusteTabelaNutricionista = ({
               </td>
               <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900 text-center">
                 <Input
-                  type="number"
+                  type="text"
+                  inputMode="decimal"
+                  pattern="[0-9]*[.,]?[0-9]*"
                   value={ajustesLocais[`${necessidade.escola_id}_${necessidade.produto_id}`] || ''}
-                  onChange={(e) => onAjusteChange({
-                    escola_id: necessidade.escola_id,
-                    produto_id: necessidade.produto_id,
-                    valor: e.target.value
-                  })}
-                  min="0"
-                  step="0.001"
+                  onChange={(e) => {
+                    const valor = e.target.value;
+                    // Permitir apenas números, vírgula e ponto
+                    // Permite: vazio, números, "0,", "0.", "0,5", "0.5", etc.
+                    if (valor === '' || /^[0-9]*[.,]?[0-9]*$/.test(valor)) {
+                      onAjusteChange({
+                        escola_id: necessidade.escola_id,
+                        produto_id: necessidade.produto_id,
+                        valor: valor
+                      });
+                    }
+                  }}
                   className="w-20 text-center text-xs py-1"
                   disabled={!canEdit}
+                  placeholder="0.000"
                 />
               </td>
               <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900 text-center font-semibold">

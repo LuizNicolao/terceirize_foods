@@ -138,7 +138,9 @@ class NecessidadesCoordenacaoController {
           const currentValue = currentResult[0].ajuste_coordenacao;
           const currentAjusteConfCoord = currentResult[0].ajuste_conf_coord;
           const currentStatus = currentResult[0].status;
-          const newValue = parseFloat(ajuste) || 0;
+          // Normalizar vírgula para ponto antes de processar
+          const ajusteNormalizado = String(ajuste).replace(',', '.');
+          const newValue = parseFloat(ajusteNormalizado) || 0;
           
           // Determinar qual valor atual preservar em ajuste_anterior
           let valorAnterior = null;
@@ -409,19 +411,126 @@ class NecessidadesCoordenacaoController {
         });
       }
 
-      const produtoQuery = `
-        SELECT ppc.produto_nome, ppc.produto_codigo, ppc.unidade_medida, ppc.grupo, ppc.grupo_id
+      // Verificar se o produto pertence ao grupo e buscar grupo_id
+      // Primeiro tenta buscar em produtos_per_capita
+      let produtoGrupo = await executeQuery(`
+        SELECT ppc.produto_id, ppc.produto_nome, ppc.unidade_medida, ppc.produto_codigo, ppc.grupo, ppc.grupo_id
         FROM produtos_per_capita ppc
-        WHERE ppc.produto_id = ? AND ppc.grupo = ?
-      `;
-      
-      const produto = await executeQuery(produtoQuery, [produto_id, grupo]);
-      
-      if (produto.length === 0) {
-        return res.status(404).json({
+        WHERE ppc.produto_id = ? AND ppc.grupo COLLATE utf8mb4_unicode_ci = ? COLLATE utf8mb4_unicode_ci AND ppc.ativo = true
+      `, [produto_id, grupo]);
+
+      // Se não encontrou em produtos_per_capita, tenta buscar em necessidades (produtos excluídos)
+      if (produtoGrupo.length === 0) {
+        const produtoExcluido = await executeQuery(`
+          SELECT DISTINCT
+            n.produto_id,
+            n.produto as produto_nome,
+            n.produto_unidade as unidade_medida,
+            n.grupo,
+            n.grupo_id,
+            COALESCE(ppc.produto_codigo, po.codigo, '') as produto_codigo
+          FROM necessidades n
+          LEFT JOIN produtos_per_capita ppc ON ppc.produto_id = n.produto_id 
+            AND ppc.grupo COLLATE utf8mb4_unicode_ci = n.grupo COLLATE utf8mb4_unicode_ci
+          LEFT JOIN foods_db.produto_origem po ON po.id = n.produto_id
+          WHERE n.produto_id = ? 
+            AND n.grupo COLLATE utf8mb4_unicode_ci = ? COLLATE utf8mb4_unicode_ci
+          LIMIT 1
+        `, [produto_id, grupo]);
+
+        if (produtoExcluido.length > 0) {
+          produtoGrupo = [{
+            produto_id: produtoExcluido[0].produto_id,
+            produto_nome: produtoExcluido[0].produto_nome,
+            unidade_medida: produtoExcluido[0].unidade_medida,
+            produto_codigo: produtoExcluido[0].produto_codigo,
+            grupo: produtoExcluido[0].grupo,
+            grupo_id: produtoExcluido[0].grupo_id
+          }];
+        }
+      }
+
+      // Se ainda não encontrou, tenta buscar em foods_db.produto_origem
+      if (produtoGrupo.length === 0) {
+        const produtoOrigem = await executeQuery(`
+          SELECT 
+            po.id as produto_id,
+            po.nome as produto_nome,
+            po.codigo as produto_codigo,
+            g.nome as grupo,
+            g.id as grupo_id,
+            COALESCE(um.sigla, um.nome, 'UN') as unidade_medida
+          FROM foods_db.produto_origem po
+          LEFT JOIN foods_db.grupos g ON po.grupo_id = g.id
+          LEFT JOIN foods_db.unidades_medida um ON po.unidade_medida_id = um.id
+          WHERE po.id = ? AND g.nome COLLATE utf8mb4_unicode_ci = ? COLLATE utf8mb4_unicode_ci
+          LIMIT 1
+        `, [produto_id, grupo]);
+
+        if (produtoOrigem.length > 0) {
+          produtoGrupo = [{
+            produto_id: produtoOrigem[0].produto_id,
+            produto_nome: produtoOrigem[0].produto_nome,
+            unidade_medida: produtoOrigem[0].unidade_medida,
+            produto_codigo: produtoOrigem[0].produto_codigo,
+            grupo: produtoOrigem[0].grupo,
+            grupo_id: produtoOrigem[0].grupo_id
+          }];
+        }
+      }
+
+      if (produtoGrupo.length === 0) {
+        return res.status(400).json({
           success: false,
-          message: 'Produto não encontrado'
+          error: 'Produto inválido',
+          message: 'Produto não pertence ao grupo especificado ou não foi encontrado'
         });
+      }
+
+      const produto = produtoGrupo[0];
+
+      // Verificar se já existe necessidade para este produto/escola/período (não excluído)
+      let whereClause = `escola_id = ? AND produto_id = ? AND status != 'EXCLUÍDO'`;
+      const params = [escola_id, produto_id];
+
+      if (semana_consumo) {
+        whereClause += ` AND semana_consumo = ?`;
+        params.push(semana_consumo);
+      }
+
+      const existing = await executeQuery(`
+        SELECT id, status, semana_consumo, produto FROM necessidades WHERE ${whereClause}
+      `, params);
+
+      if (existing.length > 0) {
+        return res.status(409).json({
+          success: false,
+          error: 'Produto já incluído',
+          message: 'Este produto já está incluído na necessidade'
+        });
+      }
+
+      // Verificar se existe um registro excluído que pode ser reativado
+      let whereClauseExcluido = `escola_id = ? AND produto_id = ? AND status = 'EXCLUÍDO'`;
+      const paramsExcluido = [escola_id, produto_id];
+
+      if (semana_consumo) {
+        whereClauseExcluido += ` AND semana_consumo = ?`;
+        paramsExcluido.push(semana_consumo);
+      }
+
+      const existingExcluido = await executeQuery(`
+        SELECT id, status, semana_consumo, produto FROM necessidades WHERE ${whereClauseExcluido}
+        ORDER BY id DESC LIMIT 1
+      `, paramsExcluido);
+
+      // Se encontrou um registro excluído, vamos reativá-lo ao invés de criar novo
+      let reativarRegistro = false;
+      let registroIdParaReativar = null;
+
+      if (existingExcluido.length > 0) {
+        reativarRegistro = true;
+        registroIdParaReativar = existingExcluido[0].id;
       }
 
       // Determinar o status baseado no status atual do conjunto
@@ -447,48 +556,76 @@ class NecessidadesCoordenacaoController {
         ajuste_conf_coord = qtdFinal;
       }
 
-      // Inserir novo produto
-      const insertQuery = `
-        INSERT INTO necessidades (
-          usuario_email, usuario_id, produto_id, produto, produto_unidade,
-          escola_id, escola, escola_rota, codigo_teknisa, ajuste,
-          semana_consumo, semana_abastecimento, grupo, grupo_id, status, necessidade_id,
-          observacoes, data_preenchimento, ajuste_nutricionista, ajuste_coordenacao, ajuste_conf_nutri, ajuste_conf_coord
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?)
-      `;
+      let resultId;
 
-      const values = [
-        escolaData[0].usuario_email,
-        escolaData[0].usuario_id,
-        produto_id,
-        produto[0].produto_nome,
-        produto[0].unidade_medida,
-        escola_id,
-        escolaData[0].escola,
-        escolaData[0].escola_rota,
-        escolaData[0].codigo_teknisa,
-        0, // ajuste sempre 0 para coordenação (NOT NULL)
-        semana_consumo || escolaData[0].semana_consumo,
-        semana_abastecimento || escolaData[0].semana_abastecimento,
-        produto[0].grupo,
-        produto[0].grupo_id,
-        novoStatus,
-        escolaData[0].necessidade_id,
-        'Produto extra incluído pela coordenação',
-        null, // ajuste_nutricionista null
-        ajuste_coordenacao,
-        null, // ajuste_conf_nutri null
-        ajuste_conf_coord
-      ];
+      if (reativarRegistro) {
+        // Reativar registro excluído ao invés de criar novo
+        await executeQuery(`
+          UPDATE necessidades SET
+            status = ?,
+            ajuste = 0,
+            ajuste_coordenacao = ?,
+            ajuste_conf_coord = ?,
+            semana_consumo = ?,
+            semana_abastecimento = ?,
+            observacoes = 'Produto extra reativado pela coordenação',
+            data_atualizacao = NOW()
+          WHERE id = ?
+        `, [
+          novoStatus,
+          ajuste_coordenacao,
+          ajuste_conf_coord,
+          semana_consumo || escolaData[0].semana_consumo,
+          semana_abastecimento || escolaData[0].semana_abastecimento,
+          registroIdParaReativar
+        ]);
+        resultId = registroIdParaReativar;
+      } else {
+        // Inserir novo produto
+        const insertQuery = `
+          INSERT INTO necessidades (
+            usuario_email, usuario_id, produto_id, produto, produto_unidade,
+            escola_id, escola, escola_rota, codigo_teknisa, ajuste,
+            semana_consumo, semana_abastecimento, grupo, grupo_id, status, necessidade_id,
+            observacoes, data_preenchimento, ajuste_nutricionista, ajuste_coordenacao, ajuste_conf_nutri, ajuste_conf_coord
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?)
+        `;
 
-      await executeQuery(insertQuery, values);
+        const values = [
+          escolaData[0].usuario_email,
+          escolaData[0].usuario_id,
+          produto_id,
+          produto.produto_nome,
+          produto.unidade_medida,
+          escola_id,
+          escolaData[0].escola,
+          escolaData[0].escola_rota,
+          escolaData[0].codigo_teknisa,
+          0, // ajuste sempre 0 para coordenação (NOT NULL)
+          semana_consumo || escolaData[0].semana_consumo,
+          semana_abastecimento || escolaData[0].semana_abastecimento,
+          produto.grupo,
+          produto.grupo_id,
+          novoStatus,
+          escolaData[0].necessidade_id,
+          'Produto extra incluído pela coordenação',
+          null, // ajuste_nutricionista null
+          ajuste_coordenacao,
+          null, // ajuste_conf_nutri null
+          ajuste_conf_coord
+        ];
+
+        const result = await executeQuery(insertQuery, values);
+        resultId = result.insertId;
+      }
 
       res.json({
         success: true,
-        message: 'Produto incluído com sucesso',
+        message: reativarRegistro ? 'Produto extra reativado com sucesso' : 'Produto incluído com sucesso',
         data: {
-          produto: produto[0].produto_nome,
-          unidade: produto[0].unidade_medida
+          id: resultId,
+          produto: produto.produto_nome,
+          unidade: produto.unidade_medida
         }
       });
 

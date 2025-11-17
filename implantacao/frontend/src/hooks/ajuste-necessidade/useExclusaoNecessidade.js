@@ -29,7 +29,6 @@ export const useExclusaoNecessidade = (handleCarregarNecessidades) => {
         toast.error(response.message || 'Erro ao excluir produto');
       }
     } catch (error) {
-      console.error('Erro ao excluir necessidade:', error);
       toast.error('Erro ao excluir produto');
     }
   }, [produtoToDelete, handleCarregarNecessidades]);
