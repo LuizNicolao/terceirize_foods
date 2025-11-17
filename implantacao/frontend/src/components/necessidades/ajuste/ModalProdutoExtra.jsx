@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaPlus } from 'react-icons/fa';
 import { Modal, Button, Input, Pagination } from '../../ui';
+import toast from 'react-hot-toast';
 
 const ModalProdutoExtra = ({
   isOpen,
@@ -40,7 +41,7 @@ const ModalProdutoExtra = ({
 
   const handleIncluirProdutos = () => {
     if (!grupoSelecionado || grupoSelecionado === 'todos' || grupoSelecionado === '') {
-      alert('Selecione um grupo nos filtros principais antes de incluir produtos extras.');
+      toast.error('Selecione um grupo nos filtros principais antes de incluir produtos extras.');
       return;
     }
 
@@ -52,7 +53,7 @@ const ModalProdutoExtra = ({
 
     if (produtosSemQuantidade.length > 0) {
       const nomes = produtosSemQuantidade.map(p => p.produto_nome).join(', ');
-      alert(`Produtos devem ter quantidade maior que zero: ${nomes}`);
+      toast.error(`Produtos devem ter quantidade maior que zero: ${nomes}`);
       return;
     }
 

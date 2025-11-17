@@ -560,6 +560,7 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
               placeholder="Digite para buscar uma escola..."
               disabled={necessidadesLoading || loading}
               required
+              usePortal={false}
               filterBy={(option, searchTerm) => {
                 const label = option.label.toLowerCase();
                 const description = option.description?.toLowerCase() || '';
@@ -589,6 +590,7 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
               placeholder="Digite para buscar um grupo..."
               disabled={necessidadesLoading || loading}
               required
+              usePortal={false}
             />
           </div>
           
@@ -601,6 +603,7 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
               placeholder="Selecione a semana de consumo..."
               disabled={necessidadesLoading || loading}
               required
+              usePortal={false}
             />
           </div>
         </div>

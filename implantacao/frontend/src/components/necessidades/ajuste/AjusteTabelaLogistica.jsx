@@ -9,9 +9,14 @@ const AjusteTabelaLogistica = ({
   onExcluirNecessidade,
   canEdit
 }) => {
-  // Função para calcular quantidade anterior baseado no status
+  // Função para calcular quantidade anterior
+  // Usa a coluna ajuste_anterior do banco de dados
   const getQuantidadeAnterior = (necessidade) => {
-    // Para NEC LOG, mostrar ajuste_coordenacao
+    // Se existe ajuste_anterior, usar ele
+    if (necessidade.ajuste_anterior !== null && necessidade.ajuste_anterior !== undefined) {
+      return necessidade.ajuste_anterior ?? 0;
+    }
+    // Fallback para lógica antiga se ajuste_anterior não existir
     return necessidade.ajuste_coordenacao ?? 0;
   };
 

@@ -48,6 +48,7 @@ const SubstituicoesFilters = ({
             ]}
             placeholder="Selecione o tipo de rota"
             disabled={loading}
+            usePortal={false}
           />
         </div>
 
@@ -68,6 +69,7 @@ const SubstituicoesFilters = ({
             ]}
             placeholder="Selecione a rota"
             disabled={loading}
+            usePortal={false}
           />
         </div>
 
@@ -98,6 +100,7 @@ const SubstituicoesFilters = ({
             ]}
             placeholder="Selecione o grupo"
             disabled={loading || grupos.length === 0}
+            usePortal={false}
           />
         </div>
 
@@ -115,6 +118,7 @@ const SubstituicoesFilters = ({
             }))}
             placeholder="Selecione a semana..."
             disabled={loading}
+            usePortal={false}
           />
         </div>
 

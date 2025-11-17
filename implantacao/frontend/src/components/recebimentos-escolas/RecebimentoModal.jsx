@@ -225,6 +225,7 @@ const RecebimentoModal = ({
           placeholder="Digite para buscar uma escola..."
           disabled={isViewMode}
           required
+          usePortal={false}
           filterBy={(option, searchTerm) => {
             const label = option.label.toLowerCase();
             const description = option.description?.toLowerCase() || '';
@@ -326,6 +327,7 @@ const RecebimentoModal = ({
                       description: produto.grupo_nome ? `Grupo: ${produto.grupo_nome}` : ''
                     }))}
                     placeholder="Digite para buscar um produto..."
+                    usePortal={false}
                     filterBy={(option, searchTerm) => {
                       return option.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
                              (option.description && option.description.toLowerCase().includes(searchTerm.toLowerCase()));

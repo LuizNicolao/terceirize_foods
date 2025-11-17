@@ -101,6 +101,7 @@ const RegistrosDiariosFilters = ({ onFilter, onClear }) => {
             ]}
             placeholder="Selecione uma escola..."
             disabled={loadingEscolas}
+            usePortal={false}
             renderOption={(option) => (
               <div className="flex flex-col">
                 <span className="font-medium text-gray-900">{option.label}</span>

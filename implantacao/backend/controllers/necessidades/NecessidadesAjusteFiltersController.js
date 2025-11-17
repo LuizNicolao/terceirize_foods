@@ -326,6 +326,15 @@ const buscarProdutosParaModal = async (req, res) => {
   try {
     const { grupo, escola_id, search, consumo_de, consumo_ate, semana_consumo } = req.query;
 
+    console.log('[buscarProdutosParaModal] Requisição recebida:', {
+      grupo,
+      escola_id,
+      search,
+      consumo_de,
+      consumo_ate,
+      semana_consumo
+    });
+
     // Validar parâmetros obrigatórios
     if (!grupo) {
       return res.status(400).json({
@@ -334,6 +343,24 @@ const buscarProdutosParaModal = async (req, res) => {
         message: 'grupo é obrigatório'
       });
     }
+
+    // Primeiro, verificar todos os produtos do grupo (antes de filtrar)
+    const todosProdutosGrupo = await executeQuery(`
+      SELECT DISTINCT ppc.produto_id, ppc.produto_codigo, ppc.produto_nome, ppc.unidade_medida, ppc.ativo, ppc.grupo
+      FROM produtos_per_capita ppc
+      WHERE ppc.grupo = ?
+    `, [grupo]);
+
+    console.log('[buscarProdutosParaModal] Todos os produtos do grupo (antes de filtrar):', {
+      grupo,
+      total: todosProdutosGrupo.length,
+      produtos: todosProdutosGrupo.map(p => ({ 
+        id: p.produto_id, 
+        codigo: p.produto_codigo, 
+        nome: p.produto_nome,
+        ativo: p.ativo 
+      }))
+    });
 
     let query = `
       SELECT DISTINCT ppc.produto_id, ppc.produto_codigo, ppc.produto_nome, ppc.unidade_medida
@@ -350,34 +377,190 @@ const buscarProdutosParaModal = async (req, res) => {
     }
 
     // Excluir produtos já incluídos na necessidade (se escola_id e período fornecidos)
+    // IMPORTANTE: Não excluir produtos com status 'EXCLUÍDO', pois eles podem ser reativados
+    let produtosIncluidos = [];
+    
     if (escola_id && semana_consumo) {
+      // Primeiro, vamos verificar quais produtos estão incluídos (não excluídos)
+      produtosIncluidos = await executeQuery(`
+        SELECT DISTINCT n.produto_id, n.status, n.produto
+        FROM necessidades n
+        WHERE n.escola_id = ? 
+          AND n.semana_consumo = ? 
+          AND n.status != 'EXCLUÍDO'
+      `, [escola_id, semana_consumo]);
+
+      console.log('[buscarProdutosParaModal] Produtos já incluídos (não excluídos):', {
+        escola_id,
+        semana_consumo,
+        encontrados: produtosIncluidos.length,
+        produtos: produtosIncluidos.map(p => ({ id: p.produto_id, nome: p.produto, status: p.status }))
+      });
+
       // Usar semana_consumo diretamente - comparar produto_id da necessidades com produto_id da produtos_per_capita
+      // Excluir apenas produtos com status ativos (não excluídos)
+      // IMPORTANTE: Produtos com status 'EXCLUÍDO' devem aparecer no modal para poderem ser reativados
       query += ` AND ppc.produto_id NOT IN (
         SELECT DISTINCT n.produto_id 
         FROM necessidades n
-        WHERE n.escola_id = ? AND n.semana_consumo = ? AND n.status IN ('NEC', 'NEC NUTRI', 'CONF NUTRI')
+        WHERE n.escola_id = ? 
+          AND n.semana_consumo = ? 
+          AND n.status != 'EXCLUÍDO'
       )`;
       params.push(escola_id, semana_consumo);
     } else if (escola_id && consumo_de && consumo_ate) {
       // Fallback para consumo_de e consumo_ate
+      produtosIncluidos = await executeQuery(`
+        SELECT DISTINCT n.produto_id, n.status, n.produto
+        FROM necessidades n
+        WHERE n.escola_id = ? 
+          AND n.semana_consumo BETWEEN ? AND ? 
+          AND n.status != 'EXCLUÍDO'
+      `, [escola_id, consumo_de, consumo_ate]);
+
+      console.log('[buscarProdutosParaModal] Produtos já incluídos (não excluídos):', {
+        escola_id,
+        consumo_de,
+        consumo_ate,
+        encontrados: produtosIncluidos.length,
+        produtos: produtosIncluidos.map(p => ({ id: p.produto_id, nome: p.produto, status: p.status }))
+      });
+
+      // Excluir apenas produtos com status ativos (não excluídos)
+      // IMPORTANTE: Produtos com status 'EXCLUÍDO' devem aparecer no modal para poderem ser reativados
       query += ` AND ppc.produto_id NOT IN (
         SELECT DISTINCT n.produto_id 
         FROM necessidades n
-        WHERE n.escola_id = ? AND n.semana_consumo BETWEEN ? AND ? AND n.status IN ('NEC', 'NEC NUTRI', 'CONF NUTRI')
+        WHERE n.escola_id = ? 
+          AND n.semana_consumo BETWEEN ? AND ? 
+          AND n.status != 'EXCLUÍDO'
       )`;
       params.push(escola_id, consumo_de, consumo_ate);
     }
+
+    console.log('[buscarProdutosParaModal] Query final:', {
+      query,
+      params
+    });
 
     query += ` ORDER BY ppc.produto_nome ASC`;
 
     const produtos = await executeQuery(query, params);
 
+    // Buscar produtos excluídos da tabela necessidades que não estão em produtos_per_capita
+    // Esses produtos devem aparecer no modal para poderem ser reativados
+    let produtosExcluidos = [];
+    if (escola_id && semana_consumo) {
+      produtosExcluidos = await executeQuery(`
+        SELECT DISTINCT 
+          n.produto_id,
+          n.produto as produto_nome,
+          n.produto_unidade as unidade_medida,
+          COALESCE(ppc.produto_codigo, po.codigo, '') as produto_codigo
+        FROM necessidades n
+        LEFT JOIN produtos_per_capita ppc ON ppc.produto_id = n.produto_id 
+          AND ppc.grupo COLLATE utf8mb4_unicode_ci = n.grupo COLLATE utf8mb4_unicode_ci
+        LEFT JOIN foods_db.produto_origem po ON po.id = n.produto_id
+        WHERE n.escola_id = ? 
+          AND n.semana_consumo = ? 
+          AND n.status = 'EXCLUÍDO'
+          AND n.grupo = ?
+          AND n.produto_id NOT IN (
+            SELECT DISTINCT ppc2.produto_id 
+            FROM produtos_per_capita ppc2 
+            WHERE ppc2.grupo COLLATE utf8mb4_unicode_ci = ? COLLATE utf8mb4_unicode_ci 
+              AND ppc2.ativo = true
+          )
+      `, [escola_id, semana_consumo, grupo, grupo]);
+    } else if (escola_id && consumo_de && consumo_ate) {
+      produtosExcluidos = await executeQuery(`
+        SELECT DISTINCT 
+          n.produto_id,
+          n.produto as produto_nome,
+          n.produto_unidade as unidade_medida,
+          COALESCE(ppc.produto_codigo, po.codigo, '') as produto_codigo
+        FROM necessidades n
+        LEFT JOIN produtos_per_capita ppc ON ppc.produto_id = n.produto_id 
+          AND ppc.grupo COLLATE utf8mb4_unicode_ci = n.grupo COLLATE utf8mb4_unicode_ci
+        LEFT JOIN foods_db.produto_origem po ON po.id = n.produto_id
+        WHERE n.escola_id = ? 
+          AND n.semana_consumo BETWEEN ? AND ? 
+          AND n.status = 'EXCLUÍDO'
+          AND n.grupo = ?
+          AND n.produto_id NOT IN (
+            SELECT DISTINCT ppc2.produto_id 
+            FROM produtos_per_capita ppc2 
+            WHERE ppc2.grupo COLLATE utf8mb4_unicode_ci = ? COLLATE utf8mb4_unicode_ci 
+              AND ppc2.ativo = true
+          )
+      `, [escola_id, consumo_de, consumo_ate, grupo, grupo]);
+    }
+
+    console.log('[buscarProdutosParaModal] Produtos excluídos encontrados (não em produtos_per_capita):', {
+      encontrados: produtosExcluidos.length,
+      produtos: produtosExcluidos.map(p => ({ 
+        id: p.produto_id, 
+        codigo: p.produto_codigo, 
+        nome: p.produto_nome 
+      }))
+    });
+
+    // Combinar produtos de produtos_per_capita com produtos excluídos
+    const produtosCombinados = [...produtos];
+    
+    // Adicionar produtos excluídos que não estão na lista
+    produtosExcluidos.forEach(prodExcluido => {
+      if (!produtosCombinados.find(p => p.produto_id === prodExcluido.produto_id)) {
+        produtosCombinados.push({
+          produto_id: prodExcluido.produto_id,
+          produto_codigo: prodExcluido.produto_codigo || null,
+          produto_nome: prodExcluido.produto_nome,
+          unidade_medida: prodExcluido.unidade_medida || 'UN'
+        });
+      }
+    });
+
+    // Verificar especificamente o produto 157 (AGUA SANITARIA)
+    const produto157 = await executeQuery(`
+      SELECT ppc.produto_id, ppc.produto_codigo, ppc.produto_nome, ppc.ativo, ppc.grupo
+      FROM produtos_per_capita ppc
+      WHERE ppc.produto_id = 157
+    `, []);
+
+    console.log('[buscarProdutosParaModal] Verificação específica do produto 157 (AGUA SANITARIA):', {
+      encontrado: produto157.length > 0,
+      dados: produto157[0] || null
+    });
+
+    // Verificar se o produto 157 está na lista de produtos já incluídos
+    const produto157Incluido = produtosIncluidos.find(p => p.produto_id === 157);
+    console.log('[buscarProdutosParaModal] Produto 157 na lista de incluídos:', {
+      encontrado: !!produto157Incluido,
+      dados: produto157Incluido || null
+    });
+
+    // Verificar se o produto 157 está na lista de excluídos
+    const produto157Excluido = produtosExcluidos.find(p => p.produto_id === 157);
+    console.log('[buscarProdutosParaModal] Produto 157 na lista de excluídos:', {
+      encontrado: !!produto157Excluido,
+      dados: produto157Excluido || null
+    });
+
+    console.log('[buscarProdutosParaModal] Produtos encontrados (após combinar):', {
+      total: produtosCombinados.length,
+      produtos: produtosCombinados.map(p => ({ id: p.produto_id, codigo: p.produto_codigo, nome: p.produto_nome }))
+    });
+
     res.json({
       success: true,
-      data: produtos
+      data: produtosCombinados
     });
   } catch (error) {
-    console.error('Erro ao buscar produtos para modal:', error);
+    console.error('[buscarProdutosParaModal] ❌ Erro ao buscar produtos para modal:', {
+      error: error.message,
+      stack: error.stack,
+      query: req.query
+    });
     res.status(500).json({
       success: false,
       error: 'Erro interno do servidor',

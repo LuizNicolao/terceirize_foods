@@ -471,6 +471,7 @@ const StatusNecessidadesTab = () => {
               options={opcoesStatusNecessidade}
               placeholder="Selecione o status..."
               disabled={loading}
+              usePortal={false}
             />
           </div>
 
@@ -483,6 +484,7 @@ const StatusNecessidadesTab = () => {
               options={opcoesStatusSubstituicao}
               placeholder="Selecione o status..."
               disabled={loading}
+              usePortal={false}
             />
           </div>
 
@@ -498,6 +500,7 @@ const StatusNecessidadesTab = () => {
               ]}
               placeholder="Selecione o grupo..."
               disabled={loading || loadingOpcoes}
+              usePortal={false}
             />
           </div>
 
@@ -510,6 +513,7 @@ const StatusNecessidadesTab = () => {
               options={opcoesSemanas}
               placeholder="Selecione uma semana..."
               disabled={loading}
+              usePortal={false}
             />
           </div>
 
@@ -532,6 +536,7 @@ const StatusNecessidadesTab = () => {
               ]}
               placeholder={isNutricionista ? "Selecione uma das suas escolas..." : "Selecione uma escola..."}
               disabled={loading || loadingOpcoes}
+              usePortal={false}
             />
           </div>
 
@@ -544,6 +549,7 @@ const StatusNecessidadesTab = () => {
               options={filiais}
               placeholder="Selecione uma filial..."
               disabled={loading || loadingFiliais}
+              usePortal={false}
             />
           </div>
         </div>

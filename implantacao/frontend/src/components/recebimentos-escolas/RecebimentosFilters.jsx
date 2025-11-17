@@ -71,6 +71,7 @@ const RecebimentosFilters = ({
             options={opcoesSemanas || []}
             placeholder="Selecione a semana..."
             disabled={loading}
+            usePortal={false}
           />
         </div>
 
@@ -91,6 +92,7 @@ const RecebimentosFilters = ({
             placeholder="Digite para buscar uma escola..."
             disabled={loading}
             required
+            usePortal={false}
             filterBy={(option, searchTerm) => {
               const label = option.label.toLowerCase();
               const description = option.description?.toLowerCase() || '';
@@ -121,6 +123,7 @@ const RecebimentosFilters = ({
             ]}
             placeholder="Selecione o tipo..."
             disabled={loading}
+            usePortal={false}
           />
         </div>
 
@@ -140,6 +143,7 @@ const RecebimentosFilters = ({
             ]}
             placeholder="Selecione o tipo..."
             disabled={loading}
+            usePortal={false}
           />
         </div>
 

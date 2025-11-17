@@ -65,6 +65,7 @@ const TipoAtendimentoEscolaFilters = ({
             }))}
             placeholder="Todas as escolas"
             disabled={loading}
+            usePortal={false}
             filterBy={(option, searchTerm) => {
               const label = option.label.toLowerCase();
               const description = option.description?.toLowerCase() || '';
@@ -97,6 +98,7 @@ const TipoAtendimentoEscolaFilters = ({
             ]}
             placeholder="Todos os tipos"
             disabled={loading}
+            usePortal={false}
           />
         </div>
 
@@ -113,6 +115,7 @@ const TipoAtendimentoEscolaFilters = ({
             ]}
             placeholder="Todos"
             disabled={loading}
+            usePortal={false}
           />
         </div>
       </div>

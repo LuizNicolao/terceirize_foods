@@ -319,7 +319,7 @@ const SubstituicoesTableNutricionista = ({
           setQuantidadesGenericos(prev => ({ ...prev, [chaveOrigem]: quantidadeCalculada }));
             }
             
-           necessidade.escolas.forEach(escola => {
+            necessidade.escolas.forEach(escola => {
           const chaveEscola = `${chaveOrigem}-${escola.escola_id}`;
               setSelectedProdutosPorEscola(prev => ({ ...prev, [chaveEscola]: valor }));
           escola.selectedProdutoGenerico = valor;

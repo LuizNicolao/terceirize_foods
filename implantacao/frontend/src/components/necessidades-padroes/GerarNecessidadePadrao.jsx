@@ -282,6 +282,7 @@ const GerarNecessidadePadrao = () => {
             placeholder="Digite para buscar a filial..."
             loading={loadingFiltros}
             required
+            usePortal={false}
           />
           
           <SearchableSelect
@@ -293,6 +294,7 @@ const GerarNecessidadePadrao = () => {
             placeholder={filtros.filial_id ? "Digite para buscar uma escola (opcional)..." : "Selecione uma filial primeiro"}
             loading={loadingEscolas}
             disabled={!filtros.filial_id}
+            usePortal={false}
           />
           
           <SearchableSelect
@@ -304,6 +306,7 @@ const GerarNecessidadePadrao = () => {
             placeholder="Selecione a semana de consumo..."
             loading={loadingFiltros}
             required
+            usePortal={false}
           />
           
           <div>
@@ -335,6 +338,7 @@ const GerarNecessidadePadrao = () => {
               disabled={true}
               loading={loadingSemanaAbastecimento}
               className={filtros.semana_consumo ? "bg-gray-50 cursor-not-allowed" : ""}
+              usePortal={false}
             />
           </div>
           
@@ -347,6 +351,7 @@ const GerarNecessidadePadrao = () => {
             placeholder="Digite para buscar um grupo..."
             loading={loadingFiltros}
             required
+            usePortal={false}
           />
         </div>
 

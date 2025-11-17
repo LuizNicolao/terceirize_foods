@@ -25,6 +25,7 @@ const listarParaAjuste = async (req, res) => {
         n.ajuste_logistica,
         n.ajuste_conf_nutri,
         n.ajuste_conf_coord,
+        n.ajuste_anterior,
         n.necessidade_id,
         n.escola_id,
         n.escola,

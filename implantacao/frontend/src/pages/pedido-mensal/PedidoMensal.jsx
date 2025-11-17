@@ -379,6 +379,7 @@ const PedidoMensal = () => {
                 placeholder="Digite para buscar a filial..."
                 loading={loadingFiltros}
                 required
+                usePortal={false}
               />
               <SearchableSelect
                 label="Escola"
@@ -389,6 +390,7 @@ const PedidoMensal = () => {
                 placeholder="Digite para buscar uma escola..."
                 loading={loadingFiltros}
                 disabled={!filtros.filial}
+                usePortal={false}
               />
               <SearchableSelect
                 label="Grupo de Produtos"
@@ -400,6 +402,7 @@ const PedidoMensal = () => {
                 loading={loadingFiltros}
                 disabled={!filtros.escola}
                 required
+                usePortal={false}
               />
             </div>
             <div className="flex justify-end">

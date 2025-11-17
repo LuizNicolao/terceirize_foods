@@ -5,6 +5,7 @@ import { Pagination } from '../ui';
 import toast from 'react-hot-toast';
 import FoodsApiService from '../../services/FoodsApiService';
 import escolasService from '../../services/escolasService';
+import TipoAtendimentoEscolaService from '../../services/tipoAtendimentoEscolaService';
 import { useAuth } from '../../contexts/AuthContext';
 import useUnsavedChangesPrompt from '../../hooks/useUnsavedChangesPrompt';
 
@@ -72,7 +73,7 @@ const TipoAtendimentoEscolaModal = ({
       setEscolasTotalPages(1);
       setEscolasTotalItems(0);
     }
-  }, [filialId, escolasPage, escolasItemsPerPage, isOpen, isEditing]);
+  }, [filialId, escolasPage, escolasItemsPerPage, isOpen, isEditing, buscaEscola]);
 
   // Preparar estado quando abrir modal (criação ou edição)
   useEffect(() => {
@@ -89,6 +90,13 @@ const TipoAtendimentoEscolaModal = ({
       setEscolasPage(1);
       setStatusAtivo(editingItem.ativo !== undefined ? Boolean(editingItem.ativo) : true);
 
+      // Carregar todas as escolas da filial que têm tipos de atendimento configurados
+      const carregarEscolasDaFilial = async () => {
+        try {
+          setLoadingEscolas(true);
+          
+          if (!filialIdItem) {
+            // Fallback: mostrar apenas a escola do editingItem
       const escolaSelecionada = {
         id: escolaId,
         nome_escola: editingItem.nome_escola || '',
@@ -97,13 +105,10 @@ const TipoAtendimentoEscolaModal = ({
         filial_id: editingItem.filial_id || null,
         filial_nome: editingItem.filial_nome || ''
       };
-
       setEscolas([escolaSelecionada]);
       setEscolasTotalItems(1);
       setEscolasTotalPages(1);
 
-      const carregarTiposEscola = async () => {
-        try {
           const tiposExistentes = await buscarPorEscola(escolaId);
           const tiposSelecionados = Array.isArray(tiposExistentes) && tiposExistentes.length > 0
             ? tiposExistentes
@@ -112,19 +117,165 @@ const TipoAtendimentoEscolaModal = ({
             : editingItem.tipo_atendimento
               ? [editingItem.tipo_atendimento]
               : [];
+            setVinculosSelecionados({
+              [escolaId]: tiposSelecionados
+            });
+            setLoadingEscolas(false);
+            return;
+          }
 
+          // Buscar todos os vínculos da tabela tipos_atendimento_escola de uma vez
+          // Isso evita fazer múltiplas requisições (uma por escola)
+          let pagina = 1;
+          const limite = 1000; // Limite alto para buscar todos de uma vez
+          let todosVinculos = [];
+          let continuar = true;
+
+          while (continuar) {
+            const responseVinculos = await TipoAtendimentoEscolaService.listar({
+              page: pagina,
+              limit: limite,
+              ativo: true // Apenas vínculos ativos
+            });
+
+            if (responseVinculos.success && responseVinculos.data) {
+              todosVinculos = todosVinculos.concat(responseVinculos.data);
+              
+              if (responseVinculos.data.length < limite) {
+                continuar = false;
+              } else {
+                pagina += 1;
+              }
+            } else {
+              continuar = false;
+            }
+            
+            // Limite de segurança
+            if (pagina > 10) {
+              continuar = false;
+            }
+          }
+
+          // Filtrar vínculos pela filial e agrupar por escola
+          const filialIdNum = parseInt(filialIdItem);
+          const escolasComTipos = [];
+          const vinculosMap = {};
+          const escolasMap = new Map(); // Para evitar duplicatas
+
+          for (const vinculo of todosVinculos) {
+            // Verificar se a escola pertence à filial
+            if (vinculo.filial_id === filialIdNum) {
+              const escolaId = vinculo.escola_id;
+              
+              // Extrair tipos de atendimento
+              const tiposSelecionados = Array.isArray(vinculo.tipos_atendimento)
+                ? vinculo.tipos_atendimento
+                : vinculo.tipo_atendimento
+                  ? [vinculo.tipo_atendimento]
+                  : [];
+
+              // Incluir apenas escolas que têm tipos de atendimento configurados
+              if (tiposSelecionados.length > 0) {
+                if (!escolasMap.has(escolaId)) {
+                  escolasComTipos.push({
+                    id: escolaId,
+                    nome_escola: vinculo.nome_escola || '',
+                    rota: vinculo.rota || '',
+                    cidade: vinculo.cidade || '',
+                    filial_id: vinculo.filial_id || filialIdNum,
+                    filial_nome: vinculo.filial_nome || editingItem.filial_nome || ''
+                  });
+                  escolasMap.set(escolaId, true);
+                }
+                
+                // Agrupar tipos por escola (pode haver múltiplos registros por escola)
+                if (!vinculosMap[escolaId]) {
+                  vinculosMap[escolaId] = [];
+                }
+                // Adicionar tipos únicos
+                tiposSelecionados.forEach(tipo => {
+                  if (!vinculosMap[escolaId].includes(tipo)) {
+                    vinculosMap[escolaId].push(tipo);
+                  }
+                });
+              }
+            }
+          }
+
+          if (escolasComTipos.length > 0) {
+            // Calcular paginação
+            const totalItems = escolasComTipos.length;
+            const totalPages = Math.max(1, Math.ceil(totalItems / escolasItemsPerPage));
+            
+            setEscolas(escolasComTipos);
+            setEscolasTotalItems(totalItems);
+            setEscolasTotalPages(totalPages);
+            setVinculosSelecionados(vinculosMap);
+          } else {
+            // Se não encontrou escolas com tipos, mostrar apenas a escola do editingItem
+            const escolaSelecionada = {
+              id: escolaId,
+              nome_escola: editingItem.nome_escola || '',
+              rota: editingItem.rota || '',
+              cidade: editingItem.cidade || '',
+              filial_id: editingItem.filial_id || null,
+              filial_nome: editingItem.filial_nome || ''
+            };
+            setEscolas([escolaSelecionada]);
+            setEscolasTotalItems(1);
+            setEscolasTotalPages(1);
+
+            const tiposExistentes = await buscarPorEscola(escolaId);
+            const tiposSelecionados = Array.isArray(tiposExistentes) && tiposExistentes.length > 0
+              ? tiposExistentes
+                  .filter(item => item && item.tipo_atendimento)
+                  .map(item => item.tipo_atendimento)
+              : editingItem.tipo_atendimento
+                ? [editingItem.tipo_atendimento]
+                : [];
           setVinculosSelecionados({
             [escolaId]: tiposSelecionados
           });
+          }
         } catch (error) {
-          console.error('Erro ao carregar tipos da escola para edição:', error);
+          console.error('Erro ao carregar escolas da filial para visualização/edição:', error);
+          // Fallback: mostrar apenas a escola do editingItem
+          const escolaSelecionada = {
+            id: escolaId,
+            nome_escola: editingItem.nome_escola || '',
+            rota: editingItem.rota || '',
+            cidade: editingItem.cidade || '',
+            filial_id: editingItem.filial_id || null,
+            filial_nome: editingItem.filial_nome || ''
+          };
+          setEscolas([escolaSelecionada]);
+          setEscolasTotalItems(1);
+          setEscolasTotalPages(1);
+
+          try {
+            const tiposExistentes = await buscarPorEscola(escolaId);
+            const tiposSelecionados = Array.isArray(tiposExistentes) && tiposExistentes.length > 0
+              ? tiposExistentes
+                  .filter(item => item && item.tipo_atendimento)
+                  .map(item => item.tipo_atendimento)
+              : editingItem.tipo_atendimento
+                ? [editingItem.tipo_atendimento]
+                : [];
+            setVinculosSelecionados({
+              [escolaId]: tiposSelecionados
+            });
+          } catch (err) {
+            console.error('Erro ao carregar tipos da escola:', err);
           setVinculosSelecionados({
             [escolaId]: editingItem.tipo_atendimento ? [editingItem.tipo_atendimento] : []
           });
+          }
+        } finally {
+          setLoadingEscolas(false);
         }
       };
 
-      carregarTiposEscola();
+      carregarEscolasDaFilial();
     } else {
       setVinculosSelecionados({});
       setFilialId('');
@@ -135,7 +286,7 @@ const TipoAtendimentoEscolaModal = ({
       setEscolasTotalItems(0);
       setEscolasTotalPages(1);
     }
-  }, [isOpen, isEditing, editingItem, buscarPorEscola]);
+  }, [isOpen, isEditing, editingItem, buscarPorEscola, user]);
 
   const carregarFiliais = async () => {
     setLoadingFiliais(true);
@@ -397,19 +548,27 @@ const TipoAtendimentoEscolaModal = ({
       return;
     }
 
-    if (isEditing) {
       setEscolasItemsPerPage(value);
+    setEscolasPage(1);
+    
+    if (isEditing) {
+      // Recalcular totalPages baseado no novo itemsPerPage
+      const totalPages = Math.max(1, Math.ceil(escolasTotalItems / value));
+      setEscolasTotalPages(totalPages);
       return;
     }
 
-    setEscolasItemsPerPage(value);
-    setEscolasPage(1);
     if (filialId) {
       carregarEscolas(filialId, 1, value);
     }
   };
 
-  const escolasExibidas = escolas;
+  // Calcular escolas exibidas com paginação (tanto criação quanto edição)
+  // No modo de edição, fazemos slice do array completo de escolas
+  // No modo de criação, as escolas já vêm paginadas do backend
+  const escolasExibidas = isEditing && escolas.length > 0
+    ? escolas.slice((escolasPage - 1) * escolasItemsPerPage, escolasPage * escolasItemsPerPage)
+    : escolas;
   const inicioItem = escolasTotalItems === 0
     ? 0
     : (escolasPage - 1) * escolasItemsPerPage + 1;
@@ -450,6 +609,7 @@ const TipoAtendimentoEscolaModal = ({
             disabled={loading || loadingFiliais || isViewMode || isEditing}
             required={!isEditing}
             error={errors.filial_id}
+            usePortal={false}
           />
         </div>
 
@@ -520,6 +680,7 @@ const TipoAtendimentoEscolaModal = ({
           </div>
         )}
 
+        {/* Paginação e controles - Modo criação */}
         {!isEditing && filialId && (
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="flex items-center gap-2">
@@ -573,6 +734,44 @@ const TipoAtendimentoEscolaModal = ({
                   Desmarcar todos
                 </Button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Paginação e controles - Modo edição/visualização */}
+        {isEditing && filialId && escolasTotalItems > 0 && (
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600">Itens por página</span>
+              <select
+                value={escolasItemsPerPage}
+                onChange={handleItemsPerPageChange}
+                className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                disabled={loadingEscolas || isViewMode}
+              >
+                {[10, 20, 30, 50].map(opcao => (
+                  <option key={opcao} value={opcao}>
+                    {opcao}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-2 text-sm text-gray-600">
+              {possuiEscolasListadas && (
+                <span>
+                  Exibindo {inicioItem}-{fimItem} de {escolasTotalItems}
+                </span>
+              )}
+              {escolasTotalPages > 1 && (
+                <Pagination
+                  currentPage={escolasPage}
+                  totalPages={escolasTotalPages}
+                  totalItems={escolasTotalItems}
+                  itemsPerPage={escolasItemsPerPage}
+                  onPageChange={setEscolasPage}
+                />
+              )}
             </div>
           </div>
         )}
@@ -682,43 +881,6 @@ const TipoAtendimentoEscolaModal = ({
           </div>
         )}
 
-        {/* Paginação e estatísticas */}
-        {!isEditing && filialId && (
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-2">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600">Itens por página</span>
-              <select
-                value={escolasItemsPerPage}
-                onChange={handleItemsPerPageChange}
-                className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                disabled={loadingEscolas}
-              >
-                {[10, 20, 30, 50].map(opcao => (
-                  <option key={opcao} value={opcao}>
-                    {opcao}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-2 text-sm text-gray-600">
-              {possuiEscolasListadas && (
-                <span>
-                  Exibindo {inicioItem}-{fimItem} de {escolasTotalItems}
-                </span>
-              )}
-              {escolasTotalPages > 1 && (
-                <Pagination
-                  currentPage={escolasPage}
-                  totalPages={escolasTotalPages}
-                  totalItems={escolasTotalItems}
-                  itemsPerPage={escolasItemsPerPage}
-                  onPageChange={setEscolasPage}
-                />
-              )}
-            </div>
-          </div>
-        )}
 
         {/* Erro de validação */}
         {errors.vinculos && (

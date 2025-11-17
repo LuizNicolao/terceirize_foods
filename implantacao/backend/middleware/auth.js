@@ -130,12 +130,6 @@ const checkScreenPermission = (screen, permission) => {
       );
 
       if (permissoes.length === 0) {
-        console.log('[checkScreenPermission] Nenhuma permissão registrada', {
-          userId: user.id,
-          email: user.email,
-          screen,
-          permission
-        });
         // Temporariamente permitir acesso se não encontrar permissões específicas
         return next();
       }
@@ -151,13 +145,6 @@ const checkScreenPermission = (screen, permission) => {
         'movimentar': permissao.pode_movimentar
       };
 
-      console.log('[checkScreenPermission] Permissão verificada', {
-        userId: user.id,
-        screen,
-        permission,
-        permissionMap
-      });
-
       if (permissionMap[permission]) {
         return next();
       }
@@ -170,22 +157,9 @@ const checkScreenPermission = (screen, permission) => {
       );
 
       if (allowedByRole) {
-        console.log('[checkScreenPermission] Permissão liberada por tipo de acesso', {
-          userId: user.id,
-          screen,
-          permission,
-          tipo: user.tipo_de_acesso
-        });
         return next();
       }
 
-      console.log('[checkScreenPermission] Permissão negada', {
-        userId: user.id,
-        email: user.email,
-        screen,
-        permission,
-        tipo: user.tipo_de_acesso
-      });
       return res.status(403).json({ error: 'Permissão insuficiente para esta ação' });
       
     } catch (error) {

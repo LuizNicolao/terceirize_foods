@@ -524,6 +524,7 @@ const RegistrosDiariosModal = ({
               placeholder="Selecione uma escola..."
               disabled={isViewMode || loadingEscolas}
               required
+              usePortal={false}
               renderOption={(option) => (
                 <div className="flex flex-col">
                   <span className="font-medium text-gray-900">{option.label}</span>

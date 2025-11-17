@@ -81,6 +81,7 @@ const AjusteFiltros = ({
               placeholder="Digite para buscar uma escola..."
               disabled={loading}
               required
+              usePortal={false}
               filterBy={(option, searchTerm) => {
                 const label = option.label.toLowerCase();
                 const description = option.description?.toLowerCase() || '';
@@ -117,6 +118,7 @@ const AjusteFiltros = ({
               placeholder="Digite para buscar um grupo..."
               disabled={loading}
               required={activeTab === 'nutricionista'}
+              usePortal={false}
             />
           </div>
           {activeTab === 'coordenacao' && (
@@ -134,6 +136,7 @@ const AjusteFiltros = ({
                 }))}
                 placeholder="Selecione uma nutricionista..."
                 disabled={loading}
+                usePortal={false}
               />
             </div>
           )}
@@ -151,6 +154,7 @@ const AjusteFiltros = ({
               placeholder="Selecione a semana de consumo..."
               disabled={loading}
               required={activeTab === 'nutricionista'}
+              usePortal={false}
             />
           </div>
           <div>
@@ -180,6 +184,7 @@ const AjusteFiltros = ({
               }
               disabled={true}
               className={filtros.semana_consumo ? "bg-gray-50 cursor-not-allowed" : ""}
+              usePortal={false}
             />
           </div>
         </div>

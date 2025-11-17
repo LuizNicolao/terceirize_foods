@@ -66,6 +66,7 @@ class NecessidadesCoordenacaoController {
           n.ajuste_logistica,
           n.ajuste_conf_nutri,
           n.ajuste_conf_coord,
+          n.ajuste_anterior,
           n.semana_consumo,
           n.semana_abastecimento,
           n.status,
@@ -123,7 +124,7 @@ class NecessidadesCoordenacaoController {
 
           // Buscar valor atual do ajuste_coordenacao e status
           const currentQuery = `
-            SELECT ajuste_coordenacao, status 
+            SELECT ajuste_coordenacao, ajuste_conf_coord, status 
             FROM necessidades 
             WHERE id = ? AND status IN ('NEC COORD','CONF COORD')
           `;
@@ -135,27 +136,37 @@ class NecessidadesCoordenacaoController {
           }
 
           const currentValue = currentResult[0].ajuste_coordenacao;
+          const currentAjusteConfCoord = currentResult[0].ajuste_conf_coord;
           const currentStatus = currentResult[0].status;
           const newValue = parseFloat(ajuste) || 0;
+          
+          // Determinar qual valor atual preservar em ajuste_anterior
+          let valorAnterior = null;
 
           // Se status for CONF COORD, atualizar ajuste_conf_coord também
           if (currentStatus === 'CONF COORD') {
+            // Preservar o valor atual de ajuste_conf_coord em ajuste_anterior
+            valorAnterior = currentAjusteConfCoord ?? currentValue;
             const updateQuery = `
               UPDATE necessidades 
               SET ajuste_conf_coord = ?,
+                  ajuste_anterior = ?,
                   data_atualizacao = NOW()
               WHERE id = ? AND status = 'CONF COORD'
             `;
-            await executeQuery(updateQuery, [newValue, id]);
+            await executeQuery(updateQuery, [newValue, valorAnterior, id]);
           } else {
             // Se status for NEC COORD, atualizar apenas ajuste_coordenacao
+            // Preservar o valor atual de ajuste_coordenacao em ajuste_anterior
+            valorAnterior = currentValue;
             const updateQuery = `
               UPDATE necessidades 
               SET ajuste_coordenacao = ?,
+                  ajuste_anterior = ?,
                   data_atualizacao = NOW()
               WHERE id = ? AND status = 'NEC COORD'
             `;
-            await executeQuery(updateQuery, [newValue, id]);
+            await executeQuery(updateQuery, [newValue, valorAnterior, id]);
           }
           
           sucessos++;

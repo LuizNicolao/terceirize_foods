@@ -73,16 +73,46 @@ const Necessidades = () => {
         semana_abastecimento: filtros.semana_abastecimento
       };
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [canViewNecessidades, filtros.escola, filtros.grupo, filtros.data, filtros.semana_abastecimento]);
+  }, [canViewNecessidades, filtros.escola, filtros.grupo, filtros.data, filtros.semana_abastecimento, pagination]);
 
-  // Carregar necessidades quando a página for montada, filtros mudarem ou paginação mudar
+  // Ref para evitar chamadas duplicadas e rastrear última página
+  const carregandoRef = useRef(false);
+  const ultimaPaginaRef = useRef(pagination.currentPage);
+  const ultimoItemsPerPageRef = useRef(pagination.itemsPerPage);
+  const filtrosAnterioresPagRef = useRef(JSON.stringify(filtros));
+
+  // Carregar necessidades quando a página for montada ou filtros mudarem
   useEffect(() => {
-    if (canViewNecessidades) {
-      carregarNecessidades(filtros);
+    if (canViewNecessidades && !carregandoRef.current) {
+      const filtrosAtuais = JSON.stringify(filtros);
+      if (filtrosAtuais !== filtrosAnterioresPagRef.current) {
+        filtrosAnterioresPagRef.current = filtrosAtuais;
+        carregandoRef.current = true;
+        carregarNecessidades(filtros).then(() => {
+          carregandoRef.current = false;
+        }).catch(() => {
+          carregandoRef.current = false;
+        });
+      }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [canViewNecessidades, carregarNecessidades, filtros, pagination.currentPage, pagination.itemsPerPage]);
+  }, [canViewNecessidades, carregarNecessidades, filtros]);
+
+  // Carregar necessidades quando paginação mudar (separado para evitar loop)
+  useEffect(() => {
+    const paginaMudou = ultimaPaginaRef.current !== pagination.currentPage;
+    const itemsPerPageMudou = ultimoItemsPerPageRef.current !== pagination.itemsPerPage;
+    
+    if (canViewNecessidades && (paginaMudou || itemsPerPageMudou) && !carregandoRef.current) {
+      ultimaPaginaRef.current = pagination.currentPage;
+      ultimoItemsPerPageRef.current = pagination.itemsPerPage;
+      carregandoRef.current = true;
+      carregarNecessidades(filtros).then(() => {
+        carregandoRef.current = false;
+      }).catch(() => {
+        carregandoRef.current = false;
+      });
+    }
+  }, [pagination.currentPage, pagination.itemsPerPage, canViewNecessidades, carregarNecessidades, filtros]);
 
 
   // Verificar se pode visualizar

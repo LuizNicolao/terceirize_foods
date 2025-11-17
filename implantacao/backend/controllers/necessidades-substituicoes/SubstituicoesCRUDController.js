@@ -732,22 +732,22 @@ class SubstituicoesCRUDController {
           );
         } else {
           // Se não encontrar produto genérico padrão, apenas restaura o produto origem
-          await executeQuery(
-            `
-              UPDATE necessidades_substituicoes
-              SET
-                produto_origem_id = produto_trocado_id,
-                produto_origem_nome = produto_trocado_nome,
-                produto_origem_unidade = produto_trocado_unidade,
-                produto_trocado_id = NULL,
-                produto_trocado_nome = NULL,
-                produto_trocado_unidade = NULL,
-                data_atualizacao = NOW()
+      await executeQuery(
+        `
+          UPDATE necessidades_substituicoes
+          SET
+            produto_origem_id = produto_trocado_id,
+            produto_origem_nome = produto_trocado_nome,
+            produto_origem_unidade = produto_trocado_unidade,
+            produto_trocado_id = NULL,
+            produto_trocado_nome = NULL,
+            produto_trocado_unidade = NULL,
+            data_atualizacao = NOW()
               WHERE necessidade_id = ?
-                AND ativo = 1
-            `,
+            AND ativo = 1
+        `,
             [registro.necessidade_id]
-          );
+      );
         }
       }
 

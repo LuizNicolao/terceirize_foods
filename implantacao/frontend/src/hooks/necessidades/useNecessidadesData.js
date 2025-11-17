@@ -64,8 +64,24 @@ export const useNecessidadesData = () => {
       if (response.success) {
         setNecessidades(response.data || []);
         // Atualizar informações de paginação se vierem do backend
+        // Só atualizar se os valores forem diferentes para evitar loops
         if (response.pagination) {
-          pagination.updatePagination(response.pagination);
+          const paginationAtual = {
+            currentPage: pagination.currentPage,
+            totalPages: pagination.totalPages,
+            totalItems: pagination.totalItems,
+            itemsPerPage: pagination.itemsPerPage
+          };
+          
+          const precisaAtualizar = 
+            paginationAtual.currentPage !== response.pagination.currentPage ||
+            paginationAtual.totalPages !== response.pagination.totalPages ||
+            paginationAtual.totalItems !== response.pagination.totalItems ||
+            paginationAtual.itemsPerPage !== response.pagination.itemsPerPage;
+          
+          if (precisaAtualizar) {
+            pagination.updatePagination(response.pagination);
+          }
         }
       } else {
         setError(response.message || 'Erro ao carregar necessidades');
@@ -76,7 +92,7 @@ export const useNecessidadesData = () => {
     } finally {
       setLoading(false);
     }
-  }, [pagination]);
+  }, [pagination.getPaginationParams, pagination.updatePagination]);
 
   // Carregar escolas disponíveis (filtradas por nutricionista se aplicável)
   const carregarEscolas = useCallback(async () => {

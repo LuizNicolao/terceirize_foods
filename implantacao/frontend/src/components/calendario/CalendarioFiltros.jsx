@@ -76,6 +76,7 @@ const CalendarioFiltros = ({
             options={opcoesTipoDia}
             placeholder="Selecione o tipo..."
             disabled={loading}
+            usePortal={false}
           />
         </div>
         
@@ -87,6 +88,7 @@ const CalendarioFiltros = ({
             options={opcoesDiaSemana}
             placeholder="Selecione o dia..."
             disabled={loading}
+            usePortal={false}
           />
         </div>
         
@@ -98,6 +100,7 @@ const CalendarioFiltros = ({
             options={opcoesFeriado}
             placeholder="Filtrar feriados..."
             disabled={loading}
+            usePortal={false}
           />
         </div>
       </div>

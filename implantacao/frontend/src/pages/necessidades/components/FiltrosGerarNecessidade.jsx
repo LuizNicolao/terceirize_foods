@@ -45,6 +45,7 @@ const FiltrosGerarNecessidade = ({
             placeholder="Selecione uma escola"
             disabled={loading}
             searchFields={['nome_escola', 'rota']}
+            usePortal={false}
           />
         </div>
 
@@ -64,6 +65,7 @@ const FiltrosGerarNecessidade = ({
             placeholder="Selecione um grupo de produtos"
             disabled={loading}
             searchFields={['nome']}
+            usePortal={false}
           />
         </div>
 

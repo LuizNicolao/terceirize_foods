@@ -89,6 +89,7 @@ const ConsultaStatusFilters = ({
                 onChange={(value) => handleFilterChange('grupo', value)}
                 placeholder="Selecione o grupo"
                 disabled={loading}
+                usePortal={false}
               />
             </div>
 
@@ -103,6 +104,7 @@ const ConsultaStatusFilters = ({
                 onChange={(value) => handleFilterChange('semana_abastecimento', value)}
                 placeholder="Selecione a semana"
                 disabled={loading}
+                usePortal={false}
               />
             </div>
 
@@ -117,6 +119,7 @@ const ConsultaStatusFilters = ({
                 onChange={(value) => handleFilterChange('semana_consumo', value)}
                 placeholder="Selecione a semana"
                 disabled={loading}
+                usePortal={false}
               />
             </div>
 
@@ -134,6 +137,7 @@ const ConsultaStatusFilters = ({
                 onChange={(value) => handleFilterChange('escola_id', value)}
                 placeholder="Selecione a escola"
                 disabled={loading}
+                usePortal={false}
               />
             </div>
 
@@ -151,6 +155,7 @@ const ConsultaStatusFilters = ({
                 onChange={(value) => handleFilterChange('produto_id', value)}
                 placeholder="Selecione o produto"
                 disabled={loading}
+                usePortal={false}
               />
             </div>
 

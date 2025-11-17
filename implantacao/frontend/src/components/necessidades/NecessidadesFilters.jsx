@@ -244,6 +244,7 @@ const NecessidadesFilters = ({
             disabled={loading || loadingEscolas}
             loading={loadingEscolas}
             required
+            usePortal={false}
             filterBy={(option, searchTerm) => {
               const label = option.label.toLowerCase();
               const description = option.description?.toLowerCase() || '';
@@ -278,6 +279,7 @@ const NecessidadesFilters = ({
             disabled={loading || loadingGrupos}
             loading={loadingGrupos}
             required
+            usePortal={false}
           />
         </div>
 
@@ -290,6 +292,7 @@ const NecessidadesFilters = ({
             options={opcoesSemanasConsumo || []}
             placeholder="Selecione a semana de consumo..."
             disabled={loading}
+            usePortal={false}
           />
         </div>
 
@@ -310,6 +313,7 @@ const NecessidadesFilters = ({
                 : "Selecione primeiro a semana de consumo"
             }
             disabled={true}
+            usePortal={false}
           />
         </div>
 

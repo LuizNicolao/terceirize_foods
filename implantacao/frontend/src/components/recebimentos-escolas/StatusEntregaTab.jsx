@@ -383,6 +383,7 @@ const StatusEntregaTab = () => {
               options={tiposEntrega}
               placeholder="Buscar tipo..."
               disabled={loading}
+              usePortal={false}
             />
           </div>
 
@@ -395,6 +396,7 @@ const StatusEntregaTab = () => {
               options={tiposRecebimento}
               placeholder="Buscar tipo..."
               disabled={loading}
+              usePortal={false}
             />
           </div>
 
@@ -407,6 +409,7 @@ const StatusEntregaTab = () => {
               options={opcoesSemanas}
               placeholder="Selecione uma semana..."
               disabled={loading}
+              usePortal={false}
             />
           </div>
 
@@ -419,6 +422,7 @@ const StatusEntregaTab = () => {
               options={filiais}
               placeholder="Selecione uma filial..."
               disabled={loading || loadingFiliais}
+              usePortal={false}
             />
           </div>
         </div>

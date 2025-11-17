@@ -28,6 +28,7 @@ const Pagination = ({
       pages.push(
         <button
           key={i}
+          type="button"
           className={`px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
             i === currentPage
               ? 'bg-green-600 text-white border-2 border-green-600'
@@ -49,6 +50,7 @@ const Pagination = ({
   return (
     <div className="flex justify-center items-center gap-2 mt-6 p-4">
       <button
+        type="button"
         className={`p-2 rounded-md transition-all duration-200 ${
           currentPage === 1
             ? 'bg-gray-100 text-gray-400 cursor-not-allowed opacity-50'
@@ -64,6 +66,7 @@ const Pagination = ({
       {renderPageNumbers()}
 
       <button
+        type="button"
         className={`p-2 rounded-md transition-all duration-200 ${
           currentPage === totalPages
             ? 'bg-gray-100 text-gray-400 cursor-not-allowed opacity-50'

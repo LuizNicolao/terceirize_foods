@@ -116,6 +116,7 @@ const CalendarioRelatorios = () => {
                   onChange={handleAnoChange}
                   options={gerarAnos()}
                   placeholder="Selecione o ano..."
+                  usePortal={false}
                 />
               </div>
               
@@ -126,6 +127,7 @@ const CalendarioRelatorios = () => {
                   onChange={handleMesChange}
                   options={gerarMeses()}
                   placeholder="Selecione o mês..."
+                  usePortal={false}
                 />
               </div>
             </div>

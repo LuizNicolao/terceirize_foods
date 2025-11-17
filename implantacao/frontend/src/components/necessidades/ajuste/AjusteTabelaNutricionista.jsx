@@ -9,17 +9,20 @@ const AjusteTabelaNutricionista = ({
   onExcluirNecessidade,
   canEdit
 }) => {
-  // Função para calcular quantidade anterior baseado no status
+  // Função para calcular quantidade anterior
+  // Usa a coluna ajuste_anterior do banco de dados
   const getQuantidadeAnterior = (necessidade) => {
-    // Para CONF NUTRI, mostrar ajuste_coordenacao
+    // Se existe ajuste_anterior, usar ele
+    if (necessidade.ajuste_anterior !== null && necessidade.ajuste_anterior !== undefined) {
+      return necessidade.ajuste_anterior ?? 0;
+    }
+    // Fallback para lógica antiga se ajuste_anterior não existir
     if (necessidade.status === 'CONF NUTRI') {
       return necessidade.ajuste_coordenacao ?? 0;
     }
-    // Para NEC NUTRI, mostrar ajuste
     if (necessidade.status === 'NEC NUTRI') {
       return necessidade.ajuste ?? 0;
     }
-    // Para outros status, não há anterior
     return 0;
   };
 

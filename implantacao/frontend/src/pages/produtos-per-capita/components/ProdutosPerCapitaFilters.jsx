@@ -141,6 +141,7 @@ const ProdutosPerCapitaFilters = ({
             ]}
             placeholder={loadingGrupos ? 'Carregando grupos...' : 'Selecione um grupo'}
             disabled={loadingGrupos}
+            usePortal={false}
             filterBy={(option, term) => {
               const label = option.label?.toLowerCase() || '';
               return label.includes(term.toLowerCase());

@@ -250,6 +250,7 @@ const RelatoriosRecebimentos = () => {
               options={tiposEntrega}
               placeholder="Selecione um tipo..."
               disabled={loading}
+              usePortal={false}
             />
           </div>
           
@@ -261,6 +262,7 @@ const RelatoriosRecebimentos = () => {
               options={[]} // TODO: Implementar rotas
               placeholder="Selecione uma rota..."
               disabled={loading}
+              usePortal={false}
             />
           </div>
           
@@ -272,6 +274,7 @@ const RelatoriosRecebimentos = () => {
               options={opcoesSemanas || []}
               placeholder="Selecione uma semana..."
               disabled={loading}
+              usePortal={false}
             />
           </div>
         </div>

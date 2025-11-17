@@ -246,6 +246,7 @@ const ProdutoPerCapitaModal = ({
               disabled={isViewMode || loading}
               required
               error={errors.produto_id}
+              usePortal={false}
               filterBy={(option, searchTerm) => {
                 const label = option.label.toLowerCase();
                 const description = option.description?.toLowerCase() || '';

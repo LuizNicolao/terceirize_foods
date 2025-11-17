@@ -63,6 +63,7 @@ class NecessidadesLogisticaController {
           n.ajuste_logistica,
           n.ajuste_conf_nutri,
           n.ajuste_conf_coord,
+          n.ajuste_anterior,
           n.semana_consumo,
           n.semana_abastecimento,
           n.status,
@@ -118,9 +119,9 @@ class NecessidadesLogisticaController {
             continue;
           }
 
-          // Buscar valor atual do ajuste_coordenacao e status
+          // Buscar valor atual do ajuste_logistica
           const currentQuery = `
-            SELECT ajuste_coordenacao, status 
+            SELECT ajuste_logistica 
             FROM necessidades 
             WHERE id = ? AND status = 'NEC LOG'
           `;
@@ -131,16 +132,21 @@ class NecessidadesLogisticaController {
             continue;
           }
 
+          const currentValue = currentResult[0].ajuste_logistica;
           const newValue = parseFloat(ajuste) || 0;
+          
+          // Preservar o valor atual de ajuste_logistica em ajuste_anterior
+          const valorAnterior = currentValue;
 
           // Para NEC LOG, atualizar ajuste_logistica
           const updateQuery = `
             UPDATE necessidades 
             SET ajuste_logistica = ?,
+                ajuste_anterior = ?,
                 data_atualizacao = NOW()
             WHERE id = ? AND status = 'NEC LOG'
           `;
-          await executeQuery(updateQuery, [newValue, id]);
+          await executeQuery(updateQuery, [newValue, valorAnterior, id]);
           
           sucessos++;
 
