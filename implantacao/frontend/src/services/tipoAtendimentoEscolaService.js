@@ -186,10 +186,15 @@ class TipoAtendimentoEscolaService {
           'Content-Type': 'multipart/form-data'
         }
       });
+      
+      // A resposta do backend vem como: { success: true, data: { total, sucesso, erros }, message: ... }
+      // Precisamos garantir que estamos retornando o objeto data corretamente
+      const responseData = response.data?.data || response.data;
+      
       return {
         success: true,
-        data: response.data.data || response.data,
-        message: response.data.message || 'Importação realizada com sucesso'
+        data: responseData,
+        message: response.data?.message || 'Importação realizada com sucesso'
       };
     } catch (error) {
       return {

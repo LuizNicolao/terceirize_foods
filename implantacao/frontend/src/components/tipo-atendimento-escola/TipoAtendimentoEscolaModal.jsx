@@ -613,45 +613,21 @@ const TipoAtendimentoEscolaModal = ({
           />
         </div>
 
-        {isEditing && (
-          <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg space-y-2">
-            <div>
-              <span className="text-xs font-semibold text-gray-500 uppercase">Filial</span>
-              <p className="text-sm text-gray-900">
-                {editingItem?.filial_nome || 'Não informada'}
-              </p>
-            </div>
-            <div>
-              <span className="text-xs font-semibold text-gray-500 uppercase">Escola</span>
-              <p className="text-sm text-gray-900">
-                {editingItem?.nome_escola || `ID: ${editingItem?.escola_id}`}
-              </p>
-              <p className="text-xs text-gray-500">
-                {[editingItem?.rota, editingItem?.cidade].filter(Boolean).join(' • ')}
-              </p>
-            </div>
-            <div className="flex items-center gap-3 pt-2">
-              <span className="text-xs font-semibold text-gray-500 uppercase">Status</span>
-              {isViewMode ? (
-                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                  statusAtivo ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                }`}>
-                  {statusAtivo ? 'Ativo' : 'Inativo'}
-                </span>
-              ) : (
-                <select
-                  value={statusAtivo ? 'ativo' : 'inativo'}
-                  onChange={handleStatusChange}
-                  disabled={loading}
-                  className={`px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 ${
-                    loading ? 'bg-gray-100 cursor-not-allowed' : ''
-                  }`}
-                >
-                  <option value="ativo">Ativo</option>
-                  <option value="inativo">Inativo</option>
-                </select>
-              )}
-            </div>
+        {/* Status apenas (sem Filial e Escola) */}
+        {isEditing && !isViewMode && (
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-medium text-gray-700">Status</span>
+            <select
+              value={statusAtivo ? 'ativo' : 'inativo'}
+              onChange={handleStatusChange}
+              disabled={loading}
+              className={`px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 ${
+                loading ? 'bg-gray-100 cursor-not-allowed' : ''
+              }`}
+            >
+              <option value="ativo">Ativo</option>
+              <option value="inativo">Inativo</option>
+            </select>
           </div>
         )}
 
@@ -680,101 +656,6 @@ const TipoAtendimentoEscolaModal = ({
           </div>
         )}
 
-        {/* Paginação e controles - Modo criação */}
-        {!isEditing && filialId && (
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600">Itens por página</span>
-              <select
-                value={escolasItemsPerPage}
-                onChange={handleItemsPerPageChange}
-                className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                disabled={loadingEscolas}
-              >
-                {[10, 20, 30, 50].map(opcao => (
-                  <option key={opcao} value={opcao}>
-                    {opcao}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-2 text-sm text-gray-600">
-              {possuiEscolasListadas && (
-                <span>
-                  Exibindo {inicioItem}-{fimItem} de {escolasTotalItems}
-                </span>
-              )}
-              {escolasTotalPages > 1 && (
-                <Pagination
-                  currentPage={escolasPage}
-                  totalPages={escolasTotalPages}
-                  totalItems={escolasTotalItems}
-                  itemsPerPage={escolasItemsPerPage}
-                  onPageChange={setEscolasPage}
-                />
-              )}
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  disabled={loadingEscolas || loading}
-                  onClick={() => confirmarAcaoMassa('selecionar')}
-                  className="text-xs"
-                >
-                  Marcar todos
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  disabled={loadingEscolas || loading}
-                  onClick={() => confirmarAcaoMassa('desmarcar')}
-                  className="text-xs text-red-600 hover:text-red-700"
-                >
-                  Desmarcar todos
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Paginação e controles - Modo edição/visualização */}
-        {isEditing && filialId && escolasTotalItems > 0 && (
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600">Itens por página</span>
-              <select
-                value={escolasItemsPerPage}
-                onChange={handleItemsPerPageChange}
-                className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                disabled={loadingEscolas || isViewMode}
-              >
-                {[10, 20, 30, 50].map(opcao => (
-                  <option key={opcao} value={opcao}>
-                    {opcao}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-2 text-sm text-gray-600">
-              {possuiEscolasListadas && (
-                <span>
-                  Exibindo {inicioItem}-{fimItem} de {escolasTotalItems}
-                </span>
-              )}
-              {escolasTotalPages > 1 && (
-                <Pagination
-                  currentPage={escolasPage}
-                  totalPages={escolasTotalPages}
-                  totalItems={escolasTotalItems}
-                  itemsPerPage={escolasItemsPerPage}
-                  onPageChange={setEscolasPage}
-                />
-              )}
-            </div>
-          </div>
-        )}
 
         {/* Tabela Matriz */}
         {filialId && (
@@ -886,6 +767,107 @@ const TipoAtendimentoEscolaModal = ({
         {errors.vinculos && (
           <div className="bg-red-50 border border-red-200 rounded-md p-3">
             <p className="text-sm text-red-800">{errors.vinculos}</p>
+          </div>
+        )}
+
+        {/* Navegação - Modo criação */}
+        {!isEditing && filialId && (
+          <div className="flex flex-col items-center justify-center gap-3 pt-4 border-t border-gray-200">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-600">Itens por página</span>
+                <select
+                  value={escolasItemsPerPage}
+                  onChange={handleItemsPerPageChange}
+                  className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  disabled={loadingEscolas}
+                >
+                  {[10, 20, 30, 50].map(opcao => (
+                    <option key={opcao} value={opcao}>
+                      {opcao}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-2 text-sm text-gray-600">
+                {possuiEscolasListadas && (
+                  <span>
+                    Exibindo {inicioItem}-{fimItem} de {escolasTotalItems}
+                  </span>
+                )}
+                {escolasTotalPages > 1 && (
+                  <Pagination
+                    currentPage={escolasPage}
+                    totalPages={escolasTotalPages}
+                    totalItems={escolasTotalItems}
+                    itemsPerPage={escolasItemsPerPage}
+                    onPageChange={setEscolasPage}
+                  />
+                )}
+              </div>
+
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  disabled={loadingEscolas || loading}
+                  onClick={() => confirmarAcaoMassa('selecionar')}
+                  className="text-xs"
+                >
+                  Marcar todos
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  disabled={loadingEscolas || loading}
+                  onClick={() => confirmarAcaoMassa('desmarcar')}
+                  className="text-xs text-red-600 hover:text-red-700"
+                >
+                  Desmarcar todos
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Navegação - Modo edição/visualização */}
+        {isEditing && filialId && escolasTotalItems > 0 && (
+          <div className="flex flex-col items-center justify-center gap-3 pt-4 border-t border-gray-200">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-600">Itens por página</span>
+                <select
+                  value={escolasItemsPerPage}
+                  onChange={handleItemsPerPageChange}
+                  className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  disabled={loadingEscolas || isViewMode}
+                >
+                  {[10, 20, 30, 50].map(opcao => (
+                    <option key={opcao} value={opcao}>
+                      {opcao}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-2 text-sm text-gray-600">
+                {possuiEscolasListadas && (
+                  <span>
+                    Exibindo {inicioItem}-{fimItem} de {escolasTotalItems}
+                  </span>
+                )}
+                {escolasTotalPages > 1 && (
+                  <Pagination
+                    currentPage={escolasPage}
+                    totalPages={escolasTotalPages}
+                    totalItems={escolasTotalItems}
+                    itemsPerPage={escolasItemsPerPage}
+                    onPageChange={setEscolasPage}
+                  />
+                )}
+              </div>
+            </div>
           </div>
         )}
 

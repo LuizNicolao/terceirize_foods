@@ -120,25 +120,72 @@ const importarExcel = async (req, res) => {
     // Tipos válidos
     const tiposValidos = ['lanche_manha', 'almoco', 'lanche_tarde', 'parcial_manha', 'eja', 'parcial_tarde'];
 
-    // Coletar todas as linhas primeiro
+    // Ler cabeçalhos para mapear colunas
+    const headers = {};
+    const headerRow = worksheet.getRow(1);
+    headerRow.eachCell((cell, colNumber) => {
+      const headerName = cell.value?.toString()?.toLowerCase()?.trim();
+      if (headerName) {
+        headers[headerName] = colNumber;
+      }
+    });
+
+    console.log('📋 Cabeçalhos detectados:', headers);
+
+    // Coletar todas as linhas primeiro (pular vazias)
     worksheet.eachRow((row, rowNumber) => {
       if (rowNumber === 1) return; // Pular cabeçalho
-      linhas.push({ row, rowNumber });
+      
+      // Verificar se a linha tem pelo menos uma célula com valor
+      let temValor = false;
+      row.eachCell((cell) => {
+        if (cell.value !== null && cell.value !== undefined && cell.value !== '') {
+          temValor = true;
+        }
+      });
+      
+      if (temValor) {
+        linhas.push({ row, rowNumber });
+      }
     });
+
+    console.log(`📊 Total de linhas para processar: ${linhas.length}`);
 
     // Processar cada linha sequencialmente
     for (const { row, rowNumber } of linhas) {
       const linha = rowNumber;
-      const rowData = row.values;
+      
+      // Declarar variáveis fora do try para estarem disponíveis no catch
+      let escola_id = null;
+      let escola_nome = '';
+      let tipos_atendimento_str = '';
+      let ativo = 1;
 
       try {
-        // Extrair valores das colunas
-        const escola_id = rowData[1] ? parseInt(rowData[1]) : null;
-        const escola_nome = rowData[2] ? rowData[2].toString().trim() : '';
-        const tipos_atendimento_str = rowData[3] ? rowData[3].toString().trim() : '';
-        const ativo = rowData[4] !== undefined && rowData[4] !== null 
-          ? (rowData[4] === 1 || rowData[4] === '1' || rowData[4].toString().toLowerCase() === 'sim' || rowData[4].toString().toLowerCase() === 'true')
+        // Função auxiliar para ler valor da célula por nome do cabeçalho
+        const getValueByHeader = (headerName) => {
+          const colNumber = headers[headerName];
+          if (!colNumber) return null;
+          const cell = row.getCell(colNumber);
+          return cell.value;
+        };
+
+        // Extrair valores das colunas usando cabeçalhos
+        const escola_id_raw = getValueByHeader('escola_id') || row.values[headers['escola_id']] || row.values[1];
+        escola_id = escola_id_raw ? parseInt(escola_id_raw) : null;
+        
+        const escola_nome_raw = getValueByHeader('escola_nome') || row.values[headers['escola_nome']] || row.values[2];
+        escola_nome = escola_nome_raw ? escola_nome_raw.toString().trim() : '';
+        
+        const tipos_atendimento_raw = getValueByHeader('tipos_atendimento') || row.values[headers['tipos_atendimento']] || row.values[3];
+        tipos_atendimento_str = tipos_atendimento_raw ? tipos_atendimento_raw.toString().trim() : '';
+        
+        const ativo_raw = getValueByHeader('ativo') || row.values[headers['ativo']] || row.values[4];
+        ativo = ativo_raw !== undefined && ativo_raw !== null 
+          ? (ativo_raw === 1 || ativo_raw === '1' || ativo_raw.toString().toLowerCase() === 'sim' || ativo_raw.toString().toLowerCase() === 'true')
           : 1;
+
+        console.log(`📝 Linha ${linha} - escola_id: ${escola_id}, escola_nome: "${escola_nome}", tipos: "${tipos_atendimento_str}", ativo: ${ativo}`);
 
         // Validações
         if (!escola_id || isNaN(escola_id)) {
@@ -191,21 +238,28 @@ const importarExcel = async (req, res) => {
         const userId = req.user?.id || null;
 
         // Verificar se já existe registro para esta escola
+        console.log(`🔍 Verificando se existe registro para escola_id: ${escola_id}`);
         const vinculosExistentes = await executeQuery(
           'SELECT id, tipos_atendimento FROM tipos_atendimento_escola WHERE escola_id = ?',
           [escola_id]
         );
 
+        console.log(`📋 Registros existentes encontrados: ${vinculosExistentes?.length || 0}`);
+
         if (vinculosExistentes && vinculosExistentes.length > 0) {
           // Atualizar registro existente
           const vinculoId = vinculosExistentes[0].id;
           
-          await executeQuery(
+          console.log(`🔄 Atualizando registro ID ${vinculoId} para escola_id ${escola_id} com tipos: ${tiposJson}`);
+          
+          const updateResult = await executeQuery(
             `UPDATE tipos_atendimento_escola 
-             SET tipos_atendimento = ?, ativo = ?, data_atualizacao = NOW() 
+             SET tipos_atendimento = ?, ativo = ?, atualizado_por = ?, atualizado_em = NOW() 
              WHERE id = ?`,
-            [tiposJson, ativo, vinculoId]
+            [tiposJson, ativo, userId, vinculoId]
           );
+
+          console.log(`✅ Registro atualizado. Rows affected: ${updateResult?.affectedRows || 0}`);
 
           sucesso.push({
             linha,
@@ -216,12 +270,16 @@ const importarExcel = async (req, res) => {
           });
         } else {
           // Criar novo registro
+          console.log(`➕ Criando novo registro para escola_id ${escola_id} com tipos: ${tiposJson}`);
+          
           const result = await executeQuery(
             `INSERT INTO tipos_atendimento_escola 
-             (escola_id, tipos_atendimento, ativo, usuario_criador_id, data_cadastro, data_atualizacao) 
-             VALUES (?, ?, ?, ?, NOW(), NOW())`,
+             (escola_id, tipos_atendimento, ativo, criado_por, criado_em) 
+             VALUES (?, ?, ?, ?, NOW())`,
             [escola_id, tiposJson, ativo, userId]
           );
+
+          console.log(`✅ Registro criado. Insert ID: ${result?.insertId || 'N/A'}, Rows affected: ${result?.affectedRows || 0}`);
 
           sucesso.push({
             linha,
@@ -234,23 +292,41 @@ const importarExcel = async (req, res) => {
         }
 
       } catch (error) {
-        console.error(`Erro na linha ${linha}:`, error);
+        console.error(`❌ Erro na linha ${linha}:`, error);
         erros.push({
           linha,
           erro: `Erro ao processar linha: ${error.message}`,
-          dados: rowData
+          dados: {
+            escola_id: escola_id || null,
+            escola_nome: escola_nome || '',
+            tipos_atendimento_str: tipos_atendimento_str || ''
+          }
         });
       }
     }
 
-    return successResponse(res, {
-      message: `Importação concluída: ${sucesso.length} sucesso, ${erros.length} erros`,
-      data: {
+    console.log(`📊 RESUMO DA IMPORTAÇÃO:`);
+    console.log(`   - Total de linhas processadas: ${linhas.length}`);
+    console.log(`   - Sucessos: ${sucesso.length}`);
+    console.log(`   - Erros: ${erros.length}`);
+    
+    if (sucesso.length > 0) {
+      console.log(`   - Primeiros sucessos:`, sucesso.slice(0, 3));
+    }
+    if (erros.length > 0) {
+      console.log(`   - Primeiros erros:`, erros.slice(0, 3));
+    }
+
+    return successResponse(
+      res,
+      {
         total: linhas.length,
         sucesso,
         erros
-      }
-    }, 200);
+      },
+      `Importação concluída: ${sucesso.length} sucesso, ${erros.length} erros`,
+      200
+    );
 
   } catch (error) {
     console.error('Erro ao importar planilha:', error);
