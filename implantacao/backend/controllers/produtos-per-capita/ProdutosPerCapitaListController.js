@@ -20,8 +20,11 @@ class ProdutosPerCapitaListController {
       search = '', 
       status = 'todos',
       produto_id = '',
+      grupo_id = '',
       grupo = ''
     } = req.query;
+    // Usar grupo_id se fornecido, caso contrário usar grupo (compatibilidade)
+    const grupoFiltro = grupo_id || grupo;
     const pagination = req.pagination;
 
     // Query base - usando todos os campos da tabela produtos_per_capita
@@ -75,9 +78,9 @@ class ProdutosPerCapitaListController {
       params.push(produto_id);
     }
 
-    if (grupo) {
+    if (grupoFiltro) {
       queryBase += ' AND ppc.grupo = ?';
-      params.push(grupo);
+      params.push(grupoFiltro);
     }
 
     queryBase += ' ORDER BY ppc.data_cadastro DESC';
@@ -90,9 +93,38 @@ class ProdutosPerCapitaListController {
     // Executar query paginada
     const produtos = await executeQuery(query, params);
 
-    // Contar total de registros
-    const countQuery = `SELECT COUNT(*) as total FROM produtos_per_capita ppc WHERE 1=1${search ? ' AND (ppc.descricao LIKE ? OR ppc.produto_nome LIKE ? OR ppc.produto_codigo LIKE ?)' : ''}${status !== 'todos' ? ' AND ppc.ativo = ?' : ''}${produto_id ? ' AND ppc.produto_id = ?' : ''}`;
-    const countParams = [...params];
+    // Contar total de registros (usando a mesma estrutura de filtros)
+    let countQuery = `SELECT COUNT(*) as total FROM produtos_per_capita ppc WHERE 1=1`;
+    let countParams = [];
+
+    // Aplicar os mesmos filtros da query principal
+    if (search) {
+      countQuery += ' AND (';
+      countQuery += `ppc.produto_nome LIKE ? OR `;
+      countQuery += `ppc.produto_codigo LIKE ? OR `;
+      countQuery += `ppc.grupo LIKE ? OR `;
+      countQuery += `ppc.subgrupo LIKE ? OR `;
+      countQuery += `ppc.classe LIKE ? OR `;
+      countQuery += `ppc.unidade_medida LIKE ?`;
+      countQuery += ')';
+      countParams.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
+    }
+
+    if (status !== 'todos') {
+      countQuery += ' AND ppc.ativo = ?';
+      countParams.push(status === 'ativo' ? 1 : 0);
+    }
+
+    if (produto_id) {
+      countQuery += ' AND ppc.produto_id = ?';
+      countParams.push(produto_id);
+    }
+
+    if (grupoFiltro) {
+      countQuery += ' AND ppc.grupo = ?';
+      countParams.push(grupoFiltro);
+    }
+
     const totalResult = await executeQuery(countQuery, countParams);
     const totalItems = totalResult[0].total;
 

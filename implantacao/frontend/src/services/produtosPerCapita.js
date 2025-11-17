@@ -187,6 +187,26 @@ class ProdutosPerCapitaService {
   }
 
   /**
+   * Buscar grupos que têm produtos cadastrados em Produtos Per Capita
+   */
+  static async buscarGruposComPercapita() {
+    try {
+      const response = await api.get('/produtos-per-capita/grupos-com-percapita');
+      return {
+        success: true,
+        data: response.data.data || response.data,
+        message: response.data.message || 'Grupos carregados com sucesso'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao carregar grupos',
+        data: []
+      };
+    }
+  }
+
+  /**
    * Obter estatísticas
    */
   static async obterEstatisticas() {

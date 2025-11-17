@@ -3,6 +3,8 @@ import { FaChartLine, FaBox, FaCheckCircle, FaTimesCircle } from 'react-icons/fa
 import { StatCard } from '../../../components/ui';
 
 const ProdutosPerCapitaStats = ({ estatisticas = {} }) => {
+  // O backend retorna { resumo: { ... }, periodos: [...] }
+  // Mas pode vir direto como resumo também
   const resumo = estatisticas.resumo || estatisticas;
 
   const stats = [

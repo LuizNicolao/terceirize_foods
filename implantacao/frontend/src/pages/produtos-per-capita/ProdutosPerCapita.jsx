@@ -55,6 +55,7 @@ const ProdutosPerCapita = () => {
     setSearchTerm,
     setStatusFilter,
     applySearch,
+    handleClearFilters,
     grupoFilter,
     setGrupoFilter,
     formatarPerCapita,
@@ -146,11 +147,7 @@ const ProdutosPerCapita = () => {
         onStatusFilterChange={setStatusFilter}
         grupoFilter={grupoFilter}
         onGrupoFilterChange={setGrupoFilter}
-        onClear={() => {
-          setSearchTerm('');
-          setStatusFilter('todos');
-          setGrupoFilter('');
-        }}
+        onClear={handleClearFilters}
         onSearchSubmit={applySearch}
         placeholder="Buscar por nome do produto..."
       />

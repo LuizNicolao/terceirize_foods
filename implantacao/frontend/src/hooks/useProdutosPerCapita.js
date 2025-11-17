@@ -2,22 +2,22 @@ import { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import ProdutosPerCapitaService from '../services/produtosPerCapita';
 import { useBaseEntity } from './common/useBaseEntity';
+import { useFilters } from './common/useFilters';
 import { useExport } from './common/useExport';
 
 /**
  * Hook customizado para Produtos Per Capita
- * Segue padrão de excelência do sistema
+ * Segue padrão de excelência do sistema (padrão foods)
  */
 export const useProdutosPerCapita = () => {
   // Hook base para funcionalidades CRUD
   const baseEntity = useBaseEntity('Produto per capita', ProdutosPerCapitaService, {
     initialItemsPerPage: 20,
-    initialFilters: {
-      status: 'todos',
-      produto_id: '',
-      grupo_id: ''
-    }
+    initialFilters: {}
   });
+
+  // Hook de filtros customizados para produtos per capita (padrão foods)
+  const customFilters = useFilters({});
 
 
   // Hook para exportação
@@ -217,42 +217,105 @@ export const useProdutosPerCapita = () => {
     return erros;
   }, [formatarPeriodo]);
 
+  /**
+   * Carrega dados com filtros customizados (padrão foods)
+   */
+  const loadDataWithFilters = useCallback(async () => {
+    const params = {
+      ...baseEntity.getPaginationParams(),
+      ...customFilters.getFilterParams(),
+      search: customFilters.appliedSearchTerm || undefined,
+      status: customFilters.statusFilter === 'ativo' ? 1 : customFilters.statusFilter === 'inativo' ? 0 : undefined
+    };
+
+    await baseEntity.loadData(params);
+  }, [baseEntity, customFilters]);
+
+  /**
+   * Limpar todos os filtros
+   */
+  const handleClearFilters = useCallback(() => {
+    customFilters.setSearchTerm('');
+    customFilters.setStatusFilter('todos');
+    customFilters.clearFilters();
+    baseEntity.handlePageChange(1);
+  }, [customFilters, baseEntity]);
+
   // Carregar dados iniciais
   useEffect(() => {
     carregarEstatisticas();
     carregarResumoPorPeriodo();
   }, []); // Remover dependências para evitar loop infinito
 
+  // Carregar dados quando filtros customizados mudam (padrão foods)
+  useEffect(() => {
+    loadDataWithFilters();
+  }, [customFilters.appliedSearchTerm, customFilters.statusFilter, customFilters.filters]);
+
+  // Carregar dados quando paginação muda
+  useEffect(() => {
+    loadDataWithFilters();
+  }, [baseEntity.currentPage, baseEntity.itemsPerPage]);
+
   return {
-    // Estados do hook base
-    ...baseEntity,
+    // Estados principais (usa dados do baseEntity)
+    produtos: baseEntity.items,
+    loading: baseEntity.loading,
     
-    // Aliases para compatibilidade
-    produtos: baseEntity.items, // Alias para items
-    carregarProdutos: baseEntity.loadData, // Alias para loadData
+    // Estados de modal (do hook base)
+    showModal: baseEntity.showModal,
+    viewMode: baseEntity.viewMode,
+    editingItem: baseEntity.editingItem,
     
-    // Objeto pagination para compatibilidade
-    pagination: {
+    // Estados de exclusão (do hook base)
+    showDeleteConfirmModal: baseEntity.showDeleteConfirmModal,
+    itemToDelete: baseEntity.itemToDelete,
+    
+    // Estados de paginação (do hook base)
       currentPage: baseEntity.currentPage,
       totalPages: baseEntity.totalPages,
       totalItems: baseEntity.totalItems,
       itemsPerPage: baseEntity.itemsPerPage,
-      hasNextPage: baseEntity.currentPage < baseEntity.totalPages,
-      hasPrevPage: baseEntity.currentPage > 1
-    },
     
-    // Funções de paginação
-    handlePageChange: baseEntity.handlePageChange,
-    handleItemsPerPageChange: baseEntity.handleItemsPerPageChange,
-    handleLimitChange: baseEntity.handleItemsPerPageChange, // Alias para compatibilidade
+    // Estados de filtros (padrão foods)
+    searchTerm: customFilters.searchTerm || baseEntity.searchTerm,
+    statusFilter: customFilters.statusFilter || baseEntity.statusFilter,
+    
+    // Estados de validação (do hook base)
+    validationErrors: baseEntity.validationErrors,
+    showValidationModal: baseEntity.showValidationModal,
     
     // Estados específicos
     produtosDisponiveis,
     loadingProdutosDisponiveis,
-    estatisticas,
+    estatisticas: estatisticas || baseEntity.estatisticas,
     loadingEstatisticas,
     resumoPorPeriodo,
     
+    // Ações de modal (do hook base)
+    handleAdd: baseEntity.handleAdd,
+    handleView: baseEntity.handleView,
+    handleEdit: baseEntity.handleEdit,
+    handleCloseModal: baseEntity.handleCloseModal,
+    
+    // Ações de paginação (do hook base)
+    handlePageChange: baseEntity.handlePageChange,
+    handleItemsPerPageChange: baseEntity.handleItemsPerPageChange,
+    
+    // Ações de filtros (padrão foods)
+    setSearchTerm: customFilters.setSearchTerm,
+    setStatusFilter: customFilters.setStatusFilter || baseEntity.setStatusFilter,
+    applySearch: customFilters.applySearch,
+    handleClearFilters,
+    
+    // Ações de CRUD (do hook base)
+    onSubmit: baseEntity.onSubmit,
+    handleDelete: baseEntity.handleDelete,
+    handleConfirmDelete: baseEntity.handleConfirmDelete,
+    handleCloseDeleteModal: baseEntity.handleCloseDeleteModal,
+    
+    // Ações de validação (do hook base)
+    handleCloseValidationModal: baseEntity.handleCloseValidationModal,
     
     // Exportação
     ...exportHook,
@@ -267,11 +330,19 @@ export const useProdutosPerCapita = () => {
     obterPeriodosComPerCapita,
     validarProdutoPerCapita,
     
-    // Função de pesquisa manual
-    applySearch: baseEntity.applySearch,
+    // Filtros customizados (padrão foods)
+    grupoFilter: customFilters.filters.grupoFilter || '',
+    setGrupoFilter: (value) => customFilters.updateFilter('grupoFilter', value),
     
-    // Filtros adicionais
-    grupoFilter: baseEntity.filters.filters?.grupo_id || '',
-    setGrupoFilter: (value) => baseEntity.updateFilter('grupo_id', value)
+    // Aliases para compatibilidade
+    carregarProdutos: loadDataWithFilters,
+    pagination: {
+      currentPage: baseEntity.currentPage,
+      totalPages: baseEntity.totalPages,
+      totalItems: baseEntity.totalItems,
+      itemsPerPage: baseEntity.itemsPerPage,
+      hasNextPage: baseEntity.currentPage < baseEntity.totalPages,
+      hasPrevPage: baseEntity.currentPage > 1
+    }
   };
 };

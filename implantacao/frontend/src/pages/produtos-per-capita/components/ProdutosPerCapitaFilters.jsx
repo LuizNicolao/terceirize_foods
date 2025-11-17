@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { FaSearch, FaTimes } from 'react-icons/fa';
-import FoodsApiService from '../../../services/FoodsApiService';
+import ProdutosPerCapitaService from '../../../services/produtosPerCapita';
 import { SearchableSelect } from '../../../components/ui';
 
 /**
@@ -23,12 +23,12 @@ const ProdutosPerCapitaFilters = ({
   const [loadingGrupos, setLoadingGrupos] = useState(false);
 
   /**
-   * Carregar grupos
+   * Carregar grupos da tabela produtos_per_capita
    */
   const carregarGrupos = useCallback(async () => {
     setLoadingGrupos(true);
     try {
-      const response = await FoodsApiService.getGruposAtivos();
+      const response = await ProdutosPerCapitaService.buscarGruposComPercapita();
       if (response.success) {
         setGrupos(response.data || []);
       }
@@ -78,20 +78,14 @@ const ProdutosPerCapitaFilters = ({
     grupos.forEach(grupo => {
       if (!grupo) return;
 
-      const rawId = grupo.id ?? grupo.value ?? grupo.codigo ?? grupo.codigo_grupo ?? grupo.slug ?? null;
-      const rawNome = grupo.nome ?? grupo.label ?? grupo.descricao ?? grupo.nome_grupo ?? grupo.descricao_grupo ?? (typeof grupo === 'string' ? grupo : null);
+      // O backend retorna { id: 'nome_do_grupo', nome: 'nome_do_grupo' }
+      // Usamos o nome como value porque a coluna na tabela é 'grupo' (string)
+      const rawNome = grupo.nome ?? grupo.id ?? grupo.label ?? grupo.descricao ?? grupo.nome_grupo ?? grupo.descricao_grupo ?? (typeof grupo === 'string' ? grupo : null);
 
-      const value = rawId !== null && rawId !== undefined
-        ? String(rawId)
-        : rawNome
-          ? String(rawNome)
-          : null;
+      if (!rawNome) return;
 
-      if (!value) return;
-
-      const label = rawNome
-        ? String(rawNome)
-        : `Grupo ${value}`;
+      const value = String(rawNome);
+      const label = String(rawNome);
 
       if (!normalizados.has(value)) {
         normalizados.set(value, { value, label });
