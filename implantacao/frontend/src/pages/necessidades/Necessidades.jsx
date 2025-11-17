@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { FaClipboardList } from 'react-icons/fa';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { useNecessidades, useNecessidadesFilters } from '../../hooks/necessidades';
@@ -11,7 +11,7 @@ import {
   NecessidadeModal,
   ImportNecessidadesModal
 } from '../../components/necessidades';
-import { ActionButtons, Modal } from '../../components/ui';
+import { ActionButtons, Modal, Pagination } from '../../components/ui';
 import { ExportButtons } from '../../components/shared';
 import { formatarDataParaExibicao } from '../../utils/recebimentos/recebimentosUtils';
 import toast from 'react-hot-toast';
@@ -23,6 +23,7 @@ const Necessidades = () => {
   const [modalVisualizacaoAberto, setModalVisualizacaoAberto] = useState(false);
   const [modalImportAberto, setModalImportAberto] = useState(false);
   const [necessidadeSelecionada, setNecessidadeSelecionada] = useState(null);
+  const filtrosAnterioresRef = useRef({});
   
   // Hook para gerenciar necessidades
   const {
@@ -32,6 +33,7 @@ const Necessidades = () => {
     produtosTabela,
     loading,
     error,
+    pagination,
     carregarNecessidades,
     gerarNecessidade,
     exportarXLSX,
@@ -49,12 +51,38 @@ const Necessidades = () => {
   const canViewNecessidades = canView('necessidades');
   const canCreateNecessidades = canCreate('necessidades');
 
-  // Carregar necessidades quando a página for montada ou quando os filtros mudarem
+  // Resetar paginação quando filtros mudarem (mas não na primeira renderização)
+  useEffect(() => {
+    if (canViewNecessidades) {
+      const filtrosAtuais = JSON.stringify({
+        escola: filtros.escola?.id || filtros.escola,
+        grupo: filtros.grupo?.id || filtros.grupo,
+        data: filtros.data,
+        semana_abastecimento: filtros.semana_abastecimento
+      });
+      const filtrosAnteriores = JSON.stringify(filtrosAnterioresRef.current);
+      
+      if (filtrosAtuais !== filtrosAnteriores && filtrosAnteriores !== '{}') {
+        pagination.resetPagination();
+      }
+      
+      filtrosAnterioresRef.current = {
+        escola: filtros.escola?.id || filtros.escola,
+        grupo: filtros.grupo?.id || filtros.grupo,
+        data: filtros.data,
+        semana_abastecimento: filtros.semana_abastecimento
+      };
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canViewNecessidades, filtros.escola, filtros.grupo, filtros.data, filtros.semana_abastecimento]);
+
+  // Carregar necessidades quando a página for montada, filtros mudarem ou paginação mudar
   useEffect(() => {
     if (canViewNecessidades) {
       carregarNecessidades(filtros);
     }
-  }, [canViewNecessidades, carregarNecessidades, filtros]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canViewNecessidades, carregarNecessidades, filtros, pagination.currentPage, pagination.itemsPerPage]);
 
 
   // Verificar se pode visualizar
@@ -294,6 +322,20 @@ const Necessidades = () => {
           <p className="text-gray-600">
             Gere uma nova necessidade usando o botão acima.
           </p>
+        </div>
+      )}
+
+      {/* Paginação */}
+      {pagination.totalItems > 0 && (
+        <div className="mt-6">
+          <Pagination
+            currentPage={pagination.currentPage}
+            totalPages={pagination.totalPages}
+            totalItems={pagination.totalItems}
+            itemsPerPage={pagination.itemsPerPage}
+            onPageChange={pagination.handlePageChange}
+            onItemsPerPageChange={pagination.handleItemsPerPageChange}
+          />
         </div>
       )}
     </NecessidadesLayout>

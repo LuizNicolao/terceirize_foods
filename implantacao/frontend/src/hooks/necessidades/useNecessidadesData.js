@@ -3,6 +3,7 @@ import necessidadesService from '../../services/necessidadesService';
 import escolasService from '../../services/escolasService';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../contexts/AuthContext';
+import { usePagination } from '../common/usePagination';
 
 /**
  * Hook para gerenciar o carregamento de dados relacionados a necessidades
@@ -17,6 +18,9 @@ export const useNecessidadesData = () => {
   const [grupos, setGrupos] = useState([]);
   const [produtos, setProdutos] = useState([]);
   const [percapitas, setPercapitas] = useState({});
+  
+  // Hook de paginação
+  const pagination = usePagination(20);
 
   // Carregar necessidades existentes
   const carregarNecessidades = useCallback(async (filtros = {}) => {
@@ -50,15 +54,19 @@ export const useNecessidadesData = () => {
         paramsComPaginacao.data = filtros.data;
       }
       
-      // Sempre passar limit alto para mostrar todos os registros (filtrados ou não)
-      // Isso evita a limitação de 10 registros do backend quando há filtros
-      paramsComPaginacao.limit = 1000;
-      paramsComPaginacao.page = 1;
+      // Adicionar parâmetros de paginação
+      const paginationParams = pagination.getPaginationParams();
+      paramsComPaginacao.page = paginationParams.page;
+      paramsComPaginacao.limit = paginationParams.limit;
       
       const response = await necessidadesService.listar(paramsComPaginacao);
       
       if (response.success) {
-        setNecessidades(response.data);
+        setNecessidades(response.data || []);
+        // Atualizar informações de paginação se vierem do backend
+        if (response.pagination) {
+          pagination.updatePagination(response.pagination);
+        }
       } else {
         setError(response.message || 'Erro ao carregar necessidades');
       }
@@ -68,7 +76,7 @@ export const useNecessidadesData = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [pagination]);
 
   // Carregar escolas disponíveis (filtradas por nutricionista se aplicável)
   const carregarEscolas = useCallback(async () => {
@@ -141,6 +149,7 @@ export const useNecessidadesData = () => {
     grupos,
     produtos,
     percapitas,
+    pagination,
     carregarNecessidades,
     carregarEscolas,
     carregarGrupos,

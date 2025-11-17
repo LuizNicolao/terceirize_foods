@@ -28,6 +28,7 @@ export const useNecessidades = () => {
     grupos,
     produtos,
     percapitas,
+    pagination,
     carregarNecessidades,
     carregarEscolas,
     carregarGrupos,
@@ -117,6 +118,7 @@ export const useNecessidades = () => {
     mediasPeriodo,
     filtros,
     produtosTabela,
+    pagination,
 
     // Ações
     carregarNecessidades,
