@@ -18,9 +18,14 @@ const AjusteTabelaNutricionista = ({
     }
     // Fallback para lógica antiga se ajuste_anterior não existir
     if (necessidade.status === 'CONF NUTRI') {
-      return necessidade.ajuste_coordenacao ?? 0;
+      return necessidade.ajuste_coordenacao ?? necessidade.ajuste ?? 0;
     }
     if (necessidade.status === 'NEC NUTRI') {
+      // Se já tem ajuste_nutricionista, o anterior era o ajuste original
+      return necessidade.ajuste ?? 0;
+    }
+    // Se status é 'NEC', o valor anterior é o próprio ajuste (quantidade gerada)
+    if (necessidade.status === 'NEC') {
       return necessidade.ajuste ?? 0;
     }
     return 0;
@@ -92,7 +97,7 @@ const AjusteTabelaNutricionista = ({
                   ? (necessidade.ajuste_conf_nutri ?? necessidade.ajuste_coordenacao ?? necessidade.ajuste_nutricionista ?? necessidade.ajuste ?? 0)
                   : (necessidade.status === 'NEC NUTRI'
                       ? (necessidade.ajuste_nutricionista ?? necessidade.ajuste ?? 0)
-                      : (necessidade.ajuste ?? 0))}
+                      : (necessidade.ajuste_nutricionista ?? necessidade.ajuste ?? 0))}
               </td>
               <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-500 text-center">
                 {getQuantidadeAnterior(necessidade)}
