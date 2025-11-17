@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaSearch, FaTimes } from 'react-icons/fa';
+import { FaSearch, FaTimes, FaPrint } from 'react-icons/fa';
 import { Button, SearchableSelect } from '../../ui';
 
 const AjusteFiltros = ({
@@ -14,7 +14,8 @@ const AjusteFiltros = ({
   loadingSemanaAbastecimento = false,
   onFiltroChange,
   onFiltrar,
-  onLimparFiltros
+  onLimparFiltros,
+  onImprimir
 }) => {
   // Garantir que escolas e grupos são arrays
   const escolasArray = Array.isArray(escolas) ? escolas : [];
@@ -31,6 +32,16 @@ const AjusteFiltros = ({
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
           <h3 className="text-lg font-semibold text-gray-900">Filtros</h3>
           <div className="flex items-center gap-2">
+            <Button
+              onClick={onImprimir}
+              variant="outline"
+              size="sm"
+              disabled={loading}
+              className="flex items-center"
+            >
+              <FaPrint className="mr-2" />
+              Imprimir
+            </Button>
             <Button
               onClick={onLimparFiltros}
               variant="secondary"

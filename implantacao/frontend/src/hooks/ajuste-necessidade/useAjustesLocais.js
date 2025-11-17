@@ -23,6 +23,12 @@ export const useAjustesLocais = (necessidades, activeTab) => {
       setAjustesLocais(novosAjustes);
       setNecessidadeAtual(necessidades[0]);
       setNecessidadesFiltradas(necessidades);
+    } else {
+      // Se não há necessidades, limpar tudo
+      setAjustesLocais({});
+      setNecessidadeAtual(null);
+      setNecessidadesFiltradas([]);
+      setBuscaProduto('');
     }
   }, [necessidades, activeTab]);
 

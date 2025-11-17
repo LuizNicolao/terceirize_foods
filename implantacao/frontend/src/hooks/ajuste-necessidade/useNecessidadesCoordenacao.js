@@ -260,6 +260,8 @@ const useNecessidadesCoordenacao = () => {
       semana_abastecimento: null,
       nutricionista_id: null
     });
+    // Limpar também as necessidades carregadas
+    setNecessidades([]);
   }, []);
 
   // Hook de exportação padronizado

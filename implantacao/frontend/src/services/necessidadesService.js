@@ -188,8 +188,12 @@ const necessidadesService = {
         params.append(key, filtros[key]);
       }
     });
+    // Se não tiver aba nos filtros, usar 'nutricionista' como padrão
+    if (!filtros.aba) {
     params.append('aba', 'nutricionista');
+    }
     
+    const aba = filtros.aba || 'nutricionista';
     const response = await api.get(`/necessidades/exportar/xlsx?${params.toString()}`, {
       responseType: 'blob'
     });
@@ -197,7 +201,7 @@ const necessidadesService = {
     return {
       success: true,
       data: response.data,
-      filename: `necessidades_nutricionista_${new Date().toISOString().split('T')[0]}.xlsx`
+      filename: `necessidades_${aba}_${new Date().toISOString().split('T')[0]}.xlsx`
     };
   },
 
@@ -209,8 +213,12 @@ const necessidadesService = {
         params.append(key, filtros[key]);
       }
     });
+    // Se não tiver aba nos filtros, usar 'nutricionista' como padrão
+    if (!filtros.aba) {
     params.append('aba', 'nutricionista');
+    }
     
+    const aba = filtros.aba || 'nutricionista';
     const response = await api.get(`/necessidades/exportar/pdf?${params.toString()}`, {
       responseType: 'blob'
     });
@@ -218,7 +226,7 @@ const necessidadesService = {
     return {
       success: true,
       data: response.data,
-      filename: `necessidades_nutricionista_${new Date().toISOString().split('T')[0]}.pdf`
+      filename: `necessidades_${aba}_${new Date().toISOString().split('T')[0]}.pdf`
     };
   },
 

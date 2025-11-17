@@ -165,6 +165,8 @@ export const useNecessidadesLogistica = () => {
       semana_consumo: null,
       semana_abastecimento: null
     });
+    // Limpar também as necessidades carregadas
+    setNecessidades([]);
   }, []);
 
   // Carregar dados iniciais

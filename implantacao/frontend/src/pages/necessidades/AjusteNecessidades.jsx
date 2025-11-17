@@ -14,6 +14,7 @@ import AjusteTabelaNutricionista from '../../components/necessidades/ajuste/Ajus
 import AjusteTabelaCoordenacao from '../../components/necessidades/ajuste/AjusteTabelaCoordenacao';
 import AjusteTabelaLogistica from '../../components/necessidades/ajuste/AjusteTabelaLogistica';
 import ModalProdutoExtra from '../../components/necessidades/ajuste/ModalProdutoExtra';
+import ModalImpressao from '../../components/necessidades/ajuste/ModalImpressao';
 import AjusteActions from '../../components/necessidades/ajuste/AjusteActions';
 import AjusteEmptyStates from '../../components/necessidades/ajuste/AjusteEmptyStates';
 import { ConfirmModal } from '../../components/ui';
@@ -72,6 +73,9 @@ const AjusteNecessidades = () => {
     produtosDisponiveis,
     produtosSelecionados,
     searchProduto,
+    modalImpressaoAberto,
+    handleAbrirModalImpressao,
+    handleFecharModalImpressao,
     
     // Estados de exclusão
     showDeleteConfirmModal,
@@ -140,6 +144,7 @@ const AjusteNecessidades = () => {
           onFiltroChange={handleFiltroChange}
           onFiltrar={handleCarregarNecessidades}
           onLimparFiltros={handleLimparFiltros}
+          onImprimir={handleAbrirModalImpressao}
         />
 
         {/* Error Message */}
@@ -175,6 +180,7 @@ const AjusteNecessidades = () => {
               onIncluirProduto={handleAbrirModalProdutoExtra}
               onSalvarAjustes={handleSalvarAjustes}
               onLiberar={handleLiberarCoordenacao}
+              onImprimir={handleAbrirModalImpressao}
               canEdit={canEditAjuste}
               activeTab={activeTab}
               statusAtual={statusAtual}
@@ -252,6 +258,14 @@ const AjusteNecessidades = () => {
         confirmText="Excluir"
         cancelText="Cancelar"
         type="danger"
+      />
+
+      {/* Modal de Impressão/Exportação */}
+      <ModalImpressao
+        isOpen={modalImpressaoAberto}
+        onClose={handleFecharModalImpressao}
+        activeTab={activeTab}
+        opcoesSemanasConsumo={opcoesSemanasConsumo}
       />
     </>
   );

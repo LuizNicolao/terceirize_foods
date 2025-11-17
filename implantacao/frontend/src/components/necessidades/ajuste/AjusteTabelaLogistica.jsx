@@ -9,6 +9,23 @@ const AjusteTabelaLogistica = ({
   onExcluirNecessidade,
   canEdit
 }) => {
+  // Função para formatar números
+  const formatarQuantidade = (valor) => {
+    if (valor === null || valor === undefined || valor === '') {
+      return '0';
+    }
+    const num = typeof valor === 'number' ? valor : parseFloat(valor);
+    if (isNaN(num)) {
+      return '0';
+    }
+    // Se for um número inteiro, exibir sem decimais
+    if (num % 1 === 0) {
+      return num.toString();
+    }
+    // Caso contrário, formatar com até 3 casas decimais, removendo zeros à direita
+    return num.toFixed(3).replace(/\.?0+$/, '').replace('.', ',');
+  };
+
   // Função para calcular quantidade anterior
   // Usa a coluna ajuste_anterior do banco de dados
   const getQuantidadeAnterior = (necessidade) => {
@@ -89,10 +106,10 @@ const AjusteTabelaLogistica = ({
                 {necessidade.produto_unidade}
               </td>
               <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900 text-center">
-                {necessidade.ajuste_logistica ?? necessidade.ajuste_coordenacao ?? necessidade.ajuste_nutricionista ?? necessidade.ajuste ?? 0}
+                {formatarQuantidade(necessidade.ajuste_logistica ?? necessidade.ajuste_coordenacao ?? necessidade.ajuste_nutricionista ?? necessidade.ajuste ?? 0)}
               </td>
               <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-500 text-center">
-                {getQuantidadeAnterior(necessidade)}
+                {formatarQuantidade(getQuantidadeAnterior(necessidade))}
               </td>
               <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900 text-center">
                 <Input
@@ -120,7 +137,7 @@ const AjusteTabelaLogistica = ({
               <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900 text-center font-semibold">
                 {getDiferenca(necessidade) !== 0 && (
                   <span className={getDiferenca(necessidade) > 0 ? 'text-green-600' : 'text-red-600'}>
-                    {getDiferenca(necessidade) > 0 ? '+' : ''}{getDiferenca(necessidade)}
+                    {getDiferenca(necessidade) > 0 ? '+' : ''}{formatarQuantidade(getDiferenca(necessidade))}
                   </span>
                 )}
               </td>

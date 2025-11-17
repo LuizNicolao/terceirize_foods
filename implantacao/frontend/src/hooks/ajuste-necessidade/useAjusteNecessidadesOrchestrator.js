@@ -28,6 +28,7 @@ export const useAjusteNecessidadesOrchestrator = () => {
   };
   
   const [activeTab, setActiveTab] = useState(getInitialTab());
+  const [modalImpressaoAberto, setModalImpressaoAberto] = useState(false);
 
   // Hooks para nutricionista
   const {
@@ -334,6 +335,8 @@ export const useAjusteNecessidadesOrchestrator = () => {
       setActiveTab,
       modalProdutoExtraAberto,
       setModalProdutoExtraAberto,
+      modalImpressaoAberto,
+      setModalImpressaoAberto,
       produtosDisponiveis,
       produtosSelecionados,
       searchProduto,
@@ -385,6 +388,8 @@ export const useAjusteNecessidadesOrchestrator = () => {
       handleExportarExcel,
       handleExportarPDF,
       handleSearchProduto,
+      handleAbrirModalImpressao: () => setModalImpressaoAberto(true),
+      handleFecharModalImpressao: () => setModalImpressaoAberto(false),
       
       // Modal helpers
     handleCloseModalProdutoExtra: handleFecharModal,

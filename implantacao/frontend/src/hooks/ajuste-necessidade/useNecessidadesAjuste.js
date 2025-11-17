@@ -169,6 +169,8 @@ export const useNecessidadesAjuste = () => {
       semana_consumo: null,
       semana_abastecimento: null
     });
+    // Limpar também as necessidades carregadas
+    setNecessidades([]);
   }, []);
 
   // Hook de exportação padronizado

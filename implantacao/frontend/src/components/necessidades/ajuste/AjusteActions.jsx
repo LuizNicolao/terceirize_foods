@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaPlus, FaSave, FaPaperPlane } from 'react-icons/fa';
+import { FaPlus, FaSave, FaPaperPlane, FaPrint } from 'react-icons/fa';
 import { Button, Input } from '../../ui';
 
 const AjusteActions = ({
@@ -8,6 +8,7 @@ const AjusteActions = ({
   onIncluirProduto,
   onSalvarAjustes,
   onLiberar,
+  onImprimir,
   canEdit,
   activeTab,
   statusAtual,
