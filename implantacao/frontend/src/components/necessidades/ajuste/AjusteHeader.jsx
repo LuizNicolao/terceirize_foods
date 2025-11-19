@@ -10,7 +10,7 @@ const AjusteHeader = ({
     <div className="flex items-center justify-between mb-6">
       <div>
         <h1 className="text-xl sm:text-2xl font-bold text-gray-800 flex items-center">
-          <FaEdit className="mr-2 sm:mr-3 text-blue-600" />
+          <FaEdit className="mr-2 sm:mr-3 text-green-600" />
           {activeTab === 'nutricionista' 
             ? 'Ajuste de Necessidade por Nutricionista' 
             : activeTab === 'logistica'

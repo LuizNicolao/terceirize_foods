@@ -335,7 +335,10 @@ class SubstituicoesListController {
               ns.escola_nome,
               ns.quantidade_generico,
               ns.status,
-              ns.necessidade_id
+              ns.necessidade_id,
+              ns.produto_trocado_id,
+              ns.produto_trocado_nome,
+              ns.produto_trocado_unidade
             FROM necessidades_substituicoes ns
             WHERE ns.produto_origem_id = ? 
               AND ns.produto_generico_id = ?
@@ -369,6 +372,12 @@ class SubstituicoesListController {
           escolas.forEach(escola => {
             const substituicao = substituicoes.find(s => s.escola_id === escola.escola_id);
             escola.substituicao = substituicao || null;
+            // Adicionar informações de produto trocado se existir
+            if (substituicao) {
+              escola.produto_trocado_id = substituicao.produto_trocado_id || null;
+              escola.produto_trocado_nome = substituicao.produto_trocado_nome || null;
+              escola.produto_trocado_unidade = substituicao.produto_trocado_unidade || null;
+            }
           });
 
           const produtosGrupo = await buscarProdutosDoGrupo(
@@ -621,7 +630,10 @@ class SubstituicoesListController {
               ns.quantidade_generico,
               ns.status,
               ns.data_criacao,
-              ns.data_atualizacao
+              ns.data_atualizacao,
+              ns.produto_trocado_id,
+              ns.produto_trocado_nome,
+              ns.produto_trocado_unidade
             FROM necessidades_substituicoes ns
             WHERE ns.produto_origem_id = ?
               AND ns.produto_generico_id = ?
@@ -654,6 +666,9 @@ class SubstituicoesListController {
               escola_nome: sub.escola_nome,
               quantidade_origem: sub.quantidade_origem,
               quantidade_generico: sub.quantidade_generico,
+              produto_trocado_id: sub.produto_trocado_id || null,
+              produto_trocado_nome: sub.produto_trocado_nome || null,
+              produto_trocado_unidade: sub.produto_trocado_unidade || null,
               substituicao: {
                 id: sub.id,
                 status: sub.status,

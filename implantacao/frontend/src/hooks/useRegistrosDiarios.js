@@ -82,7 +82,7 @@ export const useRegistrosDiarios = () => {
   }, []);
   
   // Criar/atualizar registro
-  const onSubmit = async (dados) => {
+  const onSubmit = async (dados, manterModalAberto = false) => {
     try {
       setSaving(true);
       const result = await RegistrosDiariosService.criar(dados);
@@ -91,8 +91,17 @@ export const useRegistrosDiarios = () => {
         toast.success(result.message || 'Registros salvos com sucesso!');
         loadRegistros();
         loadEstatisticas();
-        handleCloseModal();
-        return { success: true };
+        
+        // Se for para manter o modal aberto (novo registro), apenas limpar o registro de edição
+        // O modal permanecerá aberto e o formulário será resetado pelo useEffect
+        if (manterModalAberto) {
+          setEditingRegistro(null);
+          // Não fechar o modal
+        } else {
+          handleCloseModal();
+        }
+        
+        return { success: true, manterModalAberto };
       } else {
         if (result.errors) {
           // Erros de validação

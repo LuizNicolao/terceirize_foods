@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { FaExchangeAlt } from 'react-icons/fa';
 import { useSubstituicoesNecessidades } from '../../hooks/useSubstituicoesNecessidades';
 import { SubstituicoesFilters, SubstituicoesTableCoordenacao } from './components';
@@ -48,6 +48,30 @@ const AnaliseCoordenacao = () => {
     }
   }, [necessidades]);
 
+  // Calcular total de escolas únicas e total de necessidades (linhas)
+  const { totalEscolas, totalNecessidades } = useMemo(() => {
+    if (!necessidades.length) return { totalEscolas: 0, totalNecessidades: 0 };
+    
+    const escolasUnicas = new Set();
+    let totalLinhas = 0;
+    
+    necessidades.forEach(necessidade => {
+      if (necessidade.escolas && Array.isArray(necessidade.escolas)) {
+        totalLinhas += necessidade.escolas.length;
+        necessidade.escolas.forEach(escola => {
+          if (escola.escola_id) {
+            escolasUnicas.add(escola.escola_id);
+          }
+        });
+      }
+    });
+    
+    return {
+      totalEscolas: escolasUnicas.size,
+      totalNecessidades: totalLinhas
+    };
+  }, [necessidades]);
+
   const handleSaveConsolidated = async (dados, codigoOrigem) => {
     const response = await salvarSubstituicao(dados);
     return response;
@@ -78,7 +102,7 @@ const AnaliseCoordenacao = () => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
           <div className="flex justify-between items-center">
             <h2 className="text-lg font-semibold text-gray-800">
-              Produtos para Substituição ({necessidades.length})
+              Produtos para Substituição ({necessidades.length}) • {totalNecessidades} {totalNecessidades === 1 ? 'necessidade' : 'necessidades'} • {totalEscolas} {totalEscolas === 1 ? 'escola' : 'escolas'}
             </h2>
             <div className="flex items-center gap-2">
               <ExportButtons

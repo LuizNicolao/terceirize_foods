@@ -104,6 +104,9 @@ class NecessidadesExportController {
           n.ajuste,
           n.ajuste_nutricionista,
           n.ajuste_coordenacao,
+          n.ajuste_logistica,
+          n.ajuste_conf_nutri,
+          n.ajuste_conf_coord,
           n.semana_consumo,
           n.semana_abastecimento,
           n.status,
@@ -115,8 +118,36 @@ class NecessidadesExportController {
 
       const necessidades = await executeQuery(query, params);
 
+      // Função auxiliar para obter o valor correto baseado no status
+      const obterValorPorStatus = (nec) => {
+        const status = nec.status || '';
+        
+        switch (status) {
+          case 'NEC':
+            return nec.ajuste || 0;
+          case 'NEC NUTRI':
+            return nec.ajuste_nutricionista || 0;
+          case 'CONF NUTRI':
+            return nec.ajuste_conf_nutri || 0;
+          case 'NEC COORD':
+            return nec.ajuste_coordenacao || 0;
+          case 'CONF COORD':
+            return nec.ajuste_conf_coord || 0;
+          case 'NEC LOG':
+            return nec.ajuste_logistica || 0;
+          case 'CONF':
+            return nec.ajuste_conf_coord || nec.ajuste_logistica || nec.ajuste_coordenacao || nec.ajuste_nutricionista || nec.ajuste || 0;
+          default:
+            // Fallback: tentar usar o campo mais relevante disponível
+            return nec.ajuste_conf_coord || nec.ajuste_logistica || nec.ajuste_coordenacao || nec.ajuste_conf_nutri || nec.ajuste_nutricionista || nec.ajuste || 0;
+        }
+      };
+
       // Adicionar dados ao worksheet
       necessidades.forEach(nec => {
+        // Obter o valor correto baseado no status para a coluna de ajuste (não para "Quantidade Gerada")
+        const valorAjustePorStatus = obterValorPorStatus(nec);
+        
         ws.addRow({
           id: nec.id,
           escola_id: nec.escola_id,
@@ -124,9 +155,10 @@ class NecessidadesExportController {
           produto_id: nec.produto_id,
           produto: nec.produto,
           produto_unidade: nec.produto_unidade,
-          ajuste: nec.ajuste || 0,
-          ajuste_nutricionista: nec.ajuste_nutricionista || 0,
-          ajuste_coordenacao: nec.ajuste_coordenacao || 0,
+          ajuste: nec.ajuste || 0, // "Quantidade Gerada" sempre traz ajuste
+          // A coluna de ajuste traz o valor conforme o status
+          ajuste_nutricionista: isCoordenacao ? (nec.ajuste_nutricionista || 0) : valorAjustePorStatus,
+          ajuste_coordenacao: isCoordenacao ? valorAjustePorStatus : (nec.ajuste_coordenacao || 0),
           semana_consumo: nec.semana_consumo,
           semana_abastecimento: nec.semana_abastecimento,
           status: nec.status,
@@ -233,6 +265,9 @@ class NecessidadesExportController {
           n.ajuste,
           n.ajuste_nutricionista,
           n.ajuste_coordenacao,
+          n.ajuste_logistica,
+          n.ajuste_conf_nutri,
+          n.ajuste_conf_coord,
           n.semana_consumo,
           n.semana_abastecimento,
           n.status,
@@ -243,6 +278,31 @@ class NecessidadesExportController {
       `;
 
       const necessidades = await executeQuery(query, params);
+
+      // Função auxiliar para obter o valor correto baseado no status
+      const obterValorPorStatus = (nec) => {
+        const status = nec.status || '';
+        
+        switch (status) {
+          case 'NEC':
+            return nec.ajuste || 0;
+          case 'NEC NUTRI':
+            return nec.ajuste_nutricionista || 0;
+          case 'CONF NUTRI':
+            return nec.ajuste_conf_nutri || 0;
+          case 'NEC COORD':
+            return nec.ajuste_coordenacao || 0;
+          case 'CONF COORD':
+            return nec.ajuste_conf_coord || 0;
+          case 'NEC LOG':
+            return nec.ajuste_logistica || 0;
+          case 'CONF':
+            return nec.ajuste_conf_coord || nec.ajuste_logistica || nec.ajuste_coordenacao || nec.ajuste_nutricionista || nec.ajuste || 0;
+          default:
+            // Fallback: tentar usar o campo mais relevante disponível
+            return nec.ajuste_conf_coord || nec.ajuste_logistica || nec.ajuste_coordenacao || nec.ajuste_conf_nutri || nec.ajuste_nutricionista || nec.ajuste || 0;
+        }
+      };
 
       // Informações filtradas
       if (whereConditions.length > 0) {
@@ -309,6 +369,10 @@ class NecessidadesExportController {
         }
 
         currentX = startX;
+        
+        // Obter o valor correto baseado no status para a coluna de ajuste (não para "Quantidade Gerada")
+        const valorAjustePorStatus = obterValorPorStatus(nec);
+        
         const data = isCoordenacao
           ? [
               nec.id,
@@ -317,9 +381,9 @@ class NecessidadesExportController {
               nec.produto_id,
               nec.produto || 'N/A',
               nec.produto_unidade || 'N/A',
-              nec.ajuste ? parseFloat(nec.ajuste).toFixed(3) : '0.000',
+              nec.ajuste ? parseFloat(nec.ajuste).toFixed(3) : '0.000', // "Quantidade Gerada" sempre traz ajuste
               nec.ajuste_nutricionista ? parseFloat(nec.ajuste_nutricionista).toFixed(3) : '0.000',
-              nec.ajuste_coordenacao ? parseFloat(nec.ajuste_coordenacao).toFixed(3) : '0.000',
+              valorAjustePorStatus ? parseFloat(valorAjustePorStatus).toFixed(3) : '0.000', // Ajuste Coordenação conforme status
               nec.semana_consumo || 'N/A',
               nec.semana_abastecimento || 'N/A',
               nec.status || 'N/A'
@@ -331,8 +395,8 @@ class NecessidadesExportController {
               nec.produto_id,
               nec.produto || 'N/A',
               nec.produto_unidade || 'N/A',
-              nec.ajuste ? parseFloat(nec.ajuste).toFixed(3) : '0.000',
-              nec.ajuste_nutricionista ? parseFloat(nec.ajuste_nutricionista).toFixed(3) : '0.000',
+              nec.ajuste ? parseFloat(nec.ajuste).toFixed(3) : '0.000', // "Quantidade Gerada" sempre traz ajuste
+              valorAjustePorStatus ? parseFloat(valorAjustePorStatus).toFixed(3) : '0.000', // Ajuste Nutricionista conforme status
               nec.semana_consumo || 'N/A',
               nec.semana_abastecimento || 'N/A',
               nec.status || 'N/A'

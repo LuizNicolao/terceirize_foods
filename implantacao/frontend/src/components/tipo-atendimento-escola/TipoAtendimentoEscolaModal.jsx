@@ -531,6 +531,7 @@ const TipoAtendimentoEscolaModal = ({
   const handleBuscaEscola = (e) => {
     setBuscaEscola(e.target.value);
     setEscolasPage(1);
+    // No modo de edição, o filtro é aplicado automaticamente via escolasFiltradas
   };
 
   const handleBuscaEscolaSubmit = () => {
@@ -566,16 +567,35 @@ const TipoAtendimentoEscolaModal = ({
   // Calcular escolas exibidas com paginação (tanto criação quanto edição)
   // No modo de edição, fazemos slice do array completo de escolas
   // No modo de criação, as escolas já vêm paginadas do backend
-  const escolasExibidas = isEditing && escolas.length > 0
-    ? escolas.slice((escolasPage - 1) * escolasItemsPerPage, escolasPage * escolasItemsPerPage)
+  // Aplicar filtro de busca local no modo de edição
+  const escolasFiltradas = isEditing && buscaEscola
+    ? escolas.filter(escola => {
+        const busca = buscaEscola.toLowerCase();
+        return (
+          (escola.nome_escola && escola.nome_escola.toLowerCase().includes(busca)) ||
+          (escola.rota && escola.rota.toLowerCase().includes(busca)) ||
+          (escola.cidade && escola.cidade.toLowerCase().includes(busca))
+        );
+      })
     : escolas;
-  const inicioItem = escolasTotalItems === 0
+  
+  const escolasExibidas = isEditing && escolasFiltradas.length > 0
+    ? escolasFiltradas.slice((escolasPage - 1) * escolasItemsPerPage, escolasPage * escolasItemsPerPage)
+    : escolas;
+  
+  // No modo de edição, usar escolasFiltradas para calcular totais
+  const totalItemsParaExibicao = isEditing ? escolasFiltradas.length : escolasTotalItems;
+  const totalPagesParaExibicao = isEditing 
+    ? Math.max(1, Math.ceil(escolasFiltradas.length / escolasItemsPerPage))
+    : escolasTotalPages;
+  
+  const inicioItem = totalItemsParaExibicao === 0
     ? 0
     : (escolasPage - 1) * escolasItemsPerPage + 1;
-  const fimItem = escolasTotalItems === 0
+  const fimItem = totalItemsParaExibicao === 0
     ? 0
-    : Math.min(escolasPage * escolasItemsPerPage, escolasTotalItems);
-  const possuiEscolasListadas = filialId && escolasTotalItems > 0;
+    : Math.min(escolasPage * escolasItemsPerPage, totalItemsParaExibicao);
+  const possuiEscolasListadas = filialId && totalItemsParaExibicao > 0;
 
   const handleStatusChange = (e) => {
     setStatusAtivo(e.target.value === 'ativo');
@@ -632,7 +652,7 @@ const TipoAtendimentoEscolaModal = ({
         )}
 
         {/* Busca de Escola */}
-        {!isEditing && filialId && (
+        {filialId && (
           <div>
             <div className="flex gap-2">
               <input
@@ -640,10 +660,21 @@ const TipoAtendimentoEscolaModal = ({
                 placeholder="Buscar escola por nome, rota ou cidade..."
                 value={buscaEscola}
                 onChange={handleBuscaEscola}
-                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleBuscaEscolaSubmit())}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (isEditing) {
+                      // No modo edição, apenas filtra localmente (já está implementado)
+                      setEscolasPage(1);
+                    } else {
+                      handleBuscaEscolaSubmit();
+                    }
+                  }
+                }}
                 disabled={loadingEscolas}
                 className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100"
               />
+              {!isEditing && (
               <Button
                 type="button"
                 onClick={handleBuscaEscolaSubmit}
@@ -652,6 +683,7 @@ const TipoAtendimentoEscolaModal = ({
               >
                 Buscar
               </Button>
+              )}
             </div>
           </div>
         )}
@@ -832,7 +864,7 @@ const TipoAtendimentoEscolaModal = ({
         )}
 
         {/* Navegação - Modo edição/visualização */}
-        {isEditing && filialId && escolasTotalItems > 0 && (
+        {isEditing && filialId && totalItemsParaExibicao > 0 && (
           <div className="flex flex-col items-center justify-center gap-3 pt-4 border-t border-gray-200">
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full">
               <div className="flex items-center gap-2">
@@ -854,14 +886,17 @@ const TipoAtendimentoEscolaModal = ({
               <div className="flex flex-col sm:flex-row items-center justify-center gap-2 text-sm text-gray-600">
                 {possuiEscolasListadas && (
                   <span>
-                    Exibindo {inicioItem}-{fimItem} de {escolasTotalItems}
+                    Exibindo {inicioItem}-{fimItem} de {totalItemsParaExibicao}
+                    {buscaEscola && escolas.length > escolasFiltradas.length && (
+                      <span className="text-gray-500"> (de {escolas.length} total)</span>
+                    )}
                   </span>
                 )}
-                {escolasTotalPages > 1 && (
+                {totalPagesParaExibicao > 1 && (
                   <Pagination
                     currentPage={escolasPage}
-                    totalPages={escolasTotalPages}
-                    totalItems={escolasTotalItems}
+                    totalPages={totalPagesParaExibicao}
+                    totalItems={totalItemsParaExibicao}
                     itemsPerPage={escolasItemsPerPage}
                     onPageChange={setEscolasPage}
                   />

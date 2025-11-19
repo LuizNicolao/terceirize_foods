@@ -108,24 +108,24 @@ const useNecessidadesCoordenacao = () => {
     
     try {
       const response = await necessidadesCoordenacaoService.salvarAjustesCoordenacao(ajustes);
-      
-      if (response.success) {
-        toast.success(response.message);
-        // Recarregar necessidades após salvar
-        await carregarNecessidades();
-        return true;
-      } else {
-        toast.error(response.message || 'Erro ao salvar ajustes');
-        return false;
-      }
+      // Retornar a resposta completa para que o useAcoesNecessidades possa tratar adequadamente
+      // Não recarregar necessidades aqui, pois o useAcoesNecessidades já faz isso
+      return response;
     } catch (error) {
       console.error('Erro ao salvar ajustes:', error);
-      toast.error('Erro ao salvar ajustes');
-      return false;
+      // Se for um erro HTTP, tentar extrair a mensagem da resposta
+      if (error.response?.data) {
+        return error.response.data;
+      }
+      return {
+        success: false,
+        message: 'Erro ao salvar ajustes',
+        error: error.message
+      };
     } finally {
       setLoading(false);
     }
-  }, [carregarNecessidades]);
+  }, []);
 
   // Liberar para logística
   const liberarParaLogistica = useCallback(async (necessidadeIds) => {
@@ -267,11 +267,9 @@ const useNecessidadesCoordenacao = () => {
   // Hook de exportação padronizado
   const { handleExportXLSX, handleExportPDF } = useExport(necessidadesCoordenacaoService);
 
-  // Carregar dados iniciais
-  useEffect(() => {
-    carregarEscolas();
-    carregarGrupos();
-  }, [carregarEscolas, carregarGrupos]);
+  // Não carregar dados automaticamente ao montar
+  // Os dados serão carregados apenas quando a aba for ativada (via orchestrator)
+  // Isso evita múltiplas requisições desnecessárias ao voltar para a tela
 
   return {
     // Estados

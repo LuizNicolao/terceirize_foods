@@ -23,8 +23,11 @@ const necessidadesLogisticaService = {
   // Salvar ajustes da logística
   async salvarAjustesLogistica(ajustes) {
     try {
+      // Aumentar timeout para operações que podem processar muitos itens
       const response = await api.put('/necessidades/logistica/ajustes', {
         itens: ajustes
+      }, {
+        timeout: 60000 // 60 segundos para salvar ajustes (pode processar muitos itens)
       });
       return response.data;
     } catch (error) {
@@ -80,6 +83,20 @@ const necessidadesLogisticaService = {
       return response.data;
     } catch (error) {
       console.error('Erro ao deletar produto de ajuste:', error);
+      throw error;
+    }
+  },
+
+  // Trocar produto origem (logística - atualiza diretamente na tabela necessidades)
+  async trocarProdutoOrigem(dados) {
+    try {
+      // Aumentar timeout para operações que podem processar muitos itens
+      const response = await api.post('/necessidades/logistica/trocar-produto-origem', dados, {
+        timeout: 45000 // 45 segundos para trocar produto origem (pode processar muitas necessidades)
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao trocar produto origem (logística):', error);
       throw error;
     }
   }

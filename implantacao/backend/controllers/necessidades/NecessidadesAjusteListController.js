@@ -32,8 +32,13 @@ const listarParaAjuste = async (req, res) => {
         n.semana_consumo,
         n.semana_abastecimento,
         n.status,
-        n.data_preenchimento
+        n.data_preenchimento,
+        COALESCE(ppc.produto_codigo, po.codigo, '') as produto_codigo
       FROM necessidades n
+      LEFT JOIN produtos_per_capita ppc ON ppc.produto_id = n.produto_id 
+        AND ppc.grupo COLLATE utf8mb4_unicode_ci = n.grupo COLLATE utf8mb4_unicode_ci
+        AND ppc.ativo = true
+      LEFT JOIN foods_db.produto_origem po ON po.id = n.produto_id
       WHERE n.status IN ('NEC', 'NEC NUTRI', 'CONF NUTRI')
     `;
 

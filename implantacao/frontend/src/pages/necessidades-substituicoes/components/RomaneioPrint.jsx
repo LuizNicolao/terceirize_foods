@@ -1,6 +1,6 @@
 import React from 'react';
 
-const RomaneioPrint = ({ dados, grupo = 'FRIOS' }) => {
+const RomaneioPrint = ({ dados, grupo = null, escola = null }) => {
   // Formatar semana de abastecimento (assumindo formato YYYY-MM-DD ou similar)
   const formatarSemana = (semana) => {
     if (!semana) return '';
@@ -12,6 +12,17 @@ const RomaneioPrint = ({ dados, grupo = 'FRIOS' }) => {
       }
     }
     return semana;
+  };
+
+  // Determinar o título baseado em grupo ou escola
+  const getTitulo = () => {
+    if (escola) {
+      return `RESUMO ESCOLA ${escola.toUpperCase()}`;
+    }
+    if (grupo) {
+      return `RESUMO GRUPO ${grupo.toUpperCase()}`;
+    }
+    return 'RESUMO';
   };
 
   return (
@@ -28,7 +39,7 @@ const RomaneioPrint = ({ dados, grupo = 'FRIOS' }) => {
           {/* Título centralizado */}
           <div className="flex-1 text-center">
             <h1 className="text-2xl font-bold uppercase tracking-wide">
-              RESUMO GRUPO {grupo.toUpperCase()}
+              {getTitulo()}
             </h1>
           </div>
           

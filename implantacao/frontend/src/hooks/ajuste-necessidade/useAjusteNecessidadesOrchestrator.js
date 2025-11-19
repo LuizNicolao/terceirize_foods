@@ -124,6 +124,9 @@ export const useAjusteNecessidadesOrchestrator = () => {
     limparAjustesLocais
   } = useAjustesLocais(necessidades, activeTab);
 
+  // Estado para produtos origem selecionados na logística
+  const [selectedProdutosOrigemLogistica, setSelectedProdutosOrigemLogistica] = useState({});
+
   // Hook para produto extra
   const {
     modalProdutoExtraAberto,
@@ -165,25 +168,25 @@ export const useAjusteNecessidadesOrchestrator = () => {
   );
 
   // Hook para exclusão
-  const handleCarregarNecessidades = useCallback(() => {
+  const handleCarregarNecessidades = useCallback(async () => {
     if (activeTab === 'nutricionista') {
-      if (!filtros.escola_id || !filtros.grupo || !filtros.semana_consumo) {
-        toast.error('Preencha todos os filtros obrigatórios');
+      if (!filtros.escola_id || !filtros.semana_consumo) {
+        toast.error('Preencha os filtros obrigatórios: Escola e Semana de Consumo');
         return;
       }
-      carregarNecessidadesNutricionista();
+      return await carregarNecessidadesNutricionista();
     } else if (activeTab === 'coordenacao') {
-      if (!filtros.escola_id && !filtros.nutricionista_id && !filtros.grupo && !filtros.semana_consumo && !filtros.semana_abastecimento) {
-        toast.error('Selecione ao menos um filtro para buscar');
+      if (!filtros.semana_consumo) {
+        toast.error('Preencha o filtro obrigatório: Semana de Consumo');
         return;
       }
-      carregarNecessidadesCoordenacao();
+      return await carregarNecessidadesCoordenacao();
     } else if (activeTab === 'logistica') {
-      if (!filtros.escola_id && !filtros.grupo && !filtros.semana_consumo && !filtros.semana_abastecimento) {
-        toast.error('Selecione ao menos um filtro para buscar');
+      if (!filtros.semana_consumo) {
+        toast.error('Preencha o filtro obrigatório: Semana de Consumo');
         return;
       }
-      carregarNecessidadesLogistica();
+      return await carregarNecessidadesLogistica();
     }
   }, [activeTab, filtros, carregarNecessidadesNutricionista, carregarNecessidadesCoordenacao, carregarNecessidadesLogistica]);
 
@@ -196,7 +199,7 @@ export const useAjusteNecessidadesOrchestrator = () => {
   } = useExclusaoNecessidade(handleCarregarNecessidades);
 
   // Hook para ações principais
-  const { handleSalvarAjustes, handleLiberarCoordenacao } = useAcoesNecessidades({
+  const { handleSalvarAjustes, handleLiberarCoordenacao, progressoModal } = useAcoesNecessidades({
     activeTab,
     necessidadeAtual,
     necessidades,
@@ -213,7 +216,9 @@ export const useAjusteNecessidadesOrchestrator = () => {
     limparAjustesLocais,
     atualizarFiltrosNutricionista,
     atualizarFiltrosCoordenacao,
-    atualizarFiltrosLogistica
+    atualizarFiltrosLogistica,
+    limparFiltrosLogistica,
+    selectedProdutosOrigemLogistica
   });
 
   // Hook para modal de produto extra
@@ -242,58 +247,44 @@ export const useAjusteNecessidadesOrchestrator = () => {
     setSearchProduto
   });
 
-  // Carregar nutricionistas quando aba de coordenação for ativada
-  useEffect(() => {
-    if (activeTab === 'coordenacao') {
-      carregarNutricionistas();
-    }
-  }, [activeTab, carregarNutricionistas]);
-
-  // Limpar filtros quando muda de aba
+  // Carregar dados quando aba for ativada (evita múltiplas requisições desnecessárias)
   useEffect(() => {
     if (activeTab === 'nutricionista') {
-      atualizarFiltrosCoordenacao({
-        escola_id: null,
-        grupo: null,
-        semana_consumo: null,
-        semana_abastecimento: null,
-        nutricionista_id: null
-      });
-      atualizarFiltrosLogistica({
-        escola_id: null,
-        grupo: null,
-        semana_consumo: null,
-        semana_abastecimento: null
-      });
+      // Carregar escolas e grupos apenas da aba de nutricionista
+      carregarEscolasNutricionista();
+      carregarGruposNutricionista();
+      // Limpar coordenação e logística (inclui filtros e necessidades)
+      limparFiltrosCoordenacao();
+      limparFiltrosLogistica();
     } else if (activeTab === 'coordenacao') {
-      atualizarFiltrosNutricionista({
-        escola_id: null,
-        grupo: null,
-        semana_consumo: null,
-        semana_abastecimento: null
-      });
-      atualizarFiltrosLogistica({
-        escola_id: null,
-        grupo: null,
-        semana_consumo: null,
-        semana_abastecimento: null
-      });
+      // Carregar nutricionistas, escolas e grupos apenas da aba de coordenação
+      carregarNutricionistas();
+      carregarEscolasCoordenacao();
+      carregarGruposCoordenacao();
+      // Limpar nutricionista e logística (inclui filtros e necessidades)
+      limparFiltrosNutricionista();
+      limparFiltrosLogistica();
     } else if (activeTab === 'logistica') {
-      atualizarFiltrosNutricionista({
-        escola_id: null,
-        grupo: null,
-        semana_consumo: null,
-        semana_abastecimento: null
-      });
-      atualizarFiltrosCoordenacao({
-        escola_id: null,
-        grupo: null,
-        semana_consumo: null,
-        semana_abastecimento: null,
-        nutricionista_id: null
-      });
+      // Carregar escolas e grupos apenas da aba de logística
+      carregarEscolasLogistica();
+      carregarGruposLogistica();
+      // Limpar nutricionista e coordenação (inclui filtros e necessidades)
+      limparFiltrosNutricionista();
+      limparFiltrosCoordenacao();
     }
-  }, [activeTab, atualizarFiltrosCoordenacao, atualizarFiltrosNutricionista, atualizarFiltrosLogistica]);
+  }, [
+    activeTab,
+    carregarNutricionistas,
+    carregarEscolasNutricionista,
+    carregarGruposNutricionista,
+    carregarEscolasCoordenacao,
+    carregarGruposCoordenacao,
+    carregarEscolasLogistica,
+    carregarGruposLogistica,
+    limparFiltrosCoordenacao,
+    limparFiltrosNutricionista,
+    limparFiltrosLogistica
+  ]);
 
   // Handler para limpar filtros (com recarregamento de escolas/grupos)
   const handleLimparFiltros = useCallback(() => {
@@ -361,6 +352,9 @@ export const useAjusteNecessidadesOrchestrator = () => {
       showDeleteConfirmModal,
       produtoToDelete,
       
+      // Estados para logística
+      setSelectedProdutosOrigemLogistica,
+      
       // Dados
       escolas: activeTab === 'nutricionista' ? escolas : activeTab === 'coordenacao' ? escolasCoordenacao : activeTab === 'logistica' ? escolasLogistica : [],
       grupos: activeTab === 'nutricionista' ? grupos : activeTab === 'coordenacao' ? gruposCoordenacao : activeTab === 'logistica' ? gruposLogistica : [],
@@ -393,6 +387,9 @@ export const useAjusteNecessidadesOrchestrator = () => {
       
       // Modal helpers
     handleCloseModalProdutoExtra: handleFecharModal,
-      handleClearSearch: () => setBuscaProduto('')
+      handleClearSearch: () => setBuscaProduto(''),
+      
+      // Modal de progresso (logística)
+      progressoModal
     };
   };

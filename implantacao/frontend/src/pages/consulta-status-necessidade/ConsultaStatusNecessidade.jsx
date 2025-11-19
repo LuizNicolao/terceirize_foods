@@ -1,50 +1,23 @@
 import React, { useState } from 'react';
-import { FaClipboardList, FaQuestionCircle } from 'react-icons/fa';
+import { FaClipboardList } from 'react-icons/fa';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { useAuth } from '../../contexts/AuthContext';
-import { useConsultaStatusNecessidade } from '../../hooks/necessidades';
 import { 
   ConsultaStatusLayout,
-  ConsultaStatusLoading,
   ConsultaStatusHeader,
   ConsultaStatusTabs,
   RelatoriosConsultaStatus,
   StatusNecessidadesTab
 } from './components';
-import { ExportButtons } from '../../components/shared';
-import toast from 'react-hot-toast';
+import NecVsConfTab from './components/NecVsConfTab';
 
 const ConsultaStatusNecessidade = () => {
   const { canView } = usePermissions();
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('status');
 
-  // Hook para gerenciar consulta de status
-  const {
-    exportarXLSX,
-    exportarPDF
-  } = useConsultaStatusNecessidade();
-
   // Verificar permissões
   const canViewConsulta = canView('consulta_status_necessidade');
-
-
-  // Handlers de exportação
-  const handleExportXLSX = async () => {
-    try {
-      await exportarXLSX();
-    } catch (error) {
-      console.error('Erro ao exportar XLSX:', error);
-    }
-  };
-
-  const handleExportPDF = async () => {
-    try {
-      await exportarPDF();
-    } catch (error) {
-      console.error('Erro ao exportar PDF:', error);
-    }
-  };
 
   if (!canViewConsulta) {
     return (
@@ -79,18 +52,14 @@ const ConsultaStatusNecessidade = () => {
         userType={user?.tipo_de_acesso}
       />
 
-      {/* Ações de Exportação - sempre visíveis */}
-      <div className="mb-4">
-        <ExportButtons
-          onExportXLSX={handleExportXLSX}
-          onExportPDF={handleExportPDF}
-        />
-      </div>
-
-
       {/* Conteúdo da aba Status das Necessidades */}
       {activeTab === 'status' && (
         <StatusNecessidadesTab />
+      )}
+
+      {/* Conteúdo da aba NEC x CONF */}
+      {activeTab === 'nec-vs-conf' && (
+        <NecVsConfTab />
       )}
 
       {/* Conteúdo da aba Relatórios */}

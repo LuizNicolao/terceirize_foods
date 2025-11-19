@@ -15,10 +15,10 @@ const consultaStatusNecessidadeService = {
         }
       });
 
-      const response = await api.get(`/consulta-status-necessidade?${params.toString()}`);
+      const url = `/consulta-status-necessidade?${params.toString()}`;
+      const response = await api.get(url);
       return response.data;
     } catch (error) {
-      console.error('Erro ao listar status das necessidades:', error);
       throw error;
     }
   },
@@ -40,7 +40,6 @@ const consultaStatusNecessidadeService = {
       const response = await api.get(`/consulta-status-necessidade/estatisticas?${params.toString()}`);
       return response.data;
     } catch (error) {
-      console.error('Erro ao obter estatísticas:', error);
       throw error;
     }
   },
@@ -62,7 +61,43 @@ const consultaStatusNecessidadeService = {
       const response = await api.get(`/consulta-status-necessidade/exportar/xlsx?${params.toString()}`);
       return response.data;
     } catch (error) {
-      console.error('Erro ao exportar XLSX:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Obter opções de filtros disponíveis baseadas nos dados reais
+   */
+  async obterOpcoesFiltros() {
+    try {
+      const response = await api.get('/consulta-status-necessidade/opcoes-filtros');
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  /**
+   * Buscar produtos de um grupo específico com detalhes
+   */
+  async buscarProdutosPorGrupo(filtros = {}) {
+    try {
+      const params = new URLSearchParams();
+      
+      Object.keys(filtros).forEach(key => {
+        const value = filtros[key];
+        if (value !== null && value !== undefined && value !== '') {
+          // Garantir que o valor seja uma string
+          params.append(key, String(value));
+        }
+      });
+
+      const url = `/consulta-status-necessidade/produtos-por-grupo?${params.toString()}`;
+      const response = await api.get(url);
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao buscar produtos por grupo:', error);
+      console.error('Filtros enviados:', filtros);
       throw error;
     }
   },
@@ -84,7 +119,28 @@ const consultaStatusNecessidadeService = {
       const response = await api.get(`/consulta-status-necessidade/exportar/pdf?${params.toString()}`);
       return response.data;
     } catch (error) {
-      console.error('Erro ao exportar PDF:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Listar comparação NEC x CONF (ajuste vs ajuste_conf_coord)
+   */
+  async listarNecVsConf(filtros = {}) {
+    try {
+      const params = new URLSearchParams();
+      
+      Object.keys(filtros).forEach(key => {
+        const value = filtros[key];
+        if (value !== null && value !== undefined && value !== '') {
+          params.append(key, String(value));
+        }
+      });
+
+      const url = `/consulta-status-necessidade/nec-vs-conf?${params.toString()}`;
+      const response = await api.get(url);
+      return response.data;
+    } catch (error) {
       throw error;
     }
   }

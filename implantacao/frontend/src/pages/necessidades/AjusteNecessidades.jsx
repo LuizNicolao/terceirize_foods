@@ -10,11 +10,13 @@ import {
 import NecessidadesTabs from '../../components/necessidades/NecessidadesTabs';
 import AjusteHeader from '../../components/necessidades/ajuste/AjusteHeader';
 import AjusteFiltros from '../../components/necessidades/ajuste/AjusteFiltros';
+import AjusteResumoCards from '../../components/necessidades/ajuste/AjusteResumoCards';
 import AjusteTabelaNutricionista from '../../components/necessidades/ajuste/AjusteTabelaNutricionista';
 import AjusteTabelaCoordenacao from '../../components/necessidades/ajuste/AjusteTabelaCoordenacao';
 import AjusteTabelaLogistica from '../../components/necessidades/ajuste/AjusteTabelaLogistica';
 import ModalProdutoExtra from '../../components/necessidades/ajuste/ModalProdutoExtra';
 import ModalImpressao from '../../components/necessidades/ajuste/ModalImpressao';
+import ModalProgresso from '../../components/necessidades/ajuste/ModalProgresso';
 import AjusteActions from '../../components/necessidades/ajuste/AjusteActions';
 import AjusteEmptyStates from '../../components/necessidades/ajuste/AjusteEmptyStates';
 import { ConfirmModal } from '../../components/ui';
@@ -84,7 +86,13 @@ const AjusteNecessidades = () => {
     handleCloseDeleteModal,
     
     // Contagens por aba (temporário)
-    contagemRegistros
+    contagemRegistros,
+    
+    // Estados para logística
+    setSelectedProdutosOrigemLogistica,
+    
+    // Modal de progresso (logística)
+    progressoModal
   } = useAjusteNecessidadesOrchestrator();
 
   // Verificar permissões específicas
@@ -147,6 +155,14 @@ const AjusteNecessidades = () => {
           onImprimir={handleAbrirModalImpressao}
         />
 
+        {/* Cards de Resumo (apenas para aba Nutricionista) */}
+        {activeTab === 'nutricionista' && (
+          <AjusteResumoCards 
+            escolas={escolas} 
+            grupos={grupos} 
+          />
+        )}
+
         {/* Error Message */}
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-md p-4">
@@ -204,6 +220,8 @@ const AjusteNecessidades = () => {
                 onAjusteChange={handleAjusteChange}
                 onExcluirNecessidade={handleExcluirNecessidade}
                 canEdit={canEditAjuste}
+                onTrocarProdutoOrigem={handleCarregarNecessidades}
+                onSelectedProdutosOrigemChange={setSelectedProdutosOrigemLogistica}
               />
             ) : (
               <AjusteTabelaNutricionista
@@ -266,6 +284,15 @@ const AjusteNecessidades = () => {
         onClose={handleFecharModalImpressao}
         activeTab={activeTab}
         opcoesSemanasConsumo={opcoesSemanasConsumo}
+      />
+
+      {/* Modal de Progresso (Logística e Coordenação) */}
+      <ModalProgresso
+        isOpen={progressoModal.isOpen}
+        title={activeTab === 'logistica' ? 'Enviando para Confirmação Nutri' : 'Processando Registros'}
+        progresso={progressoModal.progresso}
+        total={progressoModal.total}
+        mensagem={progressoModal.mensagem}
       />
     </>
   );

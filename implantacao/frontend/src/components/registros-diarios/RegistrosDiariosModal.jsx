@@ -409,12 +409,21 @@ const RegistrosDiariosModal = ({
       quantidadesFiltradas.parcial = quantidadesFiltradas.parcial_manha;
     }
 
-    await onSave({
+    const resultado = await onSave({
       ...formData,
       escola_nome,
       quantidades: quantidadesFiltradas
-    });
-    resetDirty();
+    }, !registro); // Manter modal aberto se for novo registro (não edição)
+    
+    // Se o registro foi salvo com sucesso e deve manter o modal aberto (novo registro)
+    if (resultado?.success && resultado?.manterModalAberto) {
+      // Resetar o formulário para um novo registro
+      setFormData(criarEstadoInicial());
+      resetDirty();
+      // Modal permanece aberto
+    } else {
+      resetDirty();
+    }
   };
 
   const handleHistoricoEdit = (item) => {
@@ -513,7 +522,7 @@ const RegistrosDiariosModal = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <SearchableSelect
-              label="Escola *"
+              label="Escola"
               value={formData.escola_id}
               onChange={(value) => handleInputChange('escola_id', value)}
               options={unidadesEscolares.map(escola => ({
@@ -538,7 +547,7 @@ const RegistrosDiariosModal = ({
           
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Data *
+              Data <span className="text-red-500">*</span>
             </label>
             <Input
               type="date"

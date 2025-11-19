@@ -41,44 +41,6 @@ export const useConsultaStatusNecessidade = () => {
   const { grupos, carregarGrupos } = useGruposConsulta();
   const { produtos, carregarProdutos } = useProdutosPerCapita();
 
-  // Carregar dados iniciais
-  useEffect(() => {
-    carregarGrupos();
-    carregarUnidadesEscolares();
-  }, []);
-
-  // Carregar necessidades quando filtros mudarem
-  useEffect(() => {
-    carregarNecessidades();
-  }, [filtros, pagination.currentPage, pagination.itemsPerPage]);
-
-  // Carregar estatísticas quando filtros mudarem
-  useEffect(() => {
-    carregarEstatisticas();
-  }, [filtros]);
-
-  // Carregar semana de consumo quando semana de abastecimento mudar
-  useEffect(() => {
-    if (filtros.semana_abastecimento) {
-      // Auto-preencher semana de consumo se não estiver definida
-      if (!filtros.semana_consumo) {
-        const semanaConsumo = obterSemanaAbastecimentoPadrao(filtros.semana_abastecimento);
-        if (semanaConsumo) {
-          setFiltros(prev => ({ ...prev, semana_consumo: semanaConsumo }));
-        }
-      }
-    }
-  }, [filtros.semana_abastecimento, obterSemanaAbastecimentoPadrao]);
-
-  // Carregar produtos quando grupo mudar
-  useEffect(() => {
-    if (filtros.grupo) {
-      carregarProdutos({ grupo: filtros.grupo });
-    } else {
-      carregarProdutos();
-    }
-  }, [filtros.grupo, carregarProdutos]);
-
   /**
    * Carregar necessidades com filtros e paginação
    */
@@ -125,6 +87,43 @@ export const useConsultaStatusNecessidade = () => {
       console.error('Erro ao carregar estatísticas:', err);
     }
   }, [filtros]);
+
+  // Carregar dados iniciais
+  useEffect(() => {
+    carregarGrupos();
+    carregarUnidadesEscolares();
+  }, []);
+
+  // Carregar semana de consumo quando semana de abastecimento mudar (antes de carregar necessidades)
+  useEffect(() => {
+    if (filtros.semana_abastecimento && !filtros.semana_consumo) {
+      // Auto-preencher semana de consumo se não estiver definida
+      const semanaConsumo = obterSemanaAbastecimentoPadrao(filtros.semana_abastecimento);
+      if (semanaConsumo) {
+        setFiltros(prev => ({ ...prev, semana_consumo: semanaConsumo }));
+      }
+    }
+  }, [filtros.semana_abastecimento, filtros.semana_consumo, obterSemanaAbastecimentoPadrao]);
+
+  // Carregar necessidades quando filtros mudarem
+  // Desabilitado: o componente StatusNecessidadesTab gerencia seu próprio carregamento
+  // useEffect(() => {
+  //   carregarNecessidades();
+  // }, [filtros, pagination.currentPage, pagination.itemsPerPage, carregarNecessidades]);
+
+  // Carregar estatísticas quando filtros mudarem
+  useEffect(() => {
+    carregarEstatisticas();
+  }, [filtros, carregarEstatisticas]);
+
+  // Carregar produtos quando grupo mudar
+  useEffect(() => {
+    if (filtros.grupo) {
+      carregarProdutos({ grupo: filtros.grupo });
+    } else {
+      carregarProdutos();
+    }
+  }, [filtros.grupo, carregarProdutos]);
 
   /**
    * Atualizar filtros

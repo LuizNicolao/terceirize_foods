@@ -65,10 +65,9 @@ const SubstituicoesTableCoordenacao = ({
       
       necessidade.escolas.forEach(escola => {
         const chaveEscola = `${chaveUnica}-${escola.escola_id}`;
-        const origemEscola = escola.produto_trocado_id
-          ? `${escola.produto_trocado_id}|${escola.produto_trocado_nome || ''}|${escola.produto_trocado_unidade || ''}`
-          : valorOrigem;
-        origemEscolasIniciais[chaveEscola] = origemEscola;
+        // Sempre usar o produto origem atual (codigo_origem), não o produto_trocado_id
+        // produto_trocado_id é apenas para mostrar "Original: ..." e desabilitar o campo
+        origemEscolasIniciais[chaveEscola] = valorOrigem;
       });
 
       if (necessidade.produto_generico_id) {
@@ -548,7 +547,6 @@ const SubstituicoesTableCoordenacao = ({
                             })()}
                             placeholder="Selecione um produto..."
                             disabled={
-                              !necessidade.substituicoes_existentes ||
                               Boolean(necessidade.produto_trocado_id) ||
                               !ajustesAtivados
                             }
@@ -790,7 +788,10 @@ const SubstituicoesTableCoordenacao = ({
                                         return baseOptions;
                                       })()}
                                       placeholder="Produto origem..."
-                                      disabled={!ajustesAtivados}
+                                      disabled={
+                                        Boolean(escola.produto_trocado_id) ||
+                                        !ajustesAtivados
+                                      }
                                       className="text-xs"
                                       filterBy={(option, searchTerm) =>
                                         option.label.toLowerCase().includes(searchTerm.toLowerCase())
@@ -814,7 +815,10 @@ const SubstituicoesTableCoordenacao = ({
                                           };
                                         })}
                                         placeholder="Selecione..."
-                                        disabled={!ajustesAtivados}
+                                        disabled={
+                                          Boolean(escola.produto_trocado_id) ||
+                                          !ajustesAtivados
+                                        }
                                         filterBy={(option, searchTerm) => {
                                           return option.label.toLowerCase().includes(searchTerm.toLowerCase());
                                         }}

@@ -12,6 +12,11 @@ const ConsultaStatusTabs = ({
       visible: true
     },
     {
+      id: 'nec-vs-conf',
+      label: '📊 NEC x CONF',
+      visible: true
+    },
+    {
       id: 'relatorios',
       label: '📊 Relatórios',
       visible: true // Temporário: mostrar para todos

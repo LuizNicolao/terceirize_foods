@@ -194,9 +194,7 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
   });
 
   useEffect(() => {
-    if (isOpen) {
-      // console.log('[NecessidadeModal] ✅ tipos de atendimento disponíveis na tela', tiposDisponiveis.map(tipo => tipo.key));
-    }
+    // Efeito para quando o modal abrir
   }, [isOpen, tiposDisponiveis]);
 
   // Inicializar tabela quando produtos estiverem carregados
@@ -319,18 +317,6 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
         total: total, // Usar total calculado
         ajuste: ajustesExistentes[produto.produto_id] || '' // Preservar ajuste existente ou inicializar em branco
       };
-
-      // console.log('[NecessidadeModal] ✅ produto calculado', {
-      //   produtoId: produtoFinal.id,
-      //   medias: {
-      //     lanche_manha: produtoFinal.media_lanche_manha,
-      //     parcial_manha: produtoFinal.media_parcial_manha,
-      //     almoco: produtoFinal.media_almoco,
-      //     lanche_tarde: produtoFinal.media_lanche_tarde,
-      //     parcial_tarde: produtoFinal.media_parcial_tarde,
-      //     eja: produtoFinal.media_eja
-      //   }
-      // });
 
       return produtoFinal;
     });

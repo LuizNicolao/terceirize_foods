@@ -26,8 +26,6 @@ class RegistrosDiariosImportController {
    */
   static async baixarModelo(req, res) {
     try {
-      console.log('🚀 GERANDO MODELO DE REGISTROS DIÁRIOS');
-
       // Buscar algumas escolas para exemplo
       const escolasQuery = `
         SELECT id, nome_escola 
@@ -106,8 +104,6 @@ class RegistrosDiariosImportController {
    */
   static async importar(req, res) {
     try {
-      console.log('🚀 INICIANDO IMPORTAÇÃO DE REGISTROS DIÁRIOS');
-
       if (!req.file) {
         return errorResponse(res, 'Nenhum arquivo enviado', 400);
       }
@@ -177,8 +173,6 @@ class RegistrosDiariosImportController {
       if (registros.length === 0) {
         return errorResponse(res, 'Nenhum registro válido encontrado', 400);
       }
-
-      console.log(`📊 Processando ${registros.length} registros`);
 
       // Processar cada registro
       let importados = 0;
@@ -269,8 +263,6 @@ class RegistrosDiariosImportController {
           erros.push(`Linha ${linha}: Erro interno - ${error.message}`);
         }
       }
-
-      console.log(`✅ Importação concluída: ${importados} novos, ${atualizados} atualizados`);
 
       return successResponse(res, {
         message: 'Importação realizada com sucesso',

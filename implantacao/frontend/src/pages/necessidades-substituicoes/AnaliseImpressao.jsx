@@ -23,35 +23,106 @@ const AnaliseImpressao = () => {
   const [loading, setLoading] = useState(false);
   const [marcandoImpresso, setMarcandoImpresso] = useState(false);
   const [error, setError] = useState(null);
+  const [tipoAgrupamento, setTipoAgrupamento] = useState('grupo'); // 'grupo' ou 'escola'
   const printRef = useRef(null);
 
   // Validar se os filtros obrigatórios estão preenchidos
   const filtrosValidos = filtros.tipo_rota_id && filtros.rota_id && filtros.semana_abastecimento;
 
-  // Agrupar produtos por grupo quando nenhum grupo específico for selecionado
+  // Agrupar produtos por grupo ou escola
   const gruposRomaneio = useMemo(() => {
-    if (!dadosImpressao || !Array.isArray(dadosImpressao.produtos) || filtros.grupo) {
+    if (!dadosImpressao || !Array.isArray(dadosImpressao.produtos)) {
       return [];
     }
 
-    const agrupados = dadosImpressao.produtos.reduce((acc, produto) => {
-      const grupoProduto = produto.grupo || 'Sem Grupo';
-      if (!acc.has(grupoProduto)) {
-        acc.set(grupoProduto, []);
+    // Se um grupo específico foi selecionado e o agrupamento é por grupo, não agrupar
+    // (mostrará apenas o grupo selecionado)
+    if (filtros.grupo && tipoAgrupamento === 'grupo') {
+      return [];
+    }
+    
+    // Se um grupo específico foi selecionado mas o agrupamento é por escola,
+    // filtrar apenas produtos do grupo selecionado antes de agrupar por escola
+    const produtosParaAgrupar = filtros.grupo && tipoAgrupamento === 'escola'
+      ? dadosImpressao.produtos.filter(p => p.grupo === filtros.grupo)
+      : dadosImpressao.produtos;
+
+    const agrupados = produtosParaAgrupar.reduce((acc, produto) => {
+      let chave;
+      let nome;
+      
+      if (tipoAgrupamento === 'escola') {
+        chave = produto.escola_id || `escola_${produto.escola_nome}`;
+        nome = produto.escola_nome || 'Sem Escola';
+        
+        // Quando agrupar por escola, consolidar produtos (somar quantidades do mesmo produto)
+        if (!acc.has(chave)) {
+          acc.set(chave, {
+            nome,
+            tipo: tipoAgrupamento,
+            produtos: []
+          });
+        }
+        
+        // Verificar se o produto já existe na escola
+        const produtosEscola = acc.get(chave).produtos;
+        const produtoExistente = produtosEscola.find(p => 
+          p.codigo === produto.codigo && 
+          p.descricao === produto.descricao &&
+          p.unidade === produto.unidade
+        );
+        
+        if (produtoExistente) {
+          // Somar quantidade se o produto já existe
+          produtoExistente.quantidade = (parseFloat(produtoExistente.quantidade) || 0) + (parseFloat(produto.quantidade) || 0);
+        } else {
+          // Adicionar novo produto
+          produtosEscola.push({ ...produto });
+        }
+      } else {
+        chave = produto.grupo || 'Sem Grupo';
+        nome = produto.grupo || 'Sem Grupo';
+        
+        if (!acc.has(chave)) {
+          acc.set(chave, {
+            nome,
+            tipo: tipoAgrupamento,
+            produtos: []
+          });
+        }
+        acc.get(chave).produtos.push(produto);
       }
-      acc.get(grupoProduto).push(produto);
+      
       return acc;
     }, new Map());
 
-    return Array.from(agrupados.entries()).map(([grupoNome, produtosDoGrupo]) => ({
-      grupo: grupoNome,
-      dados: {
-        ...dadosImpressao,
-        produtos: produtosDoGrupo,
-        total_produtos: produtosDoGrupo.length
-      }
-    }));
-  }, [dadosImpressao, filtros.grupo]);
+    return Array.from(agrupados.entries()).map(([chave, { nome, tipo, produtos }]) => {
+      // Ordenar produtos por nome após consolidação
+      const produtosOrdenados = [...produtos].sort((a, b) => {
+        const nomeA = (a.descricao || '').toLowerCase();
+        const nomeB = (b.descricao || '').toLowerCase();
+        return nomeA.localeCompare(nomeB);
+      });
+      
+      return {
+        chave,
+        nome,
+        tipo,
+        dados: {
+          ...dadosImpressao,
+          produtos: produtosOrdenados,
+          total_produtos: produtosOrdenados.length
+        }
+      };
+    });
+  }, [dadosImpressao, filtros.grupo, tipoAgrupamento]);
+
+  const handleLimparFiltros = () => {
+    limparFiltros();
+    setDadosImpressao(null);
+    setError(null);
+    setTipoAgrupamento('grupo');
+  };
 
   const handleBuscarDados = async () => {
     if (!filtrosValidos) {
@@ -171,14 +242,14 @@ const AnaliseImpressao = () => {
           filtros={filtros}
           loading={loading}
           onFiltroChange={atualizarFiltros}
-          onLimparFiltros={limparFiltros}
+          onLimparFiltros={handleLimparFiltros}
         />
       </div>
 
       {/* Botões de Ação - não devem aparecer na impressão */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6 no-print">
         <div className="flex justify-between items-center">
-          <div className="flex gap-3">
+          <div className="flex gap-3 items-center">
             <Button
               variant="primary"
               onClick={handleBuscarDados}
@@ -195,24 +266,55 @@ const AnaliseImpressao = () => {
             </Button>
             
             {dadosImpressao && (
-              <Button
-                variant="success"
-                onClick={handleImprimir}
-                disabled={marcandoImpresso}
-                className="flex items-center gap-2"
-              >
-                {marcandoImpresso ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    Marcando como impresso...
-                  </>
-                ) : (
-                  <>
-                    <FaPrint className="w-4 h-4" />
-                    Imprimir
-                  </>
-                )}
-              </Button>
+              <>
+                {/* Seleção de tipo de agrupamento */}
+                <div className="flex items-center gap-4 ml-4 pl-4 border-l border-gray-300">
+                  <span className="text-sm font-medium text-gray-700">Agrupar por:</span>
+                  <div className="flex gap-3">
+                    <label className="flex items-center cursor-pointer">
+                      <input
+                        type="radio"
+                        name="tipoAgrupamento"
+                        value="grupo"
+                        checked={tipoAgrupamento === 'grupo'}
+                        onChange={(e) => setTipoAgrupamento(e.target.value)}
+                        className="mr-2"
+                      />
+                      <span className="text-sm text-gray-700">Grupo</span>
+                    </label>
+                    <label className="flex items-center cursor-pointer">
+                      <input
+                        type="radio"
+                        name="tipoAgrupamento"
+                        value="escola"
+                        checked={tipoAgrupamento === 'escola'}
+                        onChange={(e) => setTipoAgrupamento(e.target.value)}
+                        className="mr-2"
+                      />
+                      <span className="text-sm text-gray-700">Escola</span>
+                    </label>
+                  </div>
+                </div>
+
+                <Button
+                  variant="success"
+                  onClick={handleImprimir}
+                  disabled={marcandoImpresso}
+                  className="flex items-center gap-2"
+                >
+                  {marcandoImpresso ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      Marcando como impresso...
+                    </>
+                  ) : (
+                    <>
+                      <FaPrint className="w-4 h-4" />
+                      Imprimir
+                    </>
+                  )}
+                </Button>
+              </>
             )}
           </div>
         </div>
@@ -228,19 +330,30 @@ const AnaliseImpressao = () => {
       {/* Dados para Impressão - deve aparecer apenas na impressão */}
       {dadosImpressao && (
         <div ref={printRef} className="print-content">
-          {filtros.grupo ? (
+          {filtros.grupo && tipoAgrupamento === 'grupo' ? (
             <div className="romaneio-group">
               <RomaneioPrint
                 dados={dadosImpressao}
                 grupo={filtros.grupo || dadosImpressao.produtos[0]?.grupo || 'Sem Grupo'}
               />
             </div>
-          ) : (
-            gruposRomaneio.map(({ grupo, dados }) => (
-              <div key={grupo} className="romaneio-group">
-                <RomaneioPrint dados={dados} grupo={grupo || 'Sem Grupo'} />
+          ) : gruposRomaneio.length > 0 ? (
+            gruposRomaneio.map(({ chave, nome, tipo, dados }) => (
+              <div key={chave} className="romaneio-group">
+                <RomaneioPrint 
+                  dados={dados} 
+                  grupo={tipo === 'escola' ? null : nome || 'Sem Grupo'}
+                  escola={tipo === 'escola' ? nome : null}
+                />
               </div>
             ))
+          ) : (
+            <div className="romaneio-group">
+              <RomaneioPrint
+                dados={dadosImpressao}
+                grupo={dadosImpressao.produtos[0]?.grupo || 'Sem Grupo'}
+              />
+            </div>
           )}
         </div>
       )}
@@ -254,6 +367,14 @@ const AnaliseImpressao = () => {
           </h3>
           <p className="text-gray-600">
             Preencha os filtros obrigatórios (Tipo de Rota, Rota e Semana de Abastecimento) e clique em "Carregar Dados" para visualizar o romaneio.
+            <br />
+            <span className="text-sm text-gray-500 mt-2 block">
+              <strong>Filtro Grupo:</strong> Opcional. Se selecionado, o romaneio será impresso apenas para o grupo escolhido (quando agrupamento por grupo estiver selecionado).
+            </span>
+            <br />
+            <span className="text-sm text-gray-500 mt-2 block">
+              <strong>Agrupamento:</strong> Após carregar os dados, você pode escolher entre agrupar por "Grupo" ou por "Escola". O romaneio será impresso separado conforme a opção escolhida.
+            </span>
             <br />
             <span className="text-sm text-gray-500 mt-2 block">
               Apenas necessidades com status "conf log" podem ser impressas. Ao imprimir, o status será atualizado para "impressao".

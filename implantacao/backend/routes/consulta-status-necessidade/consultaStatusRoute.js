@@ -15,9 +15,7 @@ router.use(canView('consulta_status_necessidade'));
  * @desc Listar status das necessidades com filtros e paginação
  * @access Private
  */
-router.get('/', (req, res, next) => {
-  next();
-}, ConsultaStatusController.listarStatusNecessidades);
+router.get('/', ConsultaStatusController.listarStatusNecessidades);
 
 /**
  * @route GET /api/consulta-status-necessidade/estatisticas
@@ -25,6 +23,20 @@ router.get('/', (req, res, next) => {
  * @access Private
  */
 router.get('/estatisticas', ConsultaStatusController.obterEstatisticas);
+
+/**
+ * @route GET /api/consulta-status-necessidade/opcoes-filtros
+ * @desc Obter opções de filtros disponíveis baseadas nos dados reais
+ * @access Private
+ */
+router.get('/opcoes-filtros', ConsultaStatusController.obterOpcoesFiltros);
+
+/**
+ * @route GET /api/consulta-status-necessidade/produtos-por-grupo
+ * @desc Buscar produtos de um grupo específico com detalhes
+ * @access Private
+ */
+router.get('/produtos-por-grupo', ConsultaStatusController.buscarProdutosPorGrupo);
 
 /**
  * @route GET /api/consulta-status-necessidade/exportar/xlsx
@@ -39,5 +51,12 @@ router.get('/exportar/xlsx', ConsultaStatusController.exportarXLSX);
  * @access Private
  */
 router.get('/exportar/pdf', ConsultaStatusController.exportarPDF);
+
+/**
+ * @route GET /api/consulta-status-necessidade/nec-vs-conf
+ * @desc Listar comparação NEC x CONF (ajuste vs ajuste_conf_coord)
+ * @access Private
+ */
+router.get('/nec-vs-conf', ConsultaStatusController.listarNecVsConf);
 
 module.exports = router;

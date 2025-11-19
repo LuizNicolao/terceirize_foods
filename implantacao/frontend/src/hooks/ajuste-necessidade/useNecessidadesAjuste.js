@@ -176,11 +176,9 @@ export const useNecessidadesAjuste = () => {
   // Hook de exportação padronizado
   const { handleExportXLSX, handleExportPDF } = useExport(necessidadesService);
 
-  // Carregar dados iniciais
-  useEffect(() => {
-    carregarEscolas();
-    carregarGrupos();
-  }, [carregarEscolas, carregarGrupos]);
+  // Não carregar dados automaticamente ao montar
+  // Os dados serão carregados apenas quando a aba for ativada (via orchestrator)
+  // Isso evita múltiplas requisições desnecessárias ao voltar para a tela
 
   return {
     // Estados

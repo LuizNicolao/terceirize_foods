@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { FaExchangeAlt, FaCheckCircle, FaArrowRight } from 'react-icons/fa';
 import { useSubstituicoesNecessidades } from '../../hooks/useSubstituicoesNecessidades';
 import { SubstituicoesFilters, SubstituicoesTableNutricionista } from './components';
@@ -22,6 +22,7 @@ const AnaliseNutricionista = () => {
     filtros,
     produtosGenericos,
     loadingGenericos,
+    carregarNecessidades,
     buscarProdutosGenericos,
     salvarSubstituicao,
     liberarAnalise,
@@ -50,6 +51,30 @@ const AnaliseNutricionista = () => {
       );
       setAjustesAtivados(temSubstituicoes);
     }
+  }, [necessidades]);
+
+  // Calcular total de escolas únicas e total de necessidades (linhas)
+  const { totalEscolas, totalNecessidades } = useMemo(() => {
+    if (!necessidades.length) return { totalEscolas: 0, totalNecessidades: 0 };
+    
+    const escolasUnicas = new Set();
+    let totalLinhas = 0;
+    
+    necessidades.forEach(necessidade => {
+      if (necessidade.escolas && Array.isArray(necessidade.escolas)) {
+        totalLinhas += necessidade.escolas.length;
+        necessidade.escolas.forEach(escola => {
+          if (escola.escola_id) {
+            escolasUnicas.add(escola.escola_id);
+          }
+        });
+      }
+    });
+    
+    return {
+      totalEscolas: escolasUnicas.size,
+      totalNecessidades: totalLinhas
+    };
   }, [necessidades]);
 
   const handleIniciarAjustes = async () => {
@@ -100,7 +125,8 @@ const AnaliseNutricionista = () => {
               })
             };
 
-            const response = await salvarSubstituicao(dados);
+            // Desabilitar toast individual quando salvando em lote
+            const response = await salvarSubstituicao(dados, false);
             return response;
           } catch (error) {
             return { success: false, error: error.message };
@@ -108,14 +134,27 @@ const AnaliseNutricionista = () => {
         })
       );
 
-      const sucessos = resultados.filter(r => r.status === 'fulfilled').length;
-      const erros = resultados.filter(r => r.status === 'rejected').length;
+      // Contar sucessos e erros baseado nas respostas
+      const sucessos = resultados.filter(r => 
+        r.status === 'fulfilled' && r.value?.success
+      ).length;
+      const erros = resultados.filter(r => 
+        r.status === 'rejected' || (r.status === 'fulfilled' && !r.value?.success)
+      ).length;
       
+      // Recarregar necessidades apenas uma vez no final
+      if (necessidades.length > 0) {
+        carregarNecessidades();
+      }
+      
+      // Exibir mensagem consolidada
       if (erros > 0) {
-        toast.error(`${sucessos} salvos com sucesso, ${erros} falharam`);
-      } else {
-        toast.success('Ajustes iniciados com sucesso!');
+        toast.error(`${sucessos} substituição(ões) salva(s) com sucesso, ${erros} falharam`);
+      } else if (sucessos > 0) {
+        toast.success(`${sucessos} substituição(ões) salva(s) com sucesso`);
         setAjustesAtivados(true);
+      } else {
+        toast.error('Nenhuma substituição foi salva');
       }
     } catch (error) {
       toast.error(`Erro ao iniciar ajustes: ${error.message}`);
@@ -147,21 +186,53 @@ const AnaliseNutricionista = () => {
         }
       });
 
-      // Liberar análise para cada produto origem
-      const resultados = await Promise.allSettled(
-        Object.values(necessidadesPorProduto).map(async (dados) => {
-          return await liberarAnalise(dados);
-        })
-      );
+      // Liberar análise para cada produto origem sequencialmente (desabilitar toast individual)
+      // Processar uma por vez para evitar deadlocks
+      const dadosParaProcessar = Object.values(necessidadesPorProduto);
+      const resultados = [];
+      const delayEntreRequisicoes = 50; // 50ms entre cada requisição
+      
+      for (let i = 0; i < dadosParaProcessar.length; i++) {
+        const dados = dadosParaProcessar[i];
+        
+        try {
+          const resultado = await liberarAnalise(dados, false);
+          resultados.push({ status: 'fulfilled', value: resultado });
+        } catch (error) {
+          resultados.push({ 
+            status: 'rejected', 
+            reason: error,
+            value: { success: false, error: error?.message || 'Erro desconhecido' }
+          });
+        }
+        
+        // Delay entre requisições (exceto na última)
+        if (i < dadosParaProcessar.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, delayEntreRequisicoes));
+        }
+      }
 
-      const sucessos = resultados.filter(r => r.status === 'fulfilled').length;
-      const erros = resultados.filter(r => r.status === 'rejected').length;
+      // Contar sucessos e erros baseado nas respostas
+      const sucessos = resultados.filter(r => 
+        r.status === 'fulfilled' && r.value?.success
+      ).length;
+      const erros = resultados.filter(r => 
+        r.status === 'rejected' || (r.status === 'fulfilled' && !r.value?.success)
+      ).length;
 
+      // Recarregar necessidades apenas uma vez no final
+      if (necessidades.length > 0) {
+        carregarNecessidades();
+      }
+
+      // Exibir mensagem consolidada
       if (erros > 0) {
-        toast.error(`${sucessos} análises liberadas com sucesso, ${erros} falharam`);
-      } else {
-        toast.success('Análise liberada para coordenação!');
+        toast.error(`${sucessos} análise(s) liberada(s) com sucesso, ${erros} falharam`);
+      } else if (sucessos > 0) {
+        toast.success(`${sucessos} análise(s) liberada(s) para coordenação!`);
         setAjustesAtivados(false); // Reset para mostrar que foi liberado
+      } else {
+        toast.error('Nenhuma análise foi liberada');
       }
     } catch (error) {
       toast.error(`Erro ao liberar análise: ${error.message}`);
@@ -200,7 +271,7 @@ const AnaliseNutricionista = () => {
         <div className="mb-6 bg-white rounded-lg shadow-sm border border-gray-200 p-4">
           <div className="flex justify-between items-center">
             <h2 className="text-lg font-semibold text-gray-800">
-              Produtos para Substituição ({necessidades.length})
+              Produtos para Substituição ({necessidades.length}) • {totalNecessidades} {totalNecessidades === 1 ? 'necessidade' : 'necessidades'} • {totalEscolas} {totalEscolas === 1 ? 'escola' : 'escolas'}
             </h2>
             <Button
               variant="primary"
@@ -228,7 +299,7 @@ const AnaliseNutricionista = () => {
         <div className="mb-6 bg-white rounded-lg shadow-sm border border-gray-200 p-4">
           <div className="flex justify-between items-center">
             <h2 className="text-lg font-semibold text-gray-800">
-              Produtos para Substituição ({necessidades.length})
+              Produtos para Substituição ({necessidades.length}) • {totalNecessidades} {totalNecessidades === 1 ? 'necessidade' : 'necessidades'} • {totalEscolas} {totalEscolas === 1 ? 'escola' : 'escolas'}
             </h2>
             <div className="flex gap-3">
               <ExportButtons

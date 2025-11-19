@@ -22,7 +22,9 @@ const AjusteFiltros = ({
   const gruposArray = Array.isArray(grupos) ? grupos : [];
   
   const isFiltrarDisabled = activeTab === 'nutricionista' 
-    ? (!filtros.escola_id || !filtros.grupo || !filtros.semana_consumo || loading)
+    ? (!filtros.escola_id || !filtros.semana_consumo || loading)
+    : activeTab === 'coordenacao' || activeTab === 'logistica'
+    ? (!filtros.semana_consumo || loading)
     : (!filtros.escola_id && !filtros.nutricionista_id && !filtros.grupo && !filtros.semana_consumo && !filtros.semana_abastecimento || loading);
 
   return (
@@ -66,7 +68,9 @@ const AjusteFiltros = ({
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Escola</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Escola {activeTab === 'nutricionista' && <span className="text-red-500">*</span>}
+            </label>
             <SearchableSelect
               value={filtros.escola_id || ''}
               onChange={(value) => {
@@ -91,7 +95,7 @@ const AjusteFiltros = ({
                 .filter(opt => opt.value && opt.label && opt.label !== `Escola ${opt.value}`)} // Garantir que temos value e label válido
               placeholder="Digite para buscar uma escola..."
               disabled={loading}
-              required
+              required={activeTab === 'nutricionista'}
               usePortal={false}
               filterBy={(option, searchTerm) => {
                 const label = option.label.toLowerCase();
@@ -111,7 +115,7 @@ const AjusteFiltros = ({
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Grupo {activeTab === 'nutricionista' && <span className="text-red-500">*</span>}
+              Grupo
             </label>
             <SearchableSelect
               value={filtros.grupo || ''}
@@ -128,7 +132,6 @@ const AjusteFiltros = ({
                 .filter(opt => opt.value && opt.label)} // Garantir que temos value e label
               placeholder="Digite para buscar um grupo..."
               disabled={loading}
-              required={activeTab === 'nutricionista'}
               usePortal={false}
             />
           </div>
@@ -153,7 +156,7 @@ const AjusteFiltros = ({
           )}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Semana de Consumo {activeTab === 'nutricionista' && <span className="text-red-500">*</span>}
+              Semana de Consumo <span className="text-red-500">*</span>
             </label>
             <SearchableSelect
               value={filtros.semana_consumo || ''}
@@ -164,7 +167,7 @@ const AjusteFiltros = ({
               options={opcoesSemanasConsumo || []}
               placeholder="Selecione a semana de consumo..."
               disabled={loading}
-              required={activeTab === 'nutricionista'}
+              required
               usePortal={false}
             />
           </div>

@@ -187,23 +187,33 @@ export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
 
   /**
    * Salvar substituição
+   * @param {Object} dados - Dados da substituição
+   * @param {boolean} showToast - Se deve exibir toast (padrão: true)
    */
-  const salvarSubstituicao = useCallback(async (dados) => {
+  const salvarSubstituicao = useCallback(async (dados, showToast = true) => {
     try {
       const response = await SubstituicoesNecessidadesService.salvarSubstituicao(dados);
       
       if (response.success) {
-        toast.success(response.message || 'Substituição salva com sucesso!');
-        // Recarregar necessidades
-        carregarNecessidades();
+        if (showToast) {
+          toast.success(response.message || 'Substituição salva com sucesso!');
+        }
+        // Recarregar necessidades apenas uma vez no final do lote
+        if (showToast) {
+          carregarNecessidades();
+        }
         return response;
       } else {
-        toast.error(response.message || 'Erro ao salvar substituição');
+        if (showToast) {
+          toast.error(response.message || 'Erro ao salvar substituição');
+        }
         return response;
       }
     } catch (error) {
       console.error('Erro ao salvar substituição:', error);
-      toast.error('Erro ao salvar substituição');
+      if (showToast) {
+        toast.error('Erro ao salvar substituição');
+      }
       return { success: false, error: error.message };
     }
   }, [carregarNecessidades]);
@@ -275,23 +285,34 @@ export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
   }, [carregarNecessidades]);
 
   /**
-   * Liberar análise (conf → conf log)
+   * Liberar análise para coordenação (conf → conf log)
+   * @param {Object} dados - Dados da análise
+   * @param {boolean} showToast - Se deve exibir toast (padrão: true)
    */
-  const liberarAnalise = useCallback(async (dados) => {
+  const liberarAnalise = useCallback(async (dados, showToast = true) => {
     try {
       const response = await SubstituicoesNecessidadesService.liberarAnalise(dados);
       
       if (response.success) {
-        toast.success(response.message || 'Análise liberada com sucesso!');
-        carregarNecessidades();
+        if (showToast) {
+          toast.success(response.message || 'Análise liberada com sucesso!');
+        }
+        // Recarregar necessidades apenas uma vez no final do lote
+        if (showToast) {
+          carregarNecessidades();
+        }
         return response;
       } else {
-        toast.error(response.message || 'Erro ao liberar análise');
+        if (showToast) {
+          toast.error(response.message || 'Erro ao liberar análise');
+        }
         return response;
       }
     } catch (error) {
       console.error('Erro ao liberar análise:', error);
-      toast.error('Erro ao liberar análise');
+      if (showToast) {
+        toast.error('Erro ao liberar análise');
+      }
       return { success: false, error: error.message };
     }
   }, [carregarNecessidades]);

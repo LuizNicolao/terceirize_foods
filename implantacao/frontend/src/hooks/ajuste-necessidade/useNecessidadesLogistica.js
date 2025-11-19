@@ -128,8 +128,10 @@ export const useNecessidadesLogistica = () => {
   }, []);
 
   // Enviar para confirmação da nutricionista
-  const enviarParaNutricionista = useCallback(async (dados) => {
+  const enviarParaNutricionista = useCallback(async (dados, skipLoading = false) => {
+    if (!skipLoading) {
     setLoading(true);
+    }
     try {
       const response = await necessidadesLogisticaService.enviarParaNutricionista(dados);
       return response;
@@ -137,7 +139,9 @@ export const useNecessidadesLogistica = () => {
       console.error('Erro ao enviar para nutricionista:', err);
       throw err;
     } finally {
+      if (!skipLoading) {
       setLoading(false);
+      }
     }
   }, []);
 
@@ -169,11 +173,9 @@ export const useNecessidadesLogistica = () => {
     setNecessidades([]);
   }, []);
 
-  // Carregar dados iniciais
-  useEffect(() => {
-    carregarEscolas();
-    carregarGrupos();
-  }, [carregarEscolas, carregarGrupos]);
+  // Não carregar dados automaticamente ao montar
+  // Os dados serão carregados apenas quando a aba for ativada (via orchestrator)
+  // Isso evita múltiplas requisições desnecessárias ao voltar para a tela
 
   return {
     // Estados

@@ -82,7 +82,7 @@ class SubstituicoesImpressaoController {
         params.push(semana_consumo);
       }
 
-      // Buscar produtos agrupados por produto origem
+      // Buscar produtos agrupados por produto origem (incluindo informações da escola)
       const produtos = await executeQuery(`
         SELECT 
           ns.produto_generico_id as codigo,
@@ -90,12 +90,15 @@ class SubstituicoesImpressaoController {
           ns.produto_generico_nome as descricao,
           ns.produto_generico_unidade as unidade,
           SUM(ns.quantidade_generico) as quantidade,
-          ns.grupo
+          ns.grupo,
+          ns.escola_id,
+          ns.escola_nome
         FROM necessidades_substituicoes ns
         WHERE ${whereConditions.join(' AND ')}
         GROUP BY ns.produto_generico_id, ns.produto_generico_codigo, 
-                 ns.produto_generico_nome, ns.produto_generico_unidade, ns.grupo
-        ORDER BY ns.produto_generico_nome ASC
+                 ns.produto_generico_nome, ns.produto_generico_unidade, 
+                 ns.grupo, ns.escola_id, ns.escola_nome
+        ORDER BY ns.escola_nome ASC, ns.produto_generico_nome ASC
       `, params);
 
       // Formatar resposta
@@ -109,13 +112,15 @@ class SubstituicoesImpressaoController {
           semana_abastecimento: semana_abastecimento,
           semana_consumo: semana_consumo || null,
           
-          // Produtos
+          // Produtos (com informações da escola)
           produtos: produtos.map(p => ({
             codigo: p.codigo || p.produto_generico_codigo || '',
             descricao: p.descricao || '',
             unidade: p.unidade || '',
             quantidade: parseFloat(p.quantidade) || 0,
-            grupo: p.grupo || ''
+            grupo: p.grupo || '',
+            escola_id: p.escola_id || null,
+            escola_nome: p.escola_nome || ''
           })),
           
           // Total de produtos

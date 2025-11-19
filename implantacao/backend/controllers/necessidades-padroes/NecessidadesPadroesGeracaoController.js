@@ -315,8 +315,6 @@ class NecessidadesPadroesGeracaoController {
         return errorResponse(res, 'Semana de consumo é obrigatória', 400);
       }
 
-      console.log('[buscarSemanaAbastecimentoPorConsumo] Buscando:', semana_consumo);
-
       // Primeiro, tentar busca exata
       let result = await executeQuery(`
         SELECT DISTINCT semana_abastecimento
@@ -327,13 +325,10 @@ class NecessidadesPadroesGeracaoController {
         LIMIT 1
       `, [semana_consumo]);
 
-      console.log('[buscarSemanaAbastecimentoPorConsumo] Resultado (exato):', result);
-
       // Se não encontrou, tentar buscar pelo padrão de data (ignorando ano)
       // Extrair padrão "05/01 a 11/01" da string "(05/01 a 11/01/25)"
       if (result.length === 0) {
         const padraoData = semana_consumo.replace(/[()]/g, '').replace(/\/\d{2}$/, '');
-        console.log('[buscarSemanaAbastecimentoPorConsumo] Buscando por padrão (sem ano):', padraoData);
         
         // Incluir semana_consumo no SELECT para poder fazer ORDER BY
         const resultadosCompleto = await executeQuery(`
@@ -348,7 +343,6 @@ class NecessidadesPadroesGeracaoController {
 
         // Extrair apenas semana_abastecimento do resultado
         result = resultadosCompleto.length > 0 ? [{ semana_abastecimento: resultadosCompleto[0].semana_abastecimento }] : [];
-        console.log('[buscarSemanaAbastecimentoPorConsumo] Resultado (por padrão):', result);
       }
 
       if (result.length > 0 && result[0].semana_abastecimento) {

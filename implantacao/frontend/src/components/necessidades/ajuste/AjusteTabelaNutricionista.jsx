@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { FaTrash } from 'react-icons/fa';
-import { Input } from '../../ui';
+import { Input, Pagination } from '../../ui';
 
 const AjusteTabelaNutricionista = ({
   necessidades,
@@ -9,6 +9,21 @@ const AjusteTabelaNutricionista = ({
   onExcluirNecessidade,
   canEdit
 }) => {
+  // Paginação
+  const [page, setPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(20);
+
+  // Calcular dados paginados
+  const necessidadesPaginadas = useMemo(() => {
+    const start = (page - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    return necessidades.slice(start, end);
+  }, [necessidades, page, itemsPerPage]);
+
+  // Resetar para página 1 quando necessidades mudarem
+  useEffect(() => {
+    setPage(1);
+  }, [necessidades.length]);
   // Função para formatar números
   const formatarQuantidade = (valor) => {
     if (valor === null || valor === undefined || valor === '') {
@@ -114,10 +129,10 @@ const AjusteTabelaNutricionista = ({
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
-          {necessidades.map((necessidade) => (
+          {necessidadesPaginadas.map((necessidade) => (
             <tr key={necessidade.id} className="hover:bg-gray-50">
               <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900">
-                {necessidade.produto_id || 'N/A'}
+                {necessidade.produto_codigo || necessidade.produto_id || 'N/A'}
               </td>
               <td className="px-4 py-2 whitespace-nowrap text-xs font-medium text-gray-900">
                 {necessidade.produto}
@@ -180,6 +195,23 @@ const AjusteTabelaNutricionista = ({
           ))}
         </tbody>
       </table>
+      
+      {/* Paginação */}
+      {necessidades.length > itemsPerPage && (
+        <div className="px-4 py-3 border-t border-gray-200">
+          <Pagination
+            currentPage={page}
+            totalPages={Math.ceil(necessidades.length / itemsPerPage)}
+            totalItems={necessidades.length}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setPage}
+            onItemsPerPageChange={(value) => {
+              setItemsPerPage(value);
+              setPage(1);
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 };

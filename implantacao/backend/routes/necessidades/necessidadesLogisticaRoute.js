@@ -35,4 +35,7 @@ router.get('/logistica/produtos-modal', hasAccessToLogistica, NecessidadesLogist
 // Incluir produto extra
 router.post('/logistica/produto-extra', hasAccessToLogistica, NecessidadesLogisticaController.incluirProdutoExtra);
 
+// Trocar produto origem (logística)
+router.post('/logistica/trocar-produto-origem', hasAccessToLogistica, NecessidadesLogisticaController.trocarProdutoOrigem);
+
 module.exports = router;

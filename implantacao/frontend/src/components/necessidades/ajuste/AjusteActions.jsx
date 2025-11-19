@@ -35,6 +35,8 @@ const AjusteActions = ({
           {/* Botões de Ação */}
           {canEdit && (
             <div className="flex items-center space-x-2">
+              {/* Botão Incluir Produto Extra - não exibir na aba logística */}
+              {activeTab !== 'logistica' && (
               <div className="relative">
                 <Button
                   variant="secondary"
@@ -52,6 +54,7 @@ const AjusteActions = ({
                   </span>
                 )}
               </div>
+              )}
               <Button
                 variant="primary"
                 size="sm"

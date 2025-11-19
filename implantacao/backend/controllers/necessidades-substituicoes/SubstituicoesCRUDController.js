@@ -278,38 +278,105 @@ class SubstituicoesCRUDController {
    * Liberar análise (conf → conf log)
    */
   static async liberarAnalise(req, res) {
-    try {
-      const { produto_origem_id, semana_abastecimento, semana_consumo } = req.body;
-      const usuario_id = req.user.id;
+    const { produto_origem_id, semana_abastecimento, semana_consumo } = req.body;
+    const usuario_id = req.user.id;
 
-      if (!produto_origem_id || !semana_abastecimento || !semana_consumo) {
-        return res.status(400).json({
-          success: false,
-          message: 'Dados obrigatórios: produto origem, semana abastecimento e semana consumo'
-        });
+    if (!produto_origem_id || !semana_abastecimento || !semana_consumo) {
+      return res.status(400).json({
+        success: false,
+        message: 'Dados obrigatórios: produto origem, semana abastecimento e semana consumo'
+      });
+    }
+
+    // Função auxiliar para executar com retry em caso de deadlock
+    const executarComRetry = async (maxTentativas = 5) => {
+      let ultimoErro = null;
+      const { pool } = require('../../config/database');
+      
+      for (let tentativa = 0; tentativa < maxTentativas; tentativa++) {
+        const connection = await pool.getConnection();
+        
+        try {
+          // Configurar timeout da transação
+          await connection.query('SET SESSION innodb_lock_wait_timeout = 10');
+          
+          await connection.beginTransaction();
+
+          // Usar SELECT FOR UPDATE para lockar os registros em ordem consistente
+          const [rows] = await connection.execute(`
+            SELECT id, produto_origem_id, semana_abastecimento, semana_consumo, status
+            FROM necessidades_substituicoes
+            WHERE produto_origem_id = ? 
+              AND semana_abastecimento = ? 
+              AND semana_consumo = ?
+              AND status = 'conf'
+              AND ativo = 1
+            ORDER BY id ASC
+            FOR UPDATE
+          `, [produto_origem_id, semana_abastecimento, semana_consumo]);
+
+          // Atualizar status de 'conf' para 'conf log' para todas as substituições do produto origem
+          const [result] = await connection.execute(`
+            UPDATE necessidades_substituicoes 
+            SET 
+              status = 'conf log',
+              data_atualizacao = NOW()
+            WHERE produto_origem_id = ? 
+              AND semana_abastecimento = ? 
+              AND semana_consumo = ?
+              AND status = 'conf'
+              AND ativo = 1
+          `, [produto_origem_id, semana_abastecimento, semana_consumo]);
+
+          // Marcar apenas as necessidades que têm substituições registradas como processadas
+          await connection.execute(`
+            UPDATE necessidades n
+            INNER JOIN necessidades_substituicoes ns ON n.id = ns.necessidade_id
+            SET n.substituicao_processada = 1 
+            WHERE ns.produto_origem_id = ? 
+              AND ns.semana_abastecimento = ? 
+              AND ns.semana_consumo = ?
+              AND ns.status = 'conf log'
+              AND ns.ativo = 1
+          `, [produto_origem_id, semana_abastecimento, semana_consumo]);
+
+          await connection.commit();
+          connection.release();
+          
+          return result;
+        } catch (error) {
+          try {
+            await connection.rollback();
+          } catch (rollbackError) {
+            console.error('Erro ao fazer rollback:', rollbackError);
+          }
+          connection.release();
+          
+          ultimoErro = error;
+          
+          // Se for deadlock e ainda temos tentativas, fazer retry
+          if (error.code === 'ER_LOCK_DEADLOCK' && tentativa < maxTentativas - 1) {
+            // Delay exponencial com jitter: 100ms, 200ms, 400ms, 800ms
+            const baseDelay = 100 * Math.pow(2, tentativa);
+            const jitter = Math.floor(Math.random() * 100);
+            const delay = baseDelay + jitter;
+            
+            console.warn(`Deadlock detectado na tentativa ${tentativa + 1}/${maxTentativas} (liberarAnalise). Aguardando ${delay}ms antes de tentar novamente...`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+            continue;
+          }
+          
+          // Se não for deadlock ou esgotaram as tentativas, lançar erro
+          throw error;
+        }
       }
+      
+      // Se chegou aqui, todas as tentativas falharam
+      throw ultimoErro || new Error('Falha ao executar operação após múltiplas tentativas');
+    };
 
-      // Atualizar status de 'conf' para 'conf log' para todas as substituições do produto origem
-      const result = await executeQuery(`
-        UPDATE necessidades_substituicoes 
-        SET 
-          status = 'conf log',
-          data_atualizacao = NOW()
-        WHERE produto_origem_id = ? 
-          AND semana_abastecimento = ? 
-          AND semana_consumo = ?
-          AND status = 'conf'
-          AND ativo = 1
-      `, [produto_origem_id, semana_abastecimento, semana_consumo]);
-
-      // Marcar necessidades como processadas para substituição
-      await executeQuery(`
-        UPDATE necessidades 
-        SET substituicao_processada = 1 
-        WHERE produto_id = ? 
-          AND semana_abastecimento = ? 
-          AND semana_consumo = ?
-      `, [produto_origem_id, semana_abastecimento, semana_consumo]);
+    try {
+      const result = await executarComRetry();
 
       res.json({
         success: true,
@@ -319,6 +386,16 @@ class SubstituicoesCRUDController {
 
     } catch (error) {
       console.error('Erro ao liberar análise:', error);
+      
+      // Mensagem mais amigável para deadlock
+      if (error.code === 'ER_LOCK_DEADLOCK') {
+        return res.status(409).json({
+          success: false,
+          message: 'Conflito ao processar. Por favor, tente novamente em alguns instantes.',
+          error: 'Deadlock detectado - operação pode ser tentada novamente'
+        });
+      }
+      
       res.status(500).json({
         success: false,
         error: 'Erro interno do servidor',
@@ -362,7 +439,7 @@ class SubstituicoesCRUDController {
           `
             SELECT 
               n.id AS necessidade_id,
-              COALESCE(n.necessidade_id_grupo, n.id) AS necessidade_id_grupo,
+              n.id AS necessidade_id_grupo,
               n.produto_id AS produto_origem_id,
               n.produto AS produto_origem_nome,
               n.produto_unidade AS produto_origem_unidade,

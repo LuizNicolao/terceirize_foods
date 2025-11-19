@@ -97,7 +97,6 @@ const baixarModelo = async (req, res) => {
  * Importar tipo de atendimento por escola via Excel
  */
 const importarExcel = async (req, res) => {
-  console.log('🚀 INICIANDO IMPORTAÇÃO DE TIPO DE ATENDIMENTO POR ESCOLA');
   try {
     // Verificar se arquivo foi enviado
     if (!req.file) {
@@ -130,8 +129,6 @@ const importarExcel = async (req, res) => {
       }
     });
 
-    console.log('📋 Cabeçalhos detectados:', headers);
-
     // Coletar todas as linhas primeiro (pular vazias)
     worksheet.eachRow((row, rowNumber) => {
       if (rowNumber === 1) return; // Pular cabeçalho
@@ -148,8 +145,6 @@ const importarExcel = async (req, res) => {
       linhas.push({ row, rowNumber });
       }
     });
-
-    console.log(`📊 Total de linhas para processar: ${linhas.length}`);
 
     // Processar cada linha sequencialmente
     for (const { row, rowNumber } of linhas) {
@@ -184,8 +179,6 @@ const importarExcel = async (req, res) => {
         ativo = ativo_raw !== undefined && ativo_raw !== null 
           ? (ativo_raw === 1 || ativo_raw === '1' || ativo_raw.toString().toLowerCase() === 'sim' || ativo_raw.toString().toLowerCase() === 'true')
           : 1;
-
-        console.log(`📝 Linha ${linha} - escola_id: ${escola_id}, escola_nome: "${escola_nome}", tipos: "${tipos_atendimento_str}", ativo: ${ativo}`);
 
         // Validações
         if (!escola_id || isNaN(escola_id)) {
@@ -238,28 +231,21 @@ const importarExcel = async (req, res) => {
         const userId = req.user?.id || null;
 
         // Verificar se já existe registro para esta escola
-        console.log(`🔍 Verificando se existe registro para escola_id: ${escola_id}`);
         const vinculosExistentes = await executeQuery(
           'SELECT id, tipos_atendimento FROM tipos_atendimento_escola WHERE escola_id = ?',
           [escola_id]
         );
 
-        console.log(`📋 Registros existentes encontrados: ${vinculosExistentes?.length || 0}`);
-
         if (vinculosExistentes && vinculosExistentes.length > 0) {
           // Atualizar registro existente
           const vinculoId = vinculosExistentes[0].id;
           
-          console.log(`🔄 Atualizando registro ID ${vinculoId} para escola_id ${escola_id} com tipos: ${tiposJson}`);
-          
-          const updateResult = await executeQuery(
+          await executeQuery(
             `UPDATE tipos_atendimento_escola 
              SET tipos_atendimento = ?, ativo = ?, atualizado_por = ?, atualizado_em = NOW() 
              WHERE id = ?`,
             [tiposJson, ativo, userId, vinculoId]
           );
-
-          console.log(`✅ Registro atualizado. Rows affected: ${updateResult?.affectedRows || 0}`);
 
           sucesso.push({
             linha,
@@ -270,16 +256,12 @@ const importarExcel = async (req, res) => {
           });
         } else {
           // Criar novo registro
-          console.log(`➕ Criando novo registro para escola_id ${escola_id} com tipos: ${tiposJson}`);
-          
           const result = await executeQuery(
             `INSERT INTO tipos_atendimento_escola 
              (escola_id, tipos_atendimento, ativo, criado_por, criado_em) 
              VALUES (?, ?, ?, ?, NOW())`,
             [escola_id, tiposJson, ativo, userId]
           );
-
-          console.log(`✅ Registro criado. Insert ID: ${result?.insertId || 'N/A'}, Rows affected: ${result?.affectedRows || 0}`);
 
           sucesso.push({
             linha,
@@ -303,18 +285,6 @@ const importarExcel = async (req, res) => {
           }
         });
       }
-    }
-
-    console.log(`📊 RESUMO DA IMPORTAÇÃO:`);
-    console.log(`   - Total de linhas processadas: ${linhas.length}`);
-    console.log(`   - Sucessos: ${sucesso.length}`);
-    console.log(`   - Erros: ${erros.length}`);
-    
-    if (sucesso.length > 0) {
-      console.log(`   - Primeiros sucessos:`, sucesso.slice(0, 3));
-    }
-    if (erros.length > 0) {
-      console.log(`   - Primeiros erros:`, erros.slice(0, 3));
     }
 
     return successResponse(

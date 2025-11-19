@@ -74,8 +74,13 @@ class NecessidadesCoordenacaoController {
           n.usuario_id as nutricionista_id,
           n.usuario_email as nutricionista_nome,
           n.data_preenchimento,
-          n.data_atualizacao
+          n.data_atualizacao,
+          COALESCE(ppc.produto_codigo, po.codigo, '') as produto_codigo
         FROM necessidades n
+        LEFT JOIN produtos_per_capita ppc ON ppc.produto_id = n.produto_id 
+          AND ppc.grupo COLLATE utf8mb4_unicode_ci = n.grupo COLLATE utf8mb4_unicode_ci
+          AND ppc.ativo = true
+        LEFT JOIN foods_db.produto_origem po ON po.id = n.produto_id
         WHERE ${whereConditions.join(' AND ')}
         ORDER BY n.escola, n.produto
       `;
@@ -181,7 +186,7 @@ class NecessidadesCoordenacaoController {
 
       res.json({
         success: true,
-        message: `Ajustes salvos: ${sucessos} sucessos, ${erros} erros`,
+        message: `${sucessos} ajuste(s) salvo(s) com sucesso${erros > 0 ? `, ${erros} erro(s)` : ''}`,
         sucessos,
         erros
       });
