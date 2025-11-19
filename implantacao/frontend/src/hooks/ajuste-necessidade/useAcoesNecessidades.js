@@ -588,11 +588,11 @@ export const useAcoesNecessidades = ({
           };
         } else {
           // Se houver poucos registros, processar normalmente (batch)
-          if (status === 'NEC COORD') {
-            // NEC COORD vai para NEC LOG (não mais para CONF NUTRI)
-            resultado = await liberarParaLogistica(idsParaEnviar);
-          } else if (status === 'CONF COORD') {
-            resultado = await confirmarFinal(idsParaEnviar);
+        if (status === 'NEC COORD') {
+          // NEC COORD vai para NEC LOG (não mais para CONF NUTRI)
+          resultado = await liberarParaLogistica(idsParaEnviar);
+        } else if (status === 'CONF COORD') {
+          resultado = await confirmarFinal(idsParaEnviar);
           }
         }
       }

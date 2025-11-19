@@ -422,7 +422,7 @@ const RegistrosDiariosModal = ({
       resetDirty();
       // Modal permanece aberto
     } else {
-      resetDirty();
+    resetDirty();
     }
   };
 

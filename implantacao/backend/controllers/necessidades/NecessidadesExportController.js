@@ -118,6 +118,19 @@ class NecessidadesExportController {
 
       const necessidades = await executeQuery(query, params);
 
+      // Função auxiliar para formatar número no padrão brasileiro (vírgula como separador decimal, sem separador de milhares)
+      const formatarNumeroBR = (valor) => {
+        if (valor === null || valor === undefined || valor === '') {
+          return '0';
+        }
+        const num = parseFloat(valor);
+        if (isNaN(num)) {
+          return '0';
+        }
+        // Converter para string e substituir ponto por vírgula
+        return num.toString().replace('.', ',');
+      };
+
       // Função auxiliar para obter o valor correto baseado no status
       const obterValorPorStatus = (nec) => {
         const status = nec.status || '';
@@ -148,17 +161,18 @@ class NecessidadesExportController {
         // Obter o valor correto baseado no status para a coluna de ajuste (não para "Quantidade Gerada")
         const valorAjustePorStatus = obterValorPorStatus(nec);
         
-        ws.addRow({
+        // Criar linha com valores formatados como texto para evitar formatação automática do Excel
+        const row = ws.addRow({
           id: nec.id,
           escola_id: nec.escola_id,
           escola: nec.escola,
           produto_id: nec.produto_id,
           produto: nec.produto,
           produto_unidade: nec.produto_unidade,
-          ajuste: nec.ajuste || 0, // "Quantidade Gerada" sempre traz ajuste
+          ajuste: formatarNumeroBR(nec.ajuste || 0), // "Quantidade Gerada" sempre traz ajuste
           // A coluna de ajuste traz o valor conforme o status
-          ajuste_nutricionista: isCoordenacao ? (nec.ajuste_nutricionista || 0) : valorAjustePorStatus,
-          ajuste_coordenacao: isCoordenacao ? valorAjustePorStatus : (nec.ajuste_coordenacao || 0),
+          ajuste_nutricionista: formatarNumeroBR(isCoordenacao ? (nec.ajuste_nutricionista || 0) : valorAjustePorStatus),
+          ajuste_coordenacao: formatarNumeroBR(isCoordenacao ? valorAjustePorStatus : (nec.ajuste_coordenacao || 0)),
           semana_consumo: nec.semana_consumo,
           semana_abastecimento: nec.semana_abastecimento,
           status: nec.status,
@@ -279,6 +293,19 @@ class NecessidadesExportController {
 
       const necessidades = await executeQuery(query, params);
 
+      // Função auxiliar para formatar número no padrão brasileiro (vírgula como separador decimal, sem separador de milhares)
+      const formatarNumeroBR = (valor) => {
+        if (valor === null || valor === undefined || valor === '') {
+          return '0';
+        }
+        const num = parseFloat(valor);
+        if (isNaN(num)) {
+          return '0';
+        }
+        // Converter para string e substituir ponto por vírgula
+        return num.toString().replace('.', ',');
+      };
+
       // Função auxiliar para obter o valor correto baseado no status
       const obterValorPorStatus = (nec) => {
         const status = nec.status || '';
@@ -372,7 +399,7 @@ class NecessidadesExportController {
         
         // Obter o valor correto baseado no status para a coluna de ajuste (não para "Quantidade Gerada")
         const valorAjustePorStatus = obterValorPorStatus(nec);
-        
+
         const data = isCoordenacao
           ? [
               nec.id,
@@ -381,9 +408,9 @@ class NecessidadesExportController {
               nec.produto_id,
               nec.produto || 'N/A',
               nec.produto_unidade || 'N/A',
-              nec.ajuste ? parseFloat(nec.ajuste).toFixed(3) : '0.000', // "Quantidade Gerada" sempre traz ajuste
-              nec.ajuste_nutricionista ? parseFloat(nec.ajuste_nutricionista).toFixed(3) : '0.000',
-              valorAjustePorStatus ? parseFloat(valorAjustePorStatus).toFixed(3) : '0.000', // Ajuste Coordenação conforme status
+              formatarNumeroBR(nec.ajuste || 0), // "Quantidade Gerada" sempre traz ajuste
+              formatarNumeroBR(nec.ajuste_nutricionista || 0),
+              formatarNumeroBR(valorAjustePorStatus || 0), // Ajuste Coordenação conforme status
               nec.semana_consumo || 'N/A',
               nec.semana_abastecimento || 'N/A',
               nec.status || 'N/A'
@@ -395,8 +422,8 @@ class NecessidadesExportController {
               nec.produto_id,
               nec.produto || 'N/A',
               nec.produto_unidade || 'N/A',
-              nec.ajuste ? parseFloat(nec.ajuste).toFixed(3) : '0.000', // "Quantidade Gerada" sempre traz ajuste
-              valorAjustePorStatus ? parseFloat(valorAjustePorStatus).toFixed(3) : '0.000', // Ajuste Nutricionista conforme status
+              formatarNumeroBR(nec.ajuste || 0), // "Quantidade Gerada" sempre traz ajuste
+              formatarNumeroBR(valorAjustePorStatus || 0), // Ajuste Nutricionista conforme status
               nec.semana_consumo || 'N/A',
               nec.semana_abastecimento || 'N/A',
               nec.status || 'N/A'

@@ -9,6 +9,7 @@ export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
   const [necessidades, setNecessidades] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [filtrosJaAplicados, setFiltrosJaAplicados] = useState(false); // Rastreia se os filtros já foram aplicados pelo menos uma vez
   
   const [grupos, setGrupos] = useState([]);
   const [semanasAbastecimento, setSemanasAbastecimento] = useState([]);
@@ -19,8 +20,18 @@ export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
   const [produtosGenericos, setProdutosGenericos] = useState({});
   const [loadingGenericos, setLoadingGenericos] = useState({});
   
+  // Filtros temporários (que o usuário está preenchendo)
   const [filtros, setFiltros] = useState({
     grupo: null, // null = todos os grupos
+    semana_abastecimento: '',
+    semana_consumo: '',
+    tipo_rota_id: '',
+    rota_id: ''
+  });
+
+  // Filtros aplicados (usados para buscar as necessidades)
+  const [filtrosAplicados, setFiltrosAplicados] = useState({
+    grupo: null,
     semana_abastecimento: '',
     semana_consumo: '',
     tipo_rota_id: '',
@@ -128,7 +139,7 @@ export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
   }, []);
 
   /**
-   * Carregar necessidades para substituição
+   * Carregar necessidades para substituição (usa os filtros aplicados)
    */
   const carregarNecessidades = useCallback(async () => {
     setLoading(true);
@@ -136,8 +147,8 @@ export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
 
     try {
       const response = tipo === 'coordenacao' 
-        ? await SubstituicoesNecessidadesService.listarParaCoordenacao(filtros)
-        : await SubstituicoesNecessidadesService.listarParaSubstituicao(filtros);
+        ? await SubstituicoesNecessidadesService.listarParaCoordenacao(filtrosAplicados)
+        : await SubstituicoesNecessidadesService.listarParaSubstituicao(filtrosAplicados);
       
       if (response.success) {
         setNecessidades(response.data || []);
@@ -150,7 +161,7 @@ export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
     } finally {
       setLoading(false);
     }
-  }, [filtros, tipo]);
+  }, [filtrosAplicados, tipo]);
 
   /**
    * Buscar produtos genéricos para um produto origem
@@ -325,16 +336,59 @@ export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
   }, []);
 
   /**
-   * Limpar filtros
+   * Aplicar filtros (copia os filtros temporários para os aplicados e carrega as necessidades)
+   */
+  const aplicarFiltros = useCallback(() => {
+    // Validar filtros antes de aplicar
+    if (tipo === 'coordenacao') {
+      // Na coordenação, precisa ter pelo menos algum filtro
+      if (!filtros.grupo && !filtros.semana_abastecimento && !filtros.tipo_rota_id && !filtros.rota_id) {
+        setFiltrosAplicados({
+          grupo: null,
+          semana_abastecimento: '',
+          semana_consumo: '',
+          tipo_rota_id: '',
+          rota_id: ''
+        });
+        setNecessidades([]);
+        return;
+      }
+    } else {
+      // Na nutricionista, exige AMBOS os filtros: grupo E semana de abastecimento
+      if (!filtros.grupo || !filtros.semana_abastecimento) {
+        setFiltrosAplicados({
+          grupo: null,
+          semana_abastecimento: '',
+          semana_consumo: '',
+          tipo_rota_id: '',
+          rota_id: ''
+        });
+        setNecessidades([]);
+        return;
+      }
+    }
+
+    // Aplicar os filtros temporários aos filtros aplicados
+    setFiltrosAplicados({ ...filtros });
+    setFiltrosJaAplicados(true);
+    // carregarNecessidades será chamado automaticamente pelo useEffect que monitora filtrosAplicados
+  }, [filtros, tipo]);
+
+  /**
+   * Limpar filtros (limpa tanto temporários quanto aplicados)
    */
   const limparFiltros = useCallback(() => {
-    setFiltros({
+    const filtrosLimpos = {
       grupo: null, // null = todos os grupos
       semana_abastecimento: '',
       semana_consumo: '',
       tipo_rota_id: '',
       rota_id: ''
-    });
+    };
+    setFiltros(filtrosLimpos);
+    setFiltrosAplicados(filtrosLimpos);
+    setNecessidades([]);
+    setFiltrosJaAplicados(false);
   }, []);
 
   // Efeito para carregar grupos - recarrega quando tipo, tipo_rota_id ou semana_abastecimento mudar
@@ -364,7 +418,7 @@ export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
     carregarRotas();
   }, [tipo, filtros.tipo_rota_id, filtros.semana_abastecimento, carregarRotas]);
 
-  // Efeito para carregar semana de consumo quando abastecimento mudar
+  // Efeito para carregar semana de consumo quando abastecimento mudar (no filtro temporário)
   useEffect(() => {
     if (filtros.semana_abastecimento) {
       carregarSemanaConsumo(filtros.semana_abastecimento);
@@ -373,14 +427,14 @@ export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
     }
   }, [filtros.semana_abastecimento, carregarSemanaConsumo]);
 
-  // Efeito para carregar necessidades quando filtros mudarem
+  // Efeito para carregar necessidades quando filtros aplicados mudarem
   useEffect(() => {
     // Para aba nutricionista: exige AMBOS os filtros (grupo E semana de abastecimento)
     // Para aba coordenação: os filtros são independentes, qualquer combinação é válida
     if (tipo === 'coordenacao') {
       // Na coordenação, pode carregar mesmo sem todos os filtros preenchidos
       // Mas precisa ter pelo menos algum filtro para fazer sentido carregar
-      if (filtros.grupo || filtros.semana_abastecimento || filtros.tipo_rota_id || filtros.rota_id) {
+      if (filtrosAplicados.grupo || filtrosAplicados.semana_abastecimento || filtrosAplicados.tipo_rota_id || filtrosAplicados.rota_id) {
         carregarNecessidades();
       } else {
         // Limpar necessidades se não tiver nenhum filtro
@@ -388,14 +442,14 @@ export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
       }
     } else {
       // Na nutricionista, exige AMBOS os filtros: grupo E semana de abastecimento
-      if (filtros.grupo && filtros.semana_abastecimento) {
+      if (filtrosAplicados.grupo && filtrosAplicados.semana_abastecimento) {
         carregarNecessidades();
       } else {
         // Limpar necessidades se não tiver ambos os filtros
         setNecessidades([]);
       }
     }
-  }, [filtros.grupo, filtros.semana_abastecimento, filtros.semana_consumo, filtros.tipo_rota_id, filtros.rota_id, tipo, carregarNecessidades]);
+  }, [filtrosAplicados.grupo, filtrosAplicados.semana_abastecimento, filtrosAplicados.semana_consumo, filtrosAplicados.tipo_rota_id, filtrosAplicados.rota_id, tipo, carregarNecessidades]);
 
   return {
     // Estados
@@ -408,6 +462,7 @@ export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
     tiposRota,
     rotas,
     filtros,
+    filtrosJaAplicados,
     produtosGenericos,
     loadingGenericos,
     
@@ -420,6 +475,7 @@ export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
     trocarProdutoOrigem,
     desfazerTrocaProduto,
     atualizarFiltros,
+    aplicarFiltros,
     limparFiltros
   };
 };

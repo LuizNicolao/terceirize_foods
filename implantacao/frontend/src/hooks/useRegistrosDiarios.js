@@ -98,7 +98,7 @@ export const useRegistrosDiarios = () => {
           setEditingRegistro(null);
           // Não fechar o modal
         } else {
-          handleCloseModal();
+        handleCloseModal();
         }
         
         return { success: true, manterModalAberto };

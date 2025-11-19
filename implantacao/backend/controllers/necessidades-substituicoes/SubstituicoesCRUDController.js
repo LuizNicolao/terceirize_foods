@@ -31,6 +31,9 @@ class SubstituicoesCRUDController {
 
       const usuario_id = req.user.id;
 
+      // Função auxiliar para garantir que undefined seja convertido para null
+      const nullIfUndefined = (value) => value === undefined ? null : value;
+
       // Validar dados obrigatórios
       if (!produto_origem_id || !produto_generico_id) {
         return res.status(400).json({
@@ -38,6 +41,10 @@ class SubstituicoesCRUDController {
           message: 'Dados obrigatórios: produto origem e produto genérico'
         });
       }
+
+      // Garantir que produto_generico_codigo sempre use o id (não a coluna codigo)
+      // Isso evita problemas com códigos como "GEN-20" ao invés do ID numérico
+      const produto_generico_codigo_corrigido = produto_generico_id;
 
       // Para salvamento consolidado, validar se escola_ids foi fornecido
       if (escola_ids && Array.isArray(escola_ids) && escola_ids.length === 0) {
@@ -71,6 +78,13 @@ class SubstituicoesCRUDController {
               necessidade_id: necId
             } = escola_data;
 
+            // Garantir que as quantidades não sejam null ou undefined
+            const quantidadeOrigem = (qtdOrig !== null && qtdOrig !== undefined) ? parseFloat(qtdOrig) || 0 : 0;
+            const quantidadeGenerico = (qtdGen !== null && qtdGen !== undefined) ? parseFloat(qtdGen) || 0 : 0;
+
+            // Garantir que escola_nome não seja null ou undefined (usar string vazia se não houver)
+            const escolaNomeValido = (escNome !== null && escNome !== undefined && escNome !== '') ? String(escNome) : '';
+
             // Verificar se já existe substituição para esta necessidade
             const existing = await executeQuery(`
               SELECT id FROM necessidades_substituicoes 
@@ -79,7 +93,7 @@ class SubstituicoesCRUDController {
 
             let result;
             if (existing.length > 0) {
-              // Atualizar existente
+              // Atualizar existente - garantir que todos os valores sejam null se undefined
               result = await executeQuery(`
                 UPDATE necessidades_substituicoes SET
                   produto_generico_id = ?,
@@ -91,13 +105,13 @@ class SubstituicoesCRUDController {
                   data_atualizacao = NOW()
                 WHERE necessidade_id = ?
               `, [
-                produto_generico_id,
-                produto_generico_codigo,
-                produto_generico_nome,
-                produto_generico_unidade,
-                qtdOrig,
-                qtdGen,
-                necId
+                nullIfUndefined(produto_generico_id),
+                nullIfUndefined(produto_generico_codigo_corrigido),
+                nullIfUndefined(produto_generico_nome),
+                nullIfUndefined(produto_generico_unidade),
+                quantidadeOrigem,
+                quantidadeGenerico,
+                nullIfUndefined(necId)
               ]);
             } else {
               // Buscar grupo e grupo_id da tabela necessidades
@@ -111,7 +125,7 @@ class SubstituicoesCRUDController {
               const grupo = grupoResult.length > 0 ? grupoResult[0].grupo : null;
               const grupo_id = grupoResult.length > 0 ? grupoResult[0].grupo_id : null;
 
-              // Criar nova
+              // Criar nova - garantir que todos os valores sejam null se undefined
               result = await executeQuery(`
                 INSERT INTO necessidades_substituicoes (
                   necessidade_id, necessidade_id_grupo,
@@ -123,24 +137,24 @@ class SubstituicoesCRUDController {
                   grupo, grupo_id, usuario_criador_id, status, ativo
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'conf', 1)
               `, [
-                necId,
-                necId, // necessidade_id_grupo usa o mesmo necessidade_id
-                produto_origem_id,
-                produto_origem_nome,
-                produto_origem_unidade,
-                produto_generico_id,
-                produto_generico_codigo,
-                produto_generico_nome,
-                produto_generico_unidade,
-                qtdOrig,
-                qtdGen,
-                escId,
-                escNome,
-                semana_abastecimento,
-                semana_consumo,
-                grupo,
-                grupo_id,
-                usuario_id
+                nullIfUndefined(necId),
+                nullIfUndefined(necId), // necessidade_id_grupo usa o mesmo necessidade_id
+                nullIfUndefined(produto_origem_id),
+                nullIfUndefined(produto_origem_nome),
+                nullIfUndefined(produto_origem_unidade),
+                nullIfUndefined(produto_generico_id),
+                nullIfUndefined(produto_generico_codigo_corrigido),
+                nullIfUndefined(produto_generico_nome),
+                nullIfUndefined(produto_generico_unidade),
+                quantidadeOrigem,
+                quantidadeGenerico,
+                nullIfUndefined(escId),
+                escolaNomeValido || '',
+                nullIfUndefined(semana_abastecimento),
+                nullIfUndefined(semana_consumo),
+                nullIfUndefined(grupo),
+                nullIfUndefined(grupo_id),
+                nullIfUndefined(usuario_id)
               ]);
             }
 
@@ -157,6 +171,13 @@ class SubstituicoesCRUDController {
       } else {
         // Salvar individual (uma escola)
         try {
+          // Garantir que as quantidades não sejam null ou undefined
+          const quantidadeOrigem = (quantidade_origem !== null && quantidade_origem !== undefined) ? parseFloat(quantidade_origem) || 0 : 0;
+          const quantidadeGenerico = (quantidade_generico !== null && quantidade_generico !== undefined) ? parseFloat(quantidade_generico) || 0 : 0;
+
+          // Garantir que escola_nome não seja null ou undefined (usar string vazia se não houver)
+          const escolaNomeValido = (escola_nome !== null && escola_nome !== undefined && escola_nome !== '') ? String(escola_nome) : '';
+
           // Verificar se já existe
           const existing = await executeQuery(`
             SELECT id FROM necessidades_substituicoes 
@@ -165,7 +186,7 @@ class SubstituicoesCRUDController {
 
           let result;
           if (existing.length > 0) {
-            // Atualizar
+            // Atualizar - garantir que todos os valores sejam null se undefined
             result = await executeQuery(`
               UPDATE necessidades_substituicoes SET
                 produto_generico_id = ?,
@@ -177,16 +198,16 @@ class SubstituicoesCRUDController {
                 data_atualizacao = NOW()
               WHERE necessidade_id = ?
             `, [
-              produto_generico_id,
-              produto_generico_codigo,
-              produto_generico_nome,
-              produto_generico_unidade,
-              quantidade_origem,
-              quantidade_generico,
-              necessidade_id
+              nullIfUndefined(produto_generico_id),
+              nullIfUndefined(produto_generico_codigo),
+              nullIfUndefined(produto_generico_nome),
+              nullIfUndefined(produto_generico_unidade),
+              quantidadeOrigem,
+              quantidadeGenerico,
+              nullIfUndefined(necessidade_id)
             ]);
           } else {
-            // Criar nova
+            // Criar nova - garantir que todos os valores sejam null se undefined
             result = await executeQuery(`
               INSERT INTO necessidades_substituicoes (
                 necessidade_id, necessidade_id_grupo,
@@ -198,22 +219,22 @@ class SubstituicoesCRUDController {
                 usuario_criador_id, status, ativo
               ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'conf', 1)
             `, [
-              necessidade_id,
-              necessidade_id, // necessidade_id_grupo usa o mesmo necessidade_id
-              produto_origem_id,
-              produto_origem_nome,
-              produto_origem_unidade,
-              produto_generico_id,
-              produto_generico_codigo,
-              produto_generico_nome,
-              produto_generico_unidade,
-              quantidade_origem,
-              quantidade_generico,
-              escola_id,
-              escola_nome,
-              semana_abastecimento,
-              semana_consumo,
-              usuario_id
+              nullIfUndefined(necessidade_id),
+              nullIfUndefined(necessidade_id), // necessidade_id_grupo usa o mesmo necessidade_id
+              nullIfUndefined(produto_origem_id),
+              nullIfUndefined(produto_origem_nome),
+              nullIfUndefined(produto_origem_unidade),
+              nullIfUndefined(produto_generico_id),
+              nullIfUndefined(produto_generico_codigo),
+              nullIfUndefined(produto_generico_nome),
+              nullIfUndefined(produto_generico_unidade),
+              quantidadeOrigem,
+              quantidadeGenerico,
+              nullIfUndefined(escola_id),
+              escolaNomeValido || '',
+              nullIfUndefined(semana_abastecimento),
+              nullIfUndefined(semana_consumo),
+              nullIfUndefined(usuario_id)
             ]);
           }
 
@@ -408,6 +429,9 @@ class SubstituicoesCRUDController {
     try {
       const { necessidade_ids, novo_produto_id } = req.body;
 
+      // Função auxiliar para garantir que undefined seja convertido para null
+      const nullIfUndefined = (value) => value === undefined ? null : value;
+
       if (!Array.isArray(necessidade_ids) || necessidade_ids.length === 0 || !novo_produto_id) {
         return res.status(400).json({
           success: false,
@@ -443,7 +467,15 @@ class SubstituicoesCRUDController {
               n.produto_id AS produto_origem_id,
               n.produto AS produto_origem_nome,
               n.produto_unidade AS produto_origem_unidade,
-              n.ajuste_conf_coord AS quantidade_origem,
+              COALESCE(
+                n.ajuste_conf_coord,
+                n.ajuste_logistica,
+                n.ajuste_coordenacao,
+                n.ajuste_conf_nutri,
+                n.ajuste_nutricionista,
+                n.ajuste,
+                0
+              ) AS quantidade_origem,
               n.escola_id,
               n.escola AS escola_nome,
               n.semana_abastecimento,
@@ -464,6 +496,9 @@ class SubstituicoesCRUDController {
         }
 
         for (const necessidade of necessidadesBase) {
+          // Garantir que escola_nome não seja null ou undefined (usar string vazia se não houver)
+          const escolaNomeValido = (necessidade.escola_nome !== null && necessidade.escola_nome !== undefined && necessidade.escola_nome !== '') ? String(necessidade.escola_nome) : '';
+
           await executeQuery(
             `
               INSERT INTO necessidades_substituicoes (
@@ -490,20 +525,20 @@ class SubstituicoesCRUDController {
               ) VALUES (?, ?, ?, ?, ?, NULL, NULL, NULL, NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'conf', 1)
             `,
             [
-              necessidade.necessidade_id,
-              necessidade.necessidade_id_grupo || necessidade.necessidade_id,
-              necessidade.produto_origem_id,
-              necessidade.produto_origem_nome,
-              necessidade.produto_origem_unidade,
-              necessidade.quantidade_origem || 0,
-              necessidade.quantidade_origem || 0,
-              necessidade.escola_id,
-              necessidade.escola_nome,
-              necessidade.semana_abastecimento,
-              necessidade.semana_consumo,
-              necessidade.grupo,
-              necessidade.grupo_id,
-              req.user?.id || null
+              nullIfUndefined(necessidade.necessidade_id),
+              nullIfUndefined(necessidade.necessidade_id_grupo || necessidade.necessidade_id),
+              nullIfUndefined(necessidade.produto_origem_id),
+              nullIfUndefined(necessidade.produto_origem_nome),
+              nullIfUndefined(necessidade.produto_origem_unidade),
+              (necessidade.quantidade_origem !== null && necessidade.quantidade_origem !== undefined) ? parseFloat(necessidade.quantidade_origem) || 0 : 0,
+              (necessidade.quantidade_origem !== null && necessidade.quantidade_origem !== undefined) ? parseFloat(necessidade.quantidade_origem) || 0 : 0,
+              nullIfUndefined(necessidade.escola_id),
+              escolaNomeValido || '',
+              nullIfUndefined(necessidade.semana_abastecimento),
+              nullIfUndefined(necessidade.semana_consumo),
+              nullIfUndefined(necessidade.grupo),
+              nullIfUndefined(necessidade.grupo_id),
+              nullIfUndefined(req.user?.id)
             ]
           );
         }
@@ -605,7 +640,12 @@ class SubstituicoesCRUDController {
           WHERE necessidade_id IN (${placeholders})
             AND ativo = 1
         `,
-        [novoProduto.produto_id, novoProduto.produto_nome, novoProduto.unidade_medida, ...necessidade_ids]
+        [
+          nullIfUndefined(novoProduto.produto_id),
+          nullIfUndefined(novoProduto.produto_nome),
+          nullIfUndefined(novoProduto.unidade_medida),
+          ...necessidade_ids
+        ]
       );
 
       let produtoGenericoPadrao = null;
@@ -654,13 +694,15 @@ class SubstituicoesCRUDController {
               AND ativo = 1
           `,
           [
-            produtoGenericoPadrao.id || produtoGenericoPadrao.codigo,
-            produtoGenericoPadrao.codigo || produtoGenericoPadrao.id,
-            produtoGenericoPadrao.nome,
+            nullIfUndefined(produtoGenericoPadrao.id || produtoGenericoPadrao.codigo),
+            nullIfUndefined(produtoGenericoPadrao.id || produtoGenericoPadrao.codigo), // produto_generico_codigo sempre usa o id
+            nullIfUndefined(produtoGenericoPadrao.nome),
+            nullIfUndefined(
             produtoGenericoPadrao.unidade_medida_sigla ||
               produtoGenericoPadrao.unidade ||
               produtoGenericoPadrao.unidade_medida ||
-              '',
+              ''
+            ),
             ...necessidade_ids
           ]
         );
@@ -777,6 +819,9 @@ class SubstituicoesCRUDController {
         }
       }
 
+      // Função auxiliar para garantir que undefined seja convertido para null
+      const nullIfUndefined = (value) => value === undefined ? null : value;
+
       // Atualizar cada registro com o produto genérico padrão correspondente
       for (const registro of registros) {
         if (registro.produto_trocado_id && produtosGenericosPadrao[registro.produto_trocado_id]) {
@@ -800,11 +845,11 @@ class SubstituicoesCRUDController {
                 AND ativo = 1
             `,
             [
-              produtoGenerico.id,
-              produtoGenerico.codigo,
-              produtoGenerico.nome,
-              produtoGenerico.unidade,
-              registro.necessidade_id
+              nullIfUndefined(produtoGenerico.id),
+              nullIfUndefined(produtoGenerico.id), // produto_generico_codigo sempre usa o id
+              nullIfUndefined(produtoGenerico.nome),
+              nullIfUndefined(produtoGenerico.unidade),
+              nullIfUndefined(registro.necessidade_id)
             ]
           );
         } else {

@@ -189,6 +189,54 @@ class SubstituicoesNecessidadesService {
     const response = await api.post('/necessidades-substituicoes/marcar-como-impresso', filtrosParaEnvio);
     return response.data;
   }
+
+  /**
+   * Exportar substituições para XLSX (Coordenação)
+   * @param {Object} filtros - Filtros: grupo, semana_abastecimento, semana_consumo, tipo_rota_id, rota_id
+   */
+  static async exportarXLSX(filtros) {
+    const params = new URLSearchParams();
+    
+    if (filtros.grupo) params.append('grupo', filtros.grupo);
+    if (filtros.semana_abastecimento) params.append('semana_abastecimento', filtros.semana_abastecimento);
+    if (filtros.semana_consumo) params.append('semana_consumo', filtros.semana_consumo);
+    if (filtros.tipo_rota_id) params.append('tipo_rota_id', filtros.tipo_rota_id);
+    if (filtros.rota_id) params.append('rota_id', filtros.rota_id);
+
+    const response = await api.get(`/necessidades-substituicoes/exportar/xlsx?${params.toString()}`, {
+      responseType: 'blob'
+    });
+    
+    return {
+      success: true,
+      data: response.data,
+      filename: `substituicoes_coordenacao_${new Date().toISOString().split('T')[0]}.xlsx`
+    };
+  }
+
+  /**
+   * Exportar substituições para PDF (Coordenação)
+   * @param {Object} filtros - Filtros: grupo, semana_abastecimento, semana_consumo, tipo_rota_id, rota_id
+   */
+  static async exportarPDF(filtros) {
+    const params = new URLSearchParams();
+    
+    if (filtros.grupo) params.append('grupo', filtros.grupo);
+    if (filtros.semana_abastecimento) params.append('semana_abastecimento', filtros.semana_abastecimento);
+    if (filtros.semana_consumo) params.append('semana_consumo', filtros.semana_consumo);
+    if (filtros.tipo_rota_id) params.append('tipo_rota_id', filtros.tipo_rota_id);
+    if (filtros.rota_id) params.append('rota_id', filtros.rota_id);
+
+    const response = await api.get(`/necessidades-substituicoes/exportar/pdf?${params.toString()}`, {
+      responseType: 'blob'
+    });
+    
+    return {
+      success: true,
+      data: response.data,
+      filename: `substituicoes_coordenacao_${new Date().toISOString().split('T')[0]}.pdf`
+    };
+  }
 }
 
 export default SubstituicoesNecessidadesService;

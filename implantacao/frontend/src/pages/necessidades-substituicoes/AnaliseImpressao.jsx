@@ -90,7 +90,22 @@ const AnaliseImpressao = () => {
             produtos: []
           });
         }
-        acc.get(chave).produtos.push(produto);
+        
+        // Consolidar produtos por código (somar quantidades do mesmo produto dentro do grupo)
+        const produtosGrupo = acc.get(chave).produtos;
+        const produtoExistente = produtosGrupo.find(p => 
+          p.codigo === produto.codigo && 
+          p.descricao === produto.descricao &&
+          p.unidade === produto.unidade
+        );
+        
+        if (produtoExistente) {
+          // Somar quantidade se o produto já existe no grupo
+          produtoExistente.quantidade = (parseFloat(produtoExistente.quantidade) || 0) + (parseFloat(produto.quantidade) || 0);
+        } else {
+          // Adicionar novo produto
+          produtosGrupo.push({ ...produto });
+        }
       }
       
       return acc;

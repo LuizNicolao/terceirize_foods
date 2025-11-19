@@ -4,11 +4,19 @@ import { useSubstituicoesNecessidades } from '../../hooks/useSubstituicoesNecess
 import { SubstituicoesFilters, SubstituicoesTableNutricionista } from './components';
 import { ExportButtons } from '../../components/shared';
 import { Button } from '../../components/ui';
+import ModalProgresso from '../../components/necessidades/ajuste/ModalProgresso';
 import toast from 'react-hot-toast';
 
 const AnaliseNutricionista = () => {
   const [ajustesAtivados, setAjustesAtivados] = useState(false);
   const [salvandoAjustes, setSalvandoAjustes] = useState(false);
+  const [progressoModal, setProgressoModal] = useState({
+    isOpen: false,
+    progresso: 0,
+    total: 0,
+    mensagem: 'Aguarde, processando registros...',
+    title: 'Processando...'
+  });
   
   const {
     necessidades,
@@ -20,6 +28,7 @@ const AnaliseNutricionista = () => {
     tiposRota,
     rotas,
     filtros,
+    filtrosJaAplicados,
     produtosGenericos,
     loadingGenericos,
     carregarNecessidades,
@@ -29,6 +38,7 @@ const AnaliseNutricionista = () => {
     trocarProdutoOrigem,
     desfazerTrocaProduto,
     atualizarFiltros,
+    aplicarFiltros,
     limparFiltros
   } = useSubstituicoesNecessidades();
 
@@ -84,21 +94,41 @@ const AnaliseNutricionista = () => {
     }
 
     setSalvandoAjustes(true);
+    const totalProcessos = necessidades.length;
+    const resultadosAjustes = [];
     
     try {
-      const resultados = await Promise.allSettled(
-        necessidades.map(async (necessidade) => {
+      // Passo 1: Salvar todos os ajustes
+      setProgressoModal({
+        isOpen: true,
+        progresso: 0,
+        total: totalProcessos,
+        mensagem: 'Salvando ajustes...',
+        title: 'Realizando Ajustes'
+      });
+
+      const delayEntreRequisicoes = 200; // 200ms entre cada requisição
+      
+      for (let i = 0; i < necessidades.length; i++) {
+        const necessidade = necessidades[i];
+        
           try {
             const produtoPadrao = produtosGenericos[necessidade.codigo_origem]?.find(
               p => p.produto_padrao === 'Sim'
             );
 
             if (!produtoPadrao) {
-              return { success: false, message: `Produto padrão não encontrado para ${necessidade.codigo_origem}` };
-            }
-
+            resultadosAjustes.push({ 
+              success: false, 
+              message: `Produto padrão não encontrado para ${necessidade.codigo_origem}` 
+            });
+          } else {
             const unidade = produtoPadrao.unidade_medida_sigla || produtoPadrao.unidade || '';
             const fatorConversao = produtoPadrao.fator_conversao || 1;
+
+            // Garantir que quantidade_total_origem tenha um valor válido
+            const quantidadeTotalOrigem = parseFloat(necessidade.quantidade_total_origem) || 0;
+            const quantidadeGenericoTotal = Math.ceil(quantidadeTotalOrigem / fatorConversao) || 0;
 
             const dados = {
               produto_origem_id: necessidade.codigo_origem,
@@ -111,52 +141,68 @@ const AnaliseNutricionista = () => {
               necessidade_id_grupo: necessidade.necessidade_id_grupo,
               semana_abastecimento: necessidade.semana_abastecimento,
               semana_consumo: necessidade.semana_consumo,
-              quantidade_origem: necessidade.quantidade_total_origem,
-              quantidade_generico: Math.ceil(parseFloat(necessidade.quantidade_total_origem) / fatorConversao),
+              quantidade_origem: quantidadeTotalOrigem,
+              quantidade_generico: quantidadeGenericoTotal,
               escola_ids: necessidade.escolas.map(escola => {
-                const quantidadeGenerico = Math.ceil(parseFloat(escola.quantidade_origem) / fatorConversao);
+                // Garantir que quantidade_origem da escola tenha um valor válido
+                const quantidadeOrigemEscola = parseFloat(escola.quantidade_origem) || 0;
+                const quantidadeGenericoEscola = Math.ceil(quantidadeOrigemEscola / fatorConversao) || 0;
+                
                 return {
                   necessidade_id: escola.necessidade_id,
                   escola_id: escola.escola_id,
                   escola_nome: escola.escola_nome,
-                  quantidade_origem: escola.quantidade_origem,
-                  quantidade_generico: quantidadeGenerico
+                  quantidade_origem: quantidadeOrigemEscola,
+                  quantidade_generico: quantidadeGenericoEscola
                 };
               })
             };
 
             // Desabilitar toast individual quando salvando em lote
             const response = await salvarSubstituicao(dados, false);
-            return response;
-          } catch (error) {
-            return { success: false, error: error.message };
+            resultadosAjustes.push(response);
           }
-        })
-      );
+          } catch (error) {
+          resultadosAjustes.push({ success: false, error: error.message });
+          }
+        
+        // Atualizar progresso
+        setProgressoModal(prev => ({
+          ...prev,
+          progresso: i + 1
+        }));
 
-      // Contar sucessos e erros baseado nas respostas
-      const sucessos = resultados.filter(r => 
-        r.status === 'fulfilled' && r.value?.success
-      ).length;
-      const erros = resultados.filter(r => 
-        r.status === 'rejected' || (r.status === 'fulfilled' && !r.value?.success)
-      ).length;
+        // Delay entre requisições (exceto na última)
+        if (i < necessidades.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, delayEntreRequisicoes));
+        }
+      }
+
+      // Contar sucessos e erros dos ajustes
+      const sucessosAjustes = resultadosAjustes.filter(r => r.success).length;
+      const errosAjustes = resultadosAjustes.filter(r => !r.success).length;
+
+      // Fechar modal de progresso
+      setProgressoModal(prev => ({ ...prev, isOpen: false }));
       
-      // Recarregar necessidades apenas uma vez no final
+      // Recarregar necessidades para mostrar os ajustes salvos
       if (necessidades.length > 0) {
-        carregarNecessidades();
+        await carregarNecessidades();
       }
       
-      // Exibir mensagem consolidada
-      if (erros > 0) {
-        toast.error(`${sucessos} substituição(ões) salva(s) com sucesso, ${erros} falharam`);
-      } else if (sucessos > 0) {
-        toast.success(`${sucessos} substituição(ões) salva(s) com sucesso`);
-        setAjustesAtivados(true);
+      // Exibir mensagem de sucesso dos ajustes
+      if (sucessosAjustes > 0) {
+        let mensagem = `${sucessosAjustes} ajuste(s) salvo(s) com sucesso`;
+        if (errosAjustes > 0) {
+          mensagem += `, ${errosAjustes} erro(s)`;
+        }
+        toast.success(mensagem);
+        setAjustesAtivados(true); // Ativar ajustes para permitir troca de produto origem
       } else {
-        toast.error('Nenhuma substituição foi salva');
+        toast.error('Nenhuma substituição foi salva.');
       }
     } catch (error) {
+      setProgressoModal(prev => ({ ...prev, isOpen: false }));
       toast.error(`Erro ao iniciar ajustes: ${error.message}`);
     } finally {
       setSalvandoAjustes(false);
@@ -186,11 +232,20 @@ const AnaliseNutricionista = () => {
         }
       });
 
-      // Liberar análise para cada produto origem sequencialmente (desabilitar toast individual)
-      // Processar uma por vez para evitar deadlocks
+      // Liberar análise para cada produto origem sequencialmente com modal de progresso
       const dadosParaProcessar = Object.values(necessidadesPorProduto);
+      const totalProcessos = dadosParaProcessar.length;
+      
+      setProgressoModal({
+        isOpen: true,
+        progresso: 0,
+        total: totalProcessos,
+        mensagem: 'Liberando análises...',
+        title: 'Liberando Análises'
+      });
+
       const resultados = [];
-      const delayEntreRequisicoes = 50; // 50ms entre cada requisição
+      const delayEntreRequisicoes = 200; // 200ms entre cada requisição
       
       for (let i = 0; i < dadosParaProcessar.length; i++) {
         const dados = dadosParaProcessar[i];
@@ -206,6 +261,12 @@ const AnaliseNutricionista = () => {
           });
         }
         
+        // Atualizar progresso
+        setProgressoModal(prev => ({
+          ...prev,
+          progresso: i + 1
+        }));
+        
         // Delay entre requisições (exceto na última)
         if (i < dadosParaProcessar.length - 1) {
           await new Promise(resolve => setTimeout(resolve, delayEntreRequisicoes));
@@ -220,9 +281,17 @@ const AnaliseNutricionista = () => {
         r.status === 'rejected' || (r.status === 'fulfilled' && !r.value?.success)
       ).length;
 
+      // Fechar modal de progresso
+      setProgressoModal(prev => ({ ...prev, isOpen: false }));
+
       // Recarregar necessidades apenas uma vez no final
       if (necessidades.length > 0) {
-        carregarNecessidades();
+        await carregarNecessidades();
+      }
+
+      // Limpar filtros após liberar análise com sucesso
+      if (sucessos > 0) {
+        limparFiltros();
       }
 
       // Exibir mensagem consolidada
@@ -235,6 +304,7 @@ const AnaliseNutricionista = () => {
         toast.error('Nenhuma análise foi liberada');
       }
     } catch (error) {
+      setProgressoModal(prev => ({ ...prev, isOpen: false }));
       toast.error(`Erro ao liberar análise: ${error.message}`);
     } finally {
       setSalvandoAjustes(false);
@@ -262,7 +332,9 @@ const AnaliseNutricionista = () => {
         rotas={rotas}
         filtros={filtros}
         loading={loading}
+        tipo="nutricionista"
         onFiltroChange={atualizarFiltros}
+        onAplicarFiltros={aplicarFiltros}
         onLimparFiltros={limparFiltros}
       />
 
@@ -364,7 +436,7 @@ const AnaliseNutricionista = () => {
       )}
 
       {/* Empty State */}
-      {!loading && necessidades.length === 0 && filtros.grupo && filtros.semana_abastecimento && (
+      {!loading && necessidades.length === 0 && filtrosJaAplicados && (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
           <FaExchangeAlt className="mx-auto h-12 w-12 text-gray-400 mb-4" />
           <h3 className="text-lg font-semibold text-gray-900 mb-2">
@@ -377,7 +449,7 @@ const AnaliseNutricionista = () => {
       )}
 
       {/* Initial State */}
-      {!loading && necessidades.length === 0 && (!filtros.grupo || !filtros.semana_abastecimento) && (
+      {!loading && necessidades.length === 0 && !filtrosJaAplicados && (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
           <FaExchangeAlt className="mx-auto h-12 w-12 text-gray-400 mb-4" />
           <h3 className="text-lg font-semibold text-gray-900 mb-2">
@@ -388,6 +460,15 @@ const AnaliseNutricionista = () => {
           </p>
         </div>
       )}
+
+      {/* Modal de Progresso */}
+      <ModalProgresso
+        isOpen={progressoModal.isOpen}
+        title={progressoModal.title}
+        progresso={progressoModal.progresso}
+        total={progressoModal.total}
+        mensagem={progressoModal.mensagem}
+      />
     </>
   );
 };

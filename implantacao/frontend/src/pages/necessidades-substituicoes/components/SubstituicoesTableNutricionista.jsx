@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { FaChevronDown, FaChevronUp, FaSave, FaUndo } from 'react-icons/fa';
-import { Button, Input, SearchableSelect } from '../../../components/ui';
+import { Button, Input, SearchableSelect, Pagination } from '../../../components/ui';
 import toast from 'react-hot-toast';
 
 const SubstituicoesTableNutricionista = ({
@@ -25,6 +25,23 @@ const SubstituicoesTableNutricionista = ({
   const [selectedProdutosOrigemPorEscola, setSelectedProdutosOrigemPorEscola] = useState({});
   const [trocaLoading, setTrocaLoading] = useState({});
   const [origemInicialPorEscola, setOrigemInicialPorEscola] = useState({});
+  
+  // Paginação
+  const [page, setPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(20);
+  
+  // Calcular dados paginados
+  const necessidadesPaginadas = useMemo(() => {
+    const start = (page - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    return necessidades.slice(start, end);
+  }, [necessidades, page, itemsPerPage]);
+  
+  // Resetar para página 1 quando necessidades mudarem
+  useEffect(() => {
+    setPage(1);
+  }, [necessidades.length]);
+  
   const getChaveOrigem = (necessidade) => `${necessidade.codigo_origem}_${necessidade.semana_abastecimento}_${necessidade.semana_consumo}`;
 
   const getProdutoOrigemSelecionadoInfo = (necessidade) => {
@@ -492,13 +509,17 @@ const SubstituicoesTableNutricionista = ({
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {necessidades.map((necessidade) => {
+            {necessidadesPaginadas.map((necessidade, index) => {
               const chaveOrigem = getChaveOrigem(necessidade);
               const produtoOrigemAtual = getProdutoOrigemSelecionadoInfo(necessidade);
               const produtoOrigemAtualId = produtoOrigemAtual.id;
               const loadingKey = getLoadingKey(produtoOrigemAtualId, necessidade.grupo);
+              // Usar índice global para garantir chave única, já que podem haver múltiplas necessidades com mesma chaveOrigem
+              // Calcular índice global baseado na página atual e índice na página
+              const indiceGlobal = (page - 1) * itemsPerPage + index;
+              const keyUnica = `${chaveOrigem}-${indiceGlobal}`;
               return (
-              <React.Fragment key={chaveOrigem}>
+              <React.Fragment key={keyUnica}>
                 {/* Linha Consolidada */}
                 <tr className="hover:bg-gray-50">
                   <td className="px-4 py-2 whitespace-nowrap text-center">
@@ -612,8 +633,8 @@ const SubstituicoesTableNutricionista = ({
                       {selectedProdutosGenericos[chaveOrigem]?.split('|')[0] || necessidade.produto_generico_codigo || '-'}
                     </span>
                   </td>
-                  <td className="px-4 py-2 whitespace-nowrap relative z-10">
-                    <div className="relative z-10">
+                  <td className="px-4 py-2 whitespace-nowrap">
+                    <div className="flex-1">
                       <SearchableSelect
                         value={selectedProdutosGenericos[chaveOrigem] || ''}
                         onChange={(value) => handleProdutoGenericoChange(chaveOrigem, value, necessidade.quantidade_total_origem)}
@@ -666,7 +687,7 @@ const SubstituicoesTableNutricionista = ({
                       <div className="bg-gray-50 border-l-4 border-green-600 p-4">
                         <h4 className="text-md font-semibold text-green-700 mb-4 flex items-center gap-2">
                           <span className="text-xl">🏢</span>
-                          Unidades Solicitantes {necessidade.produto_generico_nome && `(${necessidade.produto_generico_nome})`}
+                          Unidades Solicitantes {necessidade.escolas && necessidade.escolas.length > 0 && `• ${necessidade.escolas.length} ${necessidade.escolas.length === 1 ? 'escola' : 'escolas'}`} {necessidade.produto_generico_nome && `(${necessidade.produto_generico_nome})`}
                         </h4>
                         <table className="min-w-full divide-y divide-gray-200">
                           <thead>
@@ -801,8 +822,8 @@ const SubstituicoesTableNutricionista = ({
                                       usePortal={false}
                                     />
                                   </td>
-                                  <td className="px-4 py-2 whitespace-nowrap relative z-10">
-                                    <div className="relative z-10">
+                                  <td className="px-4 py-2 whitespace-nowrap">
+                                    <div className="flex-1">
                                       <SearchableSelect
                                         value={produtoSelecionado}
                                         onChange={(value) => {
@@ -821,6 +842,7 @@ const SubstituicoesTableNutricionista = ({
                                           Boolean(escola.produto_trocado_id) ||
                                           !ajustesAtivados
                                         }
+                                        className="text-xs"
                                         filterBy={(option, searchTerm) => {
                                           return option.label.toLowerCase().includes(searchTerm.toLowerCase());
                                         }}
@@ -863,6 +885,23 @@ const SubstituicoesTableNutricionista = ({
             })}
           </tbody>
         </table>
+        
+        {/* Paginação */}
+        {necessidades.length > itemsPerPage && (
+          <div className="px-4 py-3 border-t border-gray-200">
+            <Pagination
+              currentPage={page}
+              totalPages={Math.ceil(necessidades.length / itemsPerPage)}
+              totalItems={necessidades.length}
+              itemsPerPage={itemsPerPage}
+              onPageChange={setPage}
+              onItemsPerPageChange={(value) => {
+                setItemsPerPage(value);
+                setPage(1);
+              }}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

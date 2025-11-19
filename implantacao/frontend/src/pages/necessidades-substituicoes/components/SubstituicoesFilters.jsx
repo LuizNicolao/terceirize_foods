@@ -10,14 +10,30 @@ const SubstituicoesFilters = ({
   rotas,
   filtros,
   loading,
+  tipo = 'nutricionista', // 'nutricionista' ou 'coordenacao'
   onFiltroChange,
+  onAplicarFiltros,
   onLimparFiltros
 }) => {
+  // Determinar quais campos são obrigatórios baseado no tipo
+  const isNutricionista = tipo === 'nutricionista';
+  const grupoObrigatorio = isNutricionista;
+  const semanaAbastecimentoObrigatorio = isNutricionista;
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
         <h3 className="text-lg font-semibold text-gray-900">Filtros</h3>
         <div className="flex gap-2">
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={onAplicarFiltros}
+            disabled={loading}
+            className="flex items-center"
+          >
+            <FaSearch className="mr-2" />
+            Aplicar Filtro
+          </Button>
           <Button
             variant="secondary"
             size="sm"
@@ -77,6 +93,7 @@ const SubstituicoesFilters = ({
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Grupo de Produtos
+            {grupoObrigatorio && <span className="text-red-500 ml-1">*</span>}
           </label>
           <SearchableSelect
             value={filtros.grupo || ''}
@@ -108,6 +125,7 @@ const SubstituicoesFilters = ({
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Semana de Abastecimento
+            {semanaAbastecimentoObrigatorio && <span className="text-red-500 ml-1">*</span>}
           </label>
           <SearchableSelect
             value={filtros.semana_abastecimento || ''}

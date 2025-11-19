@@ -25,6 +25,45 @@ const RomaneioPrint = ({ dados, grupo = null, escola = null }) => {
     return 'RESUMO';
   };
 
+  // Consolidar produtos por código (somar quantidades quando não há agrupamento por escola)
+  const produtosConsolidados = React.useMemo(() => {
+    if (!dados.produtos || !Array.isArray(dados.produtos)) {
+      return [];
+    }
+
+    // Se for agrupamento por escola, não consolidar (manter produtos separados por escola)
+    if (escola) {
+      return dados.produtos;
+    }
+
+    // Consolidar produtos por código (mesmo produto, mesma unidade)
+    const consolidado = new Map();
+
+    dados.produtos.forEach(produto => {
+      const chave = `${produto.codigo || ''}_${produto.unidade || ''}`;
+      
+      if (!consolidado.has(chave)) {
+        consolidado.set(chave, {
+          codigo: produto.codigo || '',
+          descricao: produto.descricao || '',
+          unidade: produto.unidade || '',
+          quantidade: parseFloat(produto.quantidade) || 0,
+          grupo: produto.grupo || ''
+        });
+      } else {
+        const item = consolidado.get(chave);
+        item.quantidade += parseFloat(produto.quantidade) || 0;
+      }
+    });
+
+    // Converter Map para Array e ordenar por código
+    return Array.from(consolidado.values()).sort((a, b) => {
+      const codigoA = String(a.codigo || '').padStart(10, '0');
+      const codigoB = String(b.codigo || '').padStart(10, '0');
+      return codigoA.localeCompare(codigoB);
+    });
+  }, [dados.produtos, escola]);
+
   return (
     <div className="bg-white print:bg-white">
       {/* Container principal - A4 horizontal ou ~900-1000px */}
@@ -91,8 +130,8 @@ const RomaneioPrint = ({ dados, grupo = null, escola = null }) => {
               </tr>
             </thead>
             <tbody>
-              {dados.produtos && dados.produtos.length > 0 ? (
-                dados.produtos.map((produto, index) => (
+              {produtosConsolidados && produtosConsolidados.length > 0 ? (
+                produtosConsolidados.map((produto, index) => (
                   <tr key={index} className="border-b border-gray-300 border-dashed print:border-dashed">
                     <td className="border border-gray-300 px-3 py-2 text-sm">
                       {produto.codigo || ''}

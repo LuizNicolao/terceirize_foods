@@ -3,6 +3,8 @@ import { FaExchangeAlt } from 'react-icons/fa';
 import { useSubstituicoesNecessidades } from '../../hooks/useSubstituicoesNecessidades';
 import { SubstituicoesFilters, SubstituicoesTableCoordenacao } from './components';
 import { ExportButtons } from '../../components/shared';
+import SubstituicoesNecessidadesService from '../../services/substituicoesNecessidades';
+import toast from 'react-hot-toast';
 
 const AnaliseCoordenacao = () => {
   const [ajustesAtivados, setAjustesAtivados] = useState(false);
@@ -17,11 +19,13 @@ const AnaliseCoordenacao = () => {
     tiposRota,
     rotas,
     filtros,
+    filtrosJaAplicados,
     produtosGenericos,
     loadingGenericos,
     buscarProdutosGenericos,
     salvarSubstituicao,
     atualizarFiltros,
+    aplicarFiltros,
     limparFiltros,
     trocarProdutoOrigem,
     desfazerTrocaProduto
@@ -82,6 +86,106 @@ const AnaliseCoordenacao = () => {
     return response;
   };
 
+  const handleExportXLSX = async () => {
+    try {
+      // Preparar filtros para o backend
+      const filtrosExport = {};
+      
+      if (filtros.grupo) {
+        filtrosExport.grupo = typeof filtros.grupo === 'object' ? filtros.grupo.nome || filtros.grupo.id : filtros.grupo;
+      }
+      
+      if (filtros.semana_abastecimento) {
+        filtrosExport.semana_abastecimento = filtros.semana_abastecimento;
+      }
+      
+      if (filtros.semana_consumo) {
+        filtrosExport.semana_consumo = filtros.semana_consumo;
+      }
+      
+      if (filtros.tipo_rota_id) {
+        filtrosExport.tipo_rota_id = typeof filtros.tipo_rota_id === 'object' ? filtros.tipo_rota_id.id : filtros.tipo_rota_id;
+      }
+      
+      if (filtros.rota_id) {
+        filtrosExport.rota_id = typeof filtros.rota_id === 'object' ? filtros.rota_id.id : filtros.rota_id;
+      }
+
+      const response = await SubstituicoesNecessidadesService.exportarXLSX(filtrosExport);
+      
+      if (response.success) {
+        // Criar blob e fazer download
+        const blob = new Blob([response.data], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = response.filename || `substituicoes_coordenacao_${new Date().toISOString().split('T')[0]}.xlsx`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        toast.success('Arquivo XLSX exportado com sucesso!');
+      } else {
+        toast.error('Erro ao exportar arquivo XLSX');
+      }
+    } catch (error) {
+      console.error('Erro ao exportar XLSX:', error);
+      toast.error('Erro ao exportar arquivo XLSX');
+    }
+  };
+
+  const handleExportPDF = async () => {
+    try {
+      // Preparar filtros para o backend
+      const filtrosExport = {};
+      
+      if (filtros.grupo) {
+        filtrosExport.grupo = typeof filtros.grupo === 'object' ? filtros.grupo.nome || filtros.grupo.id : filtros.grupo;
+      }
+      
+      if (filtros.semana_abastecimento) {
+        filtrosExport.semana_abastecimento = filtros.semana_abastecimento;
+      }
+      
+      if (filtros.semana_consumo) {
+        filtrosExport.semana_consumo = filtros.semana_consumo;
+      }
+      
+      if (filtros.tipo_rota_id) {
+        filtrosExport.tipo_rota_id = typeof filtros.tipo_rota_id === 'object' ? filtros.tipo_rota_id.id : filtros.tipo_rota_id;
+      }
+      
+      if (filtros.rota_id) {
+        filtrosExport.rota_id = typeof filtros.rota_id === 'object' ? filtros.rota_id.id : filtros.rota_id;
+      }
+
+      const response = await SubstituicoesNecessidadesService.exportarPDF(filtrosExport);
+      
+      if (response.success) {
+        // Criar blob e fazer download
+        const blob = new Blob([response.data], {
+          type: 'application/pdf'
+        });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = response.filename || `substituicoes_coordenacao_${new Date().toISOString().split('T')[0]}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        toast.success('Arquivo PDF exportado com sucesso!');
+      } else {
+        toast.error('Erro ao exportar arquivo PDF');
+      }
+    } catch (error) {
+      console.error('Erro ao exportar PDF:', error);
+      toast.error('Erro ao exportar arquivo PDF');
+    }
+  };
+
   return (
     <>
       {/* Filtros */}
@@ -93,7 +197,9 @@ const AnaliseCoordenacao = () => {
         rotas={rotas}
         filtros={filtros}
         loading={loading}
+        tipo="coordenacao"
         onFiltroChange={atualizarFiltros}
+        onAplicarFiltros={aplicarFiltros}
         onLimparFiltros={limparFiltros}
       />
 
@@ -106,8 +212,8 @@ const AnaliseCoordenacao = () => {
             </h2>
             <div className="flex items-center gap-2">
               <ExportButtons
-                onExportXLSX={() => {}}
-                onExportPDF={() => {}}
+                onExportXLSX={handleExportXLSX}
+                onExportPDF={handleExportPDF}
                 size="sm"
                 variant="outline"
                 showLabels={true}
@@ -149,7 +255,7 @@ const AnaliseCoordenacao = () => {
       )}
 
       {/* Empty State */}
-      {!loading && necessidades.length === 0 && (filtros.grupo || filtros.semana_abastecimento || filtros.tipo_rota_id) && (
+      {!loading && necessidades.length === 0 && filtrosJaAplicados && (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
           <FaExchangeAlt className="mx-auto h-12 w-12 text-gray-400 mb-4" />
           <h3 className="text-lg font-semibold text-gray-900 mb-2">
@@ -162,7 +268,7 @@ const AnaliseCoordenacao = () => {
       )}
 
       {/* Initial State */}
-      {!loading && necessidades.length === 0 && !filtros.grupo && !filtros.semana_abastecimento && !filtros.tipo_rota_id && (
+      {!loading && necessidades.length === 0 && !filtrosJaAplicados && (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
           <FaExchangeAlt className="mx-auto h-12 w-12 text-gray-400 mb-4" />
           <h3 className="text-lg font-semibold text-gray-900 mb-2">

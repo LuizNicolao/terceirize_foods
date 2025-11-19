@@ -14,7 +14,8 @@ const buscarSemanasConsumoDisponiveis = async (req, res) => {
     const { escola_id, aba } = req.query;
     const tipo_usuario = req.user.tipo_de_acesso;
 
-    const statusPermitidos = getStatusPermitidosPorAba(aba);
+    // Se aba não for fornecido, não filtrar por status (todos os status)
+    const statusPermitidos = aba ? getStatusPermitidosPorAba(aba) : null;
 
     let query = `
       SELECT DISTINCT 
@@ -23,10 +24,15 @@ const buscarSemanasConsumoDisponiveis = async (req, res) => {
       FROM necessidades n
       WHERE n.semana_consumo IS NOT NULL 
         AND n.semana_consumo != ''
-        AND n.status IN (${statusPermitidos.map(() => '?').join(',')})
     `;
 
-    let params = [...statusPermitidos];
+    let params = [];
+    
+    // Filtrar por status apenas se aba foi fornecido
+    if (statusPermitidos && statusPermitidos.length > 0) {
+      query += ` AND n.status IN (${statusPermitidos.map(() => '?').join(',')})`;
+      params.push(...statusPermitidos);
+    }
 
     // Aplicar filtro de nutricionista se necessário
     const authToken = req.headers.authorization?.replace('Bearer ', '');
@@ -75,7 +81,8 @@ const buscarGruposDisponiveis = async (req, res) => {
     const { escola_id, aba } = req.query;
     const tipo_usuario = req.user.tipo_de_acesso;
 
-    const statusPermitidos = getStatusPermitidosPorAba(aba);
+    // Se aba não for fornecido, não filtrar por status (todos os status)
+    const statusPermitidos = aba ? getStatusPermitidosPorAba(aba) : null;
 
     let query = `
       SELECT DISTINCT 
@@ -84,10 +91,15 @@ const buscarGruposDisponiveis = async (req, res) => {
       FROM necessidades n
       WHERE n.grupo IS NOT NULL 
         AND n.grupo != ''
-        AND n.status IN (${statusPermitidos.map(() => '?').join(',')})
     `;
 
-    let params = [...statusPermitidos];
+    let params = [];
+    
+    // Filtrar por status apenas se aba foi fornecido
+    if (statusPermitidos && statusPermitidos.length > 0) {
+      query += ` AND n.status IN (${statusPermitidos.map(() => '?').join(',')})`;
+      params.push(...statusPermitidos);
+    }
 
     // Aplicar filtro de nutricionista se necessário
     const authToken = req.headers.authorization?.replace('Bearer ', '');
@@ -195,7 +207,8 @@ const buscarSemanaAbastecimentoPorConsumo = async (req, res) => {
       });
     }
 
-    const statusPermitidos = getStatusPermitidosPorAba(aba);
+    // Se aba não for fornecido, não filtrar por status (todos os status)
+    const statusPermitidos = aba ? getStatusPermitidosPorAba(aba) : null;
 
     let query = `
       SELECT DISTINCT 
@@ -204,11 +217,17 @@ const buscarSemanaAbastecimentoPorConsumo = async (req, res) => {
       WHERE n.semana_consumo = ?
         AND n.semana_abastecimento IS NOT NULL 
         AND n.semana_abastecimento != ''
-        AND n.status IN (${statusPermitidos.map(() => '?').join(',')})
-      LIMIT 1
     `;
 
-    let params = [semana_consumo, ...statusPermitidos];
+    let params = [semana_consumo];
+    
+    // Filtrar por status apenas se aba foi fornecido
+    if (statusPermitidos && statusPermitidos.length > 0) {
+      query += ` AND n.status IN (${statusPermitidos.map(() => '?').join(',')})`;
+      params.push(...statusPermitidos);
+    }
+    
+    query += ` LIMIT 1`;
 
     // Aplicar filtro de nutricionista se necessário
     const authToken = req.headers.authorization?.replace('Bearer ', '');
@@ -254,7 +273,8 @@ const buscarEscolasDisponiveis = async (req, res) => {
     const { grupo, aba } = req.query;
     const tipo_usuario = req.user.tipo_de_acesso;
 
-    const statusPermitidos = getStatusPermitidosPorAba(aba);
+    // Se aba não for fornecido, não filtrar por status (todos os status)
+    const statusPermitidos = aba ? getStatusPermitidosPorAba(aba) : null;
 
     let query = `
       SELECT DISTINCT 
@@ -264,10 +284,15 @@ const buscarEscolasDisponiveis = async (req, res) => {
       WHERE n.escola_id IS NOT NULL 
         AND n.escola IS NOT NULL
         AND n.escola != ''
-        AND n.status IN (${statusPermitidos.map(() => '?').join(',')})
     `;
 
-    let params = [...statusPermitidos];
+    let params = [];
+    
+    // Filtrar por status apenas se aba foi fornecido
+    if (statusPermitidos && statusPermitidos.length > 0) {
+      query += ` AND n.status IN (${statusPermitidos.map(() => '?').join(',')})`;
+      params.push(...statusPermitidos);
+    }
 
     // Aplicar filtro de nutricionista se necessário
     const authToken = req.headers.authorization?.replace('Bearer ', '');

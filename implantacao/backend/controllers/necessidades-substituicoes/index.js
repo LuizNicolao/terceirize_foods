@@ -6,6 +6,7 @@
 const SubstituicoesListController = require('./SubstituicoesListController');
 const SubstituicoesCRUDController = require('./SubstituicoesCRUDController');
 const SubstituicoesImpressaoController = require('./SubstituicoesImpressaoController');
+const SubstituicoesExportController = require('./SubstituicoesExportController');
 
 module.exports = {
   // List Operations
@@ -27,5 +28,9 @@ module.exports = {
 
   // Impressão
   buscarDadosImpressao: SubstituicoesImpressaoController.buscarDadosImpressao,
-  marcarComoImpresso: SubstituicoesImpressaoController.marcarComoImpresso
+  marcarComoImpresso: SubstituicoesImpressaoController.marcarComoImpresso,
+
+  // Exportação
+  exportarXLSX: SubstituicoesExportController.exportarXLSX,
+  exportarPDF: SubstituicoesExportController.exportarPDF
 };

@@ -127,4 +127,22 @@ router.post(
   SubstituicoesController.desfazerTrocaProduto
 );
 
+// ===== ROTAS DE EXPORTAÇÃO =====
+
+// GET /api/necessidades-substituicoes/exportar/xlsx
+// Exportar substituições para XLSX (Coordenação)
+router.get(
+  '/exportar/xlsx',
+  checkScreenPermission('necessidades', 'visualizar'),
+  SubstituicoesController.exportarXLSX
+);
+
+// GET /api/necessidades-substituicoes/exportar/pdf
+// Exportar substituições para PDF (Coordenação)
+router.get(
+  '/exportar/pdf',
+  checkScreenPermission('necessidades', 'visualizar'),
+  SubstituicoesController.exportarPDF
+);
+
 module.exports = router;

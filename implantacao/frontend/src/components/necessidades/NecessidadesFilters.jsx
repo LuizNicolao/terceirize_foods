@@ -28,9 +28,8 @@ const NecessidadesFilters = ({
     const buscarEscolas = async () => {
       setLoadingEscolas(true);
       try {
-        const filtrosParaBusca = {
-          aba: 'nutricionista' // Esta tela lista status 'CONF'
-        };
+        const filtrosParaBusca = {};
+        // Não passar 'aba' para buscar todas as necessidades independente do status
         
         // Se grupo está selecionado, filtrar escolas por grupo
         if (filtros.grupo) {
@@ -79,9 +78,8 @@ const NecessidadesFilters = ({
     const buscarGrupos = async () => {
       setLoadingGrupos(true);
       try {
-        const filtrosParaBusca = {
-          aba: 'nutricionista' // Esta tela lista status 'CONF'
-        };
+        const filtrosParaBusca = {};
+        // Não passar 'aba' para buscar todas as necessidades independente do status
         
         // Se escola está selecionada, filtrar grupos por escola
         if (filtros.escola) {
@@ -148,8 +146,8 @@ const NecessidadesFilters = ({
       setLoadingSemanaAbastecimento(true);
       try {
         // Buscar diretamente da tabela necessidades (sem consultar calendário)
-        // Usar 'nutricionista' como padrão pois esta tela lista status 'CONF'
-        const response = await necessidadesService.buscarSemanaAbastecimentoPorConsumo(semanaConsumo, 'nutricionista');
+        // Não passar 'aba' para buscar todas as necessidades independente do status
+        const response = await necessidadesService.buscarSemanaAbastecimentoPorConsumo(semanaConsumo, null);
         if (response.success && response.data && response.data.semana_abastecimento) {
           const semanaAbastecimento = response.data.semana_abastecimento;
           setOpcoesSemanasAbastecimento([{ 
@@ -243,7 +241,6 @@ const NecessidadesFilters = ({
             placeholder={loadingEscolas ? "Carregando escolas..." : "Digite para buscar uma escola..."}
             disabled={loading || loadingEscolas}
             loading={loadingEscolas}
-            required
             usePortal={false}
             filterBy={(option, searchTerm) => {
               const label = option.label.toLowerCase();
@@ -278,7 +275,6 @@ const NecessidadesFilters = ({
             placeholder={loadingGrupos ? "Carregando grupos..." : "Digite para buscar um grupo..."}
             disabled={loading || loadingGrupos}
             loading={loadingGrupos}
-            required
             usePortal={false}
           />
         </div>

@@ -146,7 +146,7 @@ class SubstituicoesListController {
     try {
       const { grupo, semana_abastecimento, semana_consumo, tipo_rota_id, rota_id } = req.query;
 
-      let whereConditions = ["n.status = 'CONF'", "(n.substituicao_processada = 0 OR n.substituicao_processada IS NULL)"];
+      let whereConditions = ["n.status = 'CONF'"];
       let params = [];
 
       // Filtro por tipo de rota
@@ -179,13 +179,9 @@ class SubstituicoesListController {
         params.push(rota_id);
       }
 
-      // Filtro por grupo
+      // Filtro por grupo - usar diretamente a coluna grupo da tabela necessidades
       if (grupo) {
-        whereConditions.push(`n.produto_id IN (
-          SELECT DISTINCT ppc.produto_id 
-          FROM produtos_per_capita ppc 
-          WHERE ppc.grupo = ?
-        )`);
+        whereConditions.push("n.grupo = ?");
         params.push(grupo);
       }
 
@@ -203,21 +199,98 @@ class SubstituicoesListController {
         params.push(semana_consumo);
       }
 
+      // Construir condições para as subqueries do UNION ALL
+      let subqueryWhereConditionsNS = [];
+      let subqueryWhereConditionsN = [];
+      let subqueryParams = [];
+
+      // Aplicar filtros de grupo, semana_abastecimento e semana_consumo nas subqueries
+      if (grupo) {
+        subqueryWhereConditionsNS.push("ns.grupo = ?");
+        subqueryWhereConditionsN.push("n.grupo = ?");
+        subqueryParams.push(grupo);
+      }
+      if (semana_abastecimento) {
+        subqueryWhereConditionsNS.push("ns.semana_abastecimento = ?");
+        subqueryWhereConditionsN.push("n.semana_abastecimento = ?");
+        subqueryParams.push(semana_abastecimento);
+      }
+      if (semana_consumo) {
+        subqueryWhereConditionsNS.push("ns.semana_consumo = ?");
+        subqueryWhereConditionsN.push("n.semana_consumo = ?");
+        subqueryParams.push(semana_consumo);
+      }
+
+      // Aplicar filtros de tipo_rota_id e rota_id nas subqueries
+      if (tipo_rota_id) {
+        subqueryWhereConditionsNS.push(`ns.escola_id IN (
+          SELECT DISTINCT ue.id
+          FROM foods_db.unidades_escolares ue
+          INNER JOIN foods_db.rotas r ON FIND_IN_SET(r.id, ue.rota_id) > 0
+          WHERE r.tipo_rota_id = ?
+            AND ue.status = 'ativo'
+            AND ue.rota_id IS NOT NULL
+            AND ue.rota_id != ''
+        )`);
+        subqueryWhereConditionsN.push(`n.escola_id IN (
+          SELECT DISTINCT ue.id
+          FROM foods_db.unidades_escolares ue
+          INNER JOIN foods_db.rotas r ON FIND_IN_SET(r.id, ue.rota_id) > 0
+          WHERE r.tipo_rota_id = ?
+            AND ue.status = 'ativo'
+            AND ue.rota_id IS NOT NULL
+            AND ue.rota_id != ''
+        )`);
+        subqueryParams.push(tipo_rota_id);
+      }
+
+      if (rota_id) {
+        subqueryWhereConditionsNS.push(`ns.escola_id IN (
+          SELECT DISTINCT ue.id
+          FROM foods_db.unidades_escolares ue
+          WHERE FIND_IN_SET(?, ue.rota_id) > 0
+            AND ue.status = 'ativo'
+            AND ue.rota_id IS NOT NULL
+            AND ue.rota_id != ''
+        )`);
+        subqueryWhereConditionsN.push(`n.escola_id IN (
+          SELECT DISTINCT ue.id
+          FROM foods_db.unidades_escolares ue
+          WHERE FIND_IN_SET(?, ue.rota_id) > 0
+            AND ue.status = 'ativo'
+            AND ue.rota_id IS NOT NULL
+            AND ue.rota_id != ''
+        )`);
+        subqueryParams.push(rota_id);
+      }
+
+      // Construir WHERE clause para subqueries
+      const subqueryWhereNS = subqueryWhereConditionsNS.length > 0 
+        ? ` AND ${subqueryWhereConditionsNS.join(' AND ')}` 
+        : '';
+      const subqueryWhereN = subqueryWhereConditionsN.length > 0 
+        ? ` AND ${subqueryWhereConditionsN.join(' AND ')}` 
+        : '';
+
+      // Aumentar o limite do GROUP_CONCAT para evitar truncamento
+      // O limite padrão de 1024 caracteres não é suficiente para 462 registros
+      await executeQuery(`SET SESSION group_concat_max_len = 1000000`, []);
+
       // Buscar necessidades agrupadas por produto origem + produto genérico
-      const necessidades = await executeQuery(`
+      const query = `
         SELECT 
           base.codigo_origem,
           base.produto_origem_nome,
           base.produto_origem_unidade,
-          base.produto_trocado_id,
-          base.produto_trocado_nome,
-          base.produto_trocado_unidade,
+          MAX(base.produto_trocado_id) AS produto_trocado_id,
+          MAX(base.produto_trocado_nome) AS produto_trocado_nome,
+          MAX(base.produto_trocado_unidade) AS produto_trocado_unidade,
           MAX(base.produto_generico_id) AS produto_generico_id,
           MAX(base.produto_generico_codigo) AS produto_generico_codigo,
           MAX(base.produto_generico_nome) AS produto_generico_nome,
           MAX(base.produto_generico_unidade) AS produto_generico_unidade,
           SUM(base.quantidade_origem) AS quantidade_total_origem,
-          GROUP_CONCAT(base.necessidade_id) AS necessidade_ids,
+          GROUP_CONCAT(DISTINCT base.necessidade_id) AS necessidade_ids,
           base.semana_abastecimento,
           base.semana_consumo,
           base.grupo,
@@ -252,7 +325,7 @@ class SubstituicoesListController {
             ns.escola_nome
           FROM necessidades_substituicoes ns
           WHERE ns.ativo = 1
-          AND (ns.status IS NULL OR ns.status = 'conf')
+          AND (ns.status IS NULL OR ns.status = 'conf')${subqueryWhereNS}
           
           UNION ALL
           
@@ -268,7 +341,15 @@ class SubstituicoesListController {
             NULL AS produto_generico_codigo,
             NULL AS produto_generico_nome,
             NULL AS produto_generico_unidade,
-            n.ajuste_conf_coord AS quantidade_origem,
+            COALESCE(
+              n.ajuste_conf_coord,
+              n.ajuste_logistica,
+              n.ajuste_coordenacao,
+              n.ajuste_conf_nutri,
+              n.ajuste_nutricionista,
+              n.ajuste,
+              0
+            ) AS quantidade_origem,
             n.semana_abastecimento,
             n.semana_consumo,
             n.grupo,
@@ -276,8 +357,7 @@ class SubstituicoesListController {
             n.escola_id,
             n.escola AS escola_nome
           FROM necessidades n
-          WHERE n.status = 'CONF'
-            AND (n.substituicao_processada = 0 OR n.substituicao_processada IS NULL)
+          WHERE n.status = 'CONF'${subqueryWhereN}
             AND NOT EXISTS (
               SELECT 1
               FROM necessidades_substituicoes ns2
@@ -286,21 +366,25 @@ class SubstituicoesListController {
                 AND (ns2.status IS NULL OR ns2.status = 'conf')
             )
         ) base
-        INNER JOIN necessidades n ON n.id = base.necessidade_id
-        WHERE ${whereConditions.join(' AND ')}
+        WHERE 1=1
         GROUP BY 
           base.codigo_origem,
           base.produto_origem_nome,
           base.produto_origem_unidade,
-          base.produto_trocado_id,
-          base.produto_trocado_nome,
-          base.produto_trocado_unidade,
+          COALESCE(base.produto_trocado_id, -1),
+          COALESCE(base.produto_trocado_nome, ''),
+          COALESCE(base.produto_trocado_unidade, ''),
           base.semana_abastecimento,
           base.semana_consumo,
           base.grupo,
           base.grupo_id
         ORDER BY base.produto_origem_nome ASC, base.semana_abastecimento ASC
-      `, params);
+      `;
+
+      // Combinar parâmetros: apenas os das subqueries (repetidos para ambas), removendo duplicação no WHERE final
+      const allParams = [...subqueryParams, ...subqueryParams];
+
+      const necessidades = await executeQuery(query, allParams);
 
       // Buscar substituições existentes para cada produto
       const produtosComSubstituicoes = await Promise.all(
@@ -362,11 +446,8 @@ class SubstituicoesListController {
               });
           }
 
-          // Se há produto genérico específico, filtrar apenas escolas que usam esse produto
-          if (necessidade.produto_generico_id) {
-            const escolasComSubstituicao = substituicoes.map(s => s.escola_id);
-            escolas = escolas.filter(escola => escolasComSubstituicao.includes(escola.escola_id));
-          }
+          // Removido o filtro que limitava escolas apenas às que já têm substituição
+          // Agora mostra todas as escolas que têm necessidades, independente de terem substituição salva
 
           // Verificar quais escolas já têm substituição
           escolas.forEach(escola => {
@@ -578,9 +659,9 @@ class SubstituicoesListController {
           produto_origem_id as codigo_origem,
           produto_origem_nome,
           produto_origem_unidade,
-          COALESCE(MAX(produto_trocado_id), NULL) as produto_trocado_id,
-          COALESCE(MAX(produto_trocado_nome), '') as produto_trocado_nome,
-          COALESCE(MAX(produto_trocado_unidade), '') as produto_trocado_unidade,
+          MAX(produto_trocado_id) as produto_trocado_id,
+          MAX(produto_trocado_nome) as produto_trocado_nome,
+          MAX(produto_trocado_unidade) as produto_trocado_unidade,
           grupo,
           grupo_id,
           semana_abastecimento,
