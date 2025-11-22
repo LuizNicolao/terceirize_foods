@@ -31,11 +31,13 @@ export const Logo = ({
     setImageError(true);
   };
 
+  const publicUrl = process.env.PUBLIC_URL || '/mysql-backup-web'
+
   return (
     <div className={`flex items-center justify-center ${className}`}>
       {!imageError && (
         <img 
-          src="/logo-small.png"
+          src={`${publicUrl}/logo-small.png`}
           alt="MySQL Backup Web Logo" 
           className={`${sizeClasses[size]} object-contain ${!imageLoaded ? 'hidden' : ''}`}
           onLoad={handleImageLoad}

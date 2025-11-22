@@ -3,8 +3,9 @@ import axios from 'axios'
 // Determinar a URL base da API baseado no ambiente
 const getBaseURL = () => {
   if (process.env.NODE_ENV === 'production') {
-    // Em produção, usar o proxy nginx
-    return process.env.REACT_APP_API_URL || '/api'
+    // Em produção, usar o proxy nginx com base path
+    const basePath = process.env.PUBLIC_URL || '/mysql-backup-web'
+    return process.env.REACT_APP_API_URL || `${basePath}/api`
   }
   // Em desenvolvimento, usar a URL padrão
   return process.env.REACT_APP_API_URL || 'http://localhost:3000/api'

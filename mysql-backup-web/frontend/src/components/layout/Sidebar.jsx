@@ -134,7 +134,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
         <div className="p-5 border-b border-gray-200 text-center relative flex-shrink-0">
           <div className="flex items-center justify-center m-0">
             <img 
-              src="/logo-small.png" 
+              src={`${process.env.PUBLIC_URL || '/mysql-backup-web'}/logo-small.png`} 
               alt="MySQL Backup Web Logo" 
               className={`object-contain ${collapsed ? 'h-8' : 'h-10'}`}
               onError={(e) => {
