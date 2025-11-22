@@ -127,11 +127,11 @@ async function initSystemDatabase() {
     const tempPool = mysql.createPool(tempConfig);
     
     try {
-      // Criar database se não existir
+      // Criar database se não existir (pode falhar se usuário não tiver permissão)
       await tempPool.execute(`CREATE DATABASE IF NOT EXISTS ${dbConfig.database}`);
     } catch (error) {
-      await tempPool.end();
-      throw error;
+      // Se não conseguir criar, assumir que o banco já existe
+      console.log(`Banco ${dbConfig.database} já existe ou usuário não tem permissão para criar. Continuando...`);
     }
     
     // Fechar pool temporário
@@ -139,6 +139,14 @@ async function initSystemDatabase() {
     
     // Agora inicializar o pool com o database correto
     if (!pool) initPool();
+    
+    // Testar conexão com o banco
+    try {
+      await pool.execute('SELECT 1');
+    } catch (error) {
+      console.error(`Erro ao conectar ao banco ${dbConfig.database}:`, error.message);
+      throw new Error(`Não foi possível conectar ao banco ${dbConfig.database}. Verifique as permissões do usuário.`);
+    }
     
     // Criar tabela de backups
     await pool.execute(`
