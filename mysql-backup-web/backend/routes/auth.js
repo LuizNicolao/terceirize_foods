@@ -35,12 +35,22 @@ router.post('/login', async (req, res) => {
     }
 
     // Buscar usuário no banco foods_db
-    const [users] = await foodsDbPool.execute(
-      `SELECT id, nome, email, senha, tipo_de_acesso, nivel_de_acesso, status 
-       FROM usuarios 
-       WHERE email = ?`,
-      [email]
-    );
+    let users;
+    try {
+      [users] = await foodsDbPool.execute(
+        `SELECT id, nome, email, senha, tipo_de_acesso, nivel_de_acesso, status 
+         FROM usuarios 
+         WHERE email = ?`,
+        [email]
+      );
+    } catch (dbError) {
+      console.error('Erro ao conectar ao banco de dados:', dbError);
+      return res.status(500).json({
+        success: false,
+        error: 'Erro ao conectar ao banco de dados',
+        message: process.env.NODE_ENV === 'development' ? dbError.message : undefined
+      });
+    }
 
     if (users.length === 0) {
       return res.status(401).json({
@@ -100,9 +110,11 @@ router.post('/login', async (req, res) => {
       user: userWithoutPassword
     });
   } catch (error) {
+    console.error('Erro no login:', error);
     res.status(500).json({
       success: false,
-      error: 'Erro interno do servidor'
+      error: 'Erro interno do servidor',
+      message: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });
