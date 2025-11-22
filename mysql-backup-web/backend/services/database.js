@@ -4,8 +4,8 @@ const util = require('util');
 const execPromise = util.promisify(exec);
 
 const CONTAINER_NAME = process.env.MYSQL_CONTAINER_NAME || 'terceirize_mysql';
-const MYSQL_USER = process.env.MYSQL_USER || 'root';
-const MYSQL_PASSWORD = process.env.MYSQL_PASSWORD || 'root123456';
+const MYSQL_USER = process.env.MYSQL_USER || 'foods_user';
+const MYSQL_PASSWORD = process.env.MYSQL_PASSWORD || 'foods123456';
 
 // Configuração do banco de dados do sistema
 const dbConfig = {
@@ -175,13 +175,29 @@ async function initSystemDatabase() {
         schedule_type ENUM('daily', 'weekly', 'monthly') NOT NULL,
         cron_expression VARCHAR(100) NOT NULL,
         enabled BOOLEAN DEFAULT TRUE,
+        status VARCHAR(20) DEFAULT 'ativo',
+        selected_tables TEXT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         UNIQUE KEY unique_schedule (database_name, schedule_type)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
     `);
     
+    // Migrações: adicionar colunas se não existirem
+    try {
+      await pool.execute(`ALTER TABLE schedules ADD COLUMN status VARCHAR(20) DEFAULT 'ativo'`);
+    } catch (error) {
+      // Coluna já existe, ignorar erro
+    }
+    
+    try {
+      await pool.execute(`ALTER TABLE schedules ADD COLUMN selected_tables TEXT NULL`);
+    } catch (error) {
+      // Coluna já existe, ignorar erro
+    }
+    
   } catch (error) {
+    console.error('Erro ao inicializar banco de dados:', error);
     // Não lançar erro para não parar a aplicação
     // A conexão será retentada depois
   }

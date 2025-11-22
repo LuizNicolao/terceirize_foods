@@ -13,9 +13,10 @@ router.get('/', async (req, res) => {
       data: schedules
     });
   } catch (error) {
+    console.error('Erro ao listar agendamentos:', error);
     res.status(500).json({
       success: false,
-      message: error.message
+      message: error.message || 'Erro ao listar agendamentos'
     });
   }
 });
