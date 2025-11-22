@@ -40,8 +40,11 @@ function AppContent() {
       .catch(err => setHealth({ status: 'unhealthy' }))
   }, [])
 
+  // Base path para funcionar em subdiretório
+  const basename = process.env.PUBLIC_URL || '/mysql-backup-web'
+
   return (
-    <Router>
+    <Router basename={basename}>
       <Routes>
         {/* Rota de login */}
         <Route

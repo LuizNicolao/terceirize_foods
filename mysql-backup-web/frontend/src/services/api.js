@@ -46,8 +46,9 @@ api.interceptors.response.use(
         localStorage.removeItem('user')
         localStorage.removeItem('rememberMe')
         // Redirecionar para login apenas se não estiver na página de login
-        if (window.location.pathname !== '/login') {
-          window.location.href = '/login'
+        const basename = process.env.PUBLIC_URL || '/mysql-backup-web'
+        if (window.location.pathname !== `${basename}/login`) {
+          window.location.href = `${basename}/login`
         }
       }
     }
