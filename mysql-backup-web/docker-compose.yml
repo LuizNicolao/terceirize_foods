@@ -15,10 +15,17 @@ services:
       # MySQL Connection (para o banco de dados do próprio sistema)
       MYSQL_HOST: terceirize_mysql
       MYSQL_PORT: 3306
-      MYSQL_USER: root
-      MYSQL_PASSWORD: root123456
+      MYSQL_USER: foods_user
+      MYSQL_PASSWORD: foods123456
       MYSQL_DATABASE: mysql_backup_web
       MYSQL_CONTAINER_NAME: terceirize_mysql
+      
+      # MySQL Connection para foods_db (para autenticação)
+      FOODS_DB_HOST: terceirize_mysql
+      FOODS_DB_PORT: 3306
+      FOODS_DB_USER: foods_user
+      FOODS_DB_PASSWORD: foods123456
+      FOODS_DB_NAME: foods_db
       
       # Backup Configuration
       # Caminho dentro do container (volume monta terceirize_foods/bkp_banco_dados do host para /backups)

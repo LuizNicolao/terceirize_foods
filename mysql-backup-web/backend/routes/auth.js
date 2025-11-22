@@ -5,18 +5,19 @@ const mysql = require('mysql2/promise');
 const router = express.Router();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'mysql-backup-web-secret-key-change-in-production';
-const MYSQL_HOST = process.env.MYSQL_HOST || 'localhost';
-const MYSQL_PORT = parseInt(process.env.MYSQL_PORT) || 3306;
-const MYSQL_USER = process.env.MYSQL_USER || 'root';
-const MYSQL_PASSWORD = process.env.MYSQL_PASSWORD || 'root123456';
+const FOODS_DB_HOST = process.env.FOODS_DB_HOST || process.env.MYSQL_HOST || 'localhost';
+const FOODS_DB_PORT = parseInt(process.env.FOODS_DB_PORT || process.env.MYSQL_PORT) || 3306;
+const FOODS_DB_USER = process.env.FOODS_DB_USER || process.env.MYSQL_USER || 'foods_user';
+const FOODS_DB_PASSWORD = process.env.FOODS_DB_PASSWORD || process.env.MYSQL_PASSWORD || 'foods123456';
+const FOODS_DB_NAME = process.env.FOODS_DB_NAME || 'foods_db';
 
 // Pool de conexão com o banco foods_db
 const foodsDbPool = mysql.createPool({
-  host: MYSQL_HOST,
-  port: MYSQL_PORT,
-  user: MYSQL_USER,
-  password: MYSQL_PASSWORD,
-  database: 'foods_db',
+  host: FOODS_DB_HOST,
+  port: FOODS_DB_PORT,
+  user: FOODS_DB_USER,
+  password: FOODS_DB_PASSWORD,
+  database: FOODS_DB_NAME,
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
