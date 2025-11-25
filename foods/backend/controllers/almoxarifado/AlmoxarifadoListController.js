@@ -29,6 +29,10 @@ class AlmoxarifadoListController {
         a.filial_id,
         f.filial as filial_nome,
         f.codigo_filial,
+        a.tipo_vinculo,
+        a.unidade_escolar_id,
+        ue.nome_escola as unidade_escolar_nome,
+        ue.codigo_teknisa as unidade_escolar_codigo,
         a.centro_custo_id,
         cc.codigo as centro_custo_codigo,
         cc.nome as centro_custo_nome,
@@ -40,6 +44,7 @@ class AlmoxarifadoListController {
         ua.nome as usuario_atualizador_nome
       FROM almoxarifado a
       LEFT JOIN filiais f ON a.filial_id = f.id
+      LEFT JOIN unidades_escolares ue ON a.unidade_escolar_id = ue.id
       LEFT JOIN centro_custo cc ON a.centro_custo_id = cc.id
       LEFT JOIN usuarios uc ON a.usuario_cadastro_id = uc.id
       LEFT JOIN usuarios ua ON a.usuario_atualizacao_id = ua.id
@@ -177,6 +182,10 @@ class AlmoxarifadoListController {
         a.filial_id,
         f.filial as filial_nome,
         f.codigo_filial,
+        a.tipo_vinculo,
+        a.unidade_escolar_id,
+        ue.nome_escola as unidade_escolar_nome,
+        ue.codigo_teknisa as unidade_escolar_codigo,
         a.centro_custo_id,
         cc.codigo as centro_custo_codigo,
         cc.nome as centro_custo_nome,
@@ -188,6 +197,7 @@ class AlmoxarifadoListController {
         ua.nome as usuario_atualizador_nome
        FROM almoxarifado a
        LEFT JOIN filiais f ON a.filial_id = f.id
+       LEFT JOIN unidades_escolares ue ON a.unidade_escolar_id = ue.id
        LEFT JOIN centro_custo cc ON a.centro_custo_id = cc.id
        LEFT JOIN usuarios uc ON a.usuario_cadastro_id = uc.id
        LEFT JOIN usuarios ua ON a.usuario_atualizacao_id = ua.id
@@ -211,6 +221,54 @@ class AlmoxarifadoListController {
     return successResponse(res, data, 'Almoxarifado encontrado com sucesso', STATUS_CODES.OK, {
       actions
     });
+  });
+
+  /**
+   * Listar almoxarifados por filial
+   */
+  static listarAlmoxarifadosPorFilial = asyncHandler(async (req, res) => {
+    const { filial_id } = req.params;
+
+    // Verificar se filial existe
+    const filial = await executeQuery(
+      'SELECT id, filial, codigo_filial FROM filiais WHERE id = ?',
+      [filial_id]
+    );
+
+    if (filial.length === 0) {
+      return notFoundResponse(res, 'Filial não encontrada');
+    }
+
+    // Buscar almoxarifados vinculados à filial
+    const almoxarifados = await executeQuery(
+      `SELECT 
+        a.id, 
+        a.codigo,
+        a.nome, 
+        a.filial_id,
+        f.filial as filial_nome,
+        f.codigo_filial,
+        a.tipo_vinculo,
+        a.unidade_escolar_id,
+        ue.nome_escola as unidade_escolar_nome,
+        ue.codigo_teknisa as unidade_escolar_codigo,
+        a.centro_custo_id,
+        cc.codigo as centro_custo_codigo,
+        cc.nome as centro_custo_nome,
+        a.observacoes,
+        a.status, 
+        a.criado_em,
+        a.atualizado_em
+       FROM almoxarifado a
+       LEFT JOIN filiais f ON a.filial_id = f.id
+       LEFT JOIN unidades_escolares ue ON a.unidade_escolar_id = ue.id
+       LEFT JOIN centro_custo cc ON a.centro_custo_id = cc.id
+       WHERE a.filial_id = ? AND a.status = 1
+       ORDER BY a.tipo_vinculo ASC, a.nome ASC`,
+      [filial_id]
+    );
+
+    return successResponse(res, almoxarifados, 'Almoxarifados listados com sucesso', STATUS_CODES.OK);
   });
 
   /**

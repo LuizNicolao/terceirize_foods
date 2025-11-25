@@ -121,23 +121,28 @@ class UnidadesEscolaresListController {
         SELECT 
           ue.id, ue.codigo_teknisa, ue.nome_escola, ue.cidade, ue.estado, 
           ue.pais, ue.endereco, ue.numero, ue.bairro, ue.cep,
-          ue.centro_distribuicao, ue.rota_id, ue.regional, ue.lot, 
+          ue.centro_distribuicao, ue.rota_id, ue.regional, ue.centro_custo_id,
+          cc.codigo as centro_custo_codigo, cc.nome as centro_custo_nome, 
           ue.cc_senior, ue.codigo_senior, ue.abastecimento, ue.ordem_entrega, 
           ue.status, ue.observacoes, ue.created_at, ue.updated_at, ue.filial_id,
           ue.atendimento, ue.horario, ue.supervisao, ue.coordenacao, ue.lat, ue.\`long\`,
-          ue.rota_nutricionista_id,
+          ue.rota_nutricionista_id, ue.almoxarifado_id,
           r.nome as rota_nome,
           r.codigo as rota_codigo,
           f.filial as filial_nome,
           f.codigo_filial as filial_codigo,
           rn.codigo as rota_nutricionista_codigo,
           u.nome as nutricionista_nome,
-          u.email as nutricionista_email
+          u.email as nutricionista_email,
+          a.codigo as almoxarifado_codigo,
+          a.nome as almoxarifado_nome
         FROM unidades_escolares ue
         LEFT JOIN rotas r ON ue.rota_id = r.id
         LEFT JOIN filiais f ON ue.filial_id = f.id
+        LEFT JOIN centro_custo cc ON ue.centro_custo_id = cc.id
         LEFT JOIN rotas_nutricionistas rn ON ue.rota_nutricionista_id = rn.id
         LEFT JOIN usuarios u ON rn.usuario_id = u.id
+        LEFT JOIN almoxarifado a ON ue.almoxarifado_id = a.id
         WHERE ${whereConditions.join(' AND ')}
         ORDER BY ue.ordem_entrega ASC, ue.nome_escola ASC
         LIMIT ${limitNum} OFFSET ${offset}
@@ -230,23 +235,28 @@ class UnidadesEscolaresListController {
         SELECT 
           ue.id, ue.codigo_teknisa, ue.nome_escola, ue.cidade, ue.estado, 
           ue.pais, ue.endereco, ue.numero, ue.bairro, ue.cep,
-          ue.centro_distribuicao, ue.rota_id, ue.regional, ue.lot, 
+          ue.centro_distribuicao, ue.rota_id, ue.regional, ue.centro_custo_id,
+          cc.codigo as centro_custo_codigo, cc.nome as centro_custo_nome, 
           ue.cc_senior, ue.codigo_senior, ue.abastecimento, ue.ordem_entrega, 
           ue.status, ue.observacoes, ue.created_at, ue.updated_at, ue.filial_id,
           ue.atendimento, ue.horario, ue.supervisao, ue.coordenacao, ue.lat, ue.\`long\`,
-          ue.rota_nutricionista_id,
+          ue.rota_nutricionista_id, ue.almoxarifado_id,
           r.nome as rota_nome,
           r.codigo as rota_codigo,
           f.filial as filial_nome,
           f.codigo_filial as filial_codigo,
           rn.codigo as rota_nutricionista_codigo,
           u.nome as nutricionista_nome,
-          u.email as nutricionista_email
+          u.email as nutricionista_email,
+          a.codigo as almoxarifado_codigo,
+          a.nome as almoxarifado_nome
         FROM unidades_escolares ue
         LEFT JOIN rotas r ON ue.rota_id = r.id
         LEFT JOIN filiais f ON ue.filial_id = f.id
+        LEFT JOIN centro_custo cc ON ue.centro_custo_id = cc.id
         LEFT JOIN rotas_nutricionistas rn ON ue.rota_nutricionista_id = rn.id
         LEFT JOIN usuarios u ON rn.usuario_id = u.id
+        LEFT JOIN almoxarifado a ON ue.almoxarifado_id = a.id
         WHERE ${whereConditions.join(' AND ')}
       `;
 

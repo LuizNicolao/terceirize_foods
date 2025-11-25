@@ -50,10 +50,16 @@ router.get('/codigo/:codigo',
   AlmoxarifadoController.buscarAlmoxarifadoPorCodigo
 );
 
-// GET /api/almoxarifado/filial/:filial_id - Buscar almoxarifados por filial
+// GET /api/almoxarifado/filial/:filial_id - Buscar almoxarifados por filial (com paginação)
 router.get('/filial/:filial_id',
   checkPermission('visualizar'),
   AlmoxarifadoController.buscarAlmoxarifadosPorFilial
+);
+
+// GET /api/almoxarifado/filial/:filial_id/listar - Listar todos almoxarifados por filial (sem paginação, para visualização)
+router.get('/filial/:filial_id/listar',
+  checkPermission('visualizar'),
+  AlmoxarifadoController.listarAlmoxarifadosPorFilial
 );
 
 // GET /api/almoxarifado/centro-custo/:centro_custo_id - Buscar almoxarifados por centro de custo

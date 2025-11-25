@@ -22,7 +22,7 @@ class UnidadesEscolaresCRUDController {
         centro_distribuicao,
         rota_id,
         regional,
-        lot,
+        centro_custo_id,
         cc_senior,
         codigo_senior,
         abastecimento,
@@ -35,7 +35,8 @@ class UnidadesEscolaresCRUDController {
         coordenacao,
         lat,
         long,
-        filial_id
+        filial_id,
+        almoxarifado_id
       } = req.body;
 
       // Verificar se a rota existe (se fornecida)
@@ -70,6 +71,22 @@ class UnidadesEscolaresCRUDController {
         }
       }
 
+      // Verificar se centro de custo existe (se fornecida)
+      if (centro_custo_id !== undefined && centro_custo_id !== null && centro_custo_id !== '') {
+        const centroCusto = await executeQuery(
+          'SELECT id FROM centro_custo WHERE id = ? AND status = 1',
+          [centro_custo_id]
+        );
+
+        if (centroCusto.length === 0) {
+          return res.status(400).json({
+            success: false,
+            error: 'Centro de custo não encontrado ou inativo',
+            message: 'O centro de custo especificado não foi encontrado ou está inativo'
+          });
+        }
+      }
+
       // Verificar se código teknisa já existe (apenas se fornecido)
       if (codigo_teknisa) {
         const existingUnidade = await executeQuery(
@@ -86,13 +103,38 @@ class UnidadesEscolaresCRUDController {
         }
       }
 
+      // Verificar se almoxarifado existe (se fornecida)
+      if (almoxarifado_id !== undefined && almoxarifado_id !== null && almoxarifado_id !== '') {
+        const almoxarifado = await executeQuery(
+          'SELECT id, tipo_vinculo, unidade_escolar_id FROM almoxarifado WHERE id = ? AND status = 1',
+          [almoxarifado_id]
+        );
+
+        if (almoxarifado.length === 0) {
+          return res.status(400).json({
+            success: false,
+            error: 'Almoxarifado não encontrado ou inativo',
+            message: 'O almoxarifado especificado não foi encontrado ou está inativo'
+          });
+        }
+
+        // Verificar se o almoxarifado é do tipo unidade_escolar e se já está vinculado a outra unidade
+        if (almoxarifado[0].tipo_vinculo === 'unidade_escolar' && almoxarifado[0].unidade_escolar_id) {
+          return res.status(400).json({
+            success: false,
+            error: 'Almoxarifado já vinculado',
+            message: 'Este almoxarifado já está vinculado a outra unidade escolar'
+          });
+        }
+      }
+
       // Inserir unidade escolar
       const insertQuery = `
         INSERT INTO unidades_escolares (
           codigo_teknisa, nome_escola, cidade, estado, pais, endereco, numero, bairro, cep,
-          centro_distribuicao, rota_id, regional, lot, cc_senior, codigo_senior, abastecimento,
-          ordem_entrega, status, observacoes, atendimento, horario, supervisao, coordenacao, lat, \`long\`, filial_id
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          centro_distribuicao, rota_id, regional, centro_custo_id, cc_senior, codigo_senior, abastecimento,
+          ordem_entrega, status, observacoes, atendimento, horario, supervisao, coordenacao, lat, \`long\`, filial_id, almoxarifado_id
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `;
 
       const insertParams = [
@@ -108,7 +150,7 @@ class UnidadesEscolaresCRUDController {
         centro_distribuicao || null,
         rota_id || null,
         regional || null,
-        lot || null,
+        centro_custo_id || null,
         cc_senior || null,
         codigo_senior || null,
         abastecimento || null,
@@ -121,7 +163,8 @@ class UnidadesEscolaresCRUDController {
         coordenacao || null,
         lat || null,
         long || null,
-        filial_id || null
+        filial_id || null,
+        almoxarifado_id || null
       ];
 
       const result = await executeQuery(insertQuery, insertParams);
@@ -129,7 +172,7 @@ class UnidadesEscolaresCRUDController {
 
       // Buscar unidade escolar criada
       const newUnidade = await executeQuery(
-        'SELECT ue.*, r.nome as rota_nome, f.filial as filial_nome FROM unidades_escolares ue LEFT JOIN rotas r ON ue.rota_id = r.id LEFT JOIN filiais f ON ue.filial_id = f.id WHERE ue.id = ?',
+        'SELECT ue.*, r.nome as rota_nome, f.filial as filial_nome, cc.codigo as centro_custo_codigo, cc.nome as centro_custo_nome, a.codigo as almoxarifado_codigo, a.nome as almoxarifado_nome FROM unidades_escolares ue LEFT JOIN rotas r ON ue.rota_id = r.id LEFT JOIN filiais f ON ue.filial_id = f.id LEFT JOIN centro_custo cc ON ue.centro_custo_id = cc.id LEFT JOIN almoxarifado a ON ue.almoxarifado_id = a.id WHERE ue.id = ?',
         [newId]
       );
 
@@ -166,7 +209,7 @@ class UnidadesEscolaresCRUDController {
         centro_distribuicao,
         rota_id,
         regional,
-        lot,
+        centro_custo_id,
         cc_senior,
         codigo_senior,
         abastecimento,
@@ -179,7 +222,8 @@ class UnidadesEscolaresCRUDController {
         coordenacao,
         lat,
         long,
-        filial_id
+        filial_id,
+        almoxarifado_id
       } = req.body;
 
       // Verificar se a unidade escolar existe
@@ -224,6 +268,22 @@ class UnidadesEscolaresCRUDController {
             success: false,
             error: 'Filial não encontrada',
             message: 'A filial especificada não foi encontrada'
+          });
+        }
+      }
+
+      // Verificar se centro de custo existe (se fornecida)
+      if (centro_custo_id !== undefined && centro_custo_id !== null && centro_custo_id !== '') {
+        const centroCusto = await executeQuery(
+          'SELECT id FROM centro_custo WHERE id = ? AND status = 1',
+          [centro_custo_id]
+        );
+
+        if (centroCusto.length === 0) {
+          return res.status(400).json({
+            success: false,
+            error: 'Centro de custo não encontrado ou inativo',
+            message: 'O centro de custo especificado não foi encontrado ou está inativo'
           });
         }
       }
@@ -296,9 +356,9 @@ class UnidadesEscolaresCRUDController {
         updateFields.push('regional = ?');
         updateParams.push(regional);
       }
-      if (lot !== undefined) {
-        updateFields.push('lot = ?');
-        updateParams.push(lot);
+      if (centro_custo_id !== undefined) {
+        updateFields.push('centro_custo_id = ?');
+        updateParams.push(centro_custo_id);
       }
       if (cc_senior !== undefined) {
         updateFields.push('cc_senior = ?');
@@ -356,6 +416,10 @@ class UnidadesEscolaresCRUDController {
         updateFields.push('filial_id = ?');
         updateParams.push(filial_id);
       }
+      if (almoxarifado_id !== undefined) {
+        updateFields.push('almoxarifado_id = ?');
+        updateParams.push(almoxarifado_id);
+      }
 
       // Sempre atualizar o timestamp
       updateFields.push('updated_at = CURRENT_TIMESTAMP');
@@ -376,7 +440,7 @@ class UnidadesEscolaresCRUDController {
 
       // Buscar unidade escolar atualizada
       const updatedUnidade = await executeQuery(
-        'SELECT ue.*, r.nome as rota_nome FROM unidades_escolares ue LEFT JOIN rotas r ON ue.rota_id = r.id WHERE ue.id = ?',
+        'SELECT ue.*, r.nome as rota_nome, cc.codigo as centro_custo_codigo, cc.nome as centro_custo_nome, a.codigo as almoxarifado_codigo, a.nome as almoxarifado_nome FROM unidades_escolares ue LEFT JOIN rotas r ON ue.rota_id = r.id LEFT JOIN centro_custo cc ON ue.centro_custo_id = cc.id LEFT JOIN almoxarifado a ON ue.almoxarifado_id = a.id WHERE ue.id = ?',
         [id]
       );
 

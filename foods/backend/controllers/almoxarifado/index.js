@@ -6,6 +6,7 @@ const AlmoxarifadoStatsController = require('./AlmoxarifadoStatsController');
 module.exports = {
   listarAlmoxarifados: AlmoxarifadoListController.listarAlmoxarifados,
   buscarAlmoxarifadoPorId: AlmoxarifadoListController.buscarAlmoxarifadoPorId,
+  listarAlmoxarifadosPorFilial: AlmoxarifadoListController.listarAlmoxarifadosPorFilial,
   criarAlmoxarifado: AlmoxarifadoCRUDController.criarAlmoxarifado,
   atualizarAlmoxarifado: AlmoxarifadoCRUDController.atualizarAlmoxarifado,
   excluirAlmoxarifado: AlmoxarifadoCRUDController.excluirAlmoxarifado,

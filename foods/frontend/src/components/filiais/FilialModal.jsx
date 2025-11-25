@@ -1,14 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { FaSearch, FaSpinner } from 'react-icons/fa';
-import { Modal, Input, Button, MaskedFormInput } from '../ui';
+import { FaSearch, FaSpinner, FaWarehouse } from 'react-icons/fa';
+import { Modal, Input, Button, MaskedFormInput, Table } from '../ui';
 import FiliaisService from '../../services/filiais';
+import almoxarifadoService from '../../services/almoxarifadoService';
 import toast from 'react-hot-toast';
 
 const FilialModal = ({ isOpen, onClose, onSubmit, filial, isViewMode }) => {
   const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm();
   const [isLoadingCNPJ, setIsLoadingCNPJ] = useState(false);
   const [isLoadingCEP, setIsLoadingCEP] = useState(false);
+  const [almoxarifados, setAlmoxarifados] = useState([]);
+  const [carregandoAlmoxarifados, setCarregandoAlmoxarifados] = useState(false);
 
   const cnpj = watch('cnpj');
   const cep = watch('cep');
@@ -21,12 +24,67 @@ const FilialModal = ({ isOpen, onClose, onSubmit, filial, isViewMode }) => {
         Object.keys(filial).forEach(key => {
           setValue(key, filial[key]);
         });
+        // Carregar almoxarifados se estiver em modo visualização
+        if (isViewMode && filial.id) {
+          carregarAlmoxarifados(filial.id);
+        }
       } else {
         // Limpar formulário para nova filial
         reset();
       }
+    } else {
+      setAlmoxarifados([]);
     }
-  }, [isOpen, filial, setValue, reset]);
+  }, [isOpen, filial, setValue, reset, isViewMode]);
+
+  // Carregar almoxarifados vinculados à filial
+  const carregarAlmoxarifados = async (filialId) => {
+    setCarregandoAlmoxarifados(true);
+    try {
+      // Se a filial tem almoxarifados_ids, usar essa lista
+      if (filialData?.almoxarifados_ids) {
+        const idsArray = filialData.almoxarifados_ids.split(',').map(id => id.trim()).filter(id => id);
+        
+        if (idsArray.length > 0) {
+          // Buscar cada almoxarifado por ID
+          const promises = idsArray.map(id => 
+            almoxarifadoService.buscarPorId(id).catch(() => null)
+          );
+          
+          const results = await Promise.all(promises);
+          const almoxarifadosEncontrados = results
+            .filter(result => result && result.success && result.data)
+            .map(result => result.data)
+            .filter(almox => almox.status === 1); // Apenas ativos
+          
+          setAlmoxarifados(almoxarifadosEncontrados);
+        } else {
+          setAlmoxarifados([]);
+        }
+      } else {
+        // Fallback: buscar todos os almoxarifados da filial e filtrar apenas do tipo "filial"
+        const response = await almoxarifadoService.listar({ filial_id: filialData.id, status: 1 });
+        if (response.success) {
+          const dados = response.data?.data || response.data || [];
+          const todosAlmoxarifados = Array.isArray(dados) ? dados : [];
+          
+          // Filtrar apenas os do tipo "filial" (não incluir os de unidades escolares)
+          const almoxarifadosFiliais = todosAlmoxarifados.filter(
+            almox => almox.tipo_vinculo === 'filial' || !almox.tipo_vinculo
+          );
+          
+          setAlmoxarifados(almoxarifadosFiliais);
+        } else {
+          setAlmoxarifados([]);
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao carregar almoxarifados:', error);
+      setAlmoxarifados([]);
+    } finally {
+      setCarregandoAlmoxarifados(false);
+    }
+  };
 
   const handleFormSubmit = (data) => {
     onSubmit(data);
@@ -344,6 +402,65 @@ const FilialModal = ({ isOpen, onClose, onSubmit, filial, isViewMode }) => {
             </div>
           </div>
         </div>
+
+        {/* Seção de Almoxarifados - apenas em modo visualização */}
+        {isViewMode && filial && (
+          <div className="grid grid-cols-1 gap-4">
+            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+              <div className="flex items-center gap-2 mb-3 pb-2 border-b-2 border-green-500">
+                <FaWarehouse className="text-green-600" />
+                <h3 className="text-sm font-semibold text-gray-700">
+                  Almoxarifados Vinculados ({almoxarifados.length})
+                </h3>
+              </div>
+              {carregandoAlmoxarifados ? (
+                <div className="text-center py-4">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-600 mx-auto"></div>
+                  <p className="text-sm text-gray-600 mt-2">Carregando almoxarifados...</p>
+                </div>
+              ) : almoxarifados.length > 0 ? (
+                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                  <Table>
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Código</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Nome</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Centro de Custo</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {almoxarifados.map((almoxarifado) => (
+                        <tr key={almoxarifado.id} className="hover:bg-gray-50">
+                          <td className="px-4 py-2 text-sm text-gray-900 font-medium">{almoxarifado.codigo}</td>
+                          <td className="px-4 py-2 text-sm text-gray-900">{almoxarifado.nome}</td>
+                          <td className="px-4 py-2 text-sm text-gray-900">
+                            {almoxarifado.centro_custo_nome ? (
+                              <span>{almoxarifado.centro_custo_codigo} - {almoxarifado.centro_custo_nome}</span>
+                            ) : (
+                              <span className="text-gray-400">-</span>
+                            )}
+                          </td>
+                          <td className="px-4 py-2 text-sm text-gray-900">
+                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                              almoxarifado.status === 1 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                            }`}>
+                              {almoxarifado.status === 1 ? 'Ativo' : 'Inativo'}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
+                </div>
+              ) : (
+                <div className="text-center py-8 text-gray-400 text-sm">
+                  Nenhum almoxarifado vinculado a esta filial
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Botões */}
         <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
