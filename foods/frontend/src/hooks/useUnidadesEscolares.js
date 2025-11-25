@@ -162,6 +162,64 @@ export const useUnidadesEscolares = () => {
   }, [baseEntity, loadEstatisticasUnidades]);
 
   /**
+   * Visualizar unidade escolar (busca dados completos)
+   */
+  const handleViewUnidade = useCallback(async (idOrItem) => {
+    try {
+      // Extrair ID se for um objeto
+      const id = typeof idOrItem === 'object' && idOrItem !== null ? idOrItem.id : idOrItem;
+      
+      if (!id) {
+        toast.error('ID da unidade escolar não fornecido');
+        return;
+      }
+
+      baseEntity.setLoading(true);
+      const response = await UnidadesEscolaresService.buscarPorId(id);
+      
+      if (response.success && response.data) {
+        baseEntity.handleView(response.data);
+      } else {
+        toast.error(response.message || 'Erro ao buscar unidade escolar');
+      }
+    } catch (error) {
+      console.error('Erro ao buscar unidade escolar:', error);
+      toast.error('Erro ao carregar dados da unidade escolar');
+    } finally {
+      baseEntity.setLoading(false);
+    }
+  }, [baseEntity]);
+
+  /**
+   * Editar unidade escolar (busca dados completos)
+   */
+  const handleEditUnidade = useCallback(async (idOrItem) => {
+    try {
+      // Extrair ID se for um objeto
+      const id = typeof idOrItem === 'object' && idOrItem !== null ? idOrItem.id : idOrItem;
+      
+      if (!id) {
+        toast.error('ID da unidade escolar não fornecido');
+        return;
+      }
+
+      baseEntity.setLoading(true);
+      const response = await UnidadesEscolaresService.buscarPorId(id);
+      
+      if (response.success && response.data) {
+        baseEntity.handleEdit(response.data);
+      } else {
+        toast.error(response.message || 'Erro ao buscar unidade escolar');
+      }
+    } catch (error) {
+      console.error('Erro ao buscar unidade escolar:', error);
+      toast.error('Erro ao carregar dados da unidade escolar');
+    } finally {
+      baseEntity.setLoading(false);
+    }
+  }, [baseEntity]);
+
+  /**
    * Funções utilitárias
    */
   const getRotaName = useCallback((rotaId) => {
@@ -235,10 +293,10 @@ export const useUnidadesEscolares = () => {
     loadingRotas,
     loadingFiliais,
     
-    // Ações de modal (do hook base)
+    // Ações de modal (customizadas para buscar dados completos)
     handleAddUnidade: baseEntity.handleAdd,
-    handleViewUnidade: baseEntity.handleView,
-    handleEditUnidade: baseEntity.handleEdit,
+    handleViewUnidade,
+    handleEditUnidade,
     handleCloseModal: baseEntity.handleCloseModal,
     
     // Ações de paginação (do hook base)

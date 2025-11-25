@@ -9,6 +9,7 @@ import PeriodosRefeicaoContent from './PeriodosRefeicaoContent';
 import PeriodicidadeContent from './PeriodicidadeContent';
 import { PatrimoniosList } from '../patrimonios';
 import { usePermissions } from '../../contexts/PermissionsContext';
+import centroCustoService from '../../services/centroCusto';
 
 const UnidadeEscolarModal = ({ 
   isOpen, 
@@ -21,9 +22,47 @@ const UnidadeEscolarModal = ({
   filiais = [],
   loadingFiliais = false
 }) => {
-  const { register, handleSubmit, reset, setValue } = useForm();
+  const { register, handleSubmit, reset, setValue, watch } = useForm();
   const [activeTab, setActiveTab] = useState('info'); // 'info', 'efetivos', 'almoxarifado', 'patrimonios', 'tipos-cardapio' ou 'periodos-refeicao'
   const { canView, canEdit, canDelete, canMovimentar } = usePermissions();
+  const [centrosCusto, setCentrosCusto] = useState([]);
+  const [carregandoCentrosCusto, setCarregandoCentrosCusto] = useState(false);
+  const [centroCustoId, setCentroCustoId] = useState('');
+  
+  // Observar mudanças na filial selecionada
+  const filialSelecionada = watch('filial_id');
+
+  // Carregar centros de custo quando filial for selecionada ou quando unidade for carregada
+  useEffect(() => {
+    const carregarCentrosCusto = async () => {
+      // Usar filial da unidade se não houver filial selecionada no formulário
+      const filialParaBuscar = filialSelecionada || (unidade?.filial_id ? String(unidade.filial_id) : null);
+      
+      if (isOpen && filialParaBuscar) {
+        setCarregandoCentrosCusto(true);
+        try {
+          const response = await centroCustoService.buscarAtivos();
+          if (response.success) {
+            // Filtrar por filial selecionada
+            const filialIdNum = parseInt(filialParaBuscar);
+            const centrosFiltrados = (response.data || []).filter(
+              cc => String(cc.filial_id) === String(filialParaBuscar) || cc.filial_id === filialIdNum
+            );
+            setCentrosCusto(centrosFiltrados);
+          }
+        } catch (error) {
+          console.error('Erro ao carregar centros de custo:', error);
+          setCentrosCusto([]);
+        } finally {
+          setCarregandoCentrosCusto(false);
+        }
+      } else if (!filialParaBuscar) {
+        setCentrosCusto([]);
+      }
+    };
+
+    carregarCentrosCusto();
+  }, [filialSelecionada, isOpen, unidade?.filial_id]);
 
   React.useEffect(() => {
     if (isOpen) {
@@ -36,7 +75,12 @@ const UnidadeEscolarModal = ({
           // Preencher formulário com dados da unidade escolar
           Object.keys(unidade).forEach(key => {
             // Definir valor mesmo se for null/undefined (para limpar campos)
-            const value = unidade[key] !== null && unidade[key] !== undefined ? unidade[key] : '';
+            let value = unidade[key] !== null && unidade[key] !== undefined ? unidade[key] : '';
+            // Converter centro_custo_id para string se necessário (para compatibilidade com select)
+            if (key === 'centro_custo_id' && value) {
+              value = String(value);
+              setCentroCustoId(value);
+            }
             setValue(key, value, { shouldValidate: false, shouldDirty: false });
           });
           
@@ -47,6 +91,7 @@ const UnidadeEscolarModal = ({
       } else {
         // Resetar formulário para nova unidade escolar
         reset();
+        setCentroCustoId('');
         setValue('status', 'ativo');
         setValue('pais', 'Brasil');
       }
@@ -54,6 +99,13 @@ const UnidadeEscolarModal = ({
       setActiveTab('info');
     }
   }, [unidade, isOpen, setValue, reset]);
+
+  // Limpar estado quando modal fechar
+  useEffect(() => {
+    if (!isOpen) {
+      setCentroCustoId('');
+    }
+  }, [isOpen]);
 
   const handleFormSubmit = (data) => {
     onSubmit(data);
@@ -382,12 +434,30 @@ const UnidadeEscolarModal = ({
               />
 
               <Input
-                label="LOTE"
-                type="text"
-                placeholder="Lote"
-                {...register('lot')}
-                disabled={isViewMode}
-              />
+                label="Centro de Custo"
+                type="select"
+                name="centro_custo_id"
+                value={centroCustoId}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setCentroCustoId(value);
+                  setValue('centro_custo_id', value, { shouldValidate: false, shouldDirty: false });
+                }}
+                disabled={isViewMode || (!filialSelecionada && !unidade?.filial_id) || carregandoCentrosCusto}
+              >
+                <option value="">
+                  {(!filialSelecionada && !unidade?.filial_id)
+                    ? 'Selecione primeiro uma filial' 
+                    : carregandoCentrosCusto 
+                      ? 'Carregando...' 
+                      : 'Selecione um centro de custo'}
+                </option>
+                {centrosCusto.map(centroCusto => (
+                  <option key={centroCusto.id} value={String(centroCusto.id)}>
+                    {centroCusto.codigo} - {centroCusto.nome}
+                  </option>
+                ))}
+              </Input>
 
               <Input
                 label="C.C. Senior"

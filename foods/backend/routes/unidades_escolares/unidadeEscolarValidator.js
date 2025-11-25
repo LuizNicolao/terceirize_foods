@@ -74,8 +74,18 @@ const unidadeEscolarValidations = {
       .isString().trim().isLength({ max: 100 }).withMessage('Bairro deve ter no máximo 100 caracteres'),
     
     body('cep')
-      .optional()
-      .isString().trim().matches(/^\d{5}-?\d{3}$/).withMessage('CEP deve estar no formato 00000-000'),
+      .optional({ nullable: true, checkFalsy: true })
+      .custom((value) => {
+        if (!value || value === '' || value === null) {
+          return true; // CEP é opcional, aceitar vazio
+        }
+        // Validar formato apenas se o CEP foi fornecido
+        const cepLimpo = String(value).trim().replace(/\D/g, ''); // Remove tudo que não é dígito
+        if (cepLimpo.length === 8) {
+          return true; // Aceita 8 dígitos (com ou sem hífen)
+        }
+        throw new Error('CEP deve estar no formato 00000-000 ou 00000000');
+      }),
     
     body('centro_distribuicao')
       .optional()
@@ -89,9 +99,9 @@ const unidadeEscolarValidations = {
       .optional()
       .isString().trim().isLength({ max: 100 }).withMessage('Regional deve ter no máximo 100 caracteres'),
     
-    body('lot')
+    body('centro_custo_id')
       .optional()
-      .isString().trim().isLength({ max: 50 }).withMessage('Lote deve ter no máximo 50 caracteres'),
+      .isInt({ min: 1 }).withMessage('ID do centro de custo deve ser um número inteiro positivo'),
     
     body('cc_senior')
       .optional()
@@ -157,8 +167,18 @@ const unidadeEscolarValidations = {
       .isString().trim().isLength({ max: 100 }).withMessage('Bairro deve ter no máximo 100 caracteres'),
     
     body('cep')
-      .optional()
-      .isString().trim().matches(/^\d{5}-?\d{3}$/).withMessage('CEP deve estar no formato 00000-000'),
+      .optional({ nullable: true, checkFalsy: true })
+      .custom((value) => {
+        if (!value || value === '' || value === null) {
+          return true; // CEP é opcional, aceitar vazio
+        }
+        // Validar formato apenas se o CEP foi fornecido
+        const cepLimpo = String(value).trim().replace(/\D/g, ''); // Remove tudo que não é dígito
+        if (cepLimpo.length === 8) {
+          return true; // Aceita 8 dígitos (com ou sem hífen)
+        }
+        throw new Error('CEP deve estar no formato 00000-000 ou 00000000');
+      }),
     
     body('centro_distribuicao')
       .optional()
@@ -172,9 +192,9 @@ const unidadeEscolarValidations = {
       .optional()
       .isString().trim().isLength({ max: 100 }).withMessage('Regional deve ter no máximo 100 caracteres'),
     
-    body('lot')
+    body('centro_custo_id')
       .optional()
-      .isString().trim().isLength({ max: 50 }).withMessage('Lote deve ter no máximo 50 caracteres'),
+      .isInt({ min: 1 }).withMessage('ID do centro de custo deve ser um número inteiro positivo'),
     
     body('cc_senior')
       .optional()
