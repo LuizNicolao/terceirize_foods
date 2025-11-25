@@ -17,7 +17,8 @@ const AlmoxarifadoModal = ({
   const [carregandoFiliais, setCarregandoFiliais] = useState(false);
   const [centrosCusto, setCentrosCusto] = useState([]);
   const [carregandoCentrosCusto, setCarregandoCentrosCusto] = useState(false);
-  const [filialSelecionada, setFilialSelecionada] = useState(almoxarifado?.filial_id || '');
+  const [filialSelecionada, setFilialSelecionada] = useState('');
+  const [centroCustoId, setCentroCustoId] = useState('');
 
   // Carregar filiais ativas
   useEffect(() => {
@@ -48,9 +49,10 @@ const AlmoxarifadoModal = ({
         try {
           const response = await centroCustoService.buscarAtivos();
           if (response.success) {
-            // Filtrar por filial selecionada
+            // Filtrar por filial selecionada (comparar como string para garantir compatibilidade)
+            const filialIdNum = parseInt(filialSelecionada);
             const centrosFiltrados = (response.data || []).filter(
-              cc => cc.filial_id === parseInt(filialSelecionada)
+              cc => String(cc.filial_id) === String(filialSelecionada) || cc.filial_id === filialIdNum
             );
             setCentrosCusto(centrosFiltrados);
           }
@@ -68,7 +70,7 @@ const AlmoxarifadoModal = ({
     carregarCentrosCusto();
   }, [filialSelecionada, isOpen]);
 
-  // Carregar próximo código
+  // Carregar próximo código e atualizar estados quando almoxarifado mudar
   useEffect(() => {
     const carregarProximoCodigo = async () => {
       if (!almoxarifado && isOpen) {
@@ -86,37 +88,36 @@ const AlmoxarifadoModal = ({
         } finally {
           setCarregandoCodigo(false);
         }
+        // Limpar estados quando criar novo
+        setFilialSelecionada('');
+        setCentroCustoId('');
       } else if (almoxarifado) {
         setCodigoGerado(almoxarifado.codigo || '');
-        setFilialSelecionada(almoxarifado.filial_id || '');
+        // Atualizar filial e centro de custo quando almoxarifado for carregado
+        const filialId = almoxarifado.filial_id ? String(almoxarifado.filial_id) : '';
+        const centroCustoIdValue = almoxarifado.centro_custo_id ? String(almoxarifado.centro_custo_id) : '';
+        setFilialSelecionada(filialId);
+        setCentroCustoId(centroCustoIdValue);
       }
     };
 
     carregarProximoCodigo();
   }, [almoxarifado, isOpen]);
 
-  // Resetar filial selecionada quando modal fechar ou abrir para novo registro
+  // Limpar estados quando modal fechar
   useEffect(() => {
     if (!isOpen) {
       setFilialSelecionada('');
+      setCentroCustoId('');
       setCentrosCusto([]);
-    } else if (almoxarifado) {
-      setFilialSelecionada(almoxarifado.filial_id || '');
-    } else {
-      setFilialSelecionada('');
     }
-  }, [isOpen, almoxarifado]);
+  }, [isOpen]);
 
   const handleFilialChange = (e) => {
     const novaFilial = e.target.value;
     setFilialSelecionada(novaFilial);
     // Limpar centro de custo selecionado quando mudar a filial
-    if (e.target.form) {
-      const centroCustoField = e.target.form.querySelector('[name="centro_custo_id"]');
-      if (centroCustoField) {
-        centroCustoField.value = '';
-      }
-    }
+    setCentroCustoId('');
   };
 
   return (
@@ -144,14 +145,14 @@ const AlmoxarifadoModal = ({
             label="Filial *"
             name="filial_id"
             type="select"
-            defaultValue={almoxarifado?.filial_id || ''}
+            value={filialSelecionada}
+            onChange={handleFilialChange}
             disabled={isViewMode || carregandoFiliais}
             required
-            onChange={handleFilialChange}
           >
             <option value="">{carregandoFiliais ? 'Carregando...' : 'Selecione uma filial'}</option>
             {filiais.map(filial => (
-              <option key={filial.id} value={filial.id}>
+              <option key={filial.id} value={String(filial.id)}>
                 {filial.codigo_filial} - {filial.filial}
               </option>
             ))}
@@ -161,7 +162,8 @@ const AlmoxarifadoModal = ({
             label="Centro de Custo *"
             name="centro_custo_id"
             type="select"
-            defaultValue={almoxarifado?.centro_custo_id || ''}
+            value={centroCustoId}
+            onChange={(e) => setCentroCustoId(e.target.value)}
             disabled={isViewMode || !filialSelecionada || carregandoCentrosCusto}
             required
           >
@@ -173,7 +175,7 @@ const AlmoxarifadoModal = ({
                   : 'Selecione um centro de custo'}
             </option>
             {centrosCusto.map(centroCusto => (
-              <option key={centroCusto.id} value={centroCusto.id}>
+              <option key={centroCusto.id} value={String(centroCusto.id)}>
                 {centroCusto.codigo} - {centroCusto.nome}
               </option>
             ))}

@@ -53,7 +53,8 @@ app.use('*', (req, res) => {
 
 // Inicializar servidor
 app.listen(PORT, () => {
-  connectRedis();
+  // Redis desabilitado - comentado para não gerar logs de erro
+  // connectRedis();
   console.log(`🚀 Servidor rodando na porta ${PORT}`);
   console.log(`📊 Ambiente: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🔗 URL: http://localhost:${PORT}`);

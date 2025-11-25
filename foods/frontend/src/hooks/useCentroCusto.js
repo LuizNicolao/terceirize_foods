@@ -76,6 +76,48 @@ export const useCentroCusto = () => {
     return new Date(dateString).toLocaleString('pt-BR');
   }, []);
 
+  /**
+   * Visualizar centro de custo (busca dados completos)
+   */
+  const handleViewCentroCusto = useCallback(async (id) => {
+    try {
+      baseEntity.setLoading(true);
+      const response = await CentroCustoService.buscarPorId(id);
+      
+      if (response.success && response.data) {
+        baseEntity.handleView(response.data);
+      } else {
+        toast.error(response.message || 'Erro ao buscar centro de custo');
+      }
+    } catch (error) {
+      console.error('Erro ao buscar centro de custo:', error);
+      toast.error('Erro ao carregar dados do centro de custo');
+    } finally {
+      baseEntity.setLoading(false);
+    }
+  }, [baseEntity]);
+
+  /**
+   * Editar centro de custo (busca dados completos)
+   */
+  const handleEditCentroCusto = useCallback(async (id) => {
+    try {
+      baseEntity.setLoading(true);
+      const response = await CentroCustoService.buscarPorId(id);
+      
+      if (response.success && response.data) {
+        baseEntity.handleEdit(response.data);
+      } else {
+        toast.error(response.message || 'Erro ao buscar centro de custo');
+      }
+    } catch (error) {
+      console.error('Erro ao buscar centro de custo:', error);
+      toast.error('Erro ao carregar dados do centro de custo');
+    } finally {
+      baseEntity.setLoading(false);
+    }
+  }, [baseEntity]);
+
   // Carregar dados quando filtros mudam
   useEffect(() => {
     loadDataWithFilters();
@@ -122,10 +164,10 @@ export const useCentroCusto = () => {
     validationErrors: baseEntity.validationErrors,
     showValidationModal: baseEntity.showValidationModal,
     
-    // Ações de modal (do hook base)
+    // Ações de modal (customizadas para buscar dados completos)
     handleAddCentroCusto: baseEntity.handleAdd,
-    handleViewCentroCusto: baseEntity.handleView,
-    handleEditCentroCusto: baseEntity.handleEdit,
+    handleViewCentroCusto,
+    handleEditCentroCusto,
     handleCloseModal: baseEntity.handleCloseModal,
     
     // Ações de paginação (do hook base)

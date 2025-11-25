@@ -35,17 +35,25 @@ api.interceptors.request.use(
   }
 )
 
-// Interceptor para log de erros e tratamento de 401
+// Interceptor para log de erros e tratamento de 401 e 403
 api.interceptors.response.use(
   response => response,
   error => {
     if (error.response) {
+      const status = error.response.status
       
-      // Se for 401 (não autorizado), limpar tokens e redirecionar
-      if (error.response.status === 401) {
+      // Se for 401 (não autorizado) ou 403 (proibido), limpar tokens e redirecionar
+      if (status === 401 || status === 403) {
+        // Se for 403, mostrar mensagem específica
+        if (status === 403) {
+          const errorMessage = error.response.data?.error || 'Acesso negado. Apenas administradores podem acessar este sistema.'
+          console.error('Acesso negado:', errorMessage)
+        }
+        
         localStorage.removeItem('token')
         localStorage.removeItem('user')
         localStorage.removeItem('rememberMe')
+        
         // Redirecionar para login apenas se não estiver na página de login
         const basename = process.env.PUBLIC_URL || '/mysql-backup-web'
         if (window.location.pathname !== `${basename}/login`) {

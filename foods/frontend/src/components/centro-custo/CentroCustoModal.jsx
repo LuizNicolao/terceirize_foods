@@ -14,6 +14,7 @@ const CentroCustoModal = ({
   const [carregandoCodigo, setCarregandoCodigo] = useState(false);
   const [filiais, setFiliais] = useState([]);
   const [carregandoFiliais, setCarregandoFiliais] = useState(false);
+  const [filialId, setFilialId] = useState('');
 
   // Carregar filiais ativas
   useEffect(() => {
@@ -36,7 +37,7 @@ const CentroCustoModal = ({
     carregarFiliais();
   }, [isOpen]);
 
-  // Carregar próximo código
+  // Carregar próximo código e atualizar filial
   useEffect(() => {
     const carregarProximoCodigo = async () => {
       if (!centroCusto && isOpen) {
@@ -54,13 +55,25 @@ const CentroCustoModal = ({
         } finally {
           setCarregandoCodigo(false);
         }
+        // Limpar filial quando criar novo
+        setFilialId('');
       } else if (centroCusto) {
         setCodigoGerado(centroCusto.codigo || '');
+        // Atualizar filial_id quando centroCusto for carregado
+        setFilialId(centroCusto.filial_id ? String(centroCusto.filial_id) : '');
       }
     };
 
     carregarProximoCodigo();
   }, [centroCusto, isOpen]);
+
+  // Limpar estado quando modal fechar
+  useEffect(() => {
+    if (!isOpen) {
+      setFilialId('');
+      setCodigoGerado('');
+    }
+  }, [isOpen]);
 
   return (
     <Modal
@@ -104,13 +117,14 @@ const CentroCustoModal = ({
             label="Filial *"
             name="filial_id"
             type="select"
-            defaultValue={centroCusto?.filial_id || ''}
+            value={filialId}
+            onChange={(e) => setFilialId(e.target.value)}
             disabled={isViewMode || carregandoFiliais}
             required
           >
             <option value="">{carregandoFiliais ? 'Carregando...' : 'Selecione uma filial'}</option>
             {filiais.map(filial => (
-              <option key={filial.id} value={filial.id}>
+              <option key={filial.id} value={String(filial.id)}>
                 {filial.codigo_filial} - {filial.filial}
               </option>
             ))}

@@ -80,6 +80,48 @@ export const useAlmoxarifado = () => {
     return new Date(dateString).toLocaleString('pt-BR');
   }, []);
 
+  /**
+   * Visualizar almoxarifado (busca dados completos)
+   */
+  const handleViewAlmoxarifado = useCallback(async (id) => {
+    try {
+      baseEntity.setLoading(true);
+      const response = await AlmoxarifadoService.buscarPorId(id);
+      
+      if (response.success && response.data) {
+        baseEntity.handleView(response.data);
+      } else {
+        toast.error(response.message || 'Erro ao buscar almoxarifado');
+      }
+    } catch (error) {
+      console.error('Erro ao buscar almoxarifado:', error);
+      toast.error('Erro ao carregar dados do almoxarifado');
+    } finally {
+      baseEntity.setLoading(false);
+    }
+  }, [baseEntity]);
+
+  /**
+   * Editar almoxarifado (busca dados completos)
+   */
+  const handleEditAlmoxarifado = useCallback(async (id) => {
+    try {
+      baseEntity.setLoading(true);
+      const response = await AlmoxarifadoService.buscarPorId(id);
+      
+      if (response.success && response.data) {
+        baseEntity.handleEdit(response.data);
+      } else {
+        toast.error(response.message || 'Erro ao buscar almoxarifado');
+      }
+    } catch (error) {
+      console.error('Erro ao buscar almoxarifado:', error);
+      toast.error('Erro ao carregar dados do almoxarifado');
+    } finally {
+      baseEntity.setLoading(false);
+    }
+  }, [baseEntity]);
+
   const handleKeyPress = useCallback((e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
@@ -137,10 +179,10 @@ export const useAlmoxarifado = () => {
     validationErrors: baseEntity.validationErrors,
     showValidationModal: baseEntity.showValidationModal,
     
-    // Ações de modal (do hook base)
+    // Ações de modal (customizadas para buscar dados completos)
     handleAddAlmoxarifado: baseEntity.handleAdd,
-    handleViewAlmoxarifado: baseEntity.handleView,
-    handleEditAlmoxarifado: baseEntity.handleEdit,
+    handleViewAlmoxarifado,
+    handleEditAlmoxarifado,
     handleCloseModal: baseEntity.handleCloseModal,
     
     // Ações de paginação (do hook base)
