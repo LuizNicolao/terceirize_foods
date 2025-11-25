@@ -3,7 +3,11 @@ const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
 // Carregar arquivo .env baseado no ambiente (seguindo padrão do implantacao)
-require('dotenv').config({ path: process.env.NODE_ENV === 'production' ? 'env.production' : 'env.development' });
+// override: false garante que variáveis já definidas (ex: Docker) não sejam sobrescritas
+require('dotenv').config({ 
+  path: process.env.NODE_ENV === 'production' ? 'env.production' : 'env.development',
+  override: false 
+});
 
 const app = express();
 // Porta padrão 3006 para desenvolvimento local, mas Docker usa PORT=3000 do docker-compose.yml

@@ -2,22 +2,41 @@ const jwt = require('jsonwebtoken');
 const mysql = require('mysql2/promise');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'mysql-backup-web-secret-key-change-in-production';
-const MYSQL_HOST = process.env.MYSQL_HOST || 'localhost';
-const MYSQL_PORT = parseInt(process.env.MYSQL_PORT) || 3306;
-const MYSQL_USER = process.env.MYSQL_USER || 'root';
-const MYSQL_PASSWORD = process.env.MYSQL_PASSWORD || 'root123456';
+// Usar FOODS_DB_* se definido, senão usar DB_* como fallback (seguindo padrão dos outros projetos)
+const FOODS_DB_HOST = process.env.FOODS_DB_HOST || process.env.DB_HOST || 'localhost';
+const FOODS_DB_PORT = parseInt(process.env.FOODS_DB_PORT || process.env.DB_PORT) || 3306;
+const FOODS_DB_USER = process.env.FOODS_DB_USER || process.env.DB_USER || 'foods_user';
+const FOODS_DB_PASSWORD = process.env.FOODS_DB_PASSWORD || process.env.DB_PASSWORD || 'foods123456';
+const FOODS_DB_NAME = process.env.FOODS_DB_NAME || 'foods_db';
 
 // Pool de conexão com o banco foods_db
-const foodsDbPool = mysql.createPool({
-  host: MYSQL_HOST,
-  port: MYSQL_PORT,
-  user: MYSQL_USER,
-  password: MYSQL_PASSWORD,
-  database: 'foods_db',
+const poolConfig = {
+  host: FOODS_DB_HOST,
+  port: FOODS_DB_PORT,
+  user: FOODS_DB_USER,
+  password: FOODS_DB_PASSWORD,
+  database: FOODS_DB_NAME,
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
-});
+};
+
+// Forçar IPv4 se o host for localhost (evita problemas com IPv6)
+if (FOODS_DB_HOST === 'localhost' || FOODS_DB_HOST === '127.0.0.1') {
+  poolConfig.ipFamily = 4;
+}
+
+const foodsDbPool = mysql.createPool(poolConfig);
+
+// Log de configuração (apenas em desenvolvimento)
+if (process.env.NODE_ENV === 'development') {
+  console.log('🔌 Configuração do pool MySQL (auth middleware):', {
+    host: FOODS_DB_HOST,
+    port: FOODS_DB_PORT,
+    database: FOODS_DB_NAME,
+    user: FOODS_DB_USER
+  });
+}
 
 // Middleware para verificar token JWT
 const authenticateToken = async (req, res, next) => {
