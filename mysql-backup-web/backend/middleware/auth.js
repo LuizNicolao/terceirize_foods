@@ -28,16 +28,6 @@ if (FOODS_DB_HOST === 'localhost' || FOODS_DB_HOST === '127.0.0.1') {
 
 const foodsDbPool = mysql.createPool(poolConfig);
 
-// Log de configuração (apenas em desenvolvimento)
-if (process.env.NODE_ENV === 'development') {
-  console.log('🔌 Configuração do pool MySQL (auth middleware):', {
-    host: FOODS_DB_HOST,
-    port: FOODS_DB_PORT,
-    database: FOODS_DB_NAME,
-    user: FOODS_DB_USER
-  });
-}
-
 // Middleware para verificar token JWT
 const authenticateToken = async (req, res, next) => {
   try {
@@ -107,14 +97,9 @@ const authenticateToken = async (req, res, next) => {
 
     // Verificar se é administrador
     if (user.tipo_de_acesso !== 'administrador') {
-      // Log para debug (apenas em desenvolvimento)
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`Acesso negado para usuário ${user.email} (tipo: ${user.tipo_de_acesso})`);
-      }
       return res.status(403).json({
         success: false,
-        error: 'Acesso negado. Apenas administradores podem acessar.',
-        userType: user.tipo_de_acesso // Informar o tipo do usuário para debug
+        error: 'Acesso negado. Apenas administradores podem acessar.'
       });
     }
 
