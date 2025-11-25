@@ -4,12 +4,15 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import React from 'react';
+import ReactDOM from 'react-dom/client';
 import toast from 'react-hot-toast';
 import SolicitacoesComprasService from '../services/solicitacoesCompras';
 import PdfTemplatesService from '../services/pdfTemplatesService';
 import api from '../services/api';
 import { useBaseEntity } from './common/useBaseEntity';
 import { useFilters } from './common/useFilters';
+import SolicitacoesComprasPrint from '../components/solicitacoes-compras/SolicitacoesComprasPrint';
 
 export const useSolicitacoesCompras = () => {
   // Hook base para funcionalidades CRUD
@@ -184,6 +187,108 @@ export const useSolicitacoesCompras = () => {
       setLoading(false);
     }
   }, [baseEntity]);
+
+  /**
+   * Imprimir Solicitação - abre o diálogo de impressão do navegador na mesma página
+   */
+  const handlePrintSolicitacao = useCallback(async (item) => {
+    try {
+      const solicitacaoId = typeof item === 'object' ? item.id : item;
+      const response = await SolicitacoesComprasService.buscarPorId(solicitacaoId);
+      
+      if (response && response.success && response.data) {
+        const solicitacao = response.data;
+        
+        // Criar container para impressão na mesma página
+        const printContainer = document.createElement('div');
+        printContainer.id = 'print-container-solicitacao';
+        printContainer.style.cssText = `
+          position: fixed;
+          top: -9999px;
+          left: -9999px;
+          width: 210mm;
+          min-height: 297mm;
+          background: white;
+          z-index: 9999;
+        `;
+        document.body.appendChild(printContainer);
+        
+        // Criar estilo para esconder o resto da página durante impressão
+        const printStyle = document.createElement('style');
+        printStyle.id = 'print-style-solicitacao';
+        printStyle.textContent = `
+          @media print {
+            @page {
+              size: A4;
+              margin: 0mm;
+            }
+            * {
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            html, body {
+              margin: 0 !important;
+              padding: 0 !important;
+              width: 210mm !important;
+              height: 297mm !important;
+              overflow: hidden !important;
+            }
+            body > *:not(#print-container-solicitacao) {
+              display: none !important;
+              visibility: hidden !important;
+            }
+            header, nav, footer, .navbar, .sidebar, .menu, button, .no-print {
+              display: none !important;
+              visibility: hidden !important;
+            }
+            #print-container-solicitacao {
+              position: absolute !important;
+              top: 0 !important;
+              left: 0 !important;
+              width: 210mm !important;
+              margin: 0 !important;
+              padding: 15mm !important;
+              box-sizing: border-box !important;
+              background: white !important;
+            }
+          }
+        `;
+        document.head.appendChild(printStyle);
+        
+        // Renderizar componente
+        const root = ReactDOM.createRoot(printContainer);
+        root.render(React.createElement(SolicitacoesComprasPrint, { solicitacao }));
+        
+        // Aguardar renderização e então imprimir
+        setTimeout(() => {
+          window.print();
+          
+          // Limpar após impressão
+          const cleanup = () => {
+            root.unmount();
+            if (printContainer.parentNode) {
+              printContainer.parentNode.removeChild(printContainer);
+            }
+            const styleEl = document.getElementById('print-style-solicitacao');
+            if (styleEl) {
+              styleEl.parentNode.removeChild(styleEl);
+            }
+            window.removeEventListener('afterprint', cleanup);
+          };
+          
+          window.addEventListener('afterprint', cleanup);
+          
+          // Fallback: limpar após 5 segundos se afterprint não disparar
+          setTimeout(cleanup, 5000);
+        }, 100);
+      } else {
+        toast.error('Erro ao buscar dados da solicitação para impressão');
+      }
+    } catch (error) {
+      console.error('Erro ao imprimir solicitação:', error);
+      toast.error('Erro ao imprimir solicitação');
+    }
+  }, []);
 
   /**
    * Handle key press para buscar ao pressionar Enter
@@ -387,6 +492,7 @@ export const useSolicitacoesCompras = () => {
     handleAddSolicitacao: baseEntity.handleAdd,
     handleViewSolicitacao,
     handleEditSolicitacao,
+    handlePrintSolicitacao,
     handleCloseModal: baseEntity.handleCloseModal,
     
     // Ações de paginação

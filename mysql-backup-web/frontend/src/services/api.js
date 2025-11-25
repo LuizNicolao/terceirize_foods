@@ -7,10 +7,10 @@ const getBaseURL = () => {
     const basePath = process.env.PUBLIC_URL || '/mysql-backup-web'
     return process.env.REACT_APP_API_URL || `${basePath}/api`
   }
-  // Em desenvolvimento, usar a URL padrão
-  return process.env.REACT_APP_API_URL || 'http://localhost:3000/api'
-  }
-  
+  // Em desenvolvimento, usar a URL padrão (porta 3006 para evitar conflito com foods na 3000)
+  return process.env.REACT_APP_API_URL || 'http://localhost:3006/api'
+}
+
 const API_URL = getBaseURL()
 
 

@@ -265,7 +265,7 @@ const ProdutoGenericoModal = ({
               className="bg-gray-50"
             >
               <option value="">Selecione um grupo</option>
-              {grupos?.map(grupo => (
+              {grupos?.filter(grupo => grupo.tipo === 'Compra').map(grupo => (
                 <option key={grupo.id} value={grupo.id}>
                   {grupo.nome}
                 </option>

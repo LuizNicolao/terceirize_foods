@@ -1,5 +1,5 @@
 import React, { useState, useRef, useMemo } from 'react';
-import { FaPrint } from 'react-icons/fa';
+import { FaPrint, FaList, FaLayerGroup } from 'react-icons/fa';
 import { useSubstituicoesNecessidades } from '../../hooks/useSubstituicoesNecessidades';
 import { SubstituicoesFilters } from './components';
 import { Button } from '../../components/ui';
@@ -23,43 +23,39 @@ const AnaliseImpressao = () => {
   const [loading, setLoading] = useState(false);
   const [marcandoImpresso, setMarcandoImpresso] = useState(false);
   const [error, setError] = useState(null);
-  const [tipoAgrupamento, setTipoAgrupamento] = useState('grupo'); // 'grupo' ou 'escola'
+  const [tipoAgrupamento, setTipoAgrupamento] = useState('consolidado'); // 'individual' ou 'consolidado'
   const printRef = useRef(null);
 
   // Validar se os filtros obrigatórios estão preenchidos
   const filtrosValidos = filtros.tipo_rota_id && filtros.rota_id && filtros.semana_abastecimento;
 
-  // Agrupar produtos por grupo ou escola
+  // Agrupar produtos por individual ou consolidado
   const gruposRomaneio = useMemo(() => {
     if (!dadosImpressao || !Array.isArray(dadosImpressao.produtos)) {
       return [];
     }
 
-    // Se um grupo específico foi selecionado e o agrupamento é por grupo, não agrupar
+    // Se um grupo específico foi selecionado e o modo é consolidado, não agrupar
     // (mostrará apenas o grupo selecionado)
-    if (filtros.grupo && tipoAgrupamento === 'grupo') {
+    if (filtros.grupo && tipoAgrupamento === 'consolidado') {
       return [];
     }
     
-    // Se um grupo específico foi selecionado mas o agrupamento é por escola,
-    // filtrar apenas produtos do grupo selecionado antes de agrupar por escola
-    const produtosParaAgrupar = filtros.grupo && tipoAgrupamento === 'escola'
+    // Filtrar produtos se um grupo específico foi selecionado
+    const produtosParaAgrupar = filtros.grupo
       ? dadosImpressao.produtos.filter(p => p.grupo === filtros.grupo)
       : dadosImpressao.produtos;
 
-    const agrupados = produtosParaAgrupar.reduce((acc, produto) => {
-      let chave;
-      let nome;
-      
-      if (tipoAgrupamento === 'escola') {
-        chave = produto.escola_id || `escola_${produto.escola_nome}`;
-        nome = produto.escola_nome || 'Sem Escola';
+    if (tipoAgrupamento === 'individual') {
+      // Modo Individual: agrupar por escola (cada escola separada)
+      const agrupados = produtosParaAgrupar.reduce((acc, produto) => {
+        const chave = produto.escola_id || `escola_${produto.escola_nome}`;
+        const nome = produto.escola_nome || 'Sem Escola';
         
-        // Quando agrupar por escola, consolidar produtos (somar quantidades do mesmo produto)
         if (!acc.has(chave)) {
           acc.set(chave, {
             nome,
-            tipo: tipoAgrupamento,
+            tipo: 'escola',
             produtos: []
           });
         }
@@ -73,20 +69,44 @@ const AnaliseImpressao = () => {
         );
         
         if (produtoExistente) {
-          // Somar quantidade se o produto já existe
+          // Somar quantidade se o produto já existe na escola
           produtoExistente.quantidade = (parseFloat(produtoExistente.quantidade) || 0) + (parseFloat(produto.quantidade) || 0);
         } else {
           // Adicionar novo produto
           produtosEscola.push({ ...produto });
         }
-      } else {
-        chave = produto.grupo || 'Sem Grupo';
-        nome = produto.grupo || 'Sem Grupo';
+        
+        return acc;
+      }, new Map());
+      
+      return Array.from(agrupados.entries()).map(([chave, { nome, tipo, produtos }]) => {
+        const produtosOrdenados = [...produtos].sort((a, b) => {
+          const nomeA = (a.descricao || '').toLowerCase();
+          const nomeB = (b.descricao || '').toLowerCase();
+          return nomeA.localeCompare(nomeB);
+        });
+        
+        return {
+          chave,
+          nome,
+          tipo,
+          dados: {
+            ...dadosImpressao,
+            produtos: produtosOrdenados,
+            total_produtos: produtosOrdenados.length
+          }
+        };
+      });
+    } else {
+      // Modo Consolidado: agrupar por grupo (consolidar produtos)
+      const agrupados = produtosParaAgrupar.reduce((acc, produto) => {
+        const chave = produto.grupo || 'Sem Grupo';
+        const nome = produto.grupo || 'Sem Grupo';
         
         if (!acc.has(chave)) {
           acc.set(chave, {
             nome,
-            tipo: tipoAgrupamento,
+            tipo: 'grupo',
             produtos: []
           });
         }
@@ -106,37 +126,37 @@ const AnaliseImpressao = () => {
           // Adicionar novo produto
           produtosGrupo.push({ ...produto });
         }
-      }
+        
+        return acc;
+      }, new Map());
       
-      return acc;
-    }, new Map());
-
-    return Array.from(agrupados.entries()).map(([chave, { nome, tipo, produtos }]) => {
-      // Ordenar produtos por nome após consolidação
-      const produtosOrdenados = [...produtos].sort((a, b) => {
-        const nomeA = (a.descricao || '').toLowerCase();
-        const nomeB = (b.descricao || '').toLowerCase();
-        return nomeA.localeCompare(nomeB);
+      return Array.from(agrupados.entries()).map(([chave, { nome, tipo, produtos }]) => {
+        // Ordenar produtos por nome após consolidação
+        const produtosOrdenados = [...produtos].sort((a, b) => {
+          const nomeA = (a.descricao || '').toLowerCase();
+          const nomeB = (b.descricao || '').toLowerCase();
+          return nomeA.localeCompare(nomeB);
+        });
+        
+        return {
+          chave,
+          nome,
+          tipo,
+          dados: {
+            ...dadosImpressao,
+            produtos: produtosOrdenados,
+            total_produtos: produtosOrdenados.length
+          }
+        };
       });
-      
-      return {
-        chave,
-        nome,
-        tipo,
-        dados: {
-          ...dadosImpressao,
-          produtos: produtosOrdenados,
-          total_produtos: produtosOrdenados.length
-        }
-      };
-    });
+    }
   }, [dadosImpressao, filtros.grupo, tipoAgrupamento]);
 
   const handleLimparFiltros = () => {
     limparFiltros();
     setDadosImpressao(null);
     setError(null);
-    setTipoAgrupamento('grupo');
+    setTipoAgrupamento('consolidado');
   };
 
   const handleBuscarDados = async () => {
@@ -284,30 +304,34 @@ const AnaliseImpressao = () => {
               <>
                 {/* Seleção de tipo de agrupamento */}
                 <div className="flex items-center gap-4 ml-4 pl-4 border-l border-gray-300">
-                  <span className="text-sm font-medium text-gray-700">Agrupar por:</span>
-                  <div className="flex gap-3">
-                    <label className="flex items-center cursor-pointer">
-                      <input
-                        type="radio"
-                        name="tipoAgrupamento"
-                        value="grupo"
-                        checked={tipoAgrupamento === 'grupo'}
-                        onChange={(e) => setTipoAgrupamento(e.target.value)}
-                        className="mr-2"
-                      />
-                      <span className="text-sm text-gray-700">Grupo</span>
-                    </label>
-                    <label className="flex items-center cursor-pointer">
-                      <input
-                        type="radio"
-                        name="tipoAgrupamento"
-                        value="escola"
-                        checked={tipoAgrupamento === 'escola'}
-                        onChange={(e) => setTipoAgrupamento(e.target.value)}
-                        className="mr-2"
-                      />
-                      <span className="text-sm text-gray-700">Escola</span>
-                    </label>
+                  <span className="text-sm font-medium text-gray-700">Modelo de Impressão:</span>
+                  <div className="flex gap-2 bg-gray-100 rounded-lg p-1">
+                    <button
+                      onClick={() => setTipoAgrupamento('individual')}
+                      className={`px-4 py-2 text-sm font-medium rounded-md transition-colors flex items-center gap-2 ${
+                        tipoAgrupamento === 'individual'
+                          ? 'bg-white text-green-600 shadow-sm'
+                          : 'text-gray-600 hover:text-gray-900'
+                      }`}
+                      title="Individual - Agrupa por Escola"
+                    >
+                      <FaList className="w-4 h-4" />
+                      Individual
+                      <span className="text-xs text-gray-500 ml-1">(Escola)</span>
+                    </button>
+                    <button
+                      onClick={() => setTipoAgrupamento('consolidado')}
+                      className={`px-4 py-2 text-sm font-medium rounded-md transition-colors flex items-center gap-2 ${
+                        tipoAgrupamento === 'consolidado'
+                          ? 'bg-white text-green-600 shadow-sm'
+                          : 'text-gray-600 hover:text-gray-900'
+                      }`}
+                      title="Consolidado - Agrupa por Grupo"
+                    >
+                      <FaLayerGroup className="w-4 h-4" />
+                      Consolidado
+                      <span className="text-xs text-gray-500 ml-1">(Grupo)</span>
+                    </button>
                   </div>
                 </div>
 
@@ -345,7 +369,7 @@ const AnaliseImpressao = () => {
       {/* Dados para Impressão - deve aparecer apenas na impressão */}
       {dadosImpressao && (
         <div ref={printRef} className="print-content">
-          {filtros.grupo && tipoAgrupamento === 'grupo' ? (
+          {filtros.grupo && tipoAgrupamento === 'consolidado' ? (
             <div className="romaneio-group">
               <RomaneioPrint
                 dados={dadosImpressao}
@@ -357,7 +381,7 @@ const AnaliseImpressao = () => {
               <div key={chave} className="romaneio-group">
                 <RomaneioPrint 
                   dados={dados} 
-                  grupo={tipo === 'escola' ? null : nome || 'Sem Grupo'}
+                  grupo={tipo === 'escola' ? (filtros.grupo || dados.produtos[0]?.grupo || null) : nome || 'Sem Grupo'}
                   escola={tipo === 'escola' ? nome : null}
                 />
               </div>
@@ -388,7 +412,7 @@ const AnaliseImpressao = () => {
             </span>
             <br />
             <span className="text-sm text-gray-500 mt-2 block">
-              <strong>Agrupamento:</strong> Após carregar os dados, você pode escolher entre agrupar por "Grupo" ou por "Escola". O romaneio será impresso separado conforme a opção escolhida.
+              <strong>Modelo de Impressão:</strong> Após carregar os dados, você pode escolher entre "Individual" (agrupa por Escola) ou "Consolidado" (agrupa por Grupo). O romaneio será impresso separado conforme a opção escolhida.
             </span>
             <br />
             <span className="text-sm text-gray-500 mt-2 block">

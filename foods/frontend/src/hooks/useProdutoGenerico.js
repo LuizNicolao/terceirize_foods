@@ -249,6 +249,12 @@ export const useProdutoGenerico = () => {
     return unidade ? unidade.nome : '-';
   }, [unidadesMedida]);
 
+  const getUnidadeMedidaSigla = useCallback((unidadeId) => {
+    if (!unidadesMedida || unidadesMedida.length === 0) return '-';
+    const unidade = unidadesMedida.find(u => u.id === unidadeId);
+    return unidade ? unidade.sigla : '-';
+  }, [unidadesMedida]);
+
   return {
     // Estados principais
     produtosGenericos: isSortingLocally ? produtosGenericosOrdenados : baseEntity.items,
@@ -332,6 +338,7 @@ export const useProdutoGenerico = () => {
     getClasseName,
     getProdutoOrigemName,
     getUnidadeMedidaName,
+    getUnidadeMedidaSigla,
     
     // Ações de ordenação
     sortField,

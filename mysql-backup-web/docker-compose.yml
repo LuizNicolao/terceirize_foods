@@ -12,12 +12,12 @@ services:
       PORT: 3000
       NODE_ENV: production
       
-      # MySQL Connection (para o banco de dados do próprio sistema)
-      MYSQL_HOST: terceirize_mysql
-      MYSQL_PORT: 3306
-      MYSQL_USER: foods_user
-      MYSQL_PASSWORD: foods123456
-      MYSQL_DATABASE: mysql_backup_web
+      # MySQL Connection (para o banco de dados do próprio sistema) - usando padrão DB_*
+      DB_HOST: terceirize_mysql
+      DB_PORT: 3306
+      DB_USER: foods_user
+      DB_PASSWORD: foods123456
+      DB_NAME: mysql_backup_web
       MYSQL_CONTAINER_NAME: terceirize_mysql
       
       # MySQL Connection para foods_db (para autenticação)

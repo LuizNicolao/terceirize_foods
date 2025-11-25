@@ -10,6 +10,7 @@ const {
   STATUS_CODES 
 } = require('../../middleware/responseHandler');
 const { asyncHandler } = require('../../middleware/responseHandler');
+const RIRProdutosController = require('./RIRProdutosController');
 
 class RIRListController {
   
@@ -23,8 +24,9 @@ class RIRListController {
     let whereClause = 'WHERE 1=1';
 
     // Aplicar filtros (para WHERE clause)
+    // Busca case-insensitive para Nº NF e Fornecedor
     if (search) {
-      whereClause += ' AND (ri.numero_nota_fiscal LIKE ? OR ri.fornecedor LIKE ?)';
+      whereClause += ' AND (LOWER(ri.numero_nota_fiscal) LIKE LOWER(?) OR LOWER(ri.fornecedor) LIKE LOWER(?))';
       params.push(`%${search}%`, `%${search}%`);
     }
 
@@ -34,7 +36,7 @@ class RIRListController {
     }
 
     if (fornecedor) {
-      whereClause += ' AND ri.fornecedor LIKE ?';
+      whereClause += ' AND LOWER(ri.fornecedor) LIKE LOWER(?)';
       params.push(`%${fornecedor}%`);
     }
 
@@ -98,8 +100,9 @@ class RIRListController {
     const statsParams = [];
     
     // Aplicar mesmos filtros da query principal
+    // Busca case-insensitive para Nº NF e Fornecedor
     if (search) {
-      statsQuery += ' AND (ri.numero_nota_fiscal LIKE ? OR ri.fornecedor LIKE ?)';
+      statsQuery += ' AND (LOWER(ri.numero_nota_fiscal) LIKE LOWER(?) OR LOWER(ri.fornecedor) LIKE LOWER(?))';
       statsParams.push(`%${search}%`, `%${search}%`);
     }
     if (status_geral) {
@@ -107,7 +110,7 @@ class RIRListController {
       statsParams.push(status_geral);
     }
     if (fornecedor) {
-      statsQuery += ' AND ri.fornecedor LIKE ?';
+      statsQuery += ' AND LOWER(ri.fornecedor) LIKE LOWER(?)';
       statsParams.push(`%${fornecedor}%`);
     }
     if (data_inicio) {
@@ -125,10 +128,15 @@ class RIRListController {
       const ids = rirs.map(r => r.id);
       const placeholders = ids.map(() => '?').join(',');
       totalsQueryPromise = executeQuery(
-        `SELECT ri.id, JSON_LENGTH(ri.produtos_json) as total_produtos, u.nome as usuario_nome 
+        `SELECT 
+          ri.id, 
+          COUNT(rip.id) as total_produtos, 
+          u.nome as usuario_nome 
         FROM relatorio_inspecao ri 
         LEFT JOIN usuarios u ON ri.usuario_cadastro_id = u.id 
-        WHERE ri.id IN (${placeholders})`,
+        LEFT JOIN relatorio_inspecao_produtos rip ON rip.relatorio_inspecao_id = ri.id
+        WHERE ri.id IN (${placeholders})
+        GROUP BY ri.id, u.nome`,
         ids
       );
     }
@@ -215,22 +223,9 @@ class RIRListController {
 
     const rir = rirs[0];
 
-    // Decodificar JSONs se necessário
-    if (rir.checklist_json && typeof rir.checklist_json === 'string') {
-      try {
-        rir.checklist_json = JSON.parse(rir.checklist_json);
-      } catch (e) {
-        rir.checklist_json = [];
-      }
-    }
-
-    if (rir.produtos_json && typeof rir.produtos_json === 'string') {
-      try {
-        rir.produtos_json = JSON.parse(rir.produtos_json);
-      } catch (e) {
-        rir.produtos_json = [];
-      }
-    }
+    // Buscar produtos da tabela relacionada
+    const produtos = await RIRProdutosController.buscarProdutos(id);
+    rir.produtos = produtos;
 
     successResponse(res, rir, 'Relatório de inspeção encontrado com sucesso');
   });

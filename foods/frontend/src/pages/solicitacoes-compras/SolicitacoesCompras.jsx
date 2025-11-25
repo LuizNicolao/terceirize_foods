@@ -48,6 +48,7 @@ const SolicitacoesCompras = () => {
     handleAddSolicitacao,
     handleViewSolicitacao,
     handleEditSolicitacao,
+    handlePrintSolicitacao,
     handleCloseModal,
     handleCloseValidationModal,
     handlePageChange,
@@ -192,9 +193,11 @@ const SolicitacoesCompras = () => {
         onView={canView('solicitacoes_compras') ? handleViewSolicitacao : null}
         onEdit={canEdit('solicitacoes_compras') ? handleEditSolicitacao : null}
         onDelete={canDelete('solicitacoes_compras') ? handleDeleteSolicitacao : null}
+        onPrint={canView('solicitacoes_compras') ? handlePrintSolicitacao : null}
         canView={canView('solicitacoes_compras')}
         canEdit={canEdit('solicitacoes_compras')}
         canDelete={canDelete('solicitacoes_compras')}
+        canPrint={canView('solicitacoes_compras')}
         getFilialName={getFilialName}
         getStatusLabel={getStatusLabel}
         selectedIds={selectedIds}
@@ -225,6 +228,7 @@ const SolicitacoesCompras = () => {
         produtosGenericos={produtosGenericos}
         unidadesMedida={unidadesMedida}
         loading={loading}
+        onPrint={handlePrintSolicitacao}
       />
 
       {/* Modal de Auditoria */}

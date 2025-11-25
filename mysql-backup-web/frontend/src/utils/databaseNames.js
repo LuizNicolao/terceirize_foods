@@ -22,12 +22,13 @@ export const getBackupTypeDisplayName = (type) => {
   return types[type] || type
 }
 
-// Função para traduzir status de backup
+// Função para traduzir status de backup (versões curtas)
 export const getBackupStatusDisplayName = (status) => {
   const statuses = {
     'completed': 'Concluído',
     'failed': 'Falhou',
-    'running': 'Em Execução'
+    'running': 'Executando',
+    'pending': 'Pendente'
   }
   return statuses[status] || status
 }

@@ -38,6 +38,7 @@ const RelatorioInspecao = () => {
     handleAddRIR,
     handleViewRIR,
     handleEditRIR,
+    handlePrintRIR,
     handleCloseModal,
     handleCloseValidationModal,
     handlePageChange,
@@ -46,7 +47,8 @@ const RelatorioInspecao = () => {
     setSearchTerm,
     handleKeyPress,
     setStatusFilter,
-    getStatusBadge
+    getStatusBadge,
+    carregarRIRs
   } = useRelatorioInspecao();
 
   const {
@@ -110,6 +112,7 @@ const RelatorioInspecao = () => {
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
           onKeyPress={handleKeyPress}
+          onClear={handleClearFilters}
           additionalFilters={[
             {
               label: 'Status',
@@ -142,9 +145,11 @@ const RelatorioInspecao = () => {
         onView={canView('relatorio_inspecao') ? handleViewRIR : null}
         onEdit={canEdit('relatorio_inspecao') ? handleEditRIR : null}
         onDelete={canDelete('relatorio_inspecao') ? handleDeleteRIR : null}
+        onPrint={canView('relatorio_inspecao') ? handlePrintRIR : null}
         canView={canView('relatorio_inspecao')}
         canEdit={canEdit('relatorio_inspecao')}
         canDelete={canDelete('relatorio_inspecao')}
+        canPrint={canView('relatorio_inspecao')}
         getStatusBadge={getStatusBadge}
       />
 
@@ -163,6 +168,7 @@ const RelatorioInspecao = () => {
         isOpen={showModal}
         onClose={handleCloseModal}
         onSubmit={handleSubmitRIR}
+        onSuccess={carregarRIRs}
         rir={editingRir}
         viewMode={viewMode}
         grupos={grupos}

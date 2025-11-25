@@ -9,6 +9,17 @@ const { uploadFile } = require('./rclone');
 
 const execPromise = util.promisify(exec);
 
+// Traduzir tipo de backup para português
+function translateBackupType(backupType) {
+  const translations = {
+    'daily': 'Diário',
+    'weekly': 'Semanal',
+    'monthly': 'Mensal',
+    'manual': 'Manual'
+  };
+  return translations[backupType] || backupType;
+}
+
 // Armazenar processos de backup em execução para poder cancelar
 const runningBackups = new Map();
 
@@ -363,7 +374,23 @@ async function createBackup(databaseName, backupType = 'manual', selectedTables 
     
     // Enviar notificação Telegram
     const cloudStatus = remotePath ? '☁️ Enviado para nuvem' : '';
-    sendTelegram(`✅ Backup concluído: ${databaseName}\n📦 Tipo: ${backupType}\n💾 Tamanho: ${formatBytes(finalStats.size)}${cloudStatus ? '\n' + cloudStatus : ''}`);
+    const backupTypeTranslated = translateBackupType(backupType);
+    
+    // Formatar data e hora de forma legível
+    const now = new Date();
+    const dateTime = now.toLocaleString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
+    
+    // Extrair diretório do caminho do arquivo
+    const backupDir = path.dirname(filePath);
+    
+    sendTelegram(`✅ Backup concluído: ${databaseName}\n📦 Tipo: ${backupTypeTranslated}\n💾 Tamanho: ${formatBytes(finalStats.size)}\n📅 Data/Hora: ${dateTime}\n📁 Diretório: ${backupDir}${cloudStatus ? '\n' + cloudStatus : ''}`);
     
     return {
       id: backupId,

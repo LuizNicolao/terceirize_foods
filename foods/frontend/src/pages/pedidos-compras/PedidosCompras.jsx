@@ -42,6 +42,7 @@ const PedidosCompras = () => {
     handleAddPedidoCompras,
     handleViewPedidoCompras,
     handleEditPedidoCompras,
+    handlePrintPedidoCompras,
     handleCloseModal,
     handleCloseValidationModal,
     handlePageChange,
@@ -179,9 +180,11 @@ const PedidosCompras = () => {
         onView={handleViewPedidoCompras}
         onEdit={handleEditPedidoCompras}
         onDelete={handleDeletePedidoCompras}
+        onPrint={handlePrintPedidoCompras}
         canView={canView('pedidos_compras')}
         canEdit={canEdit('pedidos_compras')}
         canDelete={canDelete('pedidos_compras')}
+        canPrint={canView('pedidos_compras')}
         getStatusBadge={getStatusBadge}
         selectedIds={selectedIds}
         onSelectAll={handleSelectAll}
@@ -218,6 +221,7 @@ const PedidosCompras = () => {
         viewMode={viewMode}
         loading={loading}
         solicitacoesDisponiveis={solicitacoesDisponiveis}
+        onPrint={handlePrintPedidoCompras}
       />
 
       {/* Modais de Validação e Confirmação */}

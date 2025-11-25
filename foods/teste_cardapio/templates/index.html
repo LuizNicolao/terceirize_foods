@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <title>Leitor de Cardápio PDF (pdfplumber)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root { font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, "Helvetica Neue", Arial; }
+    body { margin: 24px; background: #fafafa; }
+    .card { border: 1px solid #ddd; border-radius: 12px; padding: 16px; margin-bottom: 16px; background: #fff; }
+    .drop { border: 2px dashed #999; border-radius: 12px; padding: 24px; text-align: center; color: #555; background: #fff; }
+    .drop.drag { border-color: #333; background: #f0f0f0; }
+    .muted { color: #666; font-size: 14px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 8px; }
+    th, td { border: 1px solid #ddd; padding: 6px 8px; font-size: 13px; vertical-align: top; }
+    th { background: #f5f5f5; }
+    details { margin-top: 8px; }
+    code, pre { background: #f6f8fa; border-radius: 6px; font-size: 13px; }
+    pre { padding: 8px; overflow-x: auto; }
+    .pill { display: inline-block; padding: 2px 8px; border: 1px solid #ddd; border-radius: 999px; margin-right: 8px; font-size: 12px; }
+    button { padding: 8px 16px; border-radius: 8px; border: none; background: #007bff; color: #fff; cursor: pointer; }
+    button:hover { background: #0056b3; }
+  </style>
+</head>
+<body>
+  <h1>Leitor de PDF → Tabelas (pdfplumber)</h1>
+  <p class="muted">
+    Envie um PDF e veja:
+    <strong>tabela normalizada</strong> (cabeçalhos alinhados),
+    <strong>linhas cruas</strong> (como o pdfplumber extrai) e
+    <strong>JSON por data/turno</strong>.
+  </p>
+
+  <div class="card">
+    <div id="drop" class="drop">
+      <p><strong>Arraste e solte</strong> o PDF aqui, ou</p>
+      <p><input type="file" id="file" accept="application/pdf"></p>
+      <button id="btnEnviar">Enviar</button>
+    </div>
+    <p id="status" class="muted"></p>
+  </div>
+
+  <div id="resultado"></div>
+
+  <script>
+    const fileInput = document.getElementById('file');
+    const btnEnviar = document.getElementById('btnEnviar');
+    const statusEl = document.getElementById('status');
+    const resultado = document.getElementById('resultado');
+    const drop = document.getElementById('drop');
+
+    // Drag & drop
+    ['dragenter','dragover'].forEach(evt =>
+      drop.addEventListener(evt, e => { e.preventDefault(); e.stopPropagation(); drop.classList.add('drag'); })
+    );
+    ['dragleave','drop'].forEach(evt =>
+      drop.addEventListener(evt, e => { e.preventDefault(); e.stopPropagation(); drop.classList.remove('drag'); })
+    );
+    drop.addEventListener('drop', e => {
+      const dt = e.dataTransfer;
+      if (dt && dt.files && dt.files[0]) fileInput.files = dt.files;
+    });
+
+    btnEnviar.addEventListener('click', async () => {
+      if (!fileInput.files || !fileInput.files[0]) {
+        alert('Selecione um PDF primeiro.');
+        return;
+      }
+      resultado.innerHTML = '';
+      statusEl.textContent = 'Processando...';
+
+      const fd = new FormData();
+      fd.append('file', fileInput.files[0]);
+
+      try {
+        const resp = await fetch('/api/parse', { method: 'POST', body: fd });
+        let data;
+        try {
+          data = await resp.json();
+        } catch (err) {
+          statusEl.textContent = 'Erro inesperado no upload/parse (resposta não-JSON).';
+          return;
+        }
+
+        if (!resp.ok) {
+          let extra = '';
+          if (data) {
+            if (data.error) extra += `\nErro: ${data.error}`;
+            if (data.exception) extra += `\nExceção: ${data.exception}`;
+            if (data.traceback) extra += `\nTraceback:\n${Array.isArray(data.traceback) ? data.traceback.join('\n') : data.traceback}`;
+          }
+          statusEl.textContent = 'Erro inesperado no upload/parse.' + extra;
+          return;
+        }
+
+        statusEl.textContent = `Páginas: ${data.pages} • Tabelas encontradas: ${data.tables_found}`;
+
+        data.tables.forEach((t, i) => {
+          const card = document.createElement('div');
+          card.className = 'card';
+
+          card.innerHTML = `
+            <h3>Tabela #${i+1}
+              <span class="pill">página ${t.page}</span>
+              <span class="pill">índice ${t.table_idx}</span>
+            </h3>
+
+            <details open>
+              <summary><strong>Visão normalizada</strong> (cabeçalhos alinhados)</summary>
+              ${renderProcessedNormalized(t.normalized?.headers_filled, t.normalized?.rows)}
+            </details>
+
+            <details>
+              <summary><strong>Linhas cruas</strong> (como o pdfplumber extraiu)</summary>
+              ${renderRaw(t.rows_raw)}
+            </details>
+
+            <details>
+              <summary><strong>JSON (datas/turnos → itens)</strong></summary>
+              <pre>${escapeHtml(JSON.stringify(t.normalized?.by_date || {}, null, 2))}</pre>
+            </details>
+          `;
+          resultado.appendChild(card);
+        });
+
+        if (data.tables_found === 0) {
+          resultado.innerHTML = `<div class="card">Nenhuma tabela detectada. Tente outro PDF ou ajuste a extração.</div>`;
+        }
+
+      } catch (err) {
+        console.error(err);
+        statusEl.textContent = 'Erro inesperado no upload/parse.';
+      }
+    });
+
+    // --- RENDERERS ---
+
+    // Renderiza a TABELA NORMALIZADA (headers_filled + rows)
+    function renderProcessedNormalized(headers, rows) {
+      if (!headers || !headers.length) return '<p class="muted">Sem cabeçalhos.</p>';
+      if (!rows || !rows.length) return '<p class="muted">Sem linhas.</p>';
+      let thead = '<tr>' + headers.map(h => `<th>${escapeHtml(h)}</th>`).join('') + '</tr>';
+      let tbody = rows.map(r =>
+        '<tr>' + r.map(c => `<td>${escapeHtml(c || '')}</td>`).join('') + '</tr>'
+      ).join('');
+      return `<table><thead>${thead}</thead><tbody>${tbody}</tbody></table>`;
+    }
+
+    // Renderiza a TABELA CRUA (como o pdfplumber extraiu)
+    function renderRaw(rows) {
+      if (!rows || !rows.length) return '<p class="muted">Sem linhas.</p>';
+      const width = Math.max(...rows.map(r => r.length));
+      let thead = '<tr>' + Array.from({length: width}, (_,i)=>`<th>col_${i+1}</th>`).join('') + '</tr>';
+      let tbody = rows.map(r => {
+        const padded = r.concat(Array(Math.max(0, width - r.length)).fill(''));
+        return '<tr>' + padded.map(c => `<td>${escapeHtml(c)}</td>`).join('') + '</tr>';
+      }).join('');
+      return `<table><thead>${thead}</thead><tbody>${tbody}</tbody></table>`;
+    }
+
+    function escapeHtml(s) {
+      return String(s)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+  </script>
+</body>
+</html>

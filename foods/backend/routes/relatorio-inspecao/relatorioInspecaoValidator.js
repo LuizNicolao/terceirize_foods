@@ -65,19 +65,11 @@ const rirValidations = {
       .isLength({ max: 20 })
       .withMessage('CNPJ deve ter no máximo 20 caracteres')
       .trim(),
-    body('checklist_json')
+    body('produtos')
       .optional()
       .custom((value) => {
         if (value !== null && !Array.isArray(value)) {
-          throw new Error('checklist_json deve ser um array');
-        }
-        return true;
-      }),
-    body('produtos_json')
-      .optional()
-      .custom((value) => {
-        if (value !== null && !Array.isArray(value)) {
-          throw new Error('produtos_json deve ser um array');
+          throw new Error('produtos deve ser um array');
         }
         return true;
       }),

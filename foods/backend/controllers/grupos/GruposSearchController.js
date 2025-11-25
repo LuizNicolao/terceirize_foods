@@ -28,6 +28,7 @@ class GruposSearchController {
           g.nome, 
           g.codigo,
           g.descricao,
+          g.tipo,
           g.status, 
           g.data_cadastro as criado_em,
           g.data_atualizacao as atualizado_em
@@ -49,6 +50,7 @@ class GruposSearchController {
         g.nome, 
         g.codigo,
         g.descricao,
+        g.tipo,
         g.status, 
         g.data_cadastro as criado_em,
         g.data_atualizacao as atualizado_em,
@@ -56,7 +58,7 @@ class GruposSearchController {
       FROM grupos g
       LEFT JOIN subgrupos sg ON g.id = sg.grupo_id
       WHERE g.status = 'ativo'
-      GROUP BY g.id, g.nome, g.codigo, g.descricao, g.status, g.data_cadastro, g.data_atualizacao
+      GROUP BY g.id, g.nome, g.codigo, g.descricao, g.tipo, g.status, g.data_cadastro, g.data_atualizacao
     `;
     
     let params = [];
@@ -101,6 +103,7 @@ class GruposSearchController {
         g.nome, 
         g.codigo,
         g.descricao,
+        g.tipo,
         g.status, 
         g.data_cadastro as criado_em,
         g.data_atualizacao as atualizado_em,
@@ -108,7 +111,7 @@ class GruposSearchController {
        FROM grupos g
        LEFT JOIN subgrupos sg ON g.id = sg.grupo_id
        WHERE g.codigo = ?
-       GROUP BY g.id, g.nome, g.codigo, g.descricao, g.status, g.data_cadastro, g.data_atualizacao`,
+       GROUP BY g.id, g.nome, g.codigo, g.descricao, g.tipo, g.status, g.data_cadastro, g.data_atualizacao`,
       [codigo]
     );
 

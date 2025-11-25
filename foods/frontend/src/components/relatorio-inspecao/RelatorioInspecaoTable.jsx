@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaEye, FaEdit, FaTrash } from 'react-icons/fa';
+import { FaEye, FaEdit, FaTrash, FaPrint } from 'react-icons/fa';
 import { ActionButtons, EmptyState } from '../ui';
 
 const RelatorioInspecaoTable = ({
@@ -7,9 +7,11 @@ const RelatorioInspecaoTable = ({
   onView,
   onEdit,
   onDelete,
+  onPrint,
   canView,
   canEdit,
   canDelete,
+  canPrint,
   getStatusBadge
 }) => {
   if (!rirs || rirs.length === 0) {
@@ -21,13 +23,6 @@ const RelatorioInspecaoTable = ({
       />
     );
   }
-
-  const formatDateTime = (dateString, timeString) => {
-    if (!dateString) return '-';
-    const date = new Date(dateString);
-    const formattedDate = date.toLocaleDateString('pt-BR');
-    return timeString ? `${formattedDate} ${timeString}` : formattedDate;
-  };
 
   return (
     <>
@@ -41,10 +36,10 @@ const RelatorioInspecaoTable = ({
                   ID
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Data/Hora
+                  Nº NF
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Nº NF
+                  Nº Pedido
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Fornecedor
@@ -58,7 +53,7 @@ const RelatorioInspecaoTable = ({
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Responsável
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Ações
                 </th>
               </tr>
@@ -70,10 +65,10 @@ const RelatorioInspecaoTable = ({
                     #{rir.id.toString().padStart(4, '0')}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
-                    {formatDateTime(rir.data_inspecao, rir.hora_inspecao)}
+                    {rir.numero_nota_fiscal || '-'}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
-                    {rir.numero_nota_fiscal || '-'}
+                    {rir.numero_pedido || '-'}
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-600">
                     <div className="max-w-xs truncate" title={rir.fornecedor}>
@@ -93,11 +88,17 @@ const RelatorioInspecaoTable = ({
                   <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
                     {rir.usuario_nome || '-'}
                   </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
+                  <td className="px-4 py-3 whitespace-nowrap text-center text-sm font-medium">
                     <ActionButtons
-                      onView={canView && onView ? () => onView(rir.id) : null}
-                      onEdit={canEdit && onEdit ? () => onEdit(rir.id) : null}
-                      onDelete={canDelete && onDelete ? () => onDelete(rir) : null}
+                      canView={canView}
+                      canEdit={canEdit}
+                      canDelete={canDelete}
+                      canPrint={canPrint}
+                      onView={onView ? (item) => onView(item.id) : null}
+                      onEdit={onEdit ? (item) => onEdit(item.id) : null}
+                      onDelete={onDelete ? (item) => onDelete(item) : null}
+                      onPrint={onPrint ? (item) => onPrint(item.id) : null}
+                      item={rir}
                     />
                   </td>
                 </tr>
@@ -116,7 +117,6 @@ const RelatorioInspecaoTable = ({
                 <h3 className="text-lg font-semibold text-gray-900">
                   #{rir.id.toString().padStart(4, '0')}
                 </h3>
-                <p className="text-sm text-gray-600">{formatDateTime(rir.data_inspecao, rir.hora_inspecao)}</p>
               </div>
               {getStatusBadge ? getStatusBadge(rir.status_geral) : (
                 <span className="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
@@ -129,6 +129,10 @@ const RelatorioInspecaoTable = ({
               <div className="flex justify-between">
                 <span className="text-gray-600">Nº NF:</span>
                 <span className="text-gray-900">{rir.numero_nota_fiscal || '-'}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Nº Pedido:</span>
+                <span className="text-gray-900">{rir.numero_pedido || '-'}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Fornecedor:</span>
@@ -161,6 +165,15 @@ const RelatorioInspecaoTable = ({
                   title="Editar"
                 >
                   <FaEdit className="w-4 h-4" />
+                </button>
+              )}
+              {canPrint && onPrint && (
+                <button
+                  onClick={() => onPrint(rir.id)}
+                  className="text-purple-600 hover:text-purple-900 p-2 rounded transition-colors"
+                  title="Imprimir"
+                >
+                  <FaPrint className="w-4 h-4" />
                 </button>
               )}
               {canDelete && onDelete && (

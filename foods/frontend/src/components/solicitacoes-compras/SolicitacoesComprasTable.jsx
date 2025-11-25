@@ -9,9 +9,11 @@ const SolicitacoesComprasTable = ({
   onView,
   onEdit,
   onDelete,
+  onPrint,
   canView,
   canEdit,
   canDelete,
+  canPrint,
   getFilialName,
   getStatusLabel,
   selectedIds = [],
@@ -185,9 +187,11 @@ const SolicitacoesComprasTable = ({
                           canView={canView}
                           canEdit={canEdit && solicitacao.status === 'aberto'}
                           canDelete={canDelete && solicitacao.status === 'aberto'}
+                          canPrint={canPrint}
                           onView={onView ? () => onView(solicitacao.id) : null}
                           onEdit={onEdit && solicitacao.status === 'aberto' ? () => onEdit(solicitacao.id) : null}
                           onDelete={onDelete && solicitacao.status === 'aberto' ? () => onDelete(solicitacao) : null}
+                          onPrint={onPrint ? () => onPrint(solicitacao.id) : null}
                           item={solicitacao}
                           size="xs"
                         />
@@ -243,17 +247,43 @@ const SolicitacoesComprasTable = ({
                 </div>
               </div>
 
-              <div className="mt-4">
-                <ActionButtons
-                  canView={canView}
-                  canEdit={canEdit && solicitacao.status === 'aberto'}
-                  canDelete={canDelete && solicitacao.status === 'aberto'}
-                  onView={onView ? () => onView(solicitacao.id) : null}
-                  onEdit={onEdit && solicitacao.status === 'aberto' ? () => onEdit(solicitacao.id) : null}
-                  onDelete={onDelete && solicitacao.status === 'aberto' ? () => onDelete(solicitacao) : null}
-                  item={solicitacao}
-                  size="sm"
-                />
+              <div className="mt-4 flex justify-end gap-2">
+                {canView && onView && (
+                  <button
+                    onClick={() => onView(solicitacao.id)}
+                    className="text-green-600 hover:text-green-900 p-2 rounded transition-colors"
+                    title="Visualizar"
+                  >
+                    <FaEye className="w-4 h-4" />
+                  </button>
+                )}
+                {canEdit && solicitacao.status === 'aberto' && onEdit && (
+                  <button
+                    onClick={() => onEdit(solicitacao.id)}
+                    className="text-blue-600 hover:text-blue-900 p-2 rounded transition-colors"
+                    title="Editar"
+                  >
+                    <FaEdit className="w-4 h-4" />
+                  </button>
+                )}
+                {canPrint && onPrint && (
+                  <button
+                    onClick={() => onPrint(solicitacao.id)}
+                    className="text-purple-600 hover:text-purple-900 p-2 rounded transition-colors"
+                    title="Imprimir"
+                  >
+                    <FaPrint className="w-4 h-4" />
+                  </button>
+                )}
+                {canDelete && solicitacao.status === 'aberto' && onDelete && (
+                  <button
+                    onClick={() => onDelete(solicitacao)}
+                    className="text-red-600 hover:text-red-900 p-2 rounded transition-colors"
+                    title="Excluir"
+                  >
+                    <FaTrash className="w-4 h-4" />
+                  </button>
+                )}
               </div>
             </div>
           );

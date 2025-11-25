@@ -49,6 +49,10 @@ const grupoValidations = {
       .isLength({ max: 1000 })
       .withMessage('Descrição deve ter no máximo 1000 caracteres')
       .trim(),
+    body('tipo')
+      .optional()
+      .isIn(['Compra', 'Venda'])
+      .withMessage('Tipo deve ser "Compra" ou "Venda"'),
     body('status')
       .optional()
       .isIn([0, 1, '0', '1'])
@@ -68,6 +72,10 @@ const grupoValidations = {
       .isLength({ max: 1000 })
       .withMessage('Descrição deve ter no máximo 1000 caracteres')
       .trim(),
+    body('tipo')
+      .optional()
+      .isIn(['Compra', 'Venda'])
+      .withMessage('Tipo deve ser "Compra" ou "Venda"'),
     body('status')
       .optional()
       .isIn([0, 1, '0', '1'])

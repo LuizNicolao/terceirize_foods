@@ -52,6 +52,7 @@ const GrupoModal = ({
           nome: formData.get('nome'),
           codigo: formData.get('codigo'),
           descricao: formData.get('descricao'),
+          tipo: formData.get('tipo'),
           status: formData.get('status')
         };
         onSubmit(data);
@@ -74,16 +75,30 @@ const GrupoModal = ({
           />
         </div>
 
-        <Input
-          label="Status"
-          name="status"
-          type="select"
-          defaultValue={grupo ? (grupo.status === 'ativo' ? '1' : '0') : '1'}
-          disabled={isViewMode}
-        >
-          <option value="1">Ativo</option>
-          <option value="0">Inativo</option>
-        </Input>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <Input
+            label="Tipo"
+            name="tipo"
+            type="select"
+            defaultValue={grupo?.tipo || ''}
+            disabled={isViewMode}
+          >
+            <option value="">Selecione...</option>
+            <option value="Compra">Compra</option>
+            <option value="Venda">Venda</option>
+          </Input>
+
+          <Input
+            label="Status"
+            name="status"
+            type="select"
+            defaultValue={grupo ? (grupo.status === 'ativo' ? '1' : '0') : '1'}
+            disabled={isViewMode}
+          >
+            <option value="1">Ativo</option>
+            <option value="0">Inativo</option>
+          </Input>
+        </div>
 
         <Input
           label="Descrição"

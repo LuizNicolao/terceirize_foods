@@ -30,6 +30,7 @@ router.delete('/configuracao/feriados/:data', checkScreenPermission('calendario'
 router.get('/configuracao', checkScreenPermission('calendario', 'visualizar'), CalendarioConfiguracaoController.obterConfiguracao);
 router.get('/configuracao/dias-nao-uteis', checkScreenPermission('calendario', 'visualizar'), CalendarioConfiguracaoController.listarDiasNaoUteis);
 router.post('/configuracao/dias-nao-uteis', checkScreenPermission('calendario', 'editar'), CalendarioConfiguracaoController.adicionarDiaNaoUtil);
+router.put('/configuracao/dias-nao-uteis/:id', checkScreenPermission('calendario', 'editar'), CalendarioConfiguracaoController.atualizarDiaNaoUtil);
 router.delete('/configuracao/dias-nao-uteis/:id', checkScreenPermission('calendario', 'excluir'), CalendarioConfiguracaoController.removerDiaNaoUtil);
 
 // ===== API DE INTEGRAÇÃO =====

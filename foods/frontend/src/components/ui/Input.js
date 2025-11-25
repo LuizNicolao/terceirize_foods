@@ -48,11 +48,35 @@ const Input = React.forwardRef(({
     }
   };
 
+  // Função para processar o label e renderizar asterisco em vermelho
+  const renderLabel = () => {
+    if (!label) return null;
+    
+    // Se o label for um React element, renderizar diretamente
+    if (React.isValidElement(label)) {
+      return label;
+    }
+    
+    // Se o label for string, verificar se termina com asterisco
+    const labelString = String(label);
+    if (labelString.endsWith(' *')) {
+      const textWithoutAsterisk = labelString.slice(0, -2);
+      return (
+        <>
+          {textWithoutAsterisk} <span className="text-red-500">*</span>
+        </>
+      );
+    }
+    
+    // Caso contrário, renderizar normalmente
+    return label;
+  };
+
   return (
     <div className="w-full">
       {label && (
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          {label}
+          {renderLabel()}
         </label>
       )}
       {renderInput()}

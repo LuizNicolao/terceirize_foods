@@ -18,6 +18,7 @@ const ProdutosGenericosTable = ({
   getClasseName,
   getProdutoOrigemName,
   getUnidadeMedidaName,
+  getUnidadeMedidaSigla,
   sortField,
   sortDirection,
   onSort
@@ -54,6 +55,9 @@ const ProdutosGenericosTable = ({
                   currentDirection={sortDirection}
                   onSort={onSort}
                 />
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Unidade
+                </th>
                 <SortableTableHeader
                   label="Grupo"
                   field="grupo_nome"
@@ -118,6 +122,11 @@ const ProdutosGenericosTable = ({
                   <td className="px-3 py-2 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">
                       {produtoGenerico.nome || '-'}
+                    </div>
+                  </td>
+                  <td className="px-3 py-2 whitespace-nowrap">
+                    <div className="text-sm text-gray-900">
+                      {produtoGenerico.unidade_medida_sigla || (getUnidadeMedidaSigla ? getUnidadeMedidaSigla(produtoGenerico.unidade_medida_id) : '-')}
                     </div>
                   </td>
                   <td className="px-3 py-2 whitespace-nowrap">
@@ -214,6 +223,10 @@ const ProdutosGenericosTable = ({
             </div>
             
             <div className="grid grid-cols-2 gap-3 text-xs">
+              <div>
+                <span className="text-gray-500">Unidade:</span>
+                <p className="font-medium">{produtoGenerico.unidade_medida_sigla || (getUnidadeMedidaSigla ? getUnidadeMedidaSigla(produtoGenerico.unidade_medida_id) : '-')}</p>
+              </div>
               <div>
                 <span className="text-gray-500">Grupo:</span>
                 <p className="font-medium">{getGrupoName ? getGrupoName(produtoGenerico.grupo_id) : (produtoGenerico.grupo_nome || '-')}</p>

@@ -148,10 +148,14 @@ class RelatorioInspecaoService {
 
   // ========== APIs de Integração ==========
 
-  async buscarProdutosPedido(pedidoId) {
+  async buscarProdutosPedido(pedidoId, rirId = null) {
     try {
+      const params = { id: pedidoId };
+      if (rirId) {
+        params.rir_id = rirId;
+      }
       const response = await api.get('/relatorio-inspecao/buscar-produtos-pedido', {
-        params: { id: pedidoId }
+        params
       });
       return {
         success: true,

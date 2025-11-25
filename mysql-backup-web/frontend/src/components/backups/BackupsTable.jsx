@@ -48,8 +48,7 @@ export default function BackupsTable({
                     {getBackupTypeDisplayName(backup.backup_type)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex flex-col gap-1">
-                      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                    <span className={`px-2 py-1 text-xs font-semibold rounded-full inline-block ${
                         backup.status === 'completed' ? 'bg-green-100 text-green-800' :
                         backup.status === 'failed' ? 'bg-red-100 text-red-800' :
                         backup.status === 'running' ? 'bg-blue-100 text-blue-800' :
@@ -57,13 +56,6 @@ export default function BackupsTable({
                       }`}>
                         {getBackupStatusDisplayName(backup.status)}
                       </span>
-                      {backup.status === 'running' && runningBackups.has(backup.id) && (
-                        <div className="text-xs text-gray-600">
-                          <div>⏱️ {formatElapsedTime(runningBackups.get(backup.id).elapsed)}</div>
-                          <div>📦 {runningBackups.get(backup.id).fileSizeFormatted || '0 Bytes'}</div>
-                        </div>
-                      )}
-                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {backup.status === 'running' && runningBackups.has(backup.id) 

@@ -63,10 +63,10 @@ class SubstituicoesImpressaoController {
         }
       }
 
-      // Construir condições WHERE - APENAS status 'conf log'
+      // Construir condições WHERE - Incluir status 'conf log' E 'impressao' para permitir reimpressão
       let whereConditions = [
         'ns.ativo = 1',
-        `ns.status = 'conf log'`,
+        `(ns.status = 'conf log' OR ns.status = 'impressao')`,
         'ns.semana_abastecimento = ?',
         'ns.escola_id IN (SELECT DISTINCT ue.id FROM foods_db.unidades_escolares ue INNER JOIN foods_db.rotas r ON FIND_IN_SET(r.id, ue.rota_id) > 0 WHERE r.id = ? AND r.tipo_rota_id = ? AND ue.status = \'ativo\' AND ue.rota_id IS NOT NULL AND ue.rota_id != \'\')'
       ];
@@ -92,12 +92,30 @@ class SubstituicoesImpressaoController {
           SUM(ns.quantidade_generico) as quantidade,
           ns.grupo,
           ns.escola_id,
-          ns.escola_nome
+          ns.escola_nome,
+          MAX(ns.numero_romaneio) as numero_romaneio,
+          CASE 
+            WHEN ue.endereco IS NOT NULL AND ue.endereco != '' THEN
+              CONCAT(
+                ue.endereco,
+                IF(ue.numero IS NOT NULL AND ue.numero != '' AND ue.numero != 'S/N', CONCAT(', ', ue.numero), ''),
+                IF(ue.bairro IS NOT NULL AND ue.bairro != '', CONCAT(' - ', ue.bairro), '')
+              )
+            ELSE ''
+          END as escola_endereco,
+          COALESCE(ue.cidade, '') as escola_cidade,
+          COALESCE(ue.abastecimento, '') as escola_abastecimento,
+          COALESCE(ue.ordem_entrega, 0) as escola_ordem_entrega,
+          COALESCE(ue.atendimento, '') as escola_atendimento,
+          COALESCE(ue.horario, '') as escola_horario
         FROM necessidades_substituicoes ns
+        LEFT JOIN foods_db.unidades_escolares ue ON CAST(ns.escola_id AS UNSIGNED) = ue.id
         WHERE ${whereConditions.join(' AND ')}
         GROUP BY ns.produto_generico_id, ns.produto_generico_codigo, 
                  ns.produto_generico_nome, ns.produto_generico_unidade, 
-                 ns.grupo, ns.escola_id, ns.escola_nome
+                 ns.grupo, ns.escola_id, ns.escola_nome,
+                 ue.endereco, ue.numero, ue.bairro, ue.cidade, ue.abastecimento, ue.ordem_entrega,
+                 ue.atendimento, ue.horario
         ORDER BY ns.escola_nome ASC, ns.produto_generico_nome ASC
       `, params);
 
@@ -120,7 +138,14 @@ class SubstituicoesImpressaoController {
             quantidade: parseFloat(p.quantidade) || 0,
             grupo: p.grupo || '',
             escola_id: p.escola_id || null,
-            escola_nome: p.escola_nome || ''
+            escola_nome: p.escola_nome || '',
+            escola_endereco: p.escola_endereco || '',
+            escola_cidade: p.escola_cidade || '',
+            escola_abastecimento: p.escola_abastecimento || '',
+            escola_ordem_entrega: p.escola_ordem_entrega || null,
+            escola_atendimento: p.escola_atendimento || '',
+            escola_horario: p.escola_horario || '',
+            numero_romaneio: p.numero_romaneio || null
           })),
           
           // Total de produtos

@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
-import { FaTimes, FaSave, FaEye, FaEdit, FaPlus, FaTrash } from 'react-icons/fa';
-import { Button, Input, Modal, SearchableSelect } from '../ui';
+import { FaTimes, FaSave, FaEye, FaEdit, FaPlus, FaTrash, FaSearch, FaPrint } from 'react-icons/fa';
+import { Button, Input, Modal, SearchableSelect, Pagination } from '../ui';
 import SolicitacoesComprasService from '../../services/solicitacoesCompras';
 import { useAuth } from '../../contexts/AuthContext';
 import toast from 'react-hot-toast';
@@ -15,7 +15,8 @@ const SolicitacoesComprasModal = ({
   filiais,
   produtosGenericos,
   unidadesMedida,
-  loading
+  loading,
+  onPrint
 }) => {
   const { register, handleSubmit, reset, formState: { errors }, setValue, watch } = useForm();
   const { user } = useAuth();
@@ -23,6 +24,10 @@ const SolicitacoesComprasModal = ({
   const [semanaAbastecimento, setSemanaAbastecimento] = useState('');
   const [carregandoSemana, setCarregandoSemana] = useState(false);
   const [produtosAdicionados, setProdutosAdicionados] = useState(new Set());
+  const [abaAtiva, setAbaAtiva] = useState('cabecalho'); // 'cabecalho' ou 'produtos'
+  const [paginaProdutos, setPaginaProdutos] = useState(1);
+  const [itensPorPagina, setItensPorPagina] = useState(10);
+  const [buscaProduto, setBuscaProduto] = useState('');
 
   // Observar data de entrega para buscar semana
   const dataEntrega = watch('data_entrega_cd');
@@ -50,6 +55,61 @@ const SolicitacoesComprasModal = ({
     }
   };
 
+  // Resetar aba quando modal abrir
+  useEffect(() => {
+    if (isOpen) {
+      setAbaAtiva('cabecalho');
+      setPaginaProdutos(1);
+      setBuscaProduto('');
+    }
+  }, [isOpen]);
+
+  // Atualizar nomes dos produtos nos itens quando produtos genéricos forem carregados
+  useEffect(() => {
+    if (produtosGenericos.length > 0 && itens.length > 0) {
+      // Verificar se algum item precisa de atualização
+      const precisaAtualizar = itens.some(item => 
+        item.produto_id && !item.nome_produto && !item.produto_nome
+      );
+      
+      if (!precisaAtualizar) return;
+      
+      const itensAtualizados = itens.map(item => {
+        // Se já tem nome, não precisa atualizar
+        if (item.nome_produto || item.produto_nome) {
+          return item;
+        }
+        
+        // Se tem produto_id, buscar nome do produto
+        if (item.produto_id) {
+          const produto = produtosGenericos.find(p => p.id === parseInt(item.produto_id));
+          if (produto) {
+            return {
+              ...item,
+              nome_produto: produto.nome || '',
+              produto_nome: produto.nome || '',
+              codigo_produto: produto.codigo_produto || produto.codigo || '',
+              codigo: produto.codigo_produto || produto.codigo || ''
+            };
+          }
+        }
+        
+        return item;
+      });
+      
+      // Só atualizar se houver mudanças reais
+      const houveMudancas = itensAtualizados.some((item, index) => {
+        const original = itens[index];
+        return item.nome_produto !== original.nome_produto ||
+               item.codigo_produto !== original.codigo_produto;
+      });
+      
+      if (houveMudancas) {
+        setItens(itensAtualizados);
+      }
+    }
+  }, [produtosGenericos.length, itens.length]);
+
   // Carregar dados quando modal abrir
   useEffect(() => {
     if (solicitacao && isOpen) {
@@ -71,13 +131,31 @@ const SolicitacoesComprasModal = ({
       
       // Carregar itens se existirem
       if (solicitacao.itens && Array.isArray(solicitacao.itens)) {
-        // Processar itens para garantir que unidade seja exibida como texto
-        const itensProcessados = solicitacao.itens.map(item => ({
-          ...item,
-          unidade_simbolo: item.unidade_simbolo || item.unidade_medida || '',
-          unidade_medida: item.unidade_medida || item.unidade_simbolo || item.unidade_nome || '',
-          unidade_texto: item.unidade_simbolo || item.unidade_medida || item.unidade_nome || ''
-        }));
+        // Processar itens para garantir que unidade seja exibida como texto e nome do produto esteja disponível
+        const itensProcessados = solicitacao.itens.map(item => {
+          // Se não tiver nome do produto, buscar do array de produtos genéricos
+          let nomeProduto = item.nome_produto || item.produto_nome;
+          let codigoProduto = item.codigo_produto || item.codigo;
+          
+          if (!nomeProduto && item.produto_id && produtosGenericos.length > 0) {
+            const produto = produtosGenericos.find(p => p.id === parseInt(item.produto_id));
+            if (produto) {
+              nomeProduto = produto.nome || '';
+              codigoProduto = produto.codigo_produto || produto.codigo || '';
+            }
+          }
+          
+          return {
+            ...item,
+            nome_produto: nomeProduto || '',
+            produto_nome: nomeProduto || '',
+            codigo_produto: codigoProduto || '',
+            codigo: codigoProduto || '',
+            unidade_simbolo: item.unidade_simbolo || item.unidade_medida || '',
+            unidade_medida: item.unidade_medida || item.unidade_simbolo || item.unidade_nome || '',
+            unidade_texto: item.unidade_simbolo || item.unidade_medida || item.unidade_nome || ''
+          };
+        });
         setItens(itensProcessados);
         const produtosIds = solicitacao.itens.map(item => item.produto_id).filter(Boolean);
         setProdutosAdicionados(new Set(produtosIds));
@@ -104,6 +182,10 @@ const SolicitacoesComprasModal = ({
       unidade_medida_id: '',
       observacao: ''
     }]);
+    // Ir para a última página se necessário
+    const totalItensAposAdicionar = itens.length + 1;
+    const novaPagina = Math.ceil(totalItensAposAdicionar / itensPorPagina);
+    setPaginaProdutos(novaPagina);
   };
 
   // Remover item
@@ -114,7 +196,15 @@ const SolicitacoesComprasModal = ({
       novosProdutos.delete(item.produto_id);
       setProdutosAdicionados(novosProdutos);
     }
-    setItens(itens.filter((_, i) => i !== index));
+    const novosItens = itens.filter((_, i) => i !== index);
+    setItens(novosItens);
+    
+    // Ajustar página se necessário
+    const totalItensAposRemover = novosItens.length;
+    const novaPaginaMaxima = Math.ceil(totalItensAposRemover / itensPorPagina) || 1;
+    if (paginaProdutos > novaPaginaMaxima) {
+      setPaginaProdutos(novaPaginaMaxima);
+    }
   };
 
   // Atualizar campo de item
@@ -126,6 +216,12 @@ const SolicitacoesComprasModal = ({
     if (field === 'produto_id' && value) {
       const produto = produtosGenericos.find(p => p.id === parseInt(value));
       if (produto) {
+        // Salvar nome e código do produto para busca
+        updated[index].nome_produto = produto.nome || '';
+        updated[index].produto_nome = produto.nome || '';
+        updated[index].codigo_produto = produto.codigo_produto || produto.codigo || '';
+        updated[index].codigo = produto.codigo_produto || produto.codigo || '';
+        
         if (produto.unidade_medida_id) {
           updated[index].unidade_medida_id = produto.unidade_medida_id;
         }
@@ -144,6 +240,10 @@ const SolicitacoesComprasModal = ({
         }
       } else {
         // Limpar se produto não encontrado
+        updated[index].nome_produto = '';
+        updated[index].produto_nome = '';
+        updated[index].codigo_produto = '';
+        updated[index].codigo = '';
         updated[index].unidade_simbolo = '';
         updated[index].unidade_medida = '';
         updated[index].unidade_texto = '';
@@ -168,6 +268,51 @@ const SolicitacoesComprasModal = ({
     
     setItens(updated);
   };
+
+  // Filtrar itens baseado na busca
+  const itensFiltrados = useMemo(() => {
+    if (!buscaProduto.trim()) {
+      return itens;
+    }
+
+    const termoBusca = buscaProduto.toLowerCase().trim();
+    return itens.filter(item => {
+      // Buscar pelo nome do produto
+      const nomeProduto = (item.nome_produto || item.produto_nome || '').toLowerCase();
+      // Buscar pelo código do produto (se disponível)
+      const codigoProduto = (item.codigo_produto || item.codigo || '').toLowerCase();
+      // Buscar pela observação
+      const observacao = (item.observacao || '').toLowerCase();
+      
+      return nomeProduto.includes(termoBusca) || 
+             codigoProduto.includes(termoBusca) || 
+             observacao.includes(termoBusca);
+    });
+  }, [itens, buscaProduto]);
+
+  // Calcular itens paginados (após filtro)
+  const itensPaginados = useMemo(() => {
+    const inicio = (paginaProdutos - 1) * itensPorPagina;
+    const fim = inicio + itensPorPagina;
+    return itensFiltrados.slice(inicio, fim);
+  }, [itensFiltrados, paginaProdutos, itensPorPagina]);
+
+  // Calcular total de páginas (baseado nos itens filtrados)
+  const totalPaginasProdutos = useMemo(() => {
+    return Math.ceil(itensFiltrados.length / itensPorPagina) || 1;
+  }, [itensFiltrados.length, itensPorPagina]);
+
+  // Resetar página quando itens mudarem ou busca mudar
+  useEffect(() => {
+    if (paginaProdutos > totalPaginasProdutos && totalPaginasProdutos > 0) {
+      setPaginaProdutos(1);
+    }
+  }, [itensFiltrados.length, totalPaginasProdutos, paginaProdutos]);
+
+  // Resetar página quando busca mudar
+  useEffect(() => {
+    setPaginaProdutos(1);
+  }, [buscaProduto]);
 
   const handleFormSubmit = (data) => {
     // Validar campos obrigatórios
@@ -284,20 +429,69 @@ const SolicitacoesComprasModal = ({
               </p>
             </div>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onClose}
-            className="p-2"
-          >
-            <FaTimes className="w-5 h-5" />
-          </Button>
+          <div className="flex items-center gap-2">
+            {viewMode && solicitacao && onPrint && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onPrint(solicitacao)}
+                className="flex items-center gap-2"
+              >
+                <FaPrint className="w-4 h-4" />
+                <span className="hidden sm:inline">Imprimir</span>
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClose}
+              className="p-2"
+            >
+              <FaTimes className="w-5 h-5" />
+            </Button>
+          </div>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit(handleFormSubmit)} className="p-6 space-y-6">
-          {/* Cabeçalho */}
-          <div className="bg-gray-50 p-4 rounded-lg">
+        <form onSubmit={handleSubmit(handleFormSubmit)} className="p-6">
+          {/* Navegação por Abas */}
+          <div className="mb-6 border-b border-gray-200">
+            <nav className="flex space-x-8" aria-label="Tabs">
+              <button
+                type="button"
+                onClick={() => setAbaAtiva('cabecalho')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                  abaAtiva === 'cabecalho'
+                    ? 'border-green-500 text-green-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Cabeçalho da Solicitação
+              </button>
+              <button
+                type="button"
+                onClick={() => setAbaAtiva('produtos')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                  abaAtiva === 'produtos'
+                    ? 'border-green-500 text-green-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Produtos da Solicitação
+                {itens.length > 0 && (
+                  <span className="ml-2 bg-green-100 text-green-800 text-xs font-semibold px-2 py-0.5 rounded-full">
+                    {itens.length}
+                  </span>
+                )}
+              </button>
+            </nav>
+          </div>
+
+          {/* Conteúdo das Abas */}
+          <div className="space-y-6 min-h-[400px]">
+            {/* Aba: Cabeçalho */}
+            {abaAtiva === 'cabecalho' && (
+              <div className="bg-gray-50 p-4 rounded-lg transition-opacity duration-300">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Cabeçalho da Solicitação</h3>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Filial */}
@@ -417,25 +611,63 @@ const SolicitacoesComprasModal = ({
               />
             </div>
           </div>
+            )}
 
-          {/* Produtos da Solicitação */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            {/* Aba: Produtos */}
+            {abaAtiva === 'produtos' && (
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 transition-opacity duration-300 relative">
             <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
               <h3 className="text-lg font-semibold text-gray-900">Produtos da Solicitação</h3>
               {!viewMode && (
-                <Button onClick={handleAddItem} size="sm" variant="ghost" type="button">
+                <Button onClick={handleAddItem} size="sm" variant="primary" type="button">
                   <FaPlus className="mr-1" />
                   Adicionar Produto
                 </Button>
               )}
             </div>
 
+            {/* Campo de Busca */}
+            {itens.length > 0 && (
+              <div className="px-4 py-3 border-b border-gray-200 bg-white">
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <FaSearch className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <Input
+                    type="text"
+                    placeholder="Buscar produto por nome, código ou observação..."
+                    value={buscaProduto}
+                    onChange={(e) => setBuscaProduto(e.target.value)}
+                    className="w-full pl-10 pr-10"
+                  />
+                  {buscaProduto && (
+                    <button
+                      type="button"
+                      onClick={() => setBuscaProduto('')}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                    >
+                      <FaTimes className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+                {buscaProduto && (
+                  <p className="mt-2 text-sm text-gray-600">
+                    {itensFiltrados.length} produto(s) encontrado(s)
+                  </p>
+                )}
+              </div>
+            )}
+
             {itens.length === 0 ? (
               <div className="p-8 text-center text-gray-500">
                 <p>Nenhum produto adicionado. Clique em "Adicionar Produto" para começar.</p>
               </div>
+            ) : itensFiltrados.length === 0 ? (
+              <div className="p-8 text-center text-gray-500">
+                <p>Nenhum produto encontrado com o termo "{buscaProduto}".</p>
+              </div>
             ) : (
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto overflow-y-visible">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
@@ -459,31 +691,46 @@ const SolicitacoesComprasModal = ({
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {itens.map((item, index) => {
+                    {itensPaginados.map((item, indexPagina) => {
+                      // Encontrar índice real no array original de itens
+                      // Primeiro tenta encontrar por referência (mais rápido e confiável)
+                      let indexReal = itens.findIndex(i => i === item);
+                      
+                      // Se não encontrar por referência, busca por propriedades únicas
+                      if (indexReal === -1) {
+                        indexReal = itens.findIndex(i => 
+                          i.produto_id === item.produto_id &&
+                          i.quantidade === item.quantidade &&
+                          i.observacao === item.observacao
+                        );
+                      }
+                      
                       // Filtrar produtos já adicionados (exceto o atual)
                       const produtosDisponiveis = produtosGenericos.filter(p => 
                         !produtosAdicionados.has(p.id) || p.id === parseInt(item.produto_id)
                       );
 
                       return (
-                        <tr key={index} className="hover:bg-gray-50">
+                        <tr key={`${indexReal}-${item.produto_id || indexPagina}`} className="hover:bg-gray-50">
                           <td className="px-4 py-3">
                             {viewMode ? (
                               <span className="text-sm text-gray-900">
                                 {item.nome_produto || item.produto_nome || '-'}
                               </span>
                             ) : (
-                              <SearchableSelect
-                                value={item.produto_id || ''}
-                                onChange={(value) => handleItemChange(index, 'produto_id', value)}
-                                options={produtosDisponiveis.map(p => ({
-                                  value: p.id,
-                                  label: `${p.codigo_produto || p.codigo || ''} - ${p.nome}`
-                                }))}
-                                placeholder="Selecione um produto..."
-                                className="w-full"
-                                usePortal={false}
-                              />
+                              <div className="relative z-50">
+                                <SearchableSelect
+                                  value={item.produto_id || ''}
+                                  onChange={(value) => handleItemChange(indexReal, 'produto_id', value)}
+                                  options={produtosDisponiveis.map(p => ({
+                                    value: p.id,
+                                    label: `${p.codigo_produto || p.codigo || ''} - ${p.nome}`
+                                  }))}
+                                  placeholder="Selecione um produto..."
+                                  className="w-full"
+                                  usePortal={true}
+                                />
+                              </div>
                             )}
                           </td>
                           <td className="px-4 py-3">
@@ -504,7 +751,7 @@ const SolicitacoesComprasModal = ({
                                 step="0.001"
                                 min="0.001"
                                 value={item.quantidade || ''}
-                                onChange={(e) => handleItemChange(index, 'quantidade', e.target.value)}
+                                onChange={(e) => handleItemChange(indexReal, 'quantidade', e.target.value)}
                                 className="w-full"
                                 placeholder="0.000"
                               />
@@ -519,7 +766,7 @@ const SolicitacoesComprasModal = ({
                               <Input
                                 type="text"
                                 value={item.observacao || ''}
-                                onChange={(e) => handleItemChange(index, 'observacao', e.target.value)}
+                                onChange={(e) => handleItemChange(indexReal, 'observacao', e.target.value)}
                                 className="w-full"
                                 placeholder="Observação do item..."
                               />
@@ -528,7 +775,7 @@ const SolicitacoesComprasModal = ({
                           {!viewMode && (
                             <td className="px-4 py-3 text-center">
                               <button
-                                onClick={() => handleRemoveItem(index)}
+                                onClick={() => handleRemoveItem(indexReal)}
                                 className="text-red-600 hover:text-red-900 p-1 rounded transition-colors"
                                 title="Remover item"
                                 type="button"
@@ -542,6 +789,23 @@ const SolicitacoesComprasModal = ({
                     })}
                   </tbody>
                 </table>
+              </div>
+            )}
+
+            {/* Paginação */}
+            {itensFiltrados.length > 0 && (
+              <Pagination
+                currentPage={paginaProdutos}
+                totalPages={totalPaginasProdutos}
+                totalItems={itensFiltrados.length}
+                itemsPerPage={itensPorPagina}
+                onPageChange={setPaginaProdutos}
+                onItemsPerPageChange={(novoValor) => {
+                  setItensPorPagina(novoValor);
+                  setPaginaProdutos(1);
+                }}
+              />
+            )}
               </div>
             )}
           </div>

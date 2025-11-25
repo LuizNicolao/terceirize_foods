@@ -4,6 +4,7 @@ import { usePedidosComprasModal } from '../../hooks/usePedidosComprasModal';
 import PedidosComprasModalHeader from './PedidosComprasModalHeader';
 import PedidosComprasModalBody from './PedidosComprasModalBody';
 import PedidosComprasModalFooter from './PedidosComprasModalFooter';
+import PedidosComprasService from '../../services/pedidosComprasService';
 import toast from 'react-hot-toast';
 
 const PedidosComprasModal = ({
@@ -13,7 +14,8 @@ const PedidosComprasModal = ({
   pedidoCompras,
   viewMode,
   loading,
-  solicitacoesDisponiveis = []
+  solicitacoesDisponiveis = [],
+  onPrint
 }) => {
   const {
     register,
@@ -69,7 +71,6 @@ const PedidosComprasModal = ({
         forma_pagamento_id: data.forma_pagamento_id || null,
         prazo_pagamento_id: data.prazo_pagamento_id || null,
         observacoes: data.observacoes || null,
-        status: pedidoCompras ? (data.status || pedidoCompras.status) : undefined,
         filial_faturamento_id: solicitacaoSelecionada?.filial_id || pedidoCompras?.filial_id || null,
         filial_cobranca_id: data.filial_cobranca_id || null,
         filial_entrega_id: data.filial_entrega_id || null,
@@ -101,6 +102,41 @@ const PedidosComprasModal = ({
     }
   };
 
+  const handleApprove = async () => {
+    if (!pedidoCompras || !pedidoCompras.id) {
+      toast.error('Pedido não encontrado');
+      return;
+    }
+
+    if (pedidoCompras.status !== 'em_digitacao') {
+      toast.error('Apenas pedidos em digitação podem ser aprovados');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const response = await PedidosComprasService.aprovarPedido(pedidoCompras.id);
+      
+      if (response.success || (response.data && response.data.aprovados && response.data.aprovados.length > 0)) {
+        toast.success('Pedido aprovado com sucesso!');
+        // Fechar o modal e atualizar a lista
+        onClose();
+        if (onSubmit) {
+          // Chamar onSubmit para atualizar a lista se necessário
+          await onSubmit({ approved: true });
+        }
+      } else {
+        const errorMessage = response.error || response.message || 'Erro ao aprovar pedido';
+        toast.error(errorMessage);
+      }
+    } catch (error) {
+      console.error('Erro ao aprovar pedido:', error);
+      toast.error('Erro ao aprovar pedido');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   if (!isOpen) return null;
 
   const isViewMode = viewMode === true;
@@ -113,6 +149,7 @@ const PedidosComprasModal = ({
           pedidoCompras={pedidoCompras}
           saving={saving}
           onClose={onClose}
+          onPrint={onPrint}
         />
 
         <PedidosComprasModalBody
@@ -149,6 +186,7 @@ const PedidosComprasModal = ({
               saving={saving}
               loading={loading}
               onClose={onClose}
+              onApprove={handleApprove}
             />
           }
         />

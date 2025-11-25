@@ -4,16 +4,14 @@ const util = require('util');
 const execPromise = util.promisify(exec);
 
 const CONTAINER_NAME = process.env.MYSQL_CONTAINER_NAME || 'terceirize_mysql';
-const MYSQL_USER = process.env.MYSQL_USER || 'foods_user';
-const MYSQL_PASSWORD = process.env.MYSQL_PASSWORD || 'foods123456';
 
-// Configuração do banco de dados do sistema
+// Configuração do banco de dados do sistema (seguindo padrão DB_* como foods e implantacao)
 const dbConfig = {
-  host: process.env.MYSQL_HOST || 'localhost',
-  port: parseInt(process.env.MYSQL_PORT) || 3306,
-  user: MYSQL_USER,
-  password: MYSQL_PASSWORD,
-  database: process.env.MYSQL_DATABASE || 'mysql_backup_web',
+  host: process.env.DB_HOST || 'localhost',
+  port: parseInt(process.env.DB_PORT) || 3306,
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || 'root123456',
+  database: process.env.DB_NAME || 'mysql_backup_web',
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
@@ -72,7 +70,7 @@ async function listAvailableDatabases() {
     if (isDocker) {
       // Tentar via Docker exec primeiro (mais confiável em ambiente Docker)
       try {
-        const command = `docker exec ${CONTAINER_NAME} mysql -u ${MYSQL_USER} -p${MYSQL_PASSWORD} -e "SELECT SCHEMA_NAME FROM information_schema.SCHEMATA WHERE SCHEMA_NAME NOT IN ('information_schema', 'performance_schema', 'mysql', 'sys', 'mysql_backup_web') ORDER BY SCHEMA_NAME;" -N`;
+        const command = `docker exec ${CONTAINER_NAME} mysql -u ${dbConfig.user} -p${dbConfig.password} -e "SELECT SCHEMA_NAME FROM information_schema.SCHEMATA WHERE SCHEMA_NAME NOT IN ('information_schema', 'performance_schema', 'mysql', 'sys', 'mysql_backup_web') ORDER BY SCHEMA_NAME;" -N`;
         
         const { stdout } = await execPromise(command);
         const databases = stdout
@@ -120,24 +118,7 @@ async function listAvailableDatabases() {
 // Inicializar banco de dados do sistema (criar tabelas se não existirem)
 async function initSystemDatabase() {
   try {
-    // Primeiro, criar uma conexão sem especificar o database para criar o banco
-    const tempConfig = { ...dbConfig };
-    delete tempConfig.database;
-    
-    const tempPool = mysql.createPool(tempConfig);
-    
-    try {
-      // Criar database se não existir (pode falhar se usuário não tiver permissão)
-      await tempPool.execute(`CREATE DATABASE IF NOT EXISTS ${dbConfig.database}`);
-    } catch (error) {
-      // Se não conseguir criar, assumir que o banco já existe
-      console.log(`Banco ${dbConfig.database} já existe ou usuário não tem permissão para criar. Continuando...`);
-    }
-    
-    // Fechar pool temporário
-    await tempPool.end();
-    
-    // Agora inicializar o pool com o database correto
+    // Inicializar o pool com o database (assumindo que o banco já existe)
     if (!pool) initPool();
     
     // Testar conexão com o banco
@@ -145,7 +126,8 @@ async function initSystemDatabase() {
       await pool.execute('SELECT 1');
     } catch (error) {
       console.error(`Erro ao conectar ao banco ${dbConfig.database}:`, error.message);
-      throw new Error(`Não foi possível conectar ao banco ${dbConfig.database}. Verifique as permissões do usuário.`);
+      // Não lançar erro, apenas logar - o banco pode não estar disponível ainda
+      return;
     }
     
     // Criar tabela de backups

@@ -18,7 +18,9 @@ const PermissoesForm = ({
       { key: 'usuarios', label: 'Usuários' },
       { key: 'fornecedores', label: 'Fornecedores' },
       { key: 'clientes', label: 'Clientes' },
-      { key: 'filiais', label: 'Filiais' }
+      { key: 'filiais', label: 'Filiais' },
+      { key: 'centro_custo', label: 'Centro de Custo' },
+      { key: 'almoxarifado', label: 'Almoxarifado' }
     ],
     'Produtos e Categorias': [
       { key: 'produtos', label: 'Produtos' },

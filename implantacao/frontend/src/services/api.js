@@ -12,7 +12,7 @@ const getBaseURL = () => {
 
 const api = axios.create({
   baseURL: getBaseURL(),
-  timeout: 10000,
+  timeout: 30000, // Aumentado para 30 segundos
 });
 
 // Interceptor para garantir o envio do token JWT

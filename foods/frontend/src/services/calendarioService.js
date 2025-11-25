@@ -60,6 +60,11 @@ const calendarioService = {
     return response.data;
   },
 
+  atualizarDiaNaoUtil: async (id, dados) => {
+    const response = await api.put(`/calendario/configuracao/dias-nao-uteis/${id}`, dados);
+    return response.data;
+  },
+
   removerDiaNaoUtil: async (id) => {
     const response = await api.delete(`/calendario/configuracao/dias-nao-uteis/${id}`);
     return response.data;

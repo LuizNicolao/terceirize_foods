@@ -75,6 +75,7 @@ const ProdutoGenerico = () => {
     getClasseName,
     getProdutoOrigemName,
     getUnidadeMedidaName,
+    getUnidadeMedidaSigla,
     sortField,
     sortDirection,
     handleSort
@@ -214,6 +215,7 @@ const ProdutoGenerico = () => {
         getClasseName={getClasseName}
         getProdutoOrigemName={getProdutoOrigemName}
         getUnidadeMedidaName={getUnidadeMedidaName}
+        getUnidadeMedidaSigla={getUnidadeMedidaSigla}
         sortField={sortField}
         sortDirection={sortDirection}
         onSort={handleSort}

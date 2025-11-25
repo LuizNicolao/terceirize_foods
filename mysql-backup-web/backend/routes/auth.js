@@ -5,10 +5,11 @@ const mysql = require('mysql2/promise');
 const router = express.Router();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'mysql-backup-web-secret-key-change-in-production';
-const FOODS_DB_HOST = process.env.FOODS_DB_HOST || process.env.MYSQL_HOST || 'localhost';
-const FOODS_DB_PORT = parseInt(process.env.FOODS_DB_PORT || process.env.MYSQL_PORT) || 3306;
-const FOODS_DB_USER = process.env.FOODS_DB_USER || process.env.MYSQL_USER || 'foods_user';
-const FOODS_DB_PASSWORD = process.env.FOODS_DB_PASSWORD || process.env.MYSQL_PASSWORD || 'foods123456';
+// Usar FOODS_DB_* se definido, senão usar DB_* como fallback (seguindo padrão dos outros projetos)
+const FOODS_DB_HOST = process.env.FOODS_DB_HOST || process.env.DB_HOST || 'localhost';
+const FOODS_DB_PORT = parseInt(process.env.FOODS_DB_PORT || process.env.DB_PORT) || 3306;
+const FOODS_DB_USER = process.env.FOODS_DB_USER || process.env.DB_USER || 'foods_user';
+const FOODS_DB_PASSWORD = process.env.FOODS_DB_PASSWORD || process.env.DB_PASSWORD || 'foods123456';
 const FOODS_DB_NAME = process.env.FOODS_DB_NAME || 'foods_db';
 
 // Pool de conexão com o banco foods_db

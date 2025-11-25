@@ -43,6 +43,8 @@ import CalendarioRelatorios from './pages/calendario/CalendarioRelatorios';
 import FormasPagamento from './pages/formas-pagamento/FormasPagamento';
 import PrazosPagamento from './pages/prazos-pagamento/PrazosPagamento';
 import PedidosCompras from './pages/pedidos-compras/PedidosCompras';
+import CentroCusto from './pages/centro-custo/CentroCusto';
+import Almoxarifado from './pages/almoxarifado/Almoxarifado';
 import PdfTemplates from './pages/pdf-templates/PdfTemplates';
 
 // Componente para rotas protegidas com autenticação
@@ -469,6 +471,28 @@ const App = () => {
           <AuthenticatedRoute>
             <ProtectedRoute screen="pedidos_compras">
               <PedidosCompras />
+            </ProtectedRoute>
+          </AuthenticatedRoute>
+        } 
+      />
+
+      <Route 
+        path="/foods/centro-custo" 
+        element={
+          <AuthenticatedRoute>
+            <ProtectedRoute screen="centro_custo">
+              <CentroCusto />
+            </ProtectedRoute>
+          </AuthenticatedRoute>
+        } 
+      />
+
+      <Route 
+        path="/foods/almoxarifado" 
+        element={
+          <AuthenticatedRoute>
+            <ProtectedRoute screen="almoxarifado">
+              <Almoxarifado />
             </ProtectedRoute>
           </AuthenticatedRoute>
         } 

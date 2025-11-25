@@ -36,7 +36,9 @@ import {
   FaClipboardCheck,
   FaCreditCard,
   FaCalendarAlt as FaCalendarAltPayment,
-  FaFilePdf
+  FaFilePdf,
+  FaDollarSign,
+  FaWarehouse
 } from 'react-icons/fa';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePermissions } from '../../contexts/PermissionsContext';
@@ -78,6 +80,8 @@ const menuGroups = [
       { path: '/foods/fornecedores', icon: FaTruck, label: 'Fornecedores', screen: 'fornecedores' },
       { path: '/foods/clientes', icon: FaBuilding, label: 'Clientes', screen: 'clientes' },
       { path: '/foods/filiais', icon: FaStore, label: 'Filiais', screen: 'filiais' },
+      { path: '/foods/centro-custo', icon: FaDollarSign, label: 'Centro de Custo', screen: 'centro_custo' },
+      { path: '/foods/almoxarifado', icon: FaWarehouse, label: 'Almoxarifado', screen: 'almoxarifado' },
     ]
   },
   {

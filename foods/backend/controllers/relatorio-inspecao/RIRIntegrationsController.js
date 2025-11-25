@@ -15,41 +15,105 @@ const { asyncHandler } = require('../../middleware/responseHandler');
 class RIRIntegrationsController {
   
   /**
-   * Buscar produtos de um pedido de compra
-   * Endpoint: GET /api/relatorio-inspecao/buscar-produtos-pedido?id={pedido_id}
+   * Buscar produtos de um pedido de compra (apenas itens disponíveis - não utilizados em outros RIRs)
+   * Endpoint: GET /api/relatorio-inspecao/buscar-produtos-pedido?id={pedido_id}&rir_id={rir_id}
+   * 
+   * Regra: Mostra apenas itens que ainda não foram utilizados em nenhum RIR
+   * Se rir_id for fornecido (edição), também mostra itens já utilizados neste RIR específico
    */
   static buscarProdutosPedido = asyncHandler(async (req, res) => {
-    const { id } = req.query;
+    const { id, rir_id } = req.query;
 
     if (!id) {
       return errorResponse(res, 'ID do pedido é obrigatório', STATUS_CODES.BAD_REQUEST);
     }
 
-    // Buscar produtos do pedido com informações do grupo e NQA
-    const produtos = await executeQuery(
-      `SELECT 
-        pi.id,
-        pi.produto_generico_id,
-        pi.quantidade_pedido,
-        pg.nome as nome_produto,
-        pg.codigo as codigo_produto,
-        pg.grupo_id,
-        um.sigla as unidade_medida,
-        g.nome as grupo_nome,
-        n.id as nqa_id,
-        n.codigo as nqa_codigo,
-        n.nome as nqa_nome,
-        n.nivel_inspecao
-      FROM pedido_compras_itens pi
-      LEFT JOIN produto_generico pg ON pi.produto_generico_id = pg.id
-      LEFT JOIN unidades_medida um ON pg.unidade_medida_id = um.id
-      LEFT JOIN grupos g ON pg.grupo_id = g.id
-      LEFT JOIN grupos_nqa gn ON g.id = gn.grupo_id AND gn.ativo = 1
-      LEFT JOIN nqa n ON gn.nqa_id = n.id AND n.ativo = 1
-      WHERE pi.pedido_id = ?
-      ORDER BY pi.id`,
-      [id]
-    );
+    // Buscar produtos do pedido que ainda não foram utilizados em outros RIRs
+    // Se rir_id for fornecido, também incluir itens já utilizados neste RIR (para edição)
+    let produtos;
+    
+    if (rir_id) {
+      // Modo edição: mostrar itens disponíveis + itens já usados neste RIR
+      produtos = await executeQuery(
+        `SELECT 
+          pi.id,
+          pi.produto_generico_id,
+          pi.quantidade_pedido,
+          pg.nome as nome_produto,
+          pg.codigo as codigo_produto,
+          pg.grupo_id,
+          um.sigla as unidade_medida,
+          g.nome as grupo_nome,
+          n.id as nqa_id,
+          n.codigo as nqa_codigo,
+          n.nome as nqa_nome,
+          n.nivel_inspecao,
+          CASE 
+            WHEN EXISTS (
+              SELECT 1 FROM relatorio_inspecao_produtos rip 
+              WHERE rip.pedido_item_id = pi.id AND rip.relatorio_inspecao_id = ?
+            ) THEN 1
+            ELSE 0
+          END as ja_utilizado_neste_rir
+        FROM pedido_compras_itens pi
+        LEFT JOIN produto_generico pg ON pi.produto_generico_id = pg.id
+        LEFT JOIN unidades_medida um ON pg.unidade_medida_id = um.id
+        LEFT JOIN grupos g ON pg.grupo_id = g.id
+        LEFT JOIN grupos_nqa gn ON g.id = gn.grupo_id AND gn.ativo = 1
+        LEFT JOIN nqa n ON gn.nqa_id = n.id AND n.ativo = 1
+        WHERE pi.pedido_id = ?
+          AND (
+            -- Itens que ainda não foram usados em nenhum RIR
+            NOT EXISTS (
+              SELECT 1 FROM relatorio_inspecao_produtos rip 
+              WHERE rip.pedido_item_id IS NOT NULL 
+                AND rip.pedido_item_id = pi.id
+            )
+            -- OU itens já usados neste RIR específico (para edição)
+            OR EXISTS (
+              SELECT 1 FROM relatorio_inspecao_produtos rip 
+              WHERE rip.pedido_item_id IS NOT NULL 
+                AND rip.pedido_item_id = pi.id 
+                AND rip.relatorio_inspecao_id = ?
+            )
+          )
+        ORDER BY pi.id`,
+        [rir_id, id, rir_id]
+      );
+    } else {
+      // Modo criação: mostrar apenas itens disponíveis (não utilizados em nenhum RIR)
+      produtos = await executeQuery(
+        `SELECT 
+          pi.id,
+          pi.produto_generico_id,
+          pi.quantidade_pedido,
+          pg.nome as nome_produto,
+          pg.codigo as codigo_produto,
+          pg.grupo_id,
+          um.sigla as unidade_medida,
+          g.nome as grupo_nome,
+          n.id as nqa_id,
+          n.codigo as nqa_codigo,
+          n.nome as nqa_nome,
+          n.nivel_inspecao
+        FROM pedido_compras_itens pi
+        LEFT JOIN produto_generico pg ON pi.produto_generico_id = pg.id
+        LEFT JOIN unidades_medida um ON pg.unidade_medida_id = um.id
+        LEFT JOIN grupos g ON pg.grupo_id = g.id
+        LEFT JOIN grupos_nqa gn ON g.id = gn.grupo_id AND gn.ativo = 1
+        LEFT JOIN nqa n ON gn.nqa_id = n.id AND n.ativo = 1
+        WHERE pi.pedido_id = ?
+          AND NOT EXISTS (
+            -- Excluir itens que já foram utilizados em algum RIR
+            -- Verificar se o pedido_item_id não é null e corresponde ao item do pedido
+            SELECT 1 FROM relatorio_inspecao_produtos rip 
+            WHERE rip.pedido_item_id IS NOT NULL 
+              AND rip.pedido_item_id = pi.id
+          )
+        ORDER BY pi.id`,
+        [id]
+      );
+    }
 
     // Buscar informações do pedido (fornecedor, CNPJ)
     const pedidoInfo = await executeQuery(

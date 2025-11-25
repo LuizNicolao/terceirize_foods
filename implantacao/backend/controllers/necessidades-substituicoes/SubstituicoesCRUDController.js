@@ -323,9 +323,53 @@ class SubstituicoesCRUDController {
           
           await connection.beginTransaction();
 
+          // Buscar id da semana de abastecimento na tabela calendario
+          // Usar MIN(id) para pegar um id representativo da semana
+          // Tentar busca exata primeiro, depois busca com LIKE para casos de formatação diferente
+          let semanaId = null;
+          
+          // Tentativa 1: Busca exata
+          const [semanaCalendarioExata] = await connection.execute(`
+            SELECT MIN(id) as semana_id
+            FROM foods_db.calendario
+            WHERE semana_abastecimento = ?
+            LIMIT 1
+          `, [semana_abastecimento]);
+          
+          if (semanaCalendarioExata.length > 0 && semanaCalendarioExata[0].semana_id) {
+            semanaId = semanaCalendarioExata[0].semana_id;
+          } else {
+            // Tentativa 2: Busca com LIKE (caso haja diferenças de formatação)
+            // Remover parênteses e espaços extras para comparação
+            const semanaLimpa = semana_abastecimento.replace(/[()]/g, '').trim();
+            const [semanaCalendarioLike] = await connection.execute(`
+              SELECT MIN(id) as semana_id
+              FROM foods_db.calendario
+              WHERE REPLACE(REPLACE(semana_abastecimento, '(', ''), ')', '') LIKE ?
+              LIMIT 1
+            `, [`%${semanaLimpa}%`]);
+            
+            if (semanaCalendarioLike.length > 0 && semanaCalendarioLike[0].semana_id) {
+              semanaId = semanaCalendarioLike[0].semana_id;
+            }
+          }
+          
+          // Se ainda não encontrou, usar hash da semana_abastecimento como fallback
+          if (!semanaId) {
+            // Gerar um número baseado no hash da string da semana
+            let hash = 0;
+            for (let i = 0; i < semana_abastecimento.length; i++) {
+              const char = semana_abastecimento.charCodeAt(i);
+              hash = ((hash << 5) - hash) + char;
+              hash = hash & hash; // Convert to 32bit integer
+            }
+            semanaId = Math.abs(hash) % 100000; // Limitar a 5 dígitos
+          }
+
           // Usar SELECT FOR UPDATE para lockar os registros em ordem consistente
+          // Incluir escola_id e grupo_id para gerar numero_romaneio
           const [rows] = await connection.execute(`
-            SELECT id, produto_origem_id, semana_abastecimento, semana_consumo, status
+            SELECT id, produto_origem_id, semana_abastecimento, semana_consumo, status, escola_id, grupo_id
             FROM necessidades_substituicoes
             WHERE produto_origem_id = ? 
               AND semana_abastecimento = ? 
@@ -336,18 +380,84 @@ class SubstituicoesCRUDController {
             FOR UPDATE
           `, [produto_origem_id, semana_abastecimento, semana_consumo]);
 
-          // Atualizar status de 'conf' para 'conf log' para todas as substituições do produto origem
-          const [result] = await connection.execute(`
-            UPDATE necessidades_substituicoes 
-            SET 
-              status = 'conf log',
-              data_atualizacao = NOW()
-            WHERE produto_origem_id = ? 
-              AND semana_abastecimento = ? 
-              AND semana_consumo = ?
-              AND status = 'conf'
-              AND ativo = 1
-          `, [produto_origem_id, semana_abastecimento, semana_consumo]);
+          // Gerar numero_romaneio para cada combinação única de escola_id + grupo_id
+          // Agrupar registros por escola_id e grupo_id
+          const gruposRomaneio = {};
+          rows.forEach(row => {
+            const escolaId = row.escola_id;
+            const grupoId = row.grupo_id;
+            const chave = `${escolaId || 'NULL'}_${grupoId || 'NULL'}`;
+            
+            if (!gruposRomaneio[chave]) {
+              // Sempre gerar numero_romaneio, mesmo se semanaId for null
+              // Se semanaId for null, usar um hash da semana_abastecimento
+              const idSemana = semanaId || (() => {
+                let hash = 0;
+                for (let i = 0; i < semana_abastecimento.length; i++) {
+                  const char = semana_abastecimento.charCodeAt(i);
+                  hash = ((hash << 5) - hash) + char;
+                  hash = hash & hash;
+                }
+                return Math.abs(hash) % 100000;
+              })();
+              
+              gruposRomaneio[chave] = {
+                escola_id: escolaId,
+                grupo_id: grupoId,
+                numero_romaneio: `${idSemana}-${escolaId || 'NULL'}-${grupoId || 'NULL'}`
+              };
+            }
+          });
+
+          // Atualizar status de 'conf' para 'conf log' e gerar numero_romaneio
+          // Para cada grupo único, atualizar os registros correspondentes
+          let totalAtualizado = 0;
+          
+          if (Object.keys(gruposRomaneio).length > 0) {
+            // Atualizar cada grupo separadamente para garantir que o numero_romaneio correto seja atribuído
+            for (const grupo of Object.values(gruposRomaneio)) {
+              const [result] = await connection.execute(`
+                UPDATE necessidades_substituicoes 
+                SET 
+                  status = 'conf log',
+                  numero_romaneio = ?,
+                  data_atualizacao = NOW()
+                WHERE produto_origem_id = ? 
+                  AND semana_abastecimento = ? 
+                  AND semana_consumo = ?
+                  AND status = 'conf'
+                  AND ativo = 1
+                  AND (escola_id = ? OR (escola_id IS NULL AND ? IS NULL))
+                  AND (grupo_id = ? OR (grupo_id IS NULL AND ? IS NULL))
+              `, [
+                grupo.numero_romaneio,
+                produto_origem_id, 
+                semana_abastecimento, 
+                semana_consumo,
+                grupo.escola_id,
+                grupo.escola_id,
+                grupo.grupo_id,
+                grupo.grupo_id
+              ]);
+              totalAtualizado += result.affectedRows;
+            }
+          } else {
+            // Se não há grupos, atualizar apenas o status (caso raro)
+            const [result] = await connection.execute(`
+              UPDATE necessidades_substituicoes 
+              SET 
+                status = 'conf log',
+                data_atualizacao = NOW()
+              WHERE produto_origem_id = ? 
+                AND semana_abastecimento = ? 
+                AND semana_consumo = ?
+                AND status = 'conf'
+                AND ativo = 1
+            `, [produto_origem_id, semana_abastecimento, semana_consumo]);
+            totalAtualizado = result.affectedRows;
+          }
+
+          const result = { affectedRows: totalAtualizado };
 
           // Marcar apenas as necessidades que têm substituições registradas como processadas
           await connection.execute(`

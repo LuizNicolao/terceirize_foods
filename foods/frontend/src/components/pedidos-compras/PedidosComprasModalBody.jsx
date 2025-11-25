@@ -154,49 +154,6 @@ const PedidosComprasModalBody = ({
         />
       </div>
 
-      {/* Status - Campo menor no final */}
-      <div className="flex items-center gap-4">
-        {pedidoCompras && !isViewMode && (
-          <div className="flex-1 max-w-xs">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Status
-            </label>
-            <select
-              {...register('status')}
-              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
-            >
-              <option value="em_digitacao">Em Digitação</option>
-              <option value="aprovado">Aprovado</option>
-              <option value="enviado">Enviado</option>
-              <option value="confirmado">Confirmado</option>
-              <option value="em_transito">Em Trânsito</option>
-              <option value="entregue">Entregue</option>
-              <option value="cancelado">Cancelado</option>
-            </select>
-            {errors.status && (
-              <p className="mt-1 text-xs text-red-600">{errors.status.message}</p>
-            )}
-          </div>
-        )}
-
-        {isViewMode && pedidoCompras?.status && (
-          <div className="flex-1 max-w-xs">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Status
-            </label>
-            <div className="px-3 py-2 text-sm bg-gray-50 border border-gray-300 rounded-md text-gray-900">
-              {watch('status') === 'em_digitacao' && 'Em Digitação'}
-              {watch('status') === 'aprovado' && 'Aprovado'}
-              {watch('status') === 'enviado' && 'Enviado'}
-              {watch('status') === 'confirmado' && 'Confirmado'}
-              {watch('status') === 'em_transito' && 'Em Trânsito'}
-              {watch('status') === 'entregue' && 'Entregue'}
-              {watch('status') === 'cancelado' && 'Cancelado'}
-            </div>
-          </div>
-        )}
-      </div>
-
       {/* Footer dentro do formulário */}
       {footer}
     </form>

@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback, useImperativeHandle, forwardRef } from 'react';
-import { FaTrash } from 'react-icons/fa';
-import { Input } from '../ui';
+import { FaTrash, FaCut, FaEdit } from 'react-icons/fa';
 import RelatorioInspecaoService from '../../services/relatorioInspecao';
 import toast from 'react-hot-toast';
+import ProdutoDivisaoModal from './ProdutoDivisaoModal';
+import ProdutoEdicaoModal from './ProdutoEdicaoModal';
 
 // Funções utilitárias para manipulação de datas
   const formatDateBR = (dateISO) => {
@@ -27,10 +28,83 @@ import toast from 'react-hot-toast';
     return parsed ? new Date(parsed).toISOString().split('T')[0] : '';
   };
 
+  // Função para normalizar números - remove pontos que não sejam decimais
+  // Ex: "1.000" → "1", "10.5" → "10,5" (mantém decimal se houver vírgula ou ponto decimal)
+  const normalizeNumber = (value) => {
+    if (!value && value !== 0) return '-';
+    if (typeof value === 'number') {
+      // Se for número, verificar se tem decimais
+      if (value % 1 === 0) {
+        return value.toString();
+      }
+      // Se tiver decimais, formatar com vírgula
+      return value.toString().replace('.', ',');
+    }
+    
+    const str = String(value).trim();
+    if (!str || str === '-') return '-';
+    
+    // Se contém vírgula, assumir que vírgula é decimal e remover todos os pontos
+    if (str.includes(',')) {
+      // Remover todos os pontos (separadores de milhar) e manter vírgula como decimal
+      return str.replace(/\./g, '');
+    }
+    
+    // Se contém ponto, verificar se é decimal ou separador de milhar
+    if (str.includes('.')) {
+      const parts = str.split('.');
+      
+      // Se tem mais de 2 partes, é separador de milhar (ex: "1.000.000")
+      if (parts.length > 2) {
+        // Remover todos os pontos (separadores de milhar)
+        return parts.join('');
+      }
+      
+      // Se tem 2 partes, verificar se é decimal ou milhar
+      if (parts.length === 2) {
+        // Se a segunda parte tem exatamente 3 dígitos E são todos zeros
+        // E a primeira parte tem 1-3 dígitos, é separador de milhar incorreto (ex: "1.000" → "1")
+        if (parts[1].length === 3 && parts[1] === '000' && /^\d{1,3}$/.test(parts[0])) {
+          // Retornar apenas a parte antes do ponto (remover zeros)
+          return parts[0];
+        }
+        
+        // Se a segunda parte tem exatamente 3 dígitos (não zeros) E a primeira parte tem 1-3 dígitos
+        // Provavelmente é separador de milhar (ex: "1.234" → "1234")
+        if (parts[1].length === 3 && /^\d{1,3}$/.test(parts[0]) && /^\d{3}$/.test(parts[1])) {
+          // Remover o ponto (separador de milhar)
+          return parts.join('');
+        }
+        
+        // Se a segunda parte tem 1-2 dígitos, provavelmente é decimal (ex: "10.5", "10.50")
+        if (parts[1].length <= 2 && /^\d+$/.test(parts[1])) {
+          // Converter ponto para vírgula (decimal)
+          return str.replace('.', ',');
+        }
+        
+        // Caso padrão: remover ponto (assumir separador de milhar)
+        return parts.join('');
+      }
+    }
+    
+    return str;
+  };
+
+  // Função para exibir número normalizado
+  const displayNumber = (value) => {
+    const normalized = normalizeNumber(value);
+    if (normalized === '-') return '-';
+    return normalized;
+  };
+
 const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = false, pedidoIdAtual, onDesvincularSelecionados }, ref) => {
   const [produtosAtualizados, setProdutosAtualizados] = useState(produtos || []);
   const [errors, setErrors] = useState({});
   const [produtosSelecionados, setProdutosSelecionados] = useState([]);
+  const [produtoParaDividir, setProdutoParaDividir] = useState(null);
+  const [isDivisaoModalOpen, setIsDivisaoModalOpen] = useState(false);
+  const [produtoParaEditar, setProdutoParaEditar] = useState(null);
+  const [isEdicaoModalOpen, setIsEdicaoModalOpen] = useState(false);
 
   useEffect(() => {
     setProdutosAtualizados(produtos || []);
@@ -159,21 +233,43 @@ const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = fal
   // 1. Se Ctrl. Val. (%) > 30% → Reprovado (produto próximo ao vencimento)
   // 2. Se num_reprovadas >= RE && RE > 0 → Reprovado
   // 3. Caso contrário → Aprovado
+  // Retorna null/vazio se não houver dados suficientes para calcular
   const calcularResultadoFinal = useCallback((produto) => {
+    // Verificar se há dados mínimos necessários para calcular o resultado
+    const temFabricacao = produto.fabricacao || produto.fabricacaoBR;
+    const temValidade = produto.validade || produto.validadeBR;
+    const temLote = produto.lote;
+    const temAvalSensorial = produto.aval_sensorial;
+    const temTamLote = produto.tam_lote;
+    const temAmostrasAvaliadas = produto.num_amostras_avaliadas;
+    const temAmostrasReprovadas = produto.num_amostras_reprovadas !== null && produto.num_amostras_reprovadas !== undefined && produto.num_amostras_reprovadas !== '';
+    
+    // Verificar se é grupo Frios (precisa de temperatura)
+    const isGrupoFrios = produto.grupo_nome && produto.grupo_nome.toLowerCase() === 'frios';
+    const temTemperatura = !isGrupoFrios || produto.temperatura;
+    
+    // Se não tiver dados obrigatórios, não calcular resultado
+    if (!temFabricacao || !temValidade || !temLote || !temAvalSensorial || !temTemperatura || !temTamLote || !temAmostrasAvaliadas) {
+      return null;
+    }
+    
     // Verificar controle de validade
     const controleValidade = produto.controle_validade;
     if (controleValidade !== null && controleValidade !== undefined && controleValidade > 30) {
       return 'Reprovado'; // Produto próximo ao vencimento (> 30%)
     }
     
-    // Verificar amostras reprovadas
-    const numReprovadas = parseInt(produto.num_amostras_reprovadas || 0);
-    const re = parseInt(produto.re || 0);
+    // Verificar amostras reprovadas (apenas se tiver RE definido e amostras reprovadas informadas)
+    if (temAmostrasReprovadas) {
+      const numReprovadas = parseInt(produto.num_amostras_reprovadas || 0);
+      const re = parseInt(produto.re || 0);
 
-    if (re > 0 && numReprovadas >= re) {
-      return 'Reprovado';
+      if (re > 0 && numReprovadas >= re) {
+        return 'Reprovado';
+      }
     }
     
+    // Se todas as condições foram atendidas e não há motivo para reprovação, aprovar
     return 'Aprovado';
   }, []);
 
@@ -211,16 +307,42 @@ const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = fal
         produto.controle_validade = controleValidade;
       }
 
-    // Sempre recalcular resultado final quando:
-    // - Mudar reprovadas ou RE (amostragem)
-    // - Mudar controle de validade (fabricação/validade)
-    const mudouAmostragem = (typeof field === 'string' && (field === 'num_amostras_reprovadas' || field === 're')) ||
-                             (typeof field === 'object' && (field.num_amostras_reprovadas !== undefined || field.re !== undefined));
+    // Sempre recalcular resultado final quando qualquer campo relevante mudar
+    // Campos relevantes: todos os dados obrigatórios e dados de avaliação
+    const mudouCampoRelevante = 
+      (typeof field === 'string' && (
+        field === 'num_amostras_reprovadas' || 
+        field === 'num_amostras_avaliadas' ||
+        field === 'num_amostras_aprovadas' ||
+        field === 're' ||
+        field === 'temperatura' ||
+        field === 'aval_sensorial' ||
+        field === 'tam_lote' ||
+        field === 'lote' ||
+        field === 'fabricacao' ||
+        field === 'validade' ||
+        field === 'fabricacaoBR' ||
+        field === 'validadeBR'
+      )) ||
+      (typeof field === 'object' && (
+        field.num_amostras_reprovadas !== undefined || 
+        field.num_amostras_avaliadas !== undefined ||
+        field.num_amostras_aprovadas !== undefined ||
+        field.re !== undefined ||
+        field.temperatura !== undefined ||
+        field.aval_sensorial !== undefined ||
+        field.tam_lote !== undefined ||
+        field.lote !== undefined ||
+        field.fabricacao !== undefined ||
+        field.validade !== undefined ||
+        field.fabricacaoBR !== undefined ||
+        field.validadeBR !== undefined ||
+        field.controle_validade !== undefined
+      )) ||
+      temAlteracaoData;
     
-    const mudouControleValidade = temAlteracaoData || 
-                                   (typeof field === 'object' && field.controle_validade !== undefined);
-    
-    if (mudouAmostragem || mudouControleValidade) {
+    // Sempre recalcular resultado final quando houver mudança em campos relevantes
+    if (mudouCampoRelevante) {
       produto.resultado_final = calcularResultadoFinal(produto);
     }
 
@@ -235,6 +357,9 @@ const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = fal
   };
 
   const getResultadoColor = (resultado) => {
+    if (!resultado || resultado === '') {
+      return 'bg-gray-50 text-gray-500'; // Estado neutro - aguardando avaliação
+    }
     return resultado === 'Aprovado' 
       ? 'bg-green-100 text-green-800 font-semibold' 
       : 'bg-red-100 text-red-800 font-semibold';
@@ -355,31 +480,103 @@ const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = fal
     }
   };
 
+  const handleDividirProduto = (index) => {
+    const produto = produtosAtualizados[index];
+    if (!produto) return;
+    
+    setProdutoParaDividir({ ...produto, _indexOriginal: index });
+    setIsDivisaoModalOpen(true);
+  };
+
+  const handleConfirmarDivisao = (produtosDivididos) => {
+    if (!produtoParaDividir) return;
+
+    const indexOriginal = produtoParaDividir._indexOriginal;
+    const updated = [...produtosAtualizados];
+    
+    // Remover o produto original e inserir os produtos divididos no lugar
+    updated.splice(indexOriginal, 1, ...produtosDivididos);
+    
+    setProdutosAtualizados(updated);
+    onChange(updated);
+    
+    toast.success(`Produto dividido em ${produtosDivididos.length} entrada(s)`);
+    setProdutoParaDividir(null);
+    setIsDivisaoModalOpen(false);
+  };
+
+  const handleEditarProduto = (index) => {
+    const produto = produtosAtualizados[index];
+    if (!produto) return;
+    
+    setProdutoParaEditar({ ...produto, _indexOriginal: index });
+    setIsEdicaoModalOpen(true);
+  };
+
+  const handleSalvarEdicao = (produtoEditado) => {
+    if (!produtoParaEditar) return;
+
+    const indexOriginal = produtoParaEditar._indexOriginal;
+    const updated = [...produtosAtualizados];
+    
+    // Atualizar o produto editado
+    updated[indexOriginal] = {
+      ...updated[indexOriginal],
+      ...produtoEditado
+    };
+    
+    setProdutosAtualizados(updated);
+    onChange(updated);
+    
+    toast.success('Produto atualizado com sucesso');
+    setProdutoParaEditar(null);
+    setIsEdicaoModalOpen(false);
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
       <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
         <h3 className="text-lg font-semibold text-gray-900">Avaliação dos Produtos Recebidos</h3>
-        {pedidoIdAtual && produtosSelecionados.length > 0 && !viewMode && (
+        {pedidoIdAtual && !viewMode && (
+          <div className="flex gap-2">
+            {produtosSelecionados.length === 1 && (
+              <button
+                type="button"
+                onClick={() => {
+                  const pedidoItemIdSelecionado = produtosSelecionados[0];
+                  const index = produtosAtualizados.findIndex(
+                    p => p.pedido_item_id && p.pedido_item_id === pedidoItemIdSelecionado
+                  );
+                  if (index !== -1) {
+                    handleDividirProduto(index);
+                  }
+                }}
+                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors text-sm font-medium flex items-center gap-2"
+                title="Dividir produto selecionado em múltiplas entradas com diferentes fabricações, lotes e validades"
+              >
+                <FaCut className="w-4 h-4" />
+                Dividir Produto
+              </button>
+            )}
+            {produtosSelecionados.length > 0 && (
           <button
+                type="button"
             onClick={handleDesvincularSelecionadosClick}
             className="px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700 transition-colors text-sm font-medium"
           >
-            Desvincular Selecionados ({produtosSelecionados.length})
+            Remover Selecionados ({produtosSelecionados.length})
           </button>
+            )}
+          </div>
         )}
       </div>
 
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
+        <table className="w-full divide-y divide-gray-200" style={{ minWidth: '100%' }}>
           <thead className="bg-gray-50">
             <tr>
-              <th colSpan={pedidoIdAtual && !viewMode ? 9 : 8} className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase bg-blue-50">
-                Informações do Produto
-              </th>
-            </tr>
-            <tr>
               {pedidoIdAtual && !viewMode && (
-                <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase w-12">
+                <th className="px-2 py-1.5 text-center text-xs font-medium text-gray-500 uppercase w-10">
                   <input
                     type="checkbox"
                     checked={
@@ -391,18 +588,29 @@ const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = fal
                     }
                     onChange={(e) => handleSelectAll(e.target.checked)}
                     className="rounded border-gray-300 text-green-600 focus:ring-green-500 cursor-pointer"
-                    title="Selecionar todos para desvincular"
+                    title="Selecionar todos para remover"
                   />
                 </th>
               )}
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Código</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Produto</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Unidade</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Qtd. Pedido</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Fabricação <span className="text-red-500">*</span></th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Lote <span className="text-red-500">*</span></th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Validade <span className="text-red-500">*</span></th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Ctrl. Val. (%)</th>
+              <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500 uppercase">Código</th>
+              <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500 uppercase">Produto</th>
+              <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500 uppercase">Und.</th>
+              <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500 uppercase">Qtd. Ped.</th>
+              <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500 uppercase">Fab. <span className="text-red-500">*</span></th>
+              <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500 uppercase">Lote <span className="text-red-500">*</span></th>
+              <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500 uppercase">Val. <span className="text-red-500">*</span></th>
+              <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500 uppercase">Ctrl. Val.</th>
+              <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500 uppercase">Temp.</th>
+              <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500 uppercase">Aval. Sens. <span className="text-red-500">*</span></th>
+              <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500 uppercase">Tam. Lote</th>
+              <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500 uppercase">NQA</th>
+              <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500 uppercase">Nº Amost.</th>
+              <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500 uppercase">Aprov.</th>
+              <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500 uppercase">Reprov.</th>
+              <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500 uppercase">Resultado</th>
+              {!viewMode && (
+                <th className="px-2 py-1.5 text-center text-xs font-medium text-gray-500 uppercase">Ações</th>
+              )}
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -427,327 +635,157 @@ const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = fal
               // Calcular resultado final considerando controle de validade
               const resultadoFinal = calcularResultadoFinal(produto);
 
+              // Renderizar controle de validade
+              const renderControleValidade = () => {
+                if (controleValidade !== null && controleValidade !== undefined) {
+                  return `${controleValidade}%`;
+                }
+                
+                const fab = produto.fabricacao || produto.fabricacaoBR || '';
+                const val = produto.validade || produto.validadeBR || '';
+                
+                if (fab && val) {
+                  try {
+                    let fabISO = fab.includes('/') ? formatDateISO(fab) : fab;
+                    let valISO = val.includes('/') ? formatDateISO(val) : val;
+                    
+                    if (fabISO && valISO) {
+                      const fabDate = new Date(fabISO);
+                      const valDate = new Date(valISO);
+                      
+                      if (!isNaN(fabDate.getTime()) && !isNaN(valDate.getTime())) {
+                        if (valDate < fabDate) {
+                          return <span className="text-red-600 text-xs" title="Validade não pode ser anterior à fabricação">⚠️</span>;
+                        }
+                        if (valDate.getTime() === fabDate.getTime()) {
+                          return <span className="text-red-600 text-xs" title="Validade igual à fabricação">⚠️</span>;
+                        }
+                        return <span className="text-gray-500 text-xs">Erro</span>;
+                      }
+                    }
+                  } catch (e) {
+                    return <span className="text-gray-500 text-xs">Erro</span>;
+                  }
+                }
+                
+                return '-';
+              };
+
               return (
-                <React.Fragment key={index}>
-                  {/* Linha 1: Informações do Produto */}
-                  <tr className="hover:bg-gray-50">
-                    {pedidoIdAtual && !viewMode && (
-                      <td className="px-4 py-3 whitespace-nowrap text-center w-12">
-                        {produto.pedido_item_id ? (
-                          <input
-                            type="checkbox"
-                            checked={produtosSelecionados.includes(produto.pedido_item_id)}
-                            onChange={(e) => handleSelectProduto(produto.pedido_item_id, e.target.checked)}
-                            className="rounded border-gray-300 text-green-600 focus:ring-green-500 cursor-pointer"
-                            title="Selecionar para desvincular do pedido"
-                          />
-                        ) : (
-                          <span className="text-gray-400">-</span>
-                        )}
-                      </td>
-                    )}
-                    <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {produto.codigo || produto.codigo_produto || '-'}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">
-                      {produto.descricao || produto.nome_produto || '-'}
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
-                      {produto.und || produto.unidade_medida || '-'}
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
-                      {produto.qtde || produto.quantidade_pedido || '-'}
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <div>
-                      <Input
-                        type="date"
-                        value={produto.fabricacao || formatDateISO(produto.fabricacaoBR) || ''}
-                          max={new Date().toISOString().split('T')[0]}
-                        onChange={(e) => {
-                            const dataSelecionada = e.target.value;
-                            const hoje = new Date();
-                            hoje.setHours(0, 0, 0, 0);
-                            const dataFabricacao = new Date(dataSelecionada);
-                            
-                            // Validar se a data de fabricação não é superior à data atual
-                            if (dataFabricacao > hoje) {
-                              const newErrors = { ...errors };
-                              newErrors[`${index}-fabricacao`] = 'Data de fabricação não pode ser superior à data atual';
-                              setErrors(newErrors);
-                              return;
-                            }
-                            
-                            const dateBR = formatDateBR(dataSelecionada);
-                            // Atualizar ambos os campos de uma vez para garantir que o cálculo funcione
-                            handleFieldChange(index, {
-                              fabricacao: dataSelecionada,
-                              fabricacaoBR: dateBR
-                            });
-                            // Remover erro quando preencher corretamente
-                            if (errors[`${index}-fabricacao`]) {
-                              const newErrors = { ...errors };
-                              delete newErrors[`${index}-fabricacao`];
-                              setErrors(newErrors);
-                            }
-                        }}
-                          className={`w-32 text-sm ${errors[`${index}-fabricacao`] ? 'border-red-500' : ''}`}
-                          disabled={viewMode}
-                          required
+                <tr key={index} className="hover:bg-gray-50">
+                  {pedidoIdAtual && !viewMode && (
+                    <td className="px-2 py-2 whitespace-nowrap text-center w-10">
+                      {produto.pedido_item_id ? (
+                        <input
+                          type="checkbox"
+                          checked={produtosSelecionados.includes(produto.pedido_item_id)}
+                          onChange={(e) => handleSelectProduto(produto.pedido_item_id, e.target.checked)}
+                          className="rounded border-gray-300 text-green-600 focus:ring-green-500 cursor-pointer"
+                          title="Selecionar para remover do relatório"
                         />
-                        {errors[`${index}-fabricacao`] && (
-                          <p className="text-xs text-red-600 mt-1">{errors[`${index}-fabricacao`]}</p>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <div>
-                      <Input
-                        type="text"
-                        value={produto.lote || ''}
-                          onChange={(e) => {
-                            handleFieldChange(index, 'lote', e.target.value);
-                            // Remover erro quando preencher
-                            if (errors[`${index}-lote`]) {
-                              const newErrors = { ...errors };
-                              delete newErrors[`${index}-lote`];
-                              setErrors(newErrors);
-                            }
-                          }}
-                        placeholder="Lote"
-                          className={`w-24 text-sm ${errors[`${index}-lote`] ? 'border-red-500' : ''}`}
-                          disabled={viewMode}
-                          required
-                      />
-                        {errors[`${index}-lote`] && (
-                          <p className="text-xs text-red-600 mt-1">{errors[`${index}-lote`]}</p>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <div>
-                      <Input
-                        type="date"
-                        value={produto.validade || formatDateISO(produto.validadeBR) || ''}
-                          min={new Date().toISOString().split('T')[0]}
-                        onChange={(e) => {
-                            const dataSelecionada = e.target.value;
-                            const hoje = new Date();
-                            hoje.setHours(0, 0, 0, 0);
-                            const dataValidade = new Date(dataSelecionada);
-                            
-                            // Validar se a data de validade não é anterior à data atual
-                            if (dataValidade < hoje) {
-                              const newErrors = { ...errors };
-                              newErrors[`${index}-validade`] = 'Data de validade não pode ser anterior à data atual';
-                              setErrors(newErrors);
-                              return;
-                            }
-                            
-                            const dateBR = formatDateBR(dataSelecionada);
-                            // Atualizar ambos os campos de uma vez para garantir que o cálculo funcione
-                            handleFieldChange(index, {
-                              validade: dataSelecionada,
-                              validadeBR: dateBR
-                            });
-                            // Remover erro quando preencher corretamente
-                            if (errors[`${index}-validade`]) {
-                              const newErrors = { ...errors };
-                              delete newErrors[`${index}-validade`];
-                              setErrors(newErrors);
-                            }
-                        }}
-                          className={`w-32 text-sm ${errors[`${index}-validade`] ? 'border-red-500' : ''}`}
-                          disabled={viewMode}
-                          required
-                        />
-                        {errors[`${index}-validade`] && (
-                          <p className="text-xs text-red-600 mt-1">{errors[`${index}-validade`]}</p>
-                        )}
-                      </div>
-                    </td>
-                    <td className={`px-4 py-3 whitespace-nowrap text-sm text-center ${getValidadeColor(controleValidade)}`}>
-                      {(() => {
-                        // Se tem cálculo válido, mostrar percentual
-                        if (controleValidade !== null && controleValidade !== undefined) {
-                          return `${controleValidade}%`;
-                        }
-                        
-                        // Se tem ambas as datas mas não calculou, verificar o motivo
-                        const fab = produto.fabricacao || produto.fabricacaoBR || '';
-                        const val = produto.validade || produto.validadeBR || '';
-                        
-                        if (fab && val) {
-                          try {
-                            let fabISO = fab.includes('/') ? formatDateISO(fab) : fab;
-                            let valISO = val.includes('/') ? formatDateISO(val) : val;
-                            
-                            if (fabISO && valISO) {
-                              const fabDate = new Date(fabISO);
-                              const valDate = new Date(valISO);
-                              
-                              if (!isNaN(fabDate.getTime()) && !isNaN(valDate.getTime())) {
-                                // Validar se validade é anterior à fabricação
-                                if (valDate < fabDate) {
-                                  return <span className="text-red-600 text-xs font-semibold" title="Validade não pode ser anterior à fabricação">⚠️ Inválido</span>;
-                                }
-                                // Validar se datas são iguais (também é inválido)
-                                if (valDate.getTime() === fabDate.getTime()) {
-                                  return <span className="text-red-600 text-xs font-semibold" title="Validade igual à fabricação - não é possível calcular">⚠️ Inválido</span>;
-                                }
-                                // Se chegou aqui, as datas são válidas mas o cálculo retornou null por outro motivo
-                                return <span className="text-gray-500 text-xs" title="Erro ao calcular - verifique as datas">Erro</span>;
-                              }
-                            }
-                          } catch (e) {
-                            // Ignorar erros de conversão
-                            return <span className="text-gray-500 text-xs" title="Erro ao processar datas">Erro</span>;
-                          }
-                        }
-                        
-                        // Sem datas preenchidas
-                        return '-';
-                      })()}
-                    </td>
-                  </tr>
-                  
-                  {/* Linha 2: Avaliação e Resultado - Cabeçalho */}
-                  <tr className="bg-blue-50">
-                    <th colSpan="8" className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                      Avaliação e Resultado
-                    </th>
-                  </tr>
-                  <tr className="bg-gray-50">
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                      Temp. (°C)
-                      {produtosAtualizados.some(p => p.grupo_nome && p.grupo_nome.toLowerCase() === 'frios') && (
-                        <span className="text-red-500 ml-1">*</span>
+                      ) : (
+                        <span className="text-gray-400">-</span>
                       )}
-                    </th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Aval. Sensorial <span className="text-red-500">*</span></th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Tam. Lote</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">NQA</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Nº Amostras Aval.</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Nº Aprov.</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Nº Reprov.</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Resultado Final</th>
-                  </tr>
-                  {/* Linha 2: Avaliação e Resultado - Dados */}
-                  <tr className="bg-gray-50 hover:bg-gray-100">
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <div>
-                      <Input
-                        type="number"
-                        value={produto.temperatura || ''}
-                          onChange={(e) => {
-                            handleFieldChange(index, 'temperatura', e.target.value);
-                            // Remover erro quando preencher
-                            if (errors[`${index}-temperatura`]) {
-                              const newErrors = { ...errors };
-                              delete newErrors[`${index}-temperatura`];
-                              setErrors(newErrors);
-                            }
-                          }}
-                        placeholder="°C"
-                          className={`w-20 text-sm ${errors[`${index}-temperatura`] ? 'border-red-500' : ''}`}
-                          disabled={viewMode}
-                          required={produto.grupo_nome && produto.grupo_nome.toLowerCase() === 'frios'}
-                      />
-                        {errors[`${index}-temperatura`] && (
-                          <p className="text-xs text-red-600 mt-1">{errors[`${index}-temperatura`]}</p>
-                        )}
-                      </div>
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <div>
-                      <select
-                        value={produto.aval_sensorial || ''}
-                          onChange={(e) => {
-                            handleFieldChange(index, 'aval_sensorial', e.target.value);
-                            // Remover erro quando preencher
-                            if (errors[`${index}-aval_sensorial`]) {
-                              const newErrors = { ...errors };
-                              delete newErrors[`${index}-aval_sensorial`];
-                              setErrors(newErrors);
-                            }
-                          }}
-                          className={`w-full px-2 py-1 text-sm border rounded focus:ring-2 focus:ring-green-500 focus:border-green-500 ${errors[`${index}-aval_sensorial`] ? 'border-red-500' : 'border-gray-300'}`}
-                          disabled={viewMode}
-                          required
-                      >
-                        <option value="">Selecione...</option>
-                        <option value="Conforme">Conforme</option>
-                        <option value="Não Conforme">Não Conforme</option>
-                      </select>
-                        {errors[`${index}-aval_sensorial`] && (
-                          <p className="text-xs text-red-600 mt-1">{errors[`${index}-aval_sensorial`]}</p>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <Input
-                        type="number"
-                        value={produto.tam_lote || ''}
-                        onChange={(e) => {
-                          handleFieldChange(index, 'tam_lote', e.target.value);
-                          // Buscar plano quando tamanho do lote mudar
-                          if (produto.grupo_id && e.target.value) {
-                            buscarDadosNQA({ ...produto, tam_lote: e.target.value });
-                          }
-                        }}
-                        placeholder="Tamanho"
-                        className="w-20 text-sm"
-                      />
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600 font-medium">
-                      {produto.nqa_codigo || '-'}
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600 font-medium">
-                      {produto.num_amostras_avaliadas || '-'}
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <Input
-                        type="number"
-                        value={produto.num_amostras_aprovadas || ''}
-                        onChange={(e) => handleFieldChange(index, 'num_amostras_aprovadas', e.target.value)}
-                        className="w-16 text-sm"
-                        min="0"
-                      />
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <Input
-                        type="number"
-                        value={produto.num_amostras_reprovadas || ''}
-                        onChange={(e) => handleFieldChange(index, 'num_amostras_reprovadas', e.target.value)}
-                        className="w-16 text-sm"
-                        min="0"
-                      />
-                    </td>
-                    <td className={`px-4 py-3 whitespace-nowrap text-sm text-center ${getResultadoColor(resultadoFinal)}`}>
-                      {resultadoFinal || '-'}
-                    </td>
-                  </tr>
-                  {/* Linha de ações */}
-                  {!viewMode && (
-                  <tr className="bg-gray-100">
-                      <td colSpan={pedidoIdAtual && !viewMode ? 9 : 8} className="px-4 py-2 text-right">
-                      <button
-                        onClick={() => onRemove(index)}
-                        className="text-red-600 hover:text-red-900 p-1 rounded transition-colors text-sm"
-                          title={produto.pedido_item_id ? "Desvincular produto do pedido" : "Remover produto"}
-                      >
-                        <FaTrash className="w-4 h-4 inline mr-1" />
-                          {produto.pedido_item_id ? "Desvincular" : "Remover"}
-                      </button>
-                    </td>
-                  </tr>
                   )}
-                </React.Fragment>
+                  <td className="px-2 py-2 whitespace-nowrap text-xs font-medium text-gray-900">
+                    {produto.codigo || produto.codigo_produto || '-'}
+                  </td>
+                  <td className="px-2 py-2 text-xs text-gray-600 max-w-[120px] truncate" title={produto.descricao || produto.nome_produto || ''}>
+                    {produto.descricao || produto.nome_produto || '-'}
+                  </td>
+                  <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-600">
+                    {produto.und || produto.unidade_medida || '-'}
+                  </td>
+                  <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-600">
+                    {displayNumber(produto.qtde || produto.quantidade_pedido)}
+                  </td>
+                  <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-600">
+                    {produto.fabricacaoBR || formatDateBR(produto.fabricacao) || '-'}
+                  </td>
+                  <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-600">
+                    {produto.lote || '-'}
+                  </td>
+                  <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-600">
+                    {produto.validadeBR || formatDateBR(produto.validade) || '-'}
+                  </td>
+                  <td className={`px-2 py-2 whitespace-nowrap text-xs text-center ${getValidadeColor(controleValidade)}`}>
+                    {renderControleValidade()}
+                  </td>
+                  <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-600">
+                    {produto.temperatura ? `${displayNumber(produto.temperatura)}°C` : '-'}
+                  </td>
+                  <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-600">
+                    {produto.aval_sensorial || '-'}
+                  </td>
+                  <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-600">
+                    {displayNumber(produto.tam_lote)}
+                  </td>
+                  <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-600 font-medium">
+                    {produto.nqa_codigo || '-'}
+                  </td>
+                  <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-600 font-medium">
+                    {displayNumber(produto.num_amostras_avaliadas)}
+                  </td>
+                  <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-600">
+                    {displayNumber(produto.num_amostras_aprovadas)}
+                  </td>
+                  <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-600">
+                    {displayNumber(produto.num_amostras_reprovadas)}
+                  </td>
+                  <td className={`px-2 py-2 whitespace-nowrap text-xs text-center ${getResultadoColor(resultadoFinal)}`}>
+                    {resultadoFinal || 'Aguardando avaliação'}
+                  </td>
+                  {!viewMode && (
+                    <td className="px-2 py-2 whitespace-nowrap text-center">
+                      <div className="flex justify-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => handleEditarProduto(index)}
+                          className="text-green-600 hover:text-green-900 p-1 rounded transition-colors"
+                          title="Preencher informações do produto"
+                        >
+                          <FaEdit className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => onRemove(index)}
+                          className="text-red-600 hover:text-red-900 p-1 rounded transition-colors"
+                          title="Remover produto deste relatório"
+                        >
+                          <FaTrash className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </td>
+                  )}
+                </tr>
               );
             })}
           </tbody>
         </table>
       </div>
+
+      {/* Modal de Divisão de Produto */}
+      <ProdutoDivisaoModal
+        isOpen={isDivisaoModalOpen}
+        onClose={() => {
+          setIsDivisaoModalOpen(false);
+          setProdutoParaDividir(null);
+        }}
+        produto={produtoParaDividir}
+        onConfirm={handleConfirmarDivisao}
+      />
+
+      {/* Modal de Edição de Produto */}
+      <ProdutoEdicaoModal
+        isOpen={isEdicaoModalOpen}
+        onClose={() => {
+          setIsEdicaoModalOpen(false);
+          setProdutoParaEditar(null);
+        }}
+        produto={produtoParaEditar}
+        onSave={handleSalvarEdicao}
+      />
     </div>
   );
 });

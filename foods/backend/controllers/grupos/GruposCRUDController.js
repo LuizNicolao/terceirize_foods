@@ -20,7 +20,7 @@ class GruposCRUDController {
    * Criar novo grupo
    */
   static criarGrupo = asyncHandler(async (req, res) => {
-    const { nome, descricao, status } = req.body;
+    const { nome, descricao, tipo, status } = req.body;
 
     // Verificar se nome já existe
     const existingGrupo = await executeQuery(
@@ -35,10 +35,11 @@ class GruposCRUDController {
     // Inserir grupo com código temporário
     const codigoTemporario = `TEMP-${Date.now()}`;
     const result = await executeQuery(
-      'INSERT INTO grupos (nome, descricao, status, codigo, data_cadastro) VALUES (?, ?, ?, ?, NOW())',
+      'INSERT INTO grupos (nome, descricao, tipo, status, codigo, data_cadastro) VALUES (?, ?, ?, ?, ?, NOW())',
       [
         nome && nome.trim() ? nome.trim() : null, 
         descricao && descricao.trim() ? descricao.trim() : null,
+        tipo && tipo.trim() ? tipo.trim() : null,
         status === 1 || status === '1' ? 'ativo' : 'inativo',
         codigoTemporario
       ]
@@ -62,6 +63,7 @@ class GruposCRUDController {
         g.nome, 
         g.codigo,
         g.descricao,
+        g.tipo,
         g.status, 
         g.data_cadastro as criado_em,
         g.data_atualizacao as atualizado_em,
@@ -69,7 +71,7 @@ class GruposCRUDController {
        FROM grupos g
        LEFT JOIN subgrupos sg ON g.id = sg.grupo_id
        WHERE g.id = ?
-       GROUP BY g.id, g.nome, g.codigo, g.descricao, g.status, g.data_cadastro, g.data_atualizacao`,
+       GROUP BY g.id, g.nome, g.codigo, g.descricao, g.tipo, g.status, g.data_cadastro, g.data_atualizacao`,
       [novoGrupoId]
     );
 
@@ -119,7 +121,7 @@ class GruposCRUDController {
     // Construir query de atualização dinamicamente
     const updateFields = [];
     const updateParams = [];
-    const camposValidos = ['nome', 'descricao', 'status']; // Removido 'codigo' pois é gerado automaticamente
+    const camposValidos = ['nome', 'descricao', 'tipo', 'status']; // Removido 'codigo' pois é gerado automaticamente
 
     Object.keys(updateData).forEach(key => {
       if (camposValidos.includes(key) && updateData[key] !== undefined) {
@@ -165,6 +167,7 @@ class GruposCRUDController {
         g.nome, 
         g.codigo,
         g.descricao,
+        g.tipo,
         g.status, 
         g.data_cadastro as criado_em,
         g.data_atualizacao as atualizado_em,
@@ -172,7 +175,7 @@ class GruposCRUDController {
       FROM grupos g
       LEFT JOIN subgrupos sg ON g.id = sg.grupo_id
       WHERE g.id = ?
-      GROUP BY g.id, g.nome, g.codigo, g.descricao, g.status, g.data_cadastro, g.data_atualizacao`,
+      GROUP BY g.id, g.nome, g.codigo, g.descricao, g.tipo, g.status, g.data_cadastro, g.data_atualizacao`,
       [id]
     );
 

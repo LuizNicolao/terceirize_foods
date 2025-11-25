@@ -6,11 +6,9 @@ const PedidosComprasModalHeader = ({
   isViewMode, 
   pedidoCompras, 
   saving, 
-  onClose 
+  onClose,
+  onPrint
 }) => {
-  const handlePrint = () => {
-    window.print();
-  };
 
   return (
     <div className="flex justify-between items-center p-6 border-b border-gray-200 bg-gradient-to-r from-green-50 to-blue-50">
@@ -42,11 +40,11 @@ const PedidosComprasModalHeader = ({
         </div>
       </div>
       <div className="flex items-center gap-2">
-        {isViewMode && pedidoCompras && (
+        {isViewMode && pedidoCompras && onPrint && (
           <Button
             variant="outline"
             size="sm"
-            onClick={handlePrint}
+            onClick={() => onPrint(pedidoCompras)}
             className="flex items-center gap-2"
           >
             <FaPrint className="w-4 h-4" />

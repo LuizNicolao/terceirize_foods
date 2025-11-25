@@ -424,6 +424,92 @@ class CalendarioConfiguracaoController {
     }
   }
 
+  static async atualizarDiaNaoUtil(req, res) {
+    try {
+      const { id } = req.params;
+      const { data, descricao, observacoes, tipo_destino = 'global', filial_id, unidade_escolar_id } = req.body;
+
+      if (!data || !descricao) {
+        return res.status(400).json({
+          success: false,
+          message: 'Data e descrição são obrigatórias'
+        });
+      }
+
+      if (!['global', 'filial', 'unidade'].includes(tipo_destino)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Tipo de destino inválido'
+        });
+      }
+
+      if (tipo_destino === 'filial' && !filial_id) {
+        return res.status(400).json({
+          success: false,
+          message: 'Selecione a filial para o dia não útil'
+        });
+      }
+
+      if (tipo_destino === 'unidade' && !unidade_escolar_id) {
+        return res.status(400).json({
+          success: false,
+          message: 'Selecione a unidade escolar para o dia não útil'
+        });
+      }
+
+      await ensureDiasNaoUteisTable();
+
+      // Verificar se o registro existe
+      const [diaExistente] = await executeQuery(`
+        SELECT id FROM calendario_dias_nao_uteis WHERE id = ?
+      `, [id]);
+
+      if (!diaExistente) {
+        return res.status(404).json({
+          success: false,
+          message: 'Dia não útil não encontrado'
+        });
+      }
+
+      // Atualizar o registro
+      await executeQuery(`
+        UPDATE calendario_dias_nao_uteis SET
+          data = ?,
+          descricao = ?,
+          observacoes = ?,
+          tipo_destino = ?,
+          filial_id = ?,
+          unidade_escolar_id = ?
+        WHERE id = ?
+      `, [
+        data,
+        descricao,
+        observacoes || null,
+        tipo_destino,
+        tipo_destino === 'filial' ? filial_id : null,
+        tipo_destino === 'unidade' ? unidade_escolar_id : null,
+        id
+      ]);
+
+      res.json({
+        success: true,
+        message: 'Dia não útil atualizado com sucesso'
+      });
+    } catch (error) {
+      if (error && error.code === 'ER_DUP_ENTRY') {
+        return res.status(409).json({
+          success: false,
+          message: 'Já existe um dia não útil cadastrado com esses critérios'
+        });
+      }
+      console.error('Erro ao atualizar dia não útil personalizado:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro interno do servidor'
+      });
+    }
+  }
+
   static async removerDiaNaoUtil(req, res) {
     try {
       const { id } = req.params;

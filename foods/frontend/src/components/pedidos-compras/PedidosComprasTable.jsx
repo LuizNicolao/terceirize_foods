@@ -7,9 +7,11 @@ const PedidosComprasTable = ({
   onView,
   onEdit,
   onDelete,
+  onPrint,
   canView,
   canEdit,
   canDelete,
+  canPrint,
   getStatusBadge,
   selectedIds = [],
   onSelectAll,
@@ -193,9 +195,11 @@ const PedidosComprasTable = ({
                           canView={canView}
                           canEdit={canEdit && canEditByStatus(pedido)}
                           canDelete={canDelete && canDeleteByStatus(pedido)}
+                          canPrint={canPrint}
                           onView={onView}
                           onEdit={onEdit}
                           onDelete={onDelete}
+                          onPrint={onPrint}
                           item={pedido}
                           size="xs"
                         />
@@ -261,9 +265,11 @@ const PedidosComprasTable = ({
                   canView={canView}
                   canEdit={canEdit && canEditByStatus(pedido)}
                   canDelete={canDelete && canDeleteByStatus(pedido)}
+                  canPrint={canPrint}
                   onView={onView}
                   onEdit={onEdit}
                   onDelete={onDelete}
+                  onPrint={onPrint}
                   item={pedido}
                   size="sm"
                 />

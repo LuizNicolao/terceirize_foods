@@ -49,6 +49,9 @@ const GruposTable = ({
                   onSort={onSort}
                 />
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Tipo
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Subgrupos
                 </th>
                 <SortableTableHeader
@@ -78,6 +81,9 @@ const GruposTable = ({
                         {grupo.descricao}
                       </div>
                     )}
+                  </td>
+                  <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
+                    {grupo.tipo || '-'}
                   </td>
                   <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
                     {grupo.subgrupos_count || 0}
@@ -136,6 +142,10 @@ const GruposTable = ({
               <div>
                 <span className="text-gray-500">Código:</span>
                 <p className="font-medium">{grupo.codigo || '-'}</p>
+              </div>
+              <div>
+                <span className="text-gray-500">Tipo:</span>
+                <p className="font-medium">{grupo.tipo || '-'}</p>
               </div>
               <div>
                 <span className="text-gray-500">Subgrupos:</span>

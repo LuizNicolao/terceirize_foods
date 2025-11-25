@@ -1,14 +1,16 @@
 import React from 'react';
-import { FaEye, FaEdit, FaTrash } from 'react-icons/fa';
+import { FaEye, FaEdit, FaTrash, FaPrint } from 'react-icons/fa';
 import Button from './Button';
 
 const ActionButtons = ({ 
   canView = false, 
   canEdit = false, 
-  canDelete = false, 
+  canDelete = false,
+  canPrint = false,
   onView, 
   onEdit, 
-  onDelete, 
+  onDelete,
+  onPrint,
   item,
   size = "sm",
   className = ""
@@ -36,6 +38,18 @@ const ActionButtons = ({
           className="text-blue-600 hover:text-blue-800 hover:bg-blue-50"
         >
           <FaEdit className="w-3 h-3" />
+        </Button>
+      )}
+      
+      {canPrint && onPrint && (
+        <Button
+          variant="ghost"
+          size={size}
+          onClick={() => onPrint(item)}
+          title="Imprimir"
+          className="text-purple-600 hover:text-purple-800 hover:bg-purple-50"
+        >
+          <FaPrint className="w-3 h-3" />
         </Button>
       )}
       

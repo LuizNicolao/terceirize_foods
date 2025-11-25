@@ -918,7 +918,7 @@ class SubstituicoesListController {
       
       if (aba === 'coordenacao') {
         // Buscar rotas que:
-        // 1. Têm escolas na tabela necessidades_substituicoes com status conf log
+        // 1. Têm escolas na tabela necessidades_substituicoes com status conf log OU impressao (para permitir reimpressão)
         // 2. Têm grupos vinculados que existem nas necessidades_substituicoes
         // 3. Se tipo_rota_id for fornecido, mostrar apenas rotas vinculadas a esse tipo
         // 4. Se semana_abastecimento for fornecido, filtrar por essa semana
@@ -926,7 +926,7 @@ class SubstituicoesListController {
           "r.status = 'ativo'",
           "ue.status = 'ativo'",
           "ns.ativo = 1",
-          "ns.status = 'conf log'",
+          "(ns.status = 'conf log' OR ns.status = 'impressao')",
           "ue.rota_id IS NOT NULL",
           "ue.rota_id != ''",
           "tr.grupo_id IS NOT NULL",

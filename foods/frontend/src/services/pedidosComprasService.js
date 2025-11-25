@@ -159,6 +159,18 @@ class PedidosComprasService {
     }
   }
 
+  static async aprovarPedido(id) {
+    try {
+      const response = await api.post('/pedidos-compras/acoes-em-lote/aprovar', { ids: [id] });
+      return response.data;
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Erro ao aprovar pedido'
+      };
+    }
+  }
+
   static async reabrirPedidosEmLote(ids) {
     try {
       const response = await api.post('/pedidos-compras/acoes-em-lote/reabrir', { ids });

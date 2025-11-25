@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
-import { FaSave, FaTimes, FaEye, FaEdit } from 'react-icons/fa';
+import { FaSave, FaTimes, FaEye, FaEdit, FaPrint } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { useRelatorioInspecao } from '../../hooks/useRelatorioInspecao';
@@ -9,7 +9,7 @@ import { Button, Input, SearchableSelect, LoadingSpinner, Modal } from '../ui';
 import ChecklistTable from './ChecklistTable';
 import ProdutosTable from './ProdutosTable';
 
-const RelatorioInspecaoModal = ({ isOpen, onClose, onSubmit, rir, viewMode, grupos, loading }) => {
+const RelatorioInspecaoModal = ({ isOpen, onClose, onSubmit, onSuccess, rir, viewMode, grupos, loading }) => {
   const { canCreate, canEdit } = usePermissions();
   const isEditMode = !!rir?.id;
   const isViewMode = viewMode || false;
@@ -27,7 +27,8 @@ const RelatorioInspecaoModal = ({ isOpen, onClose, onSubmit, rir, viewMode, grup
     buscarPedidosAprovados,
     buscarGrupos,
     buscarProdutosPedido,
-    buscarNQAGrupo
+    buscarNQAGrupo,
+    handlePrintRIR
   } = useRelatorioInspecao();
 
   const [saving, setSaving] = useState(false);
@@ -37,13 +38,77 @@ const RelatorioInspecaoModal = ({ isOpen, onClose, onSubmit, rir, viewMode, grup
   const [produtos, setProdutos] = useState([]);
   const produtosTableRef = useRef(null);
   const [pedidoIdAtual, setPedidoIdAtual] = useState(null);
+  const isSubmittingRef = useRef(false);
 
+  // Resetar ref quando modal fechar
+  useEffect(() => {
+    if (!isOpen) {
+      isSubmittingRef.current = false;
+      setSaving(false);
+    }
+  }, [isOpen]);
+
+  // Definir loadInitialData primeiro
+  const loadInitialData = useCallback(async () => {
+    // Carregar pedidos aprovados
+    setLoadingPedidos(true);
+    const pedidosResponse = await buscarPedidosAprovados();
+    if (pedidosResponse.success) {
+      setPedidos(pedidosResponse.data || []);
+    }
+    setLoadingPedidos(false);
+
+    // Carregar grupos
+    const gruposResponse = await buscarGrupos();
+    // grupos já está disponível no hook
+  }, [buscarPedidosAprovados, buscarGrupos]);
+
+  const loadRIRData = useCallback(async () => {
+    try {
+      const response = await buscarRIRPorId(rirId);
+      if (response && response.success && response.data) {
+        const data = response.data;
+        
+        // Preencher formulário com dados do RIR
+        Object.keys(data).forEach(key => {
+          if (data[key] !== null && data[key] !== undefined && key !== 'produtos') {
+            setValue(key, data[key]);
+          }
+        });
+        
+        // Salvar pedido_id atual se existir (pode vir de numero_pedido também)
+        if (data.pedido_id) {
+          setPedidoIdAtual(data.pedido_id);
+          setValue('pedido_id', data.pedido_id.toString());
+        } else if (data.numero_pedido && pedidos.length > 0) {
+          // Tentar encontrar o pedido pelo número
+          const pedido = pedidos.find(p => p.numero_pedido === data.numero_pedido);
+          if (pedido) {
+            setPedidoIdAtual(pedido.id);
+            setValue('pedido_id', pedido.id.toString());
+          }
+        }
+        
+        // Processar produtos
+        let produtosData = [];
+        if (data.produtos && Array.isArray(data.produtos)) {
+          produtosData = data.produtos;
+        }
+        setProdutos(produtosData);
+      } else {
+        console.error('Resposta inválida ao buscar RIR:', response);
+        toast.error('Erro ao carregar dados do relatório de inspeção');
+      }
+    } catch (error) {
+      console.error('Erro ao carregar dados do RIR:', error);
+      toast.error('Erro ao carregar dados do relatório de inspeção');
+    }
+  }, [rirId, buscarRIRPorId, setValue, pedidos]);
+  
   // Carregar dados quando modal abrir
   useEffect(() => {
     if (isOpen) {
-      if (isEditMode && rirId) {
-        loadRIRData();
-      } else {
+      if (!isEditMode) {
         // Resetar formulário para novo relatório
         reset();
         setValue('data_inspecao', new Date().toISOString().split('T')[0]);
@@ -59,68 +124,70 @@ const RelatorioInspecaoModal = ({ isOpen, onClose, onSubmit, rir, viewMode, grup
           condicoes_embalagem: ''
         }]);
       }
+      // Sempre carregar dados iniciais (pedidos e grupos)
       loadInitialData();
     }
-  }, [rirId, isEditMode, isOpen, setValue, reset]);
-
-  const loadRIRData = async () => {
-    const response = await buscarRIRPorId(rirId);
-    if (response.success && response.data) {
-      const data = response.data;
-      // Preencher formulário com dados do RIR
-      Object.keys(data).forEach(key => {
-        if (data[key] !== null && data[key] !== undefined && key !== 'checklist_json' && key !== 'produtos_json') {
-          setValue(key, data[key]);
+  }, [rirId, isEditMode, isOpen, setValue, reset, loadInitialData]);
+  
+  // Carregar dados do RIR quando pedidos forem carregados e estiver editando ou visualizando
+  useEffect(() => {
+    if (isOpen && (isEditMode || isViewMode) && rirId) {
+      // Se já temos os dados completos no prop rir, usar diretamente
+      if (rir && rir.id) {
+        // Processar dados do prop rir diretamente
+        const data = rir;
+        
+        // Preencher formulário com dados do RIR
+        Object.keys(data).forEach(key => {
+          if (data[key] !== null && data[key] !== undefined && key !== 'produtos') {
+            setValue(key, data[key]);
+          }
+        });
+        
+        // Processar pedido_id - tentar encontrar pelo numero_pedido se não tiver pedido_id
+        if (data.pedido_id) {
+          setPedidoIdAtual(data.pedido_id);
+          setValue('pedido_id', data.pedido_id.toString());
+        } else if (data.numero_pedido && pedidos.length > 0) {
+          // Tentar encontrar o pedido pelo número
+          const pedido = pedidos.find(p => p.numero_pedido === data.numero_pedido);
+          if (pedido) {
+            setPedidoIdAtual(pedido.id);
+            setValue('pedido_id', pedido.id.toString());
+          }
         }
-      });
-      
-      // Salvar pedido_id atual se existir
-      if (data.pedido_id) {
-        setPedidoIdAtual(data.pedido_id);
-      }
-      
-      // Carregar checklist e produtos
-      if (data.checklist_json) {
-        const checklistData = Array.isArray(data.checklist_json) ? data.checklist_json : [];
-        // Se o checklist estiver vazio, inicializar com um item vazio
-        setChecklist(checklistData.length > 0 ? checklistData : [{
-          tipo_transporte: '',
-          tipo_produto: '',
-          isento_material: '',
-          condicoes_caminhao: '',
-          acondicionamento: '',
-          condicoes_embalagem: ''
-        }]);
-      } else {
-        // Se não houver checklist, inicializar com um item vazio
-        setChecklist([{
-          tipo_transporte: '',
-          tipo_produto: '',
-          isento_material: '',
-          condicoes_caminhao: '',
-          acondicionamento: '',
-          condicoes_embalagem: ''
-        }]);
-      }
-      if (data.produtos_json) {
-        setProdutos(Array.isArray(data.produtos_json) ? data.produtos_json : []);
+        
+        // Processar produtos
+        let produtosData = [];
+        if (data.produtos && Array.isArray(data.produtos)) {
+          produtosData = data.produtos;
+        }
+        setProdutos(produtosData);
+      } else if (pedidos.length > 0 && !loadingPedidos) {
+        // Se não temos dados completos, buscar da API
+        loadRIRData();
       }
     }
-  };
+  }, [isOpen, isEditMode, isViewMode, rirId, rir, pedidos.length, loadingPedidos, loadRIRData, setValue]);
 
-  const loadInitialData = async () => {
-    // Carregar pedidos aprovados
-    setLoadingPedidos(true);
-    const pedidosResponse = await buscarPedidosAprovados();
-    if (pedidosResponse.success) {
-      setPedidos(pedidosResponse.data || []);
+  // Processar pedido quando pedidos forem carregados e tivermos numero_pedido mas não pedido_id
+  // Funciona tanto em modo de edição quanto de visualização
+  useEffect(() => {
+    if (isOpen && (isEditMode || isViewMode) && pedidos.length > 0 && !loadingPedidos) {
+      const numeroPedido = watch('numero_pedido');
+      const pedidoIdAtual = watch('pedido_id');
+      
+      // Se temos numero_pedido mas não temos pedido_id preenchido no select
+      if (numeroPedido && !pedidoIdAtual) {
+        // Tentar encontrar o pedido pelo número
+        const pedido = pedidos.find(p => p.numero_pedido === numeroPedido);
+        if (pedido) {
+          setPedidoIdAtual(pedido.id);
+          setValue('pedido_id', pedido.id.toString());
+        }
+      }
     }
-    setLoadingPedidos(false);
-
-    // Carregar grupos
-    const gruposResponse = await buscarGrupos();
-    // grupos já está disponível no hook
-  };
+  }, [isOpen, isEditMode, isViewMode, pedidos, loadingPedidos, watch, setValue]);
 
   const handlePedidoChange = async (pedidoId) => {
     if (!pedidoId) {
@@ -142,7 +209,8 @@ const RelatorioInspecaoModal = ({ isOpen, onClose, onSubmit, rir, viewMode, grup
     }
 
     // Buscar produtos do pedido
-    const produtosResponse = await buscarProdutosPedido(pedidoId);
+    // Passar rirId se estiver editando para incluir itens já utilizados neste RIR
+    const produtosResponse = await buscarProdutosPedido(pedidoId, isEditMode ? rirId : null);
     if (produtosResponse.success && produtosResponse.data) {
       const produtosDoPedido = produtosResponse.data.produtos || [];
       
@@ -165,7 +233,7 @@ const RelatorioInspecaoModal = ({ isOpen, onClose, onSubmit, rir, viewMode, grup
 
           return {
             index: index,
-            pedido_item_id: produto.id, // ID do item do pedido (pedido_compras_itens.id) - necessário para desvincular
+            pedido_item_id: produto.id, // ID do item do pedido (pedido_compras_itens.id) - necessário para rastrear qual item foi usado
             codigo: produto.codigo_produto || '',
             descricao: produto.nome_produto || '',
             und: produto.unidade_medida || '',
@@ -187,7 +255,7 @@ const RelatorioInspecaoModal = ({ isOpen, onClose, onSubmit, rir, viewMode, grup
             num_amostras_avaliadas: null,
             num_amostras_aprovadas: '',
             num_amostras_reprovadas: '',
-            resultado_final: 'Aprovado',
+            resultado_final: '', // Vazio inicialmente - será calculado após preenchimento dos dados
             ac: null,
             re: null
           };
@@ -207,76 +275,40 @@ const RelatorioInspecaoModal = ({ isOpen, onClose, onSubmit, rir, viewMode, grup
   };
 
 
-  const handleRemoveProduto = async (index) => {
-    const produto = produtos[index];
-    if (!produto || !pedidoIdAtual) {
-      // Se não tem pedido vinculado, apenas remove da lista local
-      setProdutos(produtos.filter((_, i) => i !== index));
-      return;
-    }
-
-    // Se tem pedido_item_id, desvincular do banco
-    if (produto.pedido_item_id) {
-      const itemIds = [produto.pedido_item_id];
-      const response = await RelatorioInspecaoService.desvincularProdutosPedido(pedidoIdAtual, itemIds);
-      
-      if (response.success) {
-        toast.success(response.message || 'Produto desvinculado do pedido com sucesso');
-        // Remover da lista local
-        setProdutos(produtos.filter((_, i) => i !== index));
-      } else {
-        toast.error(response.message || 'Erro ao desvincular produto do pedido');
-      }
-    } else {
-      // Sem pedido_item_id, apenas remove da lista local
-      setProdutos(produtos.filter((_, i) => i !== index));
-    }
+  const handleRemoveProduto = (index) => {
+    // Apenas remover da lista local - não deleta do pedido
+    // O item continua disponível no pedido para outros relatórios
+    setProdutos(produtos.filter((_, i) => i !== index));
   };
 
-  const handleDesvincularTodos = async () => {
-    if (!pedidoIdAtual || produtos.length === 0) {
+  const handleDesvincularSelecionados = (itemIds) => {
+    if (itemIds.length === 0) {
       return;
     }
 
-    if (!window.confirm('Deseja realmente desvincular TODOS os produtos do pedido? Esta ação não pode ser desfeita.')) {
+    if (!window.confirm(`Deseja realmente remover ${itemIds.length} produto(s) selecionado(s) deste relatório? O item continuará disponível no pedido para outros relatórios.`)) {
       return;
     }
 
-    // Remover todos do banco
-    const response = await RelatorioInspecaoService.desvincularProdutosPedido(pedidoIdAtual, []);
-    
-    if (response.success) {
-      toast.success(response.message || 'Todos os produtos foram desvinculados do pedido');
-      // Limpar lista local
-      setProdutos([]);
-    } else {
-      toast.error(response.message || 'Erro ao desvincular produtos do pedido');
-    }
-  };
-
-  const handleDesvincularSelecionados = async (itemIds) => {
-    if (!pedidoIdAtual || itemIds.length === 0) {
-      return;
-    }
-
-    if (!window.confirm(`Deseja realmente desvincular ${itemIds.length} produto(s) selecionado(s) do pedido?`)) {
-      return;
-    }
-
-    // Remover selecionados do banco
-    const response = await RelatorioInspecaoService.desvincularProdutosPedido(pedidoIdAtual, itemIds);
-    
-    if (response.success) {
-      toast.success(response.message || 'Produtos desvinculados do pedido com sucesso');
-      // Remover da lista local
-      setProdutos(produtos.filter(p => !itemIds.includes(p.pedido_item_id)));
-    } else {
-      toast.error(response.message || 'Erro ao desvincular produtos do pedido');
-    }
+    // Apenas remover da lista local - não deleta do pedido
+    // Os itens continuam disponíveis no pedido para outros relatórios
+    setProdutos(produtos.filter(p => !itemIds.includes(p.pedido_item_id)));
   };
 
   const handleFormSubmit = async (data) => {
+    // Proteção contra duplo submit - verificar ANTES de qualquer validação
+    if (saving || isSubmittingRef.current) {
+      console.warn('Tentativa de duplo submit bloqueada');
+      return;
+    }
+
+    // Marcar como submetendo IMEDIATAMENTE
+    isSubmittingRef.current = true;
+    setSaving(true);
+
     if (!data.numero_nota_fiscal || !data.fornecedor) {
+      isSubmittingRef.current = false;
+      setSaving(false);
       toast.error('Campos obrigatórios: Número da Nota Fiscal e Fornecedor');
       return;
     }
@@ -285,18 +317,30 @@ const RelatorioInspecaoModal = ({ isOpen, onClose, onSubmit, rir, viewMode, grup
     if (produtosTableRef.current && produtos.length > 0) {
       const isValid = produtosTableRef.current.validate();
       if (!isValid) {
+        isSubmittingRef.current = false;
+        setSaving(false);
         toast.error('Por favor, preencha todos os campos obrigatórios: Fabricação, Lote, Validade, Avaliação Sensorial e Temperatura (para produtos do grupo Frios) para todos os produtos');
         return;
       }
     }
 
-    setSaving(true);
-
     try {
+      // Formatar hora para HH:MM:SS se estiver em HH:MM
+      let horaInspecao = data.hora_inspecao || '';
+      if (horaInspecao && horaInspecao.length === 5 && horaInspecao.match(/^([0-1][0-9]|2[0-3]):[0-5][0-9]$/)) {
+        horaInspecao = horaInspecao + ':00';
+      }
+
+      // Limpar campos temporários dos produtos (campos usados apenas no frontend)
+      const produtosLimpos = produtos.map(produto => {
+        const { _dividido, _indexOriginal, ...produtoLimpo } = produto;
+        return produtoLimpo;
+      });
+
       const formData = {
         ...data,
-        checklist_json: checklist,
-        produtos_json: produtos
+        hora_inspecao: horaInspecao,
+        produtos: produtosLimpos
       };
 
       let response;
@@ -307,14 +351,25 @@ const RelatorioInspecaoModal = ({ isOpen, onClose, onSubmit, rir, viewMode, grup
       }
 
       if (response.success) {
-        toast.success(response.message || 'Relatório salvo com sucesso!');
-        if (onSubmit) {
-          onSubmit(formData);
-    }
-    onClose();
+        // Toast já é exibido pelo hook criarRIR/atualizarRIR
+        // Não exibir toast duplicado aqui
+        
+        // Fechar modal
+        onClose();
+        
+        // Recarregar lista no componente pai
+        if (onSuccess) {
+          onSuccess();
+        }
       } else {
         if (response.validationErrors) {
+          // Exibir erros de validação específicos
+          const errorMessages = Object.values(response.validationErrors).flat();
+          if (errorMessages.length > 0) {
+            toast.error(errorMessages[0] || 'Erros de validação encontrados');
+          } else {
           toast.error('Erros de validação encontrados');
+          }
         } else {
           toast.error(response.message || 'Erro ao salvar relatório');
         }
@@ -324,6 +379,7 @@ const RelatorioInspecaoModal = ({ isOpen, onClose, onSubmit, rir, viewMode, grup
       toast.error('Erro ao salvar relatório');
     } finally {
       setSaving(false);
+      isSubmittingRef.current = false;
     }
   };
 
@@ -364,14 +420,27 @@ const RelatorioInspecaoModal = ({ isOpen, onClose, onSubmit, rir, viewMode, grup
               </p>
             </div>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onClose}
-            className="p-2"
-          >
-            <FaTimes className="w-5 h-5" />
-          </Button>
+          <div className="flex items-center gap-2">
+            {isViewMode && rir && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePrintRIR(rir)}
+                className="flex items-center gap-2"
+              >
+                <FaPrint className="w-4 h-4" />
+                <span className="hidden sm:inline">Imprimir</span>
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClose}
+              className="p-2"
+            >
+              <FaTimes className="w-5 h-5" />
+            </Button>
+          </div>
         </div>
 
         {/* Form */}
@@ -466,15 +535,6 @@ const RelatorioInspecaoModal = ({ isOpen, onClose, onSubmit, rir, viewMode, grup
           <div className="bg-white p-4 rounded-lg">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold text-gray-900">C) Avaliação dos Produtos</h3>
-              {pedidoIdAtual && produtos.length > 0 && !isViewMode && (
-                <button
-                  onClick={handleDesvincularTodos}
-                  className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors text-sm font-medium"
-                  title="Desvincular todos os produtos do pedido"
-                >
-                  Desvincular Todos do Pedido
-                </button>
-              )}
             </div>
           <ProdutosTable
               ref={produtosTableRef}

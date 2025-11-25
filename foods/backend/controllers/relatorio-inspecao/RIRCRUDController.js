@@ -11,6 +11,7 @@ const {
   STATUS_CODES 
 } = require('../../middleware/responseHandler');
 const { asyncHandler } = require('../../middleware/responseHandler');
+const RIRProdutosController = require('./RIRProdutosController');
 
 class RIRCRUDController {
   
@@ -26,8 +27,7 @@ class RIRCRUDController {
       numero_pedido,
       cnpj_fornecedor,
       nota_fiscal_id,
-      checklist_json,
-      produtos_json,
+      produtos,
       ocorrencias,
       recebedor,
       visto_responsavel
@@ -41,21 +41,8 @@ class RIRCRUDController {
     }
 
     // Calcular status geral baseado nos produtos
-    let status_geral = 'APROVADO';
-    if (produtos_json && Array.isArray(produtos_json)) {
-      const totalAprovados = produtos_json.filter(p => p.resultado_final === 'Aprovado').length;
-      const totalReprovados = produtos_json.filter(p => p.resultado_final === 'Reprovado').length;
-      
-      if (totalReprovados > 0 && totalAprovados > 0) {
-        status_geral = 'PARCIAL';
-      } else if (totalReprovados > 0) {
-        status_geral = 'REPROVADO';
-      }
-    }
-
-    // Preparar JSONs
-    const checklistJson = checklist_json ? JSON.stringify(checklist_json) : null;
-    const produtosJson = produtos_json ? JSON.stringify(produtos_json) : null;
+    const produtosArray = produtos && Array.isArray(produtos) ? produtos : [];
+    const status_geral = RIRProdutosController.calcularStatusGeral(produtosArray);
 
     // Inserir relatório
     const result = await executeQuery(
@@ -67,15 +54,13 @@ class RIRCRUDController {
         numero_pedido,
         cnpj_fornecedor,
         nota_fiscal_id,
-        checklist_json,
-        produtos_json,
         ocorrencias,
         recebedor,
         visto_responsavel,
         status_geral,
         usuario_cadastro_id,
         criado_em
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
       [
         data_inspecao,
         hora_inspecao,
@@ -84,8 +69,6 @@ class RIRCRUDController {
         numero_pedido || null,
         cnpj_fornecedor || null,
         nota_fiscal_id || null,
-        checklistJson,
-        produtosJson,
         ocorrencias || null,
         recebedor || null,
         visto_responsavel || null,
@@ -94,7 +77,19 @@ class RIRCRUDController {
       ]
     );
 
-    // Buscar relatório criado
+    const relatorioId = result.insertId;
+
+    // Inserir produtos na tabela relacionada
+    if (produtosArray.length > 0) {
+      const produtosResult = await RIRProdutosController.inserirProdutos(relatorioId, produtosArray);
+      if (!produtosResult.success) {
+        // Rollback: remover relatório se falhar ao inserir produtos
+        await executeQuery('DELETE FROM relatorio_inspecao WHERE id = ?', [relatorioId]);
+        return errorResponse(res, produtosResult.error, STATUS_CODES.BAD_REQUEST);
+      }
+    }
+
+    // Buscar relatório criado com produtos
     const rir = await executeQuery(
       `SELECT 
         ri.*,
@@ -102,25 +97,12 @@ class RIRCRUDController {
        FROM relatorio_inspecao ri
        LEFT JOIN usuarios u ON ri.usuario_cadastro_id = u.id
        WHERE ri.id = ?`,
-      [result.insertId]
+      [relatorioId]
     );
 
-    // Decodificar JSONs
-    if (rir[0].checklist_json && typeof rir[0].checklist_json === 'string') {
-      try {
-        rir[0].checklist_json = JSON.parse(rir[0].checklist_json);
-      } catch (e) {
-        rir[0].checklist_json = [];
-      }
-    }
-
-    if (rir[0].produtos_json && typeof rir[0].produtos_json === 'string') {
-      try {
-        rir[0].produtos_json = JSON.parse(rir[0].produtos_json);
-      } catch (e) {
-        rir[0].produtos_json = [];
-      }
-    }
+    // Buscar produtos
+    const produtosData = await RIRProdutosController.buscarProdutos(relatorioId);
+    rir[0].produtos = produtosData;
 
     // Adicionar links HATEOAS
     const data = res.addResourceLinks(rir[0]);
@@ -147,8 +129,7 @@ class RIRCRUDController {
       numero_pedido,
       cnpj_fornecedor,
       nota_fiscal_id,
-      checklist_json,
-      produtos_json,
+      produtos,
       ocorrencias,
       recebedor,
       visto_responsavel
@@ -167,21 +148,8 @@ class RIRCRUDController {
     }
 
     // Calcular status geral baseado nos produtos
-    let status_geral = 'APROVADO';
-    if (produtos_json && Array.isArray(produtos_json)) {
-      const totalAprovados = produtos_json.filter(p => p.resultado_final === 'Aprovado').length;
-      const totalReprovados = produtos_json.filter(p => p.resultado_final === 'Reprovado').length;
-      
-      if (totalReprovados > 0 && totalAprovados > 0) {
-        status_geral = 'PARCIAL';
-      } else if (totalReprovados > 0) {
-        status_geral = 'REPROVADO';
-      }
-    }
-
-    // Preparar JSONs
-    const checklistJson = checklist_json ? JSON.stringify(checklist_json) : null;
-    const produtosJson = produtos_json ? JSON.stringify(produtos_json) : null;
+    const produtosArray = produtos && Array.isArray(produtos) ? produtos : [];
+    const status_geral = RIRProdutosController.calcularStatusGeral(produtosArray);
 
     // Atualizar relatório
     await executeQuery(
@@ -193,8 +161,6 @@ class RIRCRUDController {
         numero_pedido = ?,
         cnpj_fornecedor = ?,
         nota_fiscal_id = ?,
-        checklist_json = ?,
-        produtos_json = ?,
         ocorrencias = ?,
         recebedor = ?,
         visto_responsavel = ?,
@@ -210,8 +176,6 @@ class RIRCRUDController {
         numero_pedido || null,
         cnpj_fornecedor || null,
         nota_fiscal_id || null,
-        checklistJson,
-        produtosJson,
         ocorrencias || null,
         recebedor || null,
         visto_responsavel || null,
@@ -221,7 +185,13 @@ class RIRCRUDController {
       ]
     );
 
-    // Buscar relatório atualizado
+    // Atualizar produtos (remove antigos e insere novos)
+    const produtosResult = await RIRProdutosController.atualizarProdutos(id, produtosArray);
+    if (!produtosResult.success) {
+      return errorResponse(res, produtosResult.error, STATUS_CODES.BAD_REQUEST);
+    }
+
+    // Buscar relatório atualizado com produtos
     const rir = await executeQuery(
       `SELECT 
         ri.*,
@@ -232,22 +202,9 @@ class RIRCRUDController {
       [id]
     );
 
-    // Decodificar JSONs
-    if (rir[0].checklist_json && typeof rir[0].checklist_json === 'string') {
-      try {
-        rir[0].checklist_json = JSON.parse(rir[0].checklist_json);
-      } catch (e) {
-        rir[0].checklist_json = [];
-      }
-    }
-
-    if (rir[0].produtos_json && typeof rir[0].produtos_json === 'string') {
-      try {
-        rir[0].produtos_json = JSON.parse(rir[0].produtos_json);
-      } catch (e) {
-        rir[0].produtos_json = [];
-      }
-    }
+    // Buscar produtos
+    const produtosData = await RIRProdutosController.buscarProdutos(id);
+    rir[0].produtos = produtosData;
 
     // Adicionar links HATEOAS
     const data = res.addResourceLinks(rir[0]);
