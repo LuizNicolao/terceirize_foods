@@ -56,9 +56,38 @@ const AlmoxarifadoModal = ({
           // Buscar unidades escolares ativas e filtrar por filial
           const response = await UnidadesEscolaresService.buscarAtivas();
           if (response.success) {
-            const unidadesFiltradas = (response.data || []).filter(
+            // Filtrar por filial
+            let unidadesFiltradas = (response.data || []).filter(
               ue => String(ue.filial_id) === String(filialSelecionada)
             );
+
+            // Buscar almoxarifados do tipo unidade_escolar para excluir unidades que já têm almoxarifado
+            const almoxarifadosResponse = await almoxarifadoService.listar({
+              status: 1,
+              limit: 1000 // Buscar todos os ativos
+            });
+
+            if (almoxarifadosResponse.success && almoxarifadosResponse.data) {
+              // Obter ID da unidade atual do almoxarifado sendo editado (se houver)
+              const unidadeAtualId = almoxarifado && almoxarifado.unidade_escolar_id 
+                ? String(almoxarifado.unidade_escolar_id) 
+                : null;
+
+              // Obter IDs de unidades que já têm almoxarifado (exceto o atual se estiver editando)
+              const unidadesComAlmoxarifado = almoxarifadosResponse.data
+                .filter(almox => 
+                  almox.tipo_vinculo === 'unidade_escolar' && 
+                  almox.unidade_escolar_id &&
+                  (!almoxarifado || String(almox.id) !== String(almoxarifado.id)) // Excluir o atual se estiver editando
+                )
+                .map(almox => String(almox.unidade_escolar_id));
+
+              // Filtrar unidades que já têm almoxarifado, mas incluir a unidade atual se estiver editando
+              unidadesFiltradas = unidadesFiltradas.filter(
+                ue => !unidadesComAlmoxarifado.includes(String(ue.id)) || String(ue.id) === unidadeAtualId
+              );
+            }
+
             setUnidadesEscolares(unidadesFiltradas);
           } else {
             setUnidadesEscolares([]);
@@ -76,19 +105,22 @@ const AlmoxarifadoModal = ({
     };
 
     carregarUnidadesEscolares();
-  }, [filialSelecionada, tipoVinculo, isOpen]);
+  }, [filialSelecionada, tipoVinculo, isOpen, almoxarifado]);
 
-  // Preencher nome automaticamente quando unidade escolar for selecionada (apenas ao criar novo)
+  // Preencher nome automaticamente quando unidade escolar for selecionada (criação e edição)
   useEffect(() => {
-    // Só preencher automaticamente se não estiver editando um almoxarifado existente
-    if (!almoxarifado && tipoVinculo === 'unidade_escolar' && unidadeEscolarSelecionada && unidadesEscolares.length > 0) {
+    if (tipoVinculo === 'unidade_escolar' && unidadeEscolarSelecionada && unidadesEscolares.length > 0) {
       const unidadeSelecionada = unidadesEscolares.find(ue => String(ue.id) === String(unidadeEscolarSelecionada));
       if (unidadeSelecionada && unidadeSelecionada.nome_escola) {
+        // Atualizar nome automaticamente tanto na criação quanto na edição
         setNomeAlmoxarifado(`ALM - ${unidadeSelecionada.nome_escola}`);
       }
-    } else if (!almoxarifado && tipoVinculo === 'filial') {
-      // Se mudou para filial e não está editando, limpar o nome
-      setNomeAlmoxarifado('');
+    } else if (tipoVinculo === 'filial') {
+      // Se mudou para filial, limpar o nome apenas se não estiver editando
+      // Se estiver editando e mudou para filial, manter o nome atual (não limpar)
+      if (!almoxarifado) {
+        setNomeAlmoxarifado('');
+      }
     }
   }, [unidadeEscolarSelecionada, unidadesEscolares, tipoVinculo, almoxarifado]);
 
@@ -189,14 +221,16 @@ const AlmoxarifadoModal = ({
     setTipoVinculo(novoTipo);
     // Limpar unidade escolar quando mudar o tipo
     setUnidadeEscolarSelecionada('');
-    // Se voltar para filial, limpar também o nome (se não estiver editando)
+    // Se voltar para filial, limpar também o nome e unidades escolares
     if (novoTipo === 'filial') {
       setUnidadesEscolares([]);
+      // Se estiver editando e mudou para filial, manter o nome atual (não limpar)
+      // Se estiver criando novo, limpar o nome
       if (!almoxarifado) {
         setNomeAlmoxarifado('');
       }
-    } else if (novoTipo === 'unidade_escolar' && !almoxarifado) {
-      // Se mudou para unidade_escolar e não está editando, limpar o nome (será preenchido quando selecionar unidade)
+    } else if (novoTipo === 'unidade_escolar') {
+      // Se mudou para unidade_escolar, limpar o nome (será preenchido quando selecionar unidade)
       setNomeAlmoxarifado('');
     }
   };
@@ -206,14 +240,14 @@ const AlmoxarifadoModal = ({
       isOpen={isOpen}
       onClose={onClose}
       title={isViewMode ? 'Visualizar Almoxarifado' : almoxarifado ? 'Editar Almoxarifado' : 'Adicionar Almoxarifado'}
-      size="lg"
+      size="xl"
     >
       <form onSubmit={(e) => {
         e.preventDefault();
         const formData = new FormData(e.target);
         const data = {
           nome: tipoVinculo === 'unidade_escolar' ? nomeAlmoxarifado : formData.get('nome'),
-          codigo: codigoGerado || formData.get('codigo'), // Usar o código do state, pois campos disabled não são enviados
+          codigo: codigoGerado || formData.get('codigo'),
           filial_id: formData.get('filial_id'),
           tipo_vinculo: tipoVinculo,
           unidade_escolar_id: tipoVinculo === 'unidade_escolar' ? (unidadeEscolarSelecionada || formData.get('unidade_escolar_id')) : null,
@@ -225,8 +259,9 @@ const AlmoxarifadoModal = ({
       }} className="space-y-4">
         {/* Campo hidden para unidade_escolar_id (para compatibilidade com FormData) */}
         <input type="hidden" name="unidade_escolar_id" value={unidadeEscolarSelecionada} />
-        {/* Seleção de Tipo de Vínculo - apenas ao criar novo */}
-        {!almoxarifado && !isViewMode && (
+
+        {/* Seleção de Tipo de Vínculo - criação e edição */}
+        {!isViewMode && (
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <Input
               label="Tipo de Vínculo *"
@@ -247,148 +282,168 @@ const AlmoxarifadoModal = ({
           </div>
         )}
 
-        {/* Mostrar tipo de vínculo em modo visualização/edição */}
-        {almoxarifado && (
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
-            <p className="text-sm text-gray-700">
-              <span className="font-semibold">Tipo de Vínculo:</span>{' '}
-              {almoxarifado.tipo_vinculo === 'unidade_escolar' ? 'Unidade Escolar' : 'Filial'}
-            </p>
-          </div>
-        )}
-
+        {/* Cards organizados */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <Input
-            label="Filial *"
-            name="filial_id"
-            type="select"
-            value={filialSelecionada}
-            onChange={handleFilialChange}
-            disabled={isViewMode || carregandoFiliais}
-            required
-          >
-            <option value="">{carregandoFiliais ? 'Carregando...' : 'Selecione uma filial'}</option>
-            {filiais.map(filial => (
-              <option key={filial.id} value={String(filial.id)}>
-                {filial.codigo_filial} - {filial.filial}
-              </option>
-            ))}
-          </Input>
-
-           {/* Mostrar seleção de unidade escolar apenas se tipo for unidade_escolar e não estiver em modo visualização */}
-           {tipoVinculo === 'unidade_escolar' && !isViewMode && (
-             <SearchableSelect
-               label="Unidade Escolar"
-               value={unidadeEscolarSelecionada}
-               onChange={(value) => setUnidadeEscolarSelecionada(value)}
-               options={unidadesEscolares.map(unidade => ({
-                 value: String(unidade.id),
-                 label: `${unidade.codigo_teknisa} - ${unidade.nome_escola}`,
-                 description: `${unidade.cidade}/${unidade.estado}`
-               }))}
-               placeholder={
-                 !filialSelecionada
-                   ? 'Selecione primeiro uma filial'
-                   : carregandoUnidadesEscolares
-                     ? 'Carregando unidades escolares...'
-                     : 'Digite para buscar unidade escolar...'
-               }
-               disabled={!filialSelecionada || carregandoUnidadesEscolares}
-               loading={carregandoUnidadesEscolares}
-               required
-               filterBy={(option, searchTerm) => {
-                 const label = option.label?.toLowerCase() || '';
-                 const description = option.description?.toLowerCase() || '';
-                 const term = searchTerm.toLowerCase();
-                 return label.includes(term) || description.includes(term);
-               }}
-             />
-           )}
-
-          {/* Mostrar unidade escolar vinculada em modo visualização */}
-          {isViewMode && almoxarifado && almoxarifado.tipo_vinculo === 'unidade_escolar' && almoxarifado.unidade_escolar_nome && (
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Unidade Escolar
-              </label>
-              <p className="text-sm text-gray-900">
-                {almoxarifado.unidade_escolar_codigo} - {almoxarifado.unidade_escolar_nome}
-              </p>
+          {/* Card: Informações Básicas */}
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">
+              Informações Básicas
+            </h3>
+            <div className="space-y-3">
+              <Input
+                label="Código"
+                name="codigo"
+                value={codigoGerado}
+                disabled={true}
+                placeholder={carregandoCodigo ? "Carregando..." : "Código gerado automaticamente"}
+              />
+              <Input
+                label="Nome *"
+                name="nome"
+                value={nomeAlmoxarifado || (almoxarifado?.nome || '')}
+                onChange={(e) => {
+                  if (tipoVinculo === 'filial') {
+                    setNomeAlmoxarifado(e.target.value);
+                  }
+                }}
+                disabled={isViewMode || tipoVinculo === 'unidade_escolar'}
+                required
+                placeholder={tipoVinculo === 'unidade_escolar' ? "Preenchido automaticamente" : "Ex: Almox Geral Cozinha"}
+              />
+              <Input
+                label="Status"
+                name="status"
+                type="select"
+                defaultValue={almoxarifado ? (almoxarifado.status === 1 ? '1' : '0') : '1'}
+                disabled={isViewMode}
+              >
+                <option value="1">Ativo</option>
+                <option value="0">Inativo</option>
+              </Input>
             </div>
-          )}
+          </div>
 
-          <Input
-            label="Centro de Custo *"
-            name="centro_custo_id"
-            type="select"
-            value={centroCustoId}
-            onChange={(e) => setCentroCustoId(e.target.value)}
-            disabled={isViewMode || !filialSelecionada || carregandoCentrosCusto}
-            required
-          >
-            <option value="">
-              {!filialSelecionada 
-                ? 'Selecione primeiro uma filial' 
-                : carregandoCentrosCusto 
-                  ? 'Carregando...' 
-                  : 'Selecione um centro de custo'}
-            </option>
-            {centrosCusto.map(centroCusto => (
-              <option key={centroCusto.id} value={String(centroCusto.id)}>
-                {centroCusto.codigo} - {centroCusto.nome}
-              </option>
-            ))}
-          </Input>
+          {/* Card: Vínculo */}
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">
+              Vínculo
+            </h3>
+            <div className="space-y-3">
+              {/* Tipo de Vínculo - apenas em visualização */}
+              {isViewMode && almoxarifado && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Tipo de Vínculo
+                  </label>
+                  <div className="bg-white border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-900">
+                    {almoxarifado.tipo_vinculo === 'unidade_escolar' ? 'Unidade Escolar' : 'Filial'}
+                  </div>
+                </div>
+              )}
+
+              <Input
+                label="Filial *"
+                name="filial_id"
+                type="select"
+                value={filialSelecionada}
+                onChange={handleFilialChange}
+                disabled={isViewMode || carregandoFiliais}
+                required
+              >
+                <option value="">{carregandoFiliais ? 'Carregando...' : 'Selecione uma filial'}</option>
+                {filiais.map(filial => (
+                  <option key={filial.id} value={String(filial.id)}>
+                    {filial.codigo_filial} - {filial.filial}
+                  </option>
+                ))}
+              </Input>
+
+              {/* Unidade Escolar - Edição */}
+              {tipoVinculo === 'unidade_escolar' && !isViewMode && (
+                <SearchableSelect
+                  label="Unidade Escolar"
+                  value={unidadeEscolarSelecionada}
+                  onChange={(value) => setUnidadeEscolarSelecionada(value)}
+                  options={unidadesEscolares.map(unidade => ({
+                    value: String(unidade.id),
+                    label: `${unidade.codigo_teknisa} - ${unidade.nome_escola}`,
+                    description: `${unidade.cidade}/${unidade.estado}`
+                  }))}
+                  placeholder={
+                    !filialSelecionada
+                      ? 'Selecione primeiro uma filial'
+                      : carregandoUnidadesEscolares
+                        ? 'Carregando unidades escolares...'
+                        : 'Digite para buscar unidade escolar...'
+                  }
+                  disabled={!filialSelecionada || carregandoUnidadesEscolares}
+                  loading={carregandoUnidadesEscolares}
+                  required
+                  filterBy={(option, searchTerm) => {
+                    const label = option.label?.toLowerCase() || '';
+                    const description = option.description?.toLowerCase() || '';
+                    const term = searchTerm.toLowerCase();
+                    return label.includes(term) || description.includes(term);
+                  }}
+                />
+              )}
+
+              {/* Unidade Escolar - Visualização */}
+              {isViewMode && almoxarifado && almoxarifado.tipo_vinculo === 'unidade_escolar' && almoxarifado.unidade_escolar_nome && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Unidade Escolar
+                  </label>
+                  <div className="bg-white border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-900">
+                    {almoxarifado.unidade_escolar_codigo} - {almoxarifado.unidade_escolar_nome}
+                  </div>
+                </div>
+              )}
+
+              <Input
+                label="Centro de Custo *"
+                name="centro_custo_id"
+                type="select"
+                value={centroCustoId}
+                onChange={(e) => setCentroCustoId(e.target.value)}
+                disabled={isViewMode || !filialSelecionada || carregandoCentrosCusto}
+                required
+              >
+                <option value="">
+                  {!filialSelecionada 
+                    ? 'Selecione primeiro uma filial' 
+                    : carregandoCentrosCusto 
+                      ? 'Carregando...' 
+                      : 'Selecione um centro de custo'}
+                </option>
+                {centrosCusto.map(centroCusto => (
+                  <option key={centroCusto.id} value={String(centroCusto.id)}>
+                    {centroCusto.codigo} - {centroCusto.nome}
+                  </option>
+                ))}
+              </Input>
+            </div>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Card: Observações */}
+        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+          <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">
+            Observações
+          </h3>
           <Input
-            label="Código"
-            name="codigo"
-            value={codigoGerado}
-            disabled={true}
-            placeholder={carregandoCodigo ? "Carregando..." : "Código gerado automaticamente"}
-          />
-          <Input
-            label="Nome *"
-            name="nome"
-            value={nomeAlmoxarifado || (almoxarifado?.nome || '')}
-            onChange={(e) => {
-              // Permitir edição apenas quando tipo for filial
-              if (tipoVinculo === 'filial') {
-                setNomeAlmoxarifado(e.target.value);
-              }
-            }}
-            disabled={isViewMode || tipoVinculo === 'unidade_escolar'}
-            required
-            placeholder={tipoVinculo === 'unidade_escolar' ? "Preenchido automaticamente com 'ALM - {nome da escola}'" : "Ex: Almox Geral Cozinha"}
-          />
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <Input
-            label="Status"
-            name="status"
-            type="select"
-            defaultValue={almoxarifado ? (almoxarifado.status === 1 ? '1' : '0') : '1'}
+            label=""
+            name="observacoes"
+            type="textarea"
+            defaultValue={almoxarifado?.observacoes}
             disabled={isViewMode}
-          >
-            <option value="1">Ativo</option>
-            <option value="0">Inativo</option>
-          </Input>
+            rows={3}
+            placeholder="Regras de uso, localização física, etc..."
+          />
         </div>
 
-        <Input
-          label="Observações"
-          name="observacoes"
-          type="textarea"
-          defaultValue={almoxarifado?.observacoes}
-          disabled={isViewMode}
-          rows={3}
-          placeholder="Regras de uso, localização física, etc..."
-        />
-
-        <div className="flex justify-end gap-3 pt-6 border-t border-gray-200">
+        {/* Botões de ação */}
+        <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
           {!isViewMode && (
             <Button type="submit" variant="primary" size="lg">
               {almoxarifado ? 'Atualizar Almoxarifado' : 'Salvar'}

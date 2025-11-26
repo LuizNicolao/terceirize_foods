@@ -94,6 +94,58 @@ export const useGrupos = () => {
 
   // Estatísticas são gerenciadas automaticamente pelo baseEntity
 
+  /**
+   * Visualizar grupo - busca dados completos do backend
+   */
+  const handleViewGrupoCustom = useCallback(async (idOrItem) => {
+    try {
+      // Se já for um objeto completo, usar diretamente
+      if (idOrItem && typeof idOrItem === 'object' && idOrItem.id) {
+        baseEntity.handleView(idOrItem);
+        return;
+      }
+
+      // Caso contrário, buscar do backend
+      const id = typeof idOrItem === 'object' ? idOrItem.id : idOrItem;
+      const response = await GruposService.buscarPorId(id);
+      
+      if (response.success && response.data) {
+        baseEntity.handleView(response.data);
+      } else {
+        toast.error(response.message || 'Erro ao buscar grupo');
+      }
+    } catch (error) {
+      console.error('Erro ao buscar grupo:', error);
+      toast.error('Erro ao buscar grupo');
+    }
+  }, [baseEntity]);
+
+  /**
+   * Editar grupo - busca dados completos do backend
+   */
+  const handleEditGrupoCustom = useCallback(async (idOrItem) => {
+    try {
+      // Se já for um objeto completo, usar diretamente
+      if (idOrItem && typeof idOrItem === 'object' && idOrItem.id) {
+        baseEntity.handleEdit(idOrItem);
+        return;
+      }
+
+      // Caso contrário, buscar do backend
+      const id = typeof idOrItem === 'object' ? idOrItem.id : idOrItem;
+      const response = await GruposService.buscarPorId(id);
+      
+      if (response.success && response.data) {
+        baseEntity.handleEdit(response.data);
+      } else {
+        toast.error(response.message || 'Erro ao buscar grupo');
+      }
+    } catch (error) {
+      console.error('Erro ao buscar grupo:', error);
+      toast.error('Erro ao buscar grupo');
+    }
+  }, [baseEntity]);
+
   return {
     // Estados principais (do hook base)
     grupos: isSortingLocally ? gruposOrdenados : baseEntity.items,
@@ -130,10 +182,10 @@ export const useGrupos = () => {
     validationErrors: baseEntity.validationErrors,
     showValidationModal: baseEntity.showValidationModal,
     
-    // Ações de modal (do hook base)
+    // Ações de modal (customizadas para buscar dados completos)
     handleAddGrupo: baseEntity.handleAdd,
-    handleViewGrupo: baseEntity.handleView,
-    handleEditGrupo: baseEntity.handleEdit,
+    handleViewGrupo: handleViewGrupoCustom,
+    handleEditGrupo: handleEditGrupoCustom,
     handleCloseModal: baseEntity.handleCloseModal,
     
     // Ações de paginação (do hook base)

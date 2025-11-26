@@ -11,6 +11,7 @@ const GrupoModal = ({
 }) => {
   const [codigoGerado, setCodigoGerado] = useState('');
   const [carregandoCodigo, setCarregandoCodigo] = useState(false);
+  const [tipoSelecionado, setTipoSelecionado] = useState('');
 
   useEffect(() => {
     const carregarProximoCodigo = async () => {
@@ -32,11 +33,20 @@ const GrupoModal = ({
         }
       } else if (grupo) {
         setCodigoGerado(grupo.codigo || '');
+        setTipoSelecionado(grupo.tipo || '');
       }
     };
 
     carregarProximoCodigo();
   }, [grupo, isOpen]);
+
+  // Limpar estados quando modal fechar
+  useEffect(() => {
+    if (!isOpen) {
+      setCodigoGerado('');
+      setTipoSelecionado('');
+    }
+  }, [isOpen]);
 
   return (
     <Modal
@@ -80,12 +90,13 @@ const GrupoModal = ({
             label="Tipo"
             name="tipo"
             type="select"
-            defaultValue={grupo?.tipo || ''}
+            value={tipoSelecionado}
+            onChange={(e) => setTipoSelecionado(e.target.value)}
             disabled={isViewMode}
           >
             <option value="">Selecione...</option>
-            <option value="Compra">Compra</option>
-            <option value="Venda">Venda</option>
+            <option value="compra">Compra</option>
+            <option value="venda">Venda</option>
           </Input>
 
           <Input
