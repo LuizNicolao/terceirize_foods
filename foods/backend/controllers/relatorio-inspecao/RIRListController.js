@@ -62,9 +62,9 @@ class RIRListController {
       }
     }
 
-    // Excluir RIRs já utilizadas em notas fiscais (quando apenas_disponiveis = true ou quando filtrando por pedido)
+    // Filtrar por status quando apenas_disponiveis = true
     if (apenas_disponiveis === 'true' || apenas_disponiveis === true || numero_pedido || pedido_compra_id) {
-      whereClause += ' AND NOT EXISTS (SELECT 1 FROM notas_fiscais nf WHERE nf.rir_id = ri.id)';
+      whereClause += ' AND ri.status = \'DISPONIVEL\'';
     }
 
     if (data_inicio) {
@@ -88,6 +88,12 @@ class RIRListController {
         ri.numero_pedido,
         ri.cnpj_fornecedor,
         ri.resultado_geral,
+        ri.status,
+        ri.tipo_transporte,
+        ri.isento_material,
+        ri.condicoes_caminhao,
+        ri.acondicionamento,
+        ri.condicoes_embalagem,
         ri.recebedor,
         ri.visto_responsavel,
         ri.criado_em,

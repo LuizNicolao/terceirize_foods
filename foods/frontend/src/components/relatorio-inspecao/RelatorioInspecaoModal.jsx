@@ -95,6 +95,27 @@ const RelatorioInspecaoModal = ({ isOpen, onClose, onSubmit, onSuccess, rir, vie
           produtosData = data.produtos;
         }
         setProdutos(produtosData);
+
+        // Processar checklist - montar array a partir dos campos individuais
+        if (data.tipo_transporte || data.isento_material || data.condicoes_caminhao || 
+            data.acondicionamento || data.condicoes_embalagem) {
+          setChecklist([{
+            tipo_transporte: data.tipo_transporte || '',
+            isento_material: data.isento_material || '',
+            condicoes_caminhao: data.condicoes_caminhao || '',
+            acondicionamento: data.acondicionamento || '',
+            condicoes_embalagem: data.condicoes_embalagem || ''
+          }]);
+        } else {
+          // Se não houver dados do checklist, inicializar com item vazio
+          setChecklist([{
+            tipo_transporte: '',
+            isento_material: '',
+            condicoes_caminhao: '',
+            acondicionamento: '',
+            condicoes_embalagem: ''
+          }]);
+        }
       } else {
         console.error('Resposta inválida ao buscar RIR:', response);
         toast.error('Erro ao carregar dados do relatório de inspeção');

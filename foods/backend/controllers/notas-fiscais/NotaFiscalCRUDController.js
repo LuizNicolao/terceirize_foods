@@ -284,6 +284,14 @@ class NotaFiscalCRUDController {
       await PedidosComprasHelpers.atualizarStatusPedido(pedido_compra_id);
     }
 
+    // Atualizar status do RIR para FINALIZADO se houver rir_id
+    if (rir_id) {
+      await executeQuery(
+        'UPDATE relatorio_inspecao SET status = \'FINALIZADO\', nota_fiscal_id = ? WHERE id = ?',
+        [notaFiscalId, rir_id]
+      );
+    }
+
     return successResponse(res, {
       ...notaFiscal[0],
       itens: itensRetornados
@@ -345,6 +353,7 @@ class NotaFiscalCRUDController {
     }
 
     const pedidoCompraIdAnterior = notaFiscal[0].pedido_compra_id;
+    const rirIdAnterior = notaFiscal[0].rir_id;
 
     // Notas fiscais podem ser editadas independente do status
 
@@ -550,6 +559,7 @@ class NotaFiscalCRUDController {
 
     // Atualizar status do pedido de compra (tanto o anterior quanto o novo, se mudou)
     const pedidoCompraIdNovo = pedido_compra_id || notaFiscalAtualizada[0].pedido_compra_id;
+    const rirIdNovo = rir_id || notaFiscalAtualizada[0].rir_id;
     
     if (pedidoCompraIdAnterior && pedidoCompraIdAnterior !== pedidoCompraIdNovo) {
       // Se mudou de pedido, atualizar ambos
@@ -558,6 +568,23 @@ class NotaFiscalCRUDController {
     
     if (pedidoCompraIdNovo) {
       await PedidosComprasHelpers.atualizarStatusPedido(pedidoCompraIdNovo);
+    }
+
+    // Gerenciar status do RIR
+    // Se tinha um RIR anterior e mudou ou removeu, voltar para DISPONIVEL
+    if (rirIdAnterior && rirIdAnterior !== rirIdNovo) {
+      await executeQuery(
+        'UPDATE relatorio_inspecao SET status = \'DISPONIVEL\', nota_fiscal_id = NULL WHERE id = ?',
+        [rirIdAnterior]
+      );
+    }
+    
+    // Se tem um RIR novo (diferente do anterior), atualizar para FINALIZADO
+    if (rirIdNovo && rirIdNovo !== rirIdAnterior) {
+      await executeQuery(
+        'UPDATE relatorio_inspecao SET status = \'FINALIZADO\', nota_fiscal_id = ? WHERE id = ?',
+        [id, rirIdNovo]
+      );
     }
 
     return successResponse(res, {
@@ -574,7 +601,7 @@ class NotaFiscalCRUDController {
 
     // Verificar se nota fiscal existe
     const notaFiscal = await executeQuery(
-      'SELECT id, status, pedido_compra_id FROM notas_fiscais WHERE id = ?',
+      'SELECT id, status, pedido_compra_id, rir_id FROM notas_fiscais WHERE id = ?',
       [id]
     );
 
@@ -583,6 +610,7 @@ class NotaFiscalCRUDController {
     }
 
     const pedidoCompraId = notaFiscal[0].pedido_compra_id;
+    const rirId = notaFiscal[0].rir_id;
 
     // Notas fiscais podem ser excluídas independente do status
 
@@ -595,6 +623,14 @@ class NotaFiscalCRUDController {
     // Atualizar status do pedido de compra após excluir nota fiscal
     if (pedidoCompraId) {
       await PedidosComprasHelpers.atualizarStatusPedido(pedidoCompraId);
+    }
+
+    // Atualizar status do RIR para DISPONIVEL se houver vínculo
+    if (rirId) {
+      await executeQuery(
+        'UPDATE relatorio_inspecao SET status = \'DISPONIVEL\', nota_fiscal_id = NULL WHERE id = ?',
+        [rirId]
+      );
     }
 
     return successResponse(res, { message: 'Nota fiscal excluída com sucesso' });

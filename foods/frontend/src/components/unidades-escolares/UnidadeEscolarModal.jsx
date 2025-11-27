@@ -155,8 +155,8 @@ const UnidadeEscolarModal = ({
   }, [isOpen]);
 
   const handleFormSubmit = (data) => {
-    // Remover almoxarifado_id do formulário, pois não é editável
-    const { almoxarifado_id, ...dataToSubmit } = data;
+    // Remover campos não editáveis do formulário
+    const { almoxarifado_id, rota_id, ordem_entrega, ...dataToSubmit } = data;
     onSubmit(dataToSubmit);
   };
 
@@ -467,10 +467,11 @@ const UnidadeEscolarModal = ({
                 label="Rota"
                 type="select"
                 {...register('rota_id')}
-                disabled={isViewMode || loadingRotas}
+                disabled={true}
+                readOnly={true}
               >
                 <option value="">
-                  {loadingRotas ? 'Carregando rotas...' : 'Selecione uma rota'}
+                  {unidade?.rota_nome ? `${unidade.rota_nome} (${unidade.rota_codigo || ''})` : 'Não vinculada a rota'}
                 </option>
                 {rotas.map(rota => (
                   <option key={rota.id} value={rota.id}>
@@ -566,7 +567,8 @@ const UnidadeEscolarModal = ({
                 type="number"
                 placeholder="Ordem de entrega"
                 {...register('ordem_entrega')}
-                disabled={isViewMode}
+                disabled={true}
+                readOnly={true}
               />
             </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">

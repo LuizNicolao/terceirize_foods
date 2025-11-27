@@ -90,6 +90,9 @@ export const usePedidosCompras = () => {
    * Função para obter badge de status
    */
   const getStatusBadge = useCallback((status) => {
+    // Normalizar status para minúsculo para garantir consistência
+    const normalizedStatus = status ? status.toLowerCase() : '';
+    
     const statusMap = {
       'em_digitacao': { text: 'Em Digitação', color: 'blue' },
       'aprovado': { text: 'Aprovado', color: 'green' },
@@ -98,11 +101,11 @@ export const usePedidosCompras = () => {
       'em_transito': { text: 'Em Trânsito', color: 'orange' },
       'entregue': { text: 'Entregue', color: 'green' },
       'cancelado': { text: 'Cancelado', color: 'red' },
-      'Parcial': { text: 'Parcial', color: 'yellow' },
-      'Finalizado': { text: 'Finalizado', color: 'green' }
+      'parcial': { text: 'Parcial', color: 'yellow' },
+      'finalizado': { text: 'Finalizado', color: 'green' }
     };
 
-    return statusMap[status] || { text: status, color: 'gray' };
+    return statusMap[normalizedStatus] || { text: status || 'Desconhecido', color: 'gray' };
   }, []);
 
   /**

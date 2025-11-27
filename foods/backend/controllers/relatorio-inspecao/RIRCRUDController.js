@@ -44,6 +44,20 @@ class RIRCRUDController {
     const produtosArray = produtos && Array.isArray(produtos) ? produtos : [];
     const resultado_geral = RIRProdutosController.calcularStatusGeral(produtosArray);
 
+    // Calcular status: DISPONIVEL se não tiver nota_fiscal_id, FINALIZADO se tiver
+    const status = nota_fiscal_id ? 'FINALIZADO' : 'DISPONIVEL';
+
+    // Extrair dados do checklist (pegar o primeiro item do array, se houver)
+    const checklist = checklist_json && Array.isArray(checklist_json) && checklist_json.length > 0 
+      ? checklist_json[0] 
+      : null;
+    
+    const tipo_transporte = checklist?.tipo_transporte || null;
+    const isento_material = checklist?.isento_material || null;
+    const condicoes_caminhao = checklist?.condicoes_caminhao || null;
+    const acondicionamento = checklist?.acondicionamento || null;
+    const condicoes_embalagem = checklist?.condicoes_embalagem || null;
+
     // Inserir relatório
     const result = await executeQuery(
       `INSERT INTO relatorio_inspecao (
@@ -58,9 +72,15 @@ class RIRCRUDController {
         recebedor,
         visto_responsavel,
         resultado_geral,
+        status,
+        tipo_transporte,
+        isento_material,
+        condicoes_caminhao,
+        acondicionamento,
+        condicoes_embalagem,
         usuario_cadastro_id,
         criado_em
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
       [
         data_inspecao,
         hora_inspecao,
@@ -73,6 +93,12 @@ class RIRCRUDController {
         recebedor || null,
         visto_responsavel || null,
         resultado_geral,
+        status,
+        tipo_transporte,
+        isento_material,
+        condicoes_caminhao,
+        acondicionamento,
+        condicoes_embalagem,
         usuario_id
       ]
     );
@@ -130,6 +156,7 @@ class RIRCRUDController {
       cnpj_fornecedor,
       nota_fiscal_id,
       produtos,
+      checklist_json,
       ocorrencias,
       recebedor,
       visto_responsavel
@@ -151,6 +178,20 @@ class RIRCRUDController {
     const produtosArray = produtos && Array.isArray(produtos) ? produtos : [];
     const resultado_geral = RIRProdutosController.calcularStatusGeral(produtosArray);
 
+    // Calcular status: DISPONIVEL se não tiver nota_fiscal_id, FINALIZADO se tiver
+    const status = nota_fiscal_id ? 'FINALIZADO' : 'DISPONIVEL';
+
+    // Extrair dados do checklist (pegar o primeiro item do array, se houver)
+    const checklist = checklist_json && Array.isArray(checklist_json) && checklist_json.length > 0 
+      ? checklist_json[0] 
+      : null;
+    
+    const tipo_transporte = checklist?.tipo_transporte || null;
+    const isento_material = checklist?.isento_material || null;
+    const condicoes_caminhao = checklist?.condicoes_caminhao || null;
+    const acondicionamento = checklist?.acondicionamento || null;
+    const condicoes_embalagem = checklist?.condicoes_embalagem || null;
+
     // Atualizar relatório
     await executeQuery(
       `UPDATE relatorio_inspecao SET
@@ -165,6 +206,12 @@ class RIRCRUDController {
         recebedor = ?,
         visto_responsavel = ?,
         resultado_geral = ?,
+        status = ?,
+        tipo_transporte = ?,
+        isento_material = ?,
+        condicoes_caminhao = ?,
+        acondicionamento = ?,
+        condicoes_embalagem = ?,
         usuario_atualizacao_id = ?,
         atualizado_em = NOW()
       WHERE id = ?`,
@@ -180,6 +227,12 @@ class RIRCRUDController {
         recebedor || null,
         visto_responsavel || null,
         resultado_geral,
+        status,
+        tipo_transporte,
+        isento_material,
+        condicoes_caminhao,
+        acondicionamento,
+        condicoes_embalagem,
         usuario_id,
         id
       ]

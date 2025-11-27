@@ -48,6 +48,9 @@ const RelatorioInspecaoTable = ({
                   Produtos
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Resultado Geral
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -85,6 +88,17 @@ const RelatorioInspecaoTable = ({
                       </span>
                     )}
                   </td>
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    {rir.status === 'FINALIZADO' ? (
+                      <span className="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                        Finalizado
+                      </span>
+                    ) : (
+                      <span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                        Disponível
+                      </span>
+                    )}
+                  </td>
                   <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
                     {rir.usuario_nome || '-'}
                   </td>
@@ -118,11 +132,22 @@ const RelatorioInspecaoTable = ({
                   #{rir.id.toString().padStart(4, '0')}
                 </h3>
               </div>
-              {getStatusBadge ? getStatusBadge(rir.resultado_geral) : (
+              <div className="flex gap-2">
+                {getStatusBadge ? getStatusBadge(rir.resultado_geral) : (
                   <span className="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
-                  {rir.resultado_geral || '-'}
-                </span>
-              )}
+                    {rir.resultado_geral || '-'}
+                  </span>
+                )}
+                {rir.status === 'FINALIZADO' ? (
+                  <span className="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                    Finalizado
+                  </span>
+                ) : (
+                  <span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                    Disponível
+                  </span>
+                )}
+              </div>
             </div>
             
             <div className="space-y-2 text-sm">
@@ -141,6 +166,14 @@ const RelatorioInspecaoTable = ({
               <div className="flex justify-between">
                 <span className="text-gray-600">Produtos:</span>
                 <span className="text-gray-900">{rir.total_produtos || 0} {rir.total_produtos === 1 ? 'item' : 'itens'}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Resultado Geral:</span>
+                <span className="text-gray-900">{rir.resultado_geral || '-'}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Status:</span>
+                <span className="text-gray-900">{rir.status === 'FINALIZADO' ? 'Finalizado' : 'Disponível'}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Responsável:</span>

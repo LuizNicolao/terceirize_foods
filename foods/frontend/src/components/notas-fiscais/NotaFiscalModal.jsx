@@ -423,6 +423,32 @@ const NotaFiscalModal = ({
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  // Handler específico para número da nota - busca RIR correspondente quando houver múltiplas RIRs
+  const handleNumeroNotaChange = (numeroNota) => {
+    handleFieldChange('numero_nota', numeroNota);
+    
+    // Se houver múltiplas RIRs disponíveis, buscar a RIR correspondente ao número da nota
+    if (rirsDisponiveis.length > 1) {
+      if (numeroNota && numeroNota.trim() !== '') {
+        const rirEncontrada = rirsDisponiveis.find(rir => 
+          rir.numero_nota_fiscal && 
+          rir.numero_nota_fiscal.trim().toLowerCase() === numeroNota.trim().toLowerCase()
+        );
+        
+        if (rirEncontrada) {
+          handleFieldChange('rir_id', String(rirEncontrada.id));
+        } else {
+          // Se não encontrar RIR com esse número, limpar o campo rir_id
+          handleFieldChange('rir_id', '');
+        }
+      } else {
+        // Se o número da nota foi apagado, limpar o rir_id também
+        handleFieldChange('rir_id', '');
+      }
+    }
+    // Se houver apenas 1 RIR, não precisa fazer nada (já foi preenchido automaticamente)
+  };
+
   const handlePedidoChange = async (pedidoId) => {
     handleFieldChange('pedido_compra_id', pedidoId);
     
@@ -524,12 +550,18 @@ const NotaFiscalModal = ({
                   : (rirResponse.data.items || rirResponse.data.data?.items || []);
                 
                 if (rirs.length > 0) {
-                  // Pegar o primeiro RIR disponível (ou o mais recente)
-                  const rir = rirs[0];
-                  handleFieldChange('rir_id', String(rir.id));
-                  
                   // Atualizar lista de RIRs disponíveis
                   setRirsDisponiveis(rirs);
+                  
+                  // Se houver apenas uma RIR, preencher automaticamente
+                  if (rirs.length === 1) {
+                    const rir = rirs[0];
+                    handleFieldChange('rir_id', String(rir.id));
+                  } else {
+                    // Se houver múltiplas RIRs, não preencher automaticamente
+                    // O usuário deve digitar o número da nota primeiro
+                    handleFieldChange('rir_id', '');
+                  }
                 } else {
                   // Se não encontrar RIR disponível, limpar o campo
                   handleFieldChange('rir_id', '');
@@ -859,7 +891,13 @@ const NotaFiscalModal = ({
         {/* SEÇÃO 4: Dados da Nota Fiscal */}
         <DadosNotaFiscal
           formData={formData}
-          onChange={handleFieldChange}
+          onChange={(field, value) => {
+            if (field === 'numero_nota') {
+              handleNumeroNotaChange(value);
+            } else {
+              handleFieldChange(field, value);
+            }
+          }}
           isViewMode={isViewMode}
           rirSelecionado={rirsDisponiveis.find(rir => String(rir.id) === String(formData.rir_id)) || null}
         />
