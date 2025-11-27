@@ -45,6 +45,7 @@ const prazosPagamentoRoutes = require('./prazos-pagamento');
 const pedidosComprasRoutes = require('./pedidos-compras');
 const centroCustoRoutes = require('./centro-custo');
 const almoxarifadoRoutes = require('./almoxarifado');
+const notasFiscaisRoutes = require('./notas-fiscais/notaFiscalRoute');
 const pdfTemplatesRoutes = require('./pdf-templates');
 const openaiRoutes = require('./openai/openaiRoute');
 const cepRoutes = require('./shared/cepRoute');
@@ -92,6 +93,7 @@ const routes = [
   { path: '/pedidos-compras', router: pedidosComprasRoutes },
   { path: '/centro-custo', router: centroCustoRoutes },
   { path: '/almoxarifado', router: almoxarifadoRoutes },
+  { path: '/notas-fiscais', router: notasFiscaisRoutes },
   { path: '/pdf-templates', router: pdfTemplatesRoutes },
   { path: '/openai', router: openaiRoutes },
   { path: '/shared', router: cepRoutes }

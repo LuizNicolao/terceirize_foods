@@ -44,6 +44,7 @@ const PERMISSOES_PADRAO = {
       formas_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
       prazos_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
       pedidos_compras: { visualizar: true, criar: true, editar: true, excluir: false },
+      notas_fiscais: { visualizar: true, criar: true, editar: true, excluir: false },
       pdf_templates: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
       
@@ -86,6 +87,7 @@ const PERMISSOES_PADRAO = {
       formas_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
       prazos_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
       pedidos_compras: { visualizar: true, criar: true, editar: true, excluir: false },
+      notas_fiscais: { visualizar: true, criar: true, editar: true, excluir: false },
       pdf_templates: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
@@ -126,6 +128,7 @@ const PERMISSOES_PADRAO = {
       calendario: { visualizar: true, criar: true, editar: true, excluir: true },
       formas_pagamento: { visualizar: true, criar: true, editar: true, excluir: true },
       pedidos_compras: { visualizar: true, criar: true, editar: true, excluir: false },
+      notas_fiscais: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: true, criar: true, editar: true, excluir: true }
     }
   },
@@ -167,6 +170,7 @@ const PERMISSOES_PADRAO = {
       calendario: { visualizar: true, criar: true, editar: true, excluir: true },
       formas_pagamento: { visualizar: true, criar: true, editar: true, excluir: true },
       pedidos_compras: { visualizar: true, criar: true, editar: true, excluir: false },
+      notas_fiscais: { visualizar: true, criar: true, editar: true, excluir: false },
       pdf_templates: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
@@ -208,6 +212,7 @@ const PERMISSOES_PADRAO = {
       formas_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
       prazos_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
       pedidos_compras: { visualizar: true, criar: true, editar: true, excluir: false },
+      notas_fiscais: { visualizar: true, criar: true, editar: true, excluir: false },
       pdf_templates: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
@@ -249,6 +254,7 @@ const PERMISSOES_PADRAO = {
       formas_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
       prazos_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
       pedidos_compras: { visualizar: true, criar: true, editar: true, excluir: false },
+      notas_fiscais: { visualizar: true, criar: true, editar: true, excluir: false },
       pdf_templates: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
@@ -292,6 +298,7 @@ const PERMISSOES_PADRAO = {
       formas_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
       prazos_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
       pedidos_compras: { visualizar: true, criar: true, editar: true, excluir: false },
+      notas_fiscais: { visualizar: true, criar: true, editar: true, excluir: false },
       pdf_templates: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
@@ -332,6 +339,7 @@ const PERMISSOES_PADRAO = {
       formas_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
       prazos_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
       pedidos_compras: { visualizar: true, criar: true, editar: true, excluir: false },
+      notas_fiscais: { visualizar: true, criar: true, editar: true, excluir: false },
       pdf_templates: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
@@ -373,6 +381,7 @@ const PERMISSOES_PADRAO = {
       formas_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
       prazos_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
       pedidos_compras: { visualizar: true, criar: true, editar: true, excluir: false },
+      notas_fiscais: { visualizar: true, criar: true, editar: true, excluir: false },
       pdf_templates: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
@@ -416,6 +425,7 @@ const PERMISSOES_PADRAO = {
       formas_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
       prazos_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
       pedidos_compras: { visualizar: true, criar: true, editar: true, excluir: false },
+      notas_fiscais: { visualizar: true, criar: true, editar: true, excluir: false },
       pdf_templates: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
@@ -457,6 +467,7 @@ const PERMISSOES_PADRAO = {
       formas_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
       prazos_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
       pedidos_compras: { visualizar: true, criar: true, editar: true, excluir: false },
+      notas_fiscais: { visualizar: true, criar: true, editar: true, excluir: false },
       pdf_templates: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
@@ -498,6 +509,7 @@ const PERMISSOES_PADRAO = {
       formas_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
       prazos_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
       pedidos_compras: { visualizar: true, criar: true, editar: true, excluir: false },
+      notas_fiscais: { visualizar: true, criar: true, editar: true, excluir: false },
       pdf_templates: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
@@ -541,6 +553,7 @@ const PERMISSOES_PADRAO = {
       formas_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
       prazos_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
       pedidos_compras: { visualizar: true, criar: true, editar: true, excluir: false },
+      notas_fiscais: { visualizar: true, criar: true, editar: true, excluir: false },
       pdf_templates: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
@@ -582,6 +595,7 @@ const PERMISSOES_PADRAO = {
       formas_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
       prazos_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
       pedidos_compras: { visualizar: true, criar: true, editar: true, excluir: false },
+      notas_fiscais: { visualizar: true, criar: true, editar: true, excluir: false },
       pdf_templates: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
@@ -623,6 +637,7 @@ const PERMISSOES_PADRAO = {
       formas_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
       prazos_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
       pedidos_compras: { visualizar: true, criar: true, editar: true, excluir: false },
+      notas_fiscais: { visualizar: true, criar: true, editar: true, excluir: false },
       pdf_templates: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
@@ -666,6 +681,7 @@ const PERMISSOES_PADRAO = {
       formas_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
       prazos_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
       pedidos_compras: { visualizar: true, criar: true, editar: true, excluir: false },
+      notas_fiscais: { visualizar: true, criar: true, editar: true, excluir: false },
       pdf_templates: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
@@ -707,6 +723,7 @@ const PERMISSOES_PADRAO = {
       formas_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
       prazos_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
       pedidos_compras: { visualizar: true, criar: true, editar: true, excluir: false },
+      notas_fiscais: { visualizar: true, criar: true, editar: true, excluir: false },
       pdf_templates: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
@@ -748,6 +765,7 @@ const PERMISSOES_PADRAO = {
       formas_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
       prazos_pagamento: { visualizar: true, criar: true, editar: true, excluir: false },
       pedidos_compras: { visualizar: true, criar: true, editar: true, excluir: false },
+      notas_fiscais: { visualizar: true, criar: true, editar: true, excluir: false },
       pdf_templates: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
@@ -795,6 +813,7 @@ const TODAS_TELAS = [
   'formas_pagamento',
   'prazos_pagamento',
   'pedidos_compras',
+  'notas_fiscais',
   'pdf_templates'
 ];
 
@@ -855,7 +874,8 @@ const TELAS_COM_DESCRICOES = [
   { nome: 'calendario', descricao: 'Gerenciamento de Calendário' },
   { nome: 'formas_pagamento', descricao: 'Gerenciamento de Formas de Pagamento' },
   { nome: 'prazos_pagamento', descricao: 'Gerenciamento de Prazos de Pagamento' },
-  { nome: 'pedidos_compras', descricao: 'Gerenciamento de Pedidos de Compras' }
+  { nome: 'pedidos_compras', descricao: 'Gerenciamento de Pedidos de Compras' },
+  { nome: 'notas_fiscais', descricao: 'Gerenciamento de Notas Fiscais' }
 ];
 
 module.exports = {

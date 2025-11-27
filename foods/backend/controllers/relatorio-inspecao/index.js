@@ -21,6 +21,7 @@ module.exports = {
   buscarNQAGrupo: RIRIntegrationsController.buscarNQAGrupo,
   buscarPlanoPorLote: RIRIntegrationsController.buscarPlanoPorLote,
   buscarPedidosAprovados: RIRIntegrationsController.buscarPedidosAprovados,
-  buscarGrupos: RIRIntegrationsController.buscarGrupos
+  buscarGrupos: RIRIntegrationsController.buscarGrupos,
+  calcularSaldoPedido: RIRIntegrationsController.calcularSaldoPedido
 };
 

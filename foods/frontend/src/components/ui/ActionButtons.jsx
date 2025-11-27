@@ -29,13 +29,14 @@ const ActionButtons = ({
         </Button>
       )}
       
-      {canEdit && onEdit && (
+      {canEdit && (
         <Button
           variant="ghost"
           size={size}
-          onClick={() => onEdit(item)}
+          onClick={onEdit ? () => onEdit(item) : undefined}
           title="Editar"
-          className="text-blue-600 hover:text-blue-800 hover:bg-blue-50"
+          disabled={!onEdit}
+          className={onEdit ? "text-blue-600 hover:text-blue-800 hover:bg-blue-50" : "text-gray-400 cursor-not-allowed opacity-50"}
         >
           <FaEdit className="w-3 h-3" />
         </Button>
@@ -53,13 +54,14 @@ const ActionButtons = ({
         </Button>
       )}
       
-      {canDelete && onDelete && (
+      {canDelete && (
         <Button
           variant="ghost"
           size={size}
-          onClick={() => onDelete(item)}
+          onClick={onDelete ? () => onDelete(item) : undefined}
           title="Excluir"
-          className="text-red-600 hover:text-red-800 hover:bg-red-50"
+          disabled={!onDelete}
+          className={onDelete ? "text-red-600 hover:text-red-800 hover:bg-red-50" : "text-gray-400 cursor-not-allowed opacity-50"}
         >
           <FaTrash className="w-3 h-3" />
         </Button>

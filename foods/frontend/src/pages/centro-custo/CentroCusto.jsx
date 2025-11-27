@@ -3,13 +3,15 @@ import { FaPlus, FaQuestionCircle } from 'react-icons/fa';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { useCentroCusto } from '../../hooks/useCentroCusto';
 import { useAuditoria } from '../../hooks/common/useAuditoria';
+import { useExport } from '../../hooks/common/useExport';
 import { Button, ValidationErrorModal, ConfirmModal } from '../../components/ui';
 import { CadastroFilterBarSearchable } from '../../components/ui';
 import { Pagination } from '../../components/ui';
 import { CentroCustoModal } from '../../components/centro-custo';
 import CentrosCustoStats from '../../components/centro-custo/CentrosCustoStats';
 import CentrosCustoTable from '../../components/centro-custo/CentrosCustoTable';
-import { AuditModal } from '../../components/shared';
+import { AuditModal, ExportButtons } from '../../components/shared';
+import CentroCustoService from '../../services/centroCusto';
 
 const CentroCusto = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
@@ -70,6 +72,26 @@ const CentroCusto = () => {
     setAuditFilters
   } = useAuditoria('centro_custo');
 
+  // Hook de exportação
+  const { handleExportXLSX: exportXLSX, handleExportPDF: exportPDF } = useExport(CentroCustoService);
+
+  // Funções wrapper para exportação com filtros
+  const handleExportXLSX = React.useCallback(() => {
+    const params = {
+      search: searchTerm || undefined,
+      status: statusFilter && statusFilter !== 'todos' ? (statusFilter === 'ativo' ? 1 : 0) : undefined
+    };
+    return exportXLSX(params);
+  }, [exportXLSX, searchTerm, statusFilter]);
+
+  const handleExportPDF = React.useCallback(() => {
+    const params = {
+      search: searchTerm || undefined,
+      status: statusFilter && statusFilter !== 'todos' ? (statusFilter === 'ativo' ? 1 : 0) : undefined
+    };
+    return exportPDF(params);
+  }, [exportPDF, searchTerm, statusFilter]);
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen bg-gray-50">
@@ -120,6 +142,15 @@ const CentroCusto = () => {
         placeholder="Buscar por nome, código ou filial..."
         useSearchableSelect={false}
       />
+
+      {/* Ações de Exportação */}
+      <div className="mb-4">
+        <ExportButtons
+          onExportXLSX={handleExportXLSX}
+          onExportPDF={handleExportPDF}
+          disabled={!canView('centro_custo')}
+        />
+      </div>
 
       {/* Tabela */}
       <CentrosCustoTable

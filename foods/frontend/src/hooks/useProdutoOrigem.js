@@ -77,7 +77,13 @@ export const useProdutoOrigem = () => {
         return response.data || [];
       };
 
-      setGrupos(processData(gruposRes));
+      // Filtrar grupos para mostrar apenas do tipo 'compra' (case-insensitive)
+      const gruposData = processData(gruposRes);
+      const gruposCompra = gruposData.filter(grupo => 
+        grupo.tipo && grupo.tipo.toLowerCase() === 'compra'
+      );
+
+      setGrupos(gruposCompra);
       setSubgrupos(processData(subgruposRes));
       setClasses(processData(classesRes));
       setUnidadesMedida(processData(unidadesRes));

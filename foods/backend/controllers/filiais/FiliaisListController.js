@@ -127,7 +127,7 @@ class FiliaisListController {
     // Buscar almoxarifados da filial
     const almoxarifadosQuery = `
       SELECT id, nome, status, criado_em, atualizado_em
-      FROM almoxarifados 
+      FROM almoxarifado 
       WHERE filial_id = ?
       ORDER BY nome ASC
     `;
@@ -166,7 +166,7 @@ class FiliaisListController {
     const query = `
       SELECT 
         id, filial_id, nome, status, criado_em, atualizado_em
-      FROM almoxarifados 
+      FROM almoxarifado 
       WHERE filial_id = ?
       ORDER BY nome ASC
     `;
@@ -181,30 +181,8 @@ class FiliaisListController {
 
   /**
    * Listar itens de um almoxarifado
+   * REMOVIDO - tabela almoxarifado_itens foi removida
    */
-  static listarItensAlmoxarifado = asyncHandler(async (req, res) => {
-    const { almoxarifadoId } = req.params;
-
-    const query = `
-      SELECT 
-        ai.id, ai.almoxarifado_id, ai.produto_id, ai.quantidade,
-        ai.criado_em, ai.atualizado_em,
-        p.nome as produto_nome, p.codigo_produto as produto_codigo,
-        u.nome as unidade_nome
-      FROM almoxarifado_itens ai
-      INNER JOIN produtos p ON ai.produto_id = p.id
-      LEFT JOIN unidades_medida u ON p.unidade_id = u.id
-      WHERE ai.almoxarifado_id = ?
-      ORDER BY p.nome ASC
-    `;
-
-    const itens = await executeQuery(query, [almoxarifadoId]);
-
-    // Retornar resposta no formato esperado pelo frontend
-    return successResponse(res, itens, 'Itens do almoxarifado listados com sucesso', STATUS_CODES.OK, {
-      _links: res.addListLinks(itens)._links
-    });
-  });
 }
 
 module.exports = FiliaisListController;

@@ -206,7 +206,7 @@ class FiliaisCRUDController {
 
     // Verificar se há almoxarifados vinculados
     const almoxarifados = await executeQuery(
-      'SELECT id FROM almoxarifados WHERE filial_id = ?',
+      'SELECT id FROM almoxarifado WHERE filial_id = ?',
       [id]
     );
 
@@ -243,7 +243,7 @@ class FiliaisCRUDController {
 
     // Verificar se já existe um almoxarifado com o mesmo nome na filial
     const almoxarifadoExistente = await executeQuery(
-      'SELECT id FROM almoxarifados WHERE filial_id = ? AND nome = ?',
+      'SELECT id FROM almoxarifado WHERE filial_id = ? AND nome = ?',
       [filialId, nome.trim()]
     );
 
@@ -252,7 +252,7 @@ class FiliaisCRUDController {
     }
 
     const query = `
-      INSERT INTO almoxarifados (filial_id, nome, status, criado_em, atualizado_em)
+      INSERT INTO almoxarifado (filial_id, nome, status, criado_em, atualizado_em)
       VALUES (?, ?, 1, NOW(), NOW())
     `;
 
@@ -260,7 +260,7 @@ class FiliaisCRUDController {
 
     // Buscar o almoxarifado criado
     const almoxarifado = await executeQuery(
-      'SELECT * FROM almoxarifados WHERE id = ?',
+      'SELECT * FROM almoxarifado WHERE id = ?',
       [result.insertId]
     );
 
@@ -282,14 +282,14 @@ class FiliaisCRUDController {
     }
 
     // Verificar se o almoxarifado existe
-    const almoxarifado = await executeQuery('SELECT * FROM almoxarifados WHERE id = ?', [id]);
+    const almoxarifado = await executeQuery('SELECT * FROM almoxarifado WHERE id = ?', [id]);
     if (almoxarifado.length === 0) {
       return notFoundResponse(res, 'Almoxarifado não encontrado');
     }
 
     // Verificar se já existe outro almoxarifado com o mesmo nome na mesma filial
     const almoxarifadoExistente = await executeQuery(
-      'SELECT id FROM almoxarifados WHERE filial_id = ? AND nome = ? AND id != ?',
+      'SELECT id FROM almoxarifado WHERE filial_id = ? AND nome = ? AND id != ?',
       [almoxarifado[0].filial_id, nome.trim(), id]
     );
 
@@ -298,7 +298,7 @@ class FiliaisCRUDController {
     }
 
     const query = `
-      UPDATE almoxarifados 
+      UPDATE almoxarifado 
       SET nome = ?, status = ?, atualizado_em = NOW()
       WHERE id = ?
     `;
@@ -307,7 +307,7 @@ class FiliaisCRUDController {
 
     // Buscar o almoxarifado atualizado
     const almoxarifadoAtualizado = await executeQuery(
-      'SELECT * FROM almoxarifados WHERE id = ?',
+      'SELECT * FROM almoxarifado WHERE id = ?',
       [id]
     );
 
@@ -324,106 +324,27 @@ class FiliaisCRUDController {
     const { id } = req.params;
 
     // Verificar se o almoxarifado existe
-    const almoxarifado = await executeQuery('SELECT * FROM almoxarifados WHERE id = ?', [id]);
+    const almoxarifado = await executeQuery('SELECT * FROM almoxarifado WHERE id = ?', [id]);
     if (almoxarifado.length === 0) {
       return notFoundResponse(res, 'Almoxarifado não encontrado');
     }
 
-    // Verificar se há itens no almoxarifado
-    const itens = await executeQuery(
-      'SELECT COUNT(*) as count FROM almoxarifado_itens WHERE almoxarifado_id = ?',
-      [id]
-    );
+    // Verificação de itens removida - tabela almoxarifado_itens foi removida
 
-    if (itens[0].count > 0) {
-      return errorResponse(res, 'Não é possível excluir um almoxarifado que possui itens', STATUS_CODES.BAD_REQUEST);
-    }
-
-    await executeQuery('DELETE FROM almoxarifados WHERE id = ?', [id]);
+    await executeQuery('DELETE FROM almoxarifado WHERE id = ?', [id]);
 
     return successResponse(res, null, 'Almoxarifado excluído com sucesso', STATUS_CODES.OK);
   });
 
   /**
    * Adicionar item ao almoxarifado
+   * REMOVIDO - tabela almoxarifado_itens foi removida
    */
-  static adicionarItemAlmoxarifado = asyncHandler(async (req, res) => {
-    const { almoxarifadoId } = req.params;
-    const { produto_id, quantidade } = req.body;
-
-    if (!produto_id || !quantidade) {
-      return errorResponse(res, 'Produto e quantidade são obrigatórios', STATUS_CODES.BAD_REQUEST);
-    }
-
-    // Verificar se o almoxarifado existe
-    const almoxarifado = await executeQuery('SELECT id FROM almoxarifados WHERE id = ?', [almoxarifadoId]);
-    if (almoxarifado.length === 0) {
-      return notFoundResponse(res, 'Almoxarifado não encontrado');
-    }
-
-    // Verificar se o produto existe
-    const produto = await executeQuery('SELECT id FROM produtos WHERE id = ?', [produto_id]);
-    if (produto.length === 0) {
-      return notFoundResponse(res, 'Produto não encontrado');
-    }
-
-    // Verificar se o item já existe no almoxarifado
-    const itemExistente = await executeQuery(
-      'SELECT id FROM almoxarifado_itens WHERE almoxarifado_id = ? AND produto_id = ?',
-      [almoxarifadoId, produto_id]
-    );
-
-    if (itemExistente.length > 0) {
-      return conflictResponse(res, 'Este produto já está no almoxarifado');
-    }
-
-    const query = `
-      INSERT INTO almoxarifado_itens (almoxarifado_id, produto_id, quantidade, criado_em, atualizado_em)
-      VALUES (?, ?, ?, NOW(), NOW())
-    `;
-
-    const result = await executeQuery(query, [almoxarifadoId, produto_id, quantidade]);
-
-    // Buscar o item criado
-    const item = await executeQuery(
-      `SELECT 
-        ai.id, ai.almoxarifado_id, ai.produto_id, ai.quantidade,
-        ai.criado_em, ai.atualizado_em,
-        p.nome as produto_nome, p.codigo_produto as produto_codigo,
-        u.nome as unidade_nome
-      FROM almoxarifado_itens ai
-      INNER JOIN produtos p ON ai.produto_id = p.id
-      LEFT JOIN unidades_medida u ON p.unidade_id = u.id
-      WHERE ai.id = ?`,
-      [result.insertId]
-    );
-
-    // Adicionar links HATEOAS
-    const data = res.addResourceLinks(item[0]);
-
-    return successResponse(res, data, 'Item adicionado com sucesso', STATUS_CODES.CREATED);
-  });
 
   /**
    * Remover item do almoxarifado
+   * REMOVIDO - tabela almoxarifado_itens foi removida
    */
-  static removerItemAlmoxarifado = asyncHandler(async (req, res) => {
-    const { almoxarifadoId, itemId } = req.params;
-
-    // Verificar se o item existe
-    const item = await executeQuery(
-      'SELECT id FROM almoxarifado_itens WHERE id = ? AND almoxarifado_id = ?',
-      [itemId, almoxarifadoId]
-    );
-
-    if (item.length === 0) {
-      return notFoundResponse(res, 'Item não encontrado');
-    }
-
-    await executeQuery('DELETE FROM almoxarifado_itens WHERE id = ?', [itemId]);
-
-    return successResponse(res, null, 'Item removido com sucesso', STATUS_CODES.OK);
-  });
 }
 
 module.exports = FiliaisCRUDController;

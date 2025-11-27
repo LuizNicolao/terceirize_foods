@@ -38,9 +38,10 @@ module.exports = {
   criarAlmoxarifado: FiliaisCRUDController.criarAlmoxarifado,
   atualizarAlmoxarifado: FiliaisCRUDController.atualizarAlmoxarifado,
   excluirAlmoxarifado: FiliaisCRUDController.excluirAlmoxarifado,
-  listarItensAlmoxarifado: FiliaisListController.listarItensAlmoxarifado,
-  adicionarItemAlmoxarifado: FiliaisCRUDController.adicionarItemAlmoxarifado,
-  removerItemAlmoxarifado: FiliaisCRUDController.removerItemAlmoxarifado,
+  // Métodos de itens removidos - tabela almoxarifado_itens foi removida
+  // listarItensAlmoxarifado: FiliaisListController.listarItensAlmoxarifado,
+  // adicionarItemAlmoxarifado: FiliaisCRUDController.adicionarItemAlmoxarifado,
+  // removerItemAlmoxarifado: FiliaisCRUDController.removerItemAlmoxarifado,
   
   // Métodos de Exportação
   exportarXLSX: FiliaisExportController.exportarXLSX,

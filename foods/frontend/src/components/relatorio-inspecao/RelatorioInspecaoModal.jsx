@@ -117,7 +117,6 @@ const RelatorioInspecaoModal = ({ isOpen, onClose, onSubmit, onSuccess, rir, vie
         // Inicializar checklist com um item vazio
         setChecklist([{
           tipo_transporte: '',
-          tipo_produto: '',
           isento_material: '',
           condicoes_caminhao: '',
           acondicionamento: '',
@@ -237,7 +236,11 @@ const RelatorioInspecaoModal = ({ isOpen, onClose, onSubmit, onSuccess, rir, vie
             codigo: produto.codigo_produto || '',
             descricao: produto.nome_produto || '',
             und: produto.unidade_medida || '',
+            // Sempre usar quantidade_pedido (quantidade original do pedido) no campo qtde
             qtde: produto.quantidade_pedido || '',
+            quantidade_pedido: produto.quantidade_pedido || '', // Quantidade original do pedido
+            quantidade_disponivel: produto.quantidade_disponivel !== undefined ? produto.quantidade_disponivel : null, // Saldo disponível
+            quantidade_lancada_notas: produto.quantidade_lancada_notas !== undefined ? produto.quantidade_lancada_notas : null, // Quantidade já lançada em notas
             grupo_id: produto.grupo_id,
             grupoId: produto.grupo_id,
             grupo_nome: produto.grupo_nome,
@@ -313,6 +316,24 @@ const RelatorioInspecaoModal = ({ isOpen, onClose, onSubmit, onSuccess, rir, vie
       return;
     }
 
+    // Validar campos obrigatórios do checklist
+    if (checklist.length > 0) {
+      const checklistInvalido = checklist.some(item => 
+        !item.tipo_transporte || 
+        !item.isento_material || 
+        !item.condicoes_caminhao || 
+        !item.acondicionamento || 
+        !item.condicoes_embalagem
+      );
+      
+      if (checklistInvalido) {
+        isSubmittingRef.current = false;
+        setSaving(false);
+        toast.error('Por favor, preencha todos os campos obrigatórios do Check List de Avaliação Higiênico-Sanitária');
+        return;
+      }
+    }
+
     // Validar campos obrigatórios dos produtos
     if (produtosTableRef.current && produtos.length > 0) {
       const isValid = produtosTableRef.current.validate();
@@ -340,6 +361,7 @@ const RelatorioInspecaoModal = ({ isOpen, onClose, onSubmit, onSuccess, rir, vie
       const formData = {
         ...data,
         hora_inspecao: horaInspecao,
+        checklist_json: checklist,
         produtos: produtosLimpos
       };
 

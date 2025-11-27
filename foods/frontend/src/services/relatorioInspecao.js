@@ -233,6 +233,21 @@ class RelatorioInspecaoService {
     }
   }
 
+  async calcularSaldoPedido(pedidoId) {
+    try {
+      const response = await api.get(`/relatorio-inspecao/saldo-pedido/${pedidoId}`);
+      return {
+        success: true,
+        data: response.data.data || response.data
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Erro ao calcular saldo do pedido'
+      };
+    }
+  }
+
   async desvincularProdutosPedido(pedidoId, itemIds = []) {
     try {
       const response = await api.delete(`/pedidos-compras/${pedidoId}/itens`, {

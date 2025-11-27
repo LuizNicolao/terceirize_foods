@@ -47,7 +47,8 @@ const PermissoesForm = ({
       { key: 'calendario', label: 'Calendário' },
       { key: 'formas_pagamento', label: 'Formas de Pagamento' },
       { key: 'prazos_pagamento', label: 'Prazos de Pagamento' },
-      { key: 'pedidos_compras', label: 'Pedidos de Compras' }
+      { key: 'pedidos_compras', label: 'Pedidos de Compras' },
+      { key: 'notas_fiscais', label: 'Notas Fiscais' }
     ],
     'Logística': [
       { key: 'veiculos', label: 'Veículos' },

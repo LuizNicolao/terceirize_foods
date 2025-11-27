@@ -3,13 +3,15 @@ import { FaPlus, FaQuestionCircle } from 'react-icons/fa';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { useAlmoxarifado } from '../../hooks/useAlmoxarifado';
 import { useAuditoria } from '../../hooks/common/useAuditoria';
+import { useExport } from '../../hooks/common/useExport';
 import { Button, ValidationErrorModal, ConfirmModal } from '../../components/ui';
 import { CadastroFilterBarSearchable } from '../../components/ui';
 import { Pagination } from '../../components/ui';
 import { AlmoxarifadoModal } from '../../components/almoxarifado';
 import AlmoxarifadosStats from '../../components/almoxarifado/AlmoxarifadosStats';
 import AlmoxarifadosTable from '../../components/almoxarifado/AlmoxarifadosTable';
-import { AuditModal } from '../../components/shared';
+import { AuditModal, ExportButtons } from '../../components/shared';
+import AlmoxarifadoService from '../../services/almoxarifadoService';
 
 const Almoxarifado = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
@@ -71,6 +73,26 @@ const Almoxarifado = () => {
     setAuditFilters
   } = useAuditoria('almoxarifado');
 
+  // Hook de exportação
+  const { handleExportXLSX: exportXLSX, handleExportPDF: exportPDF } = useExport(AlmoxarifadoService);
+
+  // Funções wrapper para exportação com filtros
+  const handleExportXLSX = React.useCallback(() => {
+    const params = {
+      search: searchTerm || undefined,
+      status: statusFilter && statusFilter !== 'todos' ? (statusFilter === 'ativo' ? 1 : 0) : undefined
+    };
+    return exportXLSX(params);
+  }, [exportXLSX, searchTerm, statusFilter]);
+
+  const handleExportPDF = React.useCallback(() => {
+    const params = {
+      search: searchTerm || undefined,
+      status: statusFilter && statusFilter !== 'todos' ? (statusFilter === 'ativo' ? 1 : 0) : undefined
+    };
+    return exportPDF(params);
+  }, [exportPDF, searchTerm, statusFilter]);
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen bg-gray-50">
@@ -121,6 +143,15 @@ const Almoxarifado = () => {
         placeholder="Buscar por nome, código, filial ou centro de custo..."
         useSearchableSelect={false}
       />
+
+      {/* Ações de Exportação */}
+      <div className="mb-4">
+        <ExportButtons
+          onExportXLSX={handleExportXLSX}
+          onExportPDF={handleExportPDF}
+          disabled={!canView('almoxarifado')}
+        />
+      </div>
 
       {/* Tabela */}
       <AlmoxarifadosTable

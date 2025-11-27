@@ -4,7 +4,7 @@
  */
 
 const express = require('express');
-const { query } = require('express-validator');
+const { query, param } = require('express-validator');
 const { authenticateToken, checkPermission } = require('../../middleware/auth');
 const { 
   rirValidations, 
@@ -78,6 +78,16 @@ router.get('/pedidos-aprovados',
 router.get('/grupos',
   checkPermission('visualizar'),
   RIRController.buscarGrupos
+);
+
+// GET /api/relatorio-inspecao/saldo-pedido/:pedido_id
+router.get('/saldo-pedido/:pedido_id',
+  checkPermission('visualizar'),
+  param('pedido_id')
+    .isInt({ min: 1 })
+    .withMessage('ID do pedido deve ser um número inteiro positivo'),
+  handleValidationErrors,
+  RIRController.calcularSaldoPedido
 );
 
 // GET /api/relatorio-inspecao/:id - Buscar RIR por ID (DEPOIS DAS ROTAS ESTÁTICAS)

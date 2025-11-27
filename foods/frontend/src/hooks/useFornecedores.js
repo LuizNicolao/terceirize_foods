@@ -252,6 +252,7 @@ export const useFornecedores = () => {
     handleSearch: baseEntity.setSearchTerm,
     setSearchTerm: baseEntity.setSearchTerm,
     clearSearch: baseEntity.clearSearch,
+    handleKeyPress: baseEntity.handleKeyPress,
     setStatusFilter: customFilters.setStatusFilter,
     
     // Ações de CRUD (customizadas)

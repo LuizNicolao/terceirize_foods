@@ -164,7 +164,7 @@ const UsuarioModal = ({
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Card 3: Filiais */}
           <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-            <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-blue-500">
+            <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">
               <FaBuilding className="inline mr-2" />
               Filiais com Acesso
             </h3>
@@ -182,7 +182,7 @@ const UsuarioModal = ({
                           checked={isChecked}
                           onChange={(e) => handleFilialChange(filial.id, e.target.checked)}
                           disabled={isViewMode}
-                          className="mr-3 text-blue-600 focus:ring-blue-500 rounded"
+                          className="mr-3 text-green-600 focus:ring-green-500 rounded"
                         />
                         <span className="text-sm text-gray-700">
                           {filial.filial} - {filial.cidade}/{filial.estado}

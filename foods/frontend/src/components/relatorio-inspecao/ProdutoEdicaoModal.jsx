@@ -54,7 +54,19 @@ const ProdutoEdicaoModal = ({
   onSave,
   grupos = []
 }) => {
-  const [formData, setFormData] = useState({});
+  // Inicializar formData com valores padrão para evitar inputs uncontrolled
+  const [formData, setFormData] = useState({
+    fabricacao: '',
+    fabricacaoBR: '',
+    lote: '',
+    validade: '',
+    validadeBR: '',
+    temperatura: '',
+    aval_sensorial: '',
+    tam_lote: '',
+    num_amostras_aprovadas: '',
+    num_amostras_reprovadas: '',
+  });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
@@ -71,6 +83,21 @@ const ProdutoEdicaoModal = ({
         tam_lote: produto.tam_lote || '',
         num_amostras_aprovadas: produto.num_amostras_aprovadas || '',
         num_amostras_reprovadas: produto.num_amostras_reprovadas || '',
+      });
+      setErrors({});
+    } else if (!isOpen) {
+      // Limpar formData quando o modal fechar
+      setFormData({
+        fabricacao: '',
+        fabricacaoBR: '',
+        lote: '',
+        validade: '',
+        validadeBR: '',
+        temperatura: '',
+        aval_sensorial: '',
+        tam_lote: '',
+        num_amostras_aprovadas: '',
+        num_amostras_reprovadas: '',
       });
       setErrors({});
     }
@@ -115,18 +142,20 @@ const ProdutoEdicaoModal = ({
   // Retorna null se não houver dados suficientes para calcular
   const calcularResultadoFinal = () => {
     // Verificar se há dados mínimos necessários para calcular o resultado
-    const temFabricacao = formData.fabricacao || formData.fabricacaoBR;
-    const temValidade = formData.validade || formData.validadeBR;
-    const temLote = formData.lote;
-    const temAvalSensorial = formData.aval_sensorial;
-    const temTamLote = formData.tam_lote;
-    const temAmostrasAvaliadas = formData.num_amostras_avaliadas;
-    const temAmostrasReprovadas = formData.num_amostras_reprovadas !== null && formData.num_amostras_reprovadas !== undefined && formData.num_amostras_reprovadas !== '';
+    // Considerar valores do formData primeiro, depois do produto original
+    const temFabricacao = formData.fabricacao || formData.fabricacaoBR || produto?.fabricacao || produto?.fabricacaoBR;
+    const temValidade = formData.validade || formData.validadeBR || produto?.validade || produto?.validadeBR;
+    const temLote = formData.lote || produto?.lote;
+    const temAvalSensorial = formData.aval_sensorial || produto?.aval_sensorial;
+    const temTamLote = formData.tam_lote || produto?.tam_lote;
+    const temAmostrasAvaliadas = formData.num_amostras_avaliadas || produto?.num_amostras_avaliadas;
+    const temAmostrasReprovadas = (formData.num_amostras_reprovadas !== null && formData.num_amostras_reprovadas !== undefined && formData.num_amostras_reprovadas !== '') ||
+                                  (produto?.num_amostras_reprovadas !== null && produto?.num_amostras_reprovadas !== undefined && produto?.num_amostras_reprovadas !== '');
     
     // Verificar se é grupo Frios (precisa de temperatura)
     const grupoNome = produto?.grupo_nome || '';
     const isGrupoFrios = grupoNome.toLowerCase() === 'frios';
-    const temTemperatura = !isGrupoFrios || formData.temperatura;
+    const temTemperatura = !isGrupoFrios || formData.temperatura || produto?.temperatura;
     
     // Se não tiver dados obrigatórios, não calcular resultado
     if (!temFabricacao || !temValidade || !temLote || !temAvalSensorial || !temTemperatura || !temTamLote || !temAmostrasAvaliadas) {
@@ -134,8 +163,8 @@ const ProdutoEdicaoModal = ({
     }
     
     const controleValidade = calcularControleValidade(
-      formData.fabricacao || formData.fabricacaoBR,
-      formData.validade || formData.validadeBR
+      formData.fabricacao || formData.fabricacaoBR || produto?.fabricacao || produto?.fabricacaoBR,
+      formData.validade || formData.validadeBR || produto?.validade || produto?.validadeBR
     );
     
     if (controleValidade !== null && controleValidade > 30) {
@@ -144,8 +173,8 @@ const ProdutoEdicaoModal = ({
     
     // Verificar amostras reprovadas (apenas se tiver RE definido e amostras reprovadas informadas)
     if (temAmostrasReprovadas) {
-      const numReprovadas = parseInt(formData.num_amostras_reprovadas || 0);
-      const re = parseInt(produto?.re || 0);
+      const numReprovadas = parseInt(formData.num_amostras_reprovadas || produto?.num_amostras_reprovadas || 0);
+      const re = parseInt(formData.re || produto?.re || 0);
 
       if (re > 0 && numReprovadas >= re) {
         return 'Reprovado';
@@ -367,11 +396,13 @@ const ProdutoEdicaoModal = ({
       newErrors.tam_lote = 'Tamanho do lote é obrigatório';
       hasErrors = true;
     } else {
-      // Validar se tam_lote não é maior que quantidade do pedido
-      const quantidadePedido = parseNumber(produto?.qtde || produto?.quantidade_pedido || 0);
+      // Validar se tam_lote não é maior que saldo disponível (ou quantidade do pedido se não houver saldo)
+      const saldoDisponivel = produto?.quantidade_disponivel !== null && produto?.quantidade_disponivel !== undefined
+        ? parseNumber(produto.quantidade_disponivel)
+        : parseNumber(produto?.qtde || produto?.quantidade_pedido || 0);
       
-      if (!isNaN(quantidadePedido) && tamLoteParsed > quantidadePedido) {
-        newErrors.tam_lote = `Tamanho do lote não pode ser superior à quantidade do pedido (${formatNumber(quantidadePedido)})`;
+      if (!isNaN(saldoDisponivel) && tamLoteParsed > saldoDisponivel) {
+        newErrors.tam_lote = `Tamanho do lote não pode ser superior ao saldo disponível (${formatNumber(saldoDisponivel)})`;
         hasErrors = true;
       }
     }
@@ -483,7 +514,7 @@ const ProdutoEdicaoModal = ({
         {/* Informações do Produto (somente leitura) */}
         <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
           <h3 className="font-semibold text-gray-900 mb-3">Informações do Produto</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
             <div>
               <span className="text-gray-600">Código:</span>
               <p className="font-medium text-gray-900">{produto.codigo || produto.codigo_produto || '-'}</p>
@@ -498,8 +529,14 @@ const ProdutoEdicaoModal = ({
             </div>
             <div>
               <span className="text-gray-600">Qtd. Pedido:</span>
-              <p className="font-medium text-gray-900">{formatNumber(produto.qtde || produto.quantidade_pedido)}</p>
+              <p className="font-medium text-gray-900">{formatNumber(produto.quantidade_pedido || produto.qtde)}</p>
             </div>
+            {produto.quantidade_disponivel !== null && produto.quantidade_disponivel !== undefined && (
+              <div>
+                <span className="text-gray-600">Saldo Disponível:</span>
+                <p className="font-medium text-green-700">{formatNumber(produto.quantidade_disponivel)}</p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -625,14 +662,16 @@ const ProdutoEdicaoModal = ({
               value={formData.tam_lote}
               onChange={(e) => {
                 const valor = e.target.value;
-                const quantidadePedido = parseNumber(produto?.qtde || produto?.quantidade_pedido || 0);
+                const saldoDisponivel = produto?.quantidade_disponivel !== null && produto?.quantidade_disponivel !== undefined
+                  ? parseNumber(produto.quantidade_disponivel)
+                  : parseNumber(produto?.qtde || produto?.quantidade_pedido || 0);
                 const tamLote = parseNumber(valor);
                 
                 // Validar em tempo real
-                if (valor && !isNaN(tamLote) && !isNaN(quantidadePedido) && tamLote > quantidadePedido) {
+                if (valor && !isNaN(tamLote) && !isNaN(saldoDisponivel) && tamLote > saldoDisponivel) {
                   setErrors(prev => ({
                     ...prev,
-                    tam_lote: `Tamanho do lote não pode ser superior à quantidade do pedido (${formatNumber(quantidadePedido)})`
+                    tam_lote: `Tamanho do lote não pode ser superior ao saldo disponível (${formatNumber(saldoDisponivel)})`
                   }));
                 } else if (errors.tam_lote && errors.tam_lote.includes('superior')) {
                   // Remover erro se o valor for válido
@@ -648,7 +687,9 @@ const ProdutoEdicaoModal = ({
               error={errors.tam_lote}
               placeholder="Tamanho"
               min="0.1"
-              max={produto?.qtde || produto?.quantidade_pedido || undefined}
+              max={produto?.quantidade_disponivel !== null && produto?.quantidade_disponivel !== undefined
+                ? produto.quantidade_disponivel
+                : (produto?.qtde || produto?.quantidade_pedido || undefined)}
             />
 
             <div>

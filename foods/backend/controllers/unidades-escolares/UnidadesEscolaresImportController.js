@@ -197,10 +197,12 @@ class UnidadesEscolaresImportController {
         'rota_id': 'rota_id',
         'regional': 'regional',
         
-        // Lote e Senior
-        'lot': 'lot',
-        'lote': 'lot',
-        'lote': 'lot',
+        // Centro de Custo e Senior
+        'centro de custo': 'centro_custo_id',
+        'centro_custo_id': 'centro_custo_id',
+        'centro_custo': 'centro_custo_id',
+        'lot': 'centro_custo_id', // Mantém compatibilidade com importações antigas
+        'lote': 'centro_custo_id', // Mantém compatibilidade com importações antigas
         'cc senior': 'cc_senior',
         'cc_senior': 'cc_senior',
         'c.c. senior': 'cc_senior',
@@ -306,8 +308,18 @@ class UnidadesEscolaresImportController {
       unidade.regional = UnidadesEscolaresImportController.getCellValue(row, columnMapping.regional);
     }
 
-    if (columnMapping.lot !== undefined) {
-      unidade.lot = UnidadesEscolaresImportController.getCellValue(row, columnMapping.lot);
+    if (columnMapping.centro_custo_id !== undefined) {
+      const centroCustoValue = UnidadesEscolaresImportController.getCellValue(row, columnMapping.centro_custo_id);
+      // Se for um número, usar diretamente; se for texto, buscar pelo código ou nome
+      if (centroCustoValue) {
+        const centroCustoId = parseInt(centroCustoValue);
+        if (!isNaN(centroCustoId)) {
+          unidade.centro_custo_id = centroCustoId;
+        } else {
+          // Se for texto, tentar buscar pelo código ou nome (será tratado depois)
+          unidade.centro_custo_nome_ou_codigo = centroCustoValue.trim();
+        }
+      }
     }
 
     if (columnMapping.cc_senior !== undefined) {
@@ -454,10 +466,22 @@ class UnidadesEscolaresImportController {
     
     for (const unidade of unidades) {
       try {
+        // Se centro_custo_nome_ou_codigo foi definido, buscar o ID do centro de custo
+        let centroCustoId = unidade.centro_custo_id;
+        if (unidade.centro_custo_nome_ou_codigo && !centroCustoId) {
+          const centroCustoSearch = await executeQuery(
+            'SELECT id FROM centro_custo WHERE (codigo = ? OR nome LIKE ?) AND status = 1 LIMIT 1',
+            [unidade.centro_custo_nome_ou_codigo, `%${unidade.centro_custo_nome_ou_codigo}%`]
+          );
+          if (centroCustoSearch.length > 0) {
+            centroCustoId = centroCustoSearch[0].id;
+          }
+        }
+
         const insertQuery = `
           INSERT INTO unidades_escolares (
             codigo_teknisa, nome_escola, cidade, estado, pais, endereco, numero, bairro, cep,
-            centro_distribuicao, rota_id, regional, lot, cc_senior, codigo_senior, abastecimento,
+            centro_distribuicao, rota_id, regional, centro_custo_id, cc_senior, codigo_senior, abastecimento,
             ordem_entrega, status, observacoes, filial_id, atendimento, horario, supervisao, coordenacao, lat, \`long\`
           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
@@ -480,7 +504,7 @@ class UnidadesEscolaresImportController {
           nullIfUndefined(unidade.centro_distribuicao),
           null, // rota_id sempre NULL na importação - será relacionado depois na tela de rotas
           nullIfUndefined(unidade.regional),
-          nullIfUndefined(unidade.lot),
+          centroCustoId || null,
           nullIfUndefined(unidade.cc_senior),
           nullIfUndefined(unidade.codigo_senior),
           nullIfUndefined(unidade.abastecimento),

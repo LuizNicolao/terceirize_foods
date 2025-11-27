@@ -226,7 +226,6 @@ const RelatorioInspecaoPrint = ({ rir }) => {
                 <thead>
                   <tr>
                     <th>Tipo de Transporte</th>
-                    <th>Tipo de Produto</th>
                     <th>Isento de Material Estranho</th>
                     <th>Condições do Caminhão</th>
                     <th>Acondicionamento</th>
@@ -237,7 +236,6 @@ const RelatorioInspecaoPrint = ({ rir }) => {
                   {checklist.map((item, index) => (
                     <tr key={index}>
                       <td>{item.tipo_transporte || '-'}</td>
-                      <td>{item.tipo_produto || '-'}</td>
                       <td>{item.isento_material || '-'}</td>
                       <td>{item.condicoes_caminhao || '-'}</td>
                       <td>{item.acondicionamento || '-'}</td>
@@ -311,7 +309,7 @@ const RelatorioInspecaoPrint = ({ rir }) => {
                 </tr>
                 <tr>
                   <th>Status Geral</th>
-                  <td colSpan="3">{rir.status_geral || '-'}</td>
+                  <td colSpan="3">{rir.resultado_geral || '-'}</td>
                 </tr>
               </tbody>
             </table>

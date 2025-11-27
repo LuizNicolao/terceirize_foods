@@ -32,13 +32,16 @@ import ProdutoEdicaoModal from './ProdutoEdicaoModal';
   // Ex: "1.000" → "1", "10.5" → "10,5" (mantém decimal se houver vírgula ou ponto decimal)
   const normalizeNumber = (value) => {
     if (!value && value !== 0) return '-';
+    
+    // Se for número, converter para string e tratar
     if (typeof value === 'number') {
-      // Se for número, verificar se tem decimais
+      // Se for inteiro, retornar sem decimais
       if (value % 1 === 0) {
         return value.toString();
       }
-      // Se tiver decimais, formatar com vírgula
-      return value.toString().replace('.', ',');
+      // Se tiver decimais, formatar com vírgula e remover zeros à direita
+      const str = value.toString();
+      return str.replace('.', ',').replace(/\.?0+$/, '');
     }
     
     const str = String(value).trim();
@@ -62,11 +65,17 @@ import ProdutoEdicaoModal from './ProdutoEdicaoModal';
       
       // Se tem 2 partes, verificar se é decimal ou milhar
       if (parts.length === 2) {
-        // Se a segunda parte tem exatamente 3 dígitos E são todos zeros
-        // E a primeira parte tem 1-3 dígitos, é separador de milhar incorreto (ex: "1.000" → "1")
-        if (parts[1].length === 3 && parts[1] === '000' && /^\d{1,3}$/.test(parts[0])) {
-          // Retornar apenas a parte antes do ponto (remover zeros)
-          return parts[0];
+        // Se a segunda parte tem apenas zeros (1-4 dígitos), é separador de milhar ou decimal zero
+        // Ex: "9.000" → "9", "9.00" → "9", "9.0" → "9"
+        if (/^0+$/.test(parts[1])) {
+          // Se a segunda parte tem 3 ou 4 dígitos zeros E a primeira parte tem 1-3 dígitos, é separador de milhar
+          if ((parts[1].length === 3 || parts[1].length === 4) && /^\d{1,3}$/.test(parts[0])) {
+            return parts[0]; // Retornar apenas a parte antes do ponto
+          }
+          // Se tem 1-2 dígitos zeros, é decimal zero, retornar apenas a parte inteira
+          if (parts[1].length <= 2) {
+            return parts[0];
+          }
         }
         
         // Se a segunda parte tem exatamente 3 dígitos (não zeros) E a primeira parte tem 1-3 dígitos
@@ -78,8 +87,9 @@ import ProdutoEdicaoModal from './ProdutoEdicaoModal';
         
         // Se a segunda parte tem 1-2 dígitos, provavelmente é decimal (ex: "10.5", "10.50")
         if (parts[1].length <= 2 && /^\d+$/.test(parts[1])) {
-          // Converter ponto para vírgula (decimal)
-          return str.replace('.', ',');
+          // Converter ponto para vírgula (decimal) e remover zeros à direita
+          const result = str.replace('.', ',');
+          return result.replace(/,0+$/, '').replace(/,$/, '');
         }
         
         // Caso padrão: remover ponto (assumir separador de milhar)
@@ -596,6 +606,7 @@ const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = fal
               <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500 uppercase">Produto</th>
               <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500 uppercase">Und.</th>
               <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500 uppercase">Qtd. Ped.</th>
+              <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500 uppercase">Saldo Disponível</th>
               <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500 uppercase">Fab. <span className="text-red-500">*</span></th>
               <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500 uppercase">Lote <span className="text-red-500">*</span></th>
               <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500 uppercase">Val. <span className="text-red-500">*</span></th>
@@ -699,6 +710,11 @@ const ProdutosTable = forwardRef(({ produtos, onChange, onRemove, viewMode = fal
                   </td>
                   <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-600">
                     {displayNumber(produto.qtde || produto.quantidade_pedido)}
+                  </td>
+                  <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-600 font-medium">
+                    {produto.quantidade_disponivel !== null && produto.quantidade_disponivel !== undefined 
+                      ? displayNumber(produto.quantidade_disponivel) 
+                      : displayNumber(produto.qtde || produto.quantidade_pedido)}
                   </td>
                   <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-600">
                     {produto.fabricacaoBR || formatDateBR(produto.fabricacao) || '-'}

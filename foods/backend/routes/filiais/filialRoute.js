@@ -111,23 +111,19 @@ router.delete('/almoxarifados/:id',
   FiliaisController.excluirAlmoxarifado
 );
 
-// Listar itens de um almoxarifado
-router.get('/almoxarifados/:almoxarifadoId/itens', 
-  commonValidations.id,
-  FiliaisController.listarItensAlmoxarifado
-);
-
-// Adicionar item ao almoxarifado
-router.post('/almoxarifados/:almoxarifadoId/itens', 
-  commonValidations.id,
-  FiliaisController.adicionarItemAlmoxarifado
-);
-
-// Remover item do almoxarifado
-router.delete('/almoxarifados/:almoxarifadoId/itens/:itemId', 
-  commonValidations.id,
-  FiliaisController.removerItemAlmoxarifado
-);
+// Rotas de itens de almoxarifado removidas - tabela almoxarifado_itens foi removida
+// router.get('/almoxarifados/:almoxarifadoId/itens', 
+//   commonValidations.id,
+//   FiliaisController.listarItensAlmoxarifado
+// );
+// router.post('/almoxarifados/:almoxarifadoId/itens', 
+//   commonValidations.id,
+//   FiliaisController.adicionarItemAlmoxarifado
+// );
+// router.delete('/almoxarifados/:almoxarifadoId/itens/:itemId', 
+//   commonValidations.id,
+//   FiliaisController.removerItemAlmoxarifado
+// );
 
 router.get('/export/xlsx', checkScreenPermission('filiais', 'visualizar'), FiliaisController.exportarXLSX);
 router.get('/export/pdf', checkScreenPermission('filiais', 'visualizar'), FiliaisController.exportarPDF);

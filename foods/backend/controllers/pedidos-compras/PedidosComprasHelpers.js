@@ -239,6 +239,90 @@ class PedidosComprasHelpers {
   }
 
   /**
+   * Atualizar status do pedido baseado nas quantidades recebidas nas notas fiscais
+   * Compara quantidade_pedido com quantidade_recebida (soma das quantidades das notas fiscais)
+   */
+  static async atualizarStatusPedido(pedidoId) {
+    // Buscar todos os itens do pedido com quantidades recebidas em notas fiscais
+    const itens = await executeQuery(
+      `SELECT 
+        pci.id,
+        pci.codigo_produto,
+        pci.quantidade_pedido,
+        COALESCE(SUM(CASE WHEN nf.status = 'LANCADA' 
+          THEN nfi.quantidade ELSE 0 END), 0) as quantidade_recebida
+      FROM pedido_compras_itens pci
+      LEFT JOIN notas_fiscais nf ON nf.pedido_compra_id = pci.pedido_id
+      LEFT JOIN notas_fiscais_itens nfi ON nfi.nota_fiscal_id = nf.id 
+        AND (
+          nfi.codigo_produto COLLATE utf8mb4_unicode_ci = pci.codigo_produto
+          OR nfi.produto_generico_id = pci.produto_generico_id
+        )
+      WHERE pci.pedido_id = ?
+      GROUP BY pci.id, pci.codigo_produto, pci.quantidade_pedido`,
+      [pedidoId]
+    );
+
+    if (itens.length === 0) {
+      // Se não tem itens, não atualiza status
+      return;
+    }
+
+    // Verificar status atual do pedido
+    const [pedido] = await executeQuery(
+      'SELECT id, status FROM pedidos_compras WHERE id = ?',
+      [pedidoId]
+    );
+
+    if (!pedido) {
+      return;
+    }
+
+    // Se o pedido não está aprovado ou já está finalizado/cancelado, não atualiza
+    if (!['aprovado', 'enviado', 'confirmado', 'em_transito', 'entregue', 'parcial'].includes(pedido.status)) {
+      return;
+    }
+
+    let todosRecebidos = true;
+    let algumRecebido = false;
+    const TOLERANCIA = 0.001; // Tolerância para diferenças de precisão decimal
+
+    for (const item of itens) {
+      const quantidadePedido = parseFloat(item.quantidade_pedido || 0);
+      const quantidadeRecebida = parseFloat(item.quantidade_recebida || 0);
+
+      if (quantidadeRecebida > 0) {
+        algumRecebido = true;
+      }
+
+      // Considera recebido se recebido >= pedido (com tolerância para precisão decimal)
+      // Se recebido < pedido - tolerância, então não está totalmente recebido
+      if (quantidadeRecebida < (quantidadePedido - TOLERANCIA)) {
+        todosRecebidos = false;
+      }
+    }
+
+    // Determinar status
+    let novoStatus = pedido.status; // Mantém status atual por padrão
+    if (algumRecebido && todosRecebidos) {
+      novoStatus = 'finalizado';
+    } else if (algumRecebido) {
+      novoStatus = 'parcial';
+    }
+    // Se nenhum recebido, mantém o status atual (aprovado, enviado, etc)
+
+    // Atualizar status do pedido apenas se mudou
+    if (novoStatus !== pedido.status) {
+      await executeQuery(
+        'UPDATE pedidos_compras SET status = ? WHERE id = ?',
+        [novoStatus, pedidoId]
+      );
+    }
+
+    return novoStatus;
+  }
+
+  /**
    * Obter permissões do usuário (helper)
    */
   static getUserPermissions(user) {

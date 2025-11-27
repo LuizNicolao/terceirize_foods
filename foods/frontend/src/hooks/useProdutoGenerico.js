@@ -90,6 +90,8 @@ export const useProdutoGenerico = () => {
         return response.data || [];
       };
 
+      // Carregar todos os grupos (não filtrar aqui, pois precisamos incluir grupos de produtos origem)
+      // O filtro será feito no modal quando necessário
       setGrupos(processData(gruposRes));
       setSubgrupos(processData(subgruposRes));
       setClasses(processData(classesRes));

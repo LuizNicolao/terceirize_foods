@@ -52,22 +52,19 @@ const ChecklistTable = ({ checklist, grupos, onChange, viewMode = false }) => {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Tipo de Transporte
+                  Tipo de Transporte <span className="text-red-500">*</span>
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Tipo de Produto
+                  Isento de Material Estranho <span className="text-red-500">*</span>
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Isento de Material Estranho
+                  Condições do Caminhão <span className="text-red-500">*</span>
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Condições do Caminhão
+                  Acondicionamento <span className="text-red-500">*</span>
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Acondicionamento
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Condições da Embalagem
+                  Condições da Embalagem <span className="text-red-500">*</span>
                 </th>
               </tr>
             </thead>
@@ -82,18 +79,7 @@ const ChecklistTable = ({ checklist, grupos, onChange, viewMode = false }) => {
                       placeholder="Selecione..."
                       className="w-full"
                       disabled={viewMode}
-            usePortal={false}
-                    />
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    <SearchableSelect
-                      value={item.tipo_produto || ''}
-                      onChange={(value) => handleFieldChange(index, 'tipo_produto', value)}
-                      options={getGrupoOptions()}
-                      placeholder="Selecione o grupo..."
-                      className="w-full"
-                      disabled={viewMode}
-            usePortal={false}
+                      required
                     />
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap">
@@ -104,7 +90,7 @@ const ChecklistTable = ({ checklist, grupos, onChange, viewMode = false }) => {
                       placeholder="Selecione..."
                       className="w-full"
                       disabled={viewMode}
-            usePortal={false}
+                      required
                     />
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap">
@@ -115,7 +101,7 @@ const ChecklistTable = ({ checklist, grupos, onChange, viewMode = false }) => {
                       placeholder="Selecione..."
                       className="w-full"
                       disabled={viewMode}
-            usePortal={false}
+                      required
                     />
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap">
@@ -126,7 +112,7 @@ const ChecklistTable = ({ checklist, grupos, onChange, viewMode = false }) => {
                       placeholder="Selecione..."
                       className="w-full"
                       disabled={viewMode}
-            usePortal={false}
+                      required
                     />
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap">
@@ -137,7 +123,7 @@ const ChecklistTable = ({ checklist, grupos, onChange, viewMode = false }) => {
                       placeholder="Selecione..."
                       className="w-full"
                       disabled={viewMode}
-            usePortal={false}
+                      required
                     />
                   </td>
                 </tr>

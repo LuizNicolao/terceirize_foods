@@ -268,13 +268,13 @@ const UnidadeEscolarModal = ({
             </h3>
             <div className="space-y-2">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                <Input
-                  label="Código Teknisa *"
-                  type="text"
-                  placeholder="Código da unidade"
-                  {...register('codigo_teknisa')}
-                  disabled={isViewMode}
-                />
+              <Input
+                label="Código Teknisa *"
+                type="text"
+                placeholder="Código da unidade"
+                {...register('codigo_teknisa')}
+                disabled={isViewMode}
+              />
                 <Input
                   label="Status"
                   type="select"
@@ -360,36 +360,36 @@ const UnidadeEscolarModal = ({
             </h3>
             <div className="space-y-3">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <Input
-                  label="Cidade *"
-                  type="text"
-                  placeholder="Cidade"
-                  {...register('cidade')}
-                  disabled={isViewMode}
-                />
-                <Input
-                  label="Estado *"
-                  type="text"
-                  placeholder="Estado"
-                  {...register('estado')}
-                  disabled={isViewMode}
-                />
+              <Input
+                label="Cidade *"
+                type="text"
+                placeholder="Cidade"
+                {...register('cidade')}
+                disabled={isViewMode}
+              />
+              <Input
+                label="Estado *"
+                type="text"
+                placeholder="Estado"
+                {...register('estado')}
+                disabled={isViewMode}
+              />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <Input
-                  label="Número"
-                  type="text"
-                  placeholder="Número"
-                  {...register('numero')}
-                  disabled={isViewMode}
-                />
-                <Input
-                  label="País"
-                  type="text"
-                  placeholder="País"
-                  {...register('pais')}
-                  disabled={isViewMode}
-                />
+              <Input
+                label="Número"
+                type="text"
+                placeholder="Número"
+                {...register('numero')}
+                disabled={isViewMode}
+              />
+              <Input
+                label="País"
+                type="text"
+                placeholder="País"
+                {...register('pais')}
+                disabled={isViewMode}
+              />
               </div>
               <MaskedFormInput
                 label="CEP"
@@ -421,14 +421,14 @@ const UnidadeEscolarModal = ({
                   {...register('lat')}
                   disabled={isViewMode}
                 />
-                <Input
+              <Input
                   label="LONG (Longitude)"
                   type="number"
                   step="any"
                   placeholder="Ex: -46.6333"
                   {...register('long')}
-                  disabled={isViewMode}
-                />
+                disabled={isViewMode}
+              />
               </div>
             </div>
           </div>
@@ -440,21 +440,21 @@ const UnidadeEscolarModal = ({
             </h3>
             <div className="space-y-3">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <Input
-                  label="Filial"
-                  type="select"
-                  {...register('filial_id')}
-                  disabled={isViewMode || loadingFiliais}
-                >
-                  <option value="">
-                    {loadingFiliais ? 'Carregando filiais...' : 'Selecione uma filial'}
+              <Input
+                label="Filial"
+                type="select"
+                {...register('filial_id')}
+                disabled={isViewMode || loadingFiliais}
+              >
+                <option value="">
+                  {loadingFiliais ? 'Carregando filiais...' : 'Selecione uma filial'}
+                </option>
+                {filiais.map(filial => (
+                  <option key={filial.id} value={filial.id}>
+                    {filial.filial} ({filial.codigo_filial})
                   </option>
-                  {filiais.map(filial => (
-                    <option key={filial.id} value={filial.id}>
-                      {filial.filial} ({filial.codigo_filial})
-                    </option>
-                  ))}
-                </Input>
+                ))}
+              </Input>
                 <Input
                   label="Centro de Distribuição"
                   type="text"
@@ -479,20 +479,20 @@ const UnidadeEscolarModal = ({
                 ))}
               </Input>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <Input
-                  label="C.C. Senior"
-                  type="text"
-                  placeholder="C.C. Senior"
-                  {...register('cc_senior')}
-                  disabled={isViewMode}
-                />
-                <Input
-                  label="Código Senior"
-                  type="text"
-                  placeholder="Código Senior"
-                  {...register('codigo_senior')}
-                  disabled={isViewMode}
-                />
+              <Input
+                label="C.C. Senior"
+                type="text"
+                placeholder="C.C. Senior"
+                {...register('cc_senior')}
+                disabled={isViewMode}
+              />
+              <Input
+                label="Código Senior"
+                type="text"
+                placeholder="Código Senior"
+                {...register('codigo_senior')}
+                disabled={isViewMode}
+              />
                 <Input
                   label="Regional"
                   type="text"
@@ -554,38 +554,38 @@ const UnidadeEscolarModal = ({
                 </Input>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <Input
-                  label="Abastecimento"
-                  type="text"
-                  placeholder="Tipo de abastecimento"
-                  {...register('abastecimento')}
-                  disabled={isViewMode}
-                />
-                <Input
-                  label="Ordem de Entrega"
-                  type="number"
-                  placeholder="Ordem de entrega"
-                  {...register('ordem_entrega')}
-                  disabled={isViewMode}
-                />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <Input
-                  label="Atendimento"
-                  type="text"
-                  placeholder="Ex: Manhã, Tarde, Integral"
-                  {...register('atendimento')}
-                  disabled={isViewMode}
-                />
-                <Input
-                  label="Horário"
-                  type="text"
-                  placeholder="Ex: 07:00 às 17:00"
-                  {...register('horario')}
-                  disabled={isViewMode}
-                />
-              </div>
+              <Input
+                label="Abastecimento"
+                type="text"
+                placeholder="Tipo de abastecimento"
+                {...register('abastecimento')}
+                disabled={isViewMode}
+              />
+              <Input
+                label="Ordem de Entrega"
+                type="number"
+                placeholder="Ordem de entrega"
+                {...register('ordem_entrega')}
+                disabled={isViewMode}
+              />
             </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <Input
+                label="Atendimento"
+                type="text"
+                placeholder="Ex: Manhã, Tarde, Integral"
+                {...register('atendimento')}
+                disabled={isViewMode}
+              />
+              <Input
+                label="Horário"
+                type="text"
+                placeholder="Ex: 07:00 às 17:00"
+                {...register('horario')}
+                disabled={isViewMode}
+              />
+            </div>
+          </div>
           </div>
 
         </div>

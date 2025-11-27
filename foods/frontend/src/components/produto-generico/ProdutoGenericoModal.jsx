@@ -265,7 +265,15 @@ const ProdutoGenericoModal = ({
               className="bg-gray-50"
             >
               <option value="">Selecione um grupo</option>
-              {grupos?.filter(grupo => grupo.tipo === 'Compra').map(grupo => (
+              {grupos?.filter(grupo => {
+                // Incluir grupos do tipo 'compra' (case-insensitive)
+                const isCompra = grupo.tipo && grupo.tipo.toLowerCase() === 'compra';
+                // Também incluir o grupo do produto origem selecionado (caso não seja do tipo compra mas esteja vinculado)
+                const isGrupoProdutoOrigem = produtoOrigemSelecionado && grupo.id === produtoOrigemSelecionado.grupo_id;
+                // Incluir também o grupo já selecionado no formulário (para edição)
+                const isGrupoSelecionado = grupoId && String(grupo.id) === String(grupoId);
+                return isCompra || isGrupoProdutoOrigem || isGrupoSelecionado;
+              }).map(grupo => (
                 <option key={grupo.id} value={grupo.id}>
                   {grupo.nome}
                 </option>

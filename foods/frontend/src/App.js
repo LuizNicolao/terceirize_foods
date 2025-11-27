@@ -43,6 +43,7 @@ import CalendarioRelatorios from './pages/calendario/CalendarioRelatorios';
 import FormasPagamento from './pages/formas-pagamento/FormasPagamento';
 import PrazosPagamento from './pages/prazos-pagamento/PrazosPagamento';
 import PedidosCompras from './pages/pedidos-compras/PedidosCompras';
+import NotasFiscais from './pages/notas-fiscais/NotasFiscais';
 import CentroCusto from './pages/centro-custo/CentroCusto';
 import Almoxarifado from './pages/almoxarifado/Almoxarifado';
 import PdfTemplates from './pages/pdf-templates/PdfTemplates';
@@ -471,6 +472,17 @@ const App = () => {
           <AuthenticatedRoute>
             <ProtectedRoute screen="pedidos_compras">
               <PedidosCompras />
+            </ProtectedRoute>
+          </AuthenticatedRoute>
+        } 
+      />
+
+      <Route 
+        path="/foods/notas-fiscais" 
+        element={
+          <AuthenticatedRoute>
+            <ProtectedRoute screen="notas_fiscais">
+              <NotasFiscais />
             </ProtectedRoute>
           </AuthenticatedRoute>
         } 

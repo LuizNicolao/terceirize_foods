@@ -245,6 +245,7 @@ export const useUsuarios = () => {
     // Ações de filtros
     setSearchTerm: baseEntity.setSearchTerm,
     clearSearch: baseEntity.clearSearch,
+    handleKeyPress: baseEntity.handleKeyPress,
     setStatusFilter: customFilters.setStatusFilter,
     setItemsPerPage: baseEntity.handleItemsPerPageChange, // Alias para compatibilidade
     

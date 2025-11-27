@@ -199,6 +199,48 @@ class CentroCustoService {
       };
     }
   }
+
+  /**
+   * Exportar centros de custo para XLSX
+   */
+  async exportarXLSX(params = {}) {
+    try {
+      const response = await api.get('/centro-custo/export/xlsx', {
+        params,
+        responseType: 'blob'
+      });
+      return {
+        success: true,
+        data: response.data
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao exportar XLSX'
+      };
+    }
+  }
+
+  /**
+   * Exportar centros de custo para PDF
+   */
+  async exportarPDF(params = {}) {
+    try {
+      const response = await api.get('/centro-custo/export/pdf', {
+        params,
+        responseType: 'blob'
+      });
+      return {
+        success: true,
+        data: response.data
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao exportar PDF'
+      };
+    }
+  }
 }
 
 export default new CentroCustoService();

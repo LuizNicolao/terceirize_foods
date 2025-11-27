@@ -18,7 +18,7 @@ class RIRListController {
    * Listar relatórios de inspeção com paginação e busca
    */
   static listarRIRs = asyncHandler(async (req, res) => {
-    const { search = '', status_geral, fornecedor, data_inicio, data_fim, page = 1, limit = 20 } = req.query;
+    const { search = '', resultado_geral, fornecedor, data_inicio, data_fim, numero_pedido, pedido_compra_id, apenas_disponiveis = false, page = 1, limit = 20 } = req.query;
 
     let params = [];
     let whereClause = 'WHERE 1=1';
@@ -30,14 +30,41 @@ class RIRListController {
       params.push(`%${search}%`, `%${search}%`);
     }
 
-    if (status_geral) {
-      whereClause += ' AND ri.status_geral = ?';
-      params.push(status_geral);
+    if (resultado_geral) {
+      whereClause += ' AND ri.resultado_geral = ?';
+      params.push(resultado_geral);
     }
 
     if (fornecedor) {
       whereClause += ' AND LOWER(ri.fornecedor) LIKE LOWER(?)';
       params.push(`%${fornecedor}%`);
+    }
+
+    // Suportar tanto numero_pedido quanto pedido_compra_id
+    let numeroPedidoFiltro = null;
+    if (numero_pedido) {
+      numeroPedidoFiltro = numero_pedido;
+      whereClause += ' AND ri.numero_pedido = ?';
+      params.push(numero_pedido);
+    } else if (pedido_compra_id) {
+      // Buscar numero_pedido a partir do pedido_compra_id
+      const pedidoQuery = await executeQuery(
+        `SELECT numero_pedido FROM pedidos_compras WHERE id = ?`,
+        [pedido_compra_id]
+      );
+      if (pedidoQuery.length > 0) {
+        numeroPedidoFiltro = pedidoQuery[0].numero_pedido;
+        whereClause += ' AND ri.numero_pedido = ?';
+        params.push(numeroPedidoFiltro);
+      } else {
+        // Se não encontrar o pedido, retornar vazio
+        whereClause += ' AND 1=0';
+      }
+    }
+
+    // Excluir RIRs já utilizadas em notas fiscais (quando apenas_disponiveis = true ou quando filtrando por pedido)
+    if (apenas_disponiveis === 'true' || apenas_disponiveis === true || numero_pedido || pedido_compra_id) {
+      whereClause += ' AND NOT EXISTS (SELECT 1 FROM notas_fiscais nf WHERE nf.rir_id = ri.id)';
     }
 
     if (data_inicio) {
@@ -60,7 +87,7 @@ class RIRListController {
         ri.fornecedor,
         ri.numero_pedido,
         ri.cnpj_fornecedor,
-        ri.status_geral,
+        ri.resultado_geral,
         ri.recebedor,
         ri.visto_responsavel,
         ri.criado_em,
@@ -91,9 +118,9 @@ class RIRListController {
     let statsQuery = `
       SELECT 
         COUNT(*) as total,
-        SUM(CASE WHEN ri.status_geral = 'APROVADO' THEN 1 ELSE 0 END) as aprovados,
-        SUM(CASE WHEN ri.status_geral = 'REPROVADO' THEN 1 ELSE 0 END) as reprovados,
-        SUM(CASE WHEN ri.status_geral = 'PARCIAL' THEN 1 ELSE 0 END) as parciais
+        SUM(CASE WHEN ri.resultado_geral = 'APROVADO' THEN 1 ELSE 0 END) as aprovados,
+        SUM(CASE WHEN ri.resultado_geral = 'REPROVADO' THEN 1 ELSE 0 END) as reprovados,
+        SUM(CASE WHEN ri.resultado_geral = 'PARCIAL' THEN 1 ELSE 0 END) as parciais
       FROM relatorio_inspecao ri
       WHERE 1=1
     `;
@@ -105,9 +132,9 @@ class RIRListController {
       statsQuery += ' AND (LOWER(ri.numero_nota_fiscal) LIKE LOWER(?) OR LOWER(ri.fornecedor) LIKE LOWER(?))';
       statsParams.push(`%${search}%`, `%${search}%`);
     }
-    if (status_geral) {
-      statsQuery += ' AND ri.status_geral = ?';
-      statsParams.push(status_geral);
+    if (resultado_geral) {
+      statsQuery += ' AND ri.resultado_geral = ?';
+      statsParams.push(resultado_geral);
     }
     if (fornecedor) {
       statsQuery += ' AND LOWER(ri.fornecedor) LIKE LOWER(?)';

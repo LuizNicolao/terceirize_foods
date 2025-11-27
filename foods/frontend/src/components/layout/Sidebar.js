@@ -101,6 +101,7 @@ const menuGroups = [
   {
     title: 'Gestão & Operações',
     items: [
+      { path: '/foods/notas-fiscais', icon: FaFileInvoice, label: 'Notas Fiscais', screen: 'notas_fiscais' },
       { path: '/foods/patrimonios', icon: FaBuilding, label: 'Patrimônios', screen: 'patrimonios' },
       { path: '/foods/rotas-nutricionistas', icon: FaBuilding, label: 'Rotas Nutricionistas', screen: 'rotas_nutricionistas' },
       { path: '/foods/tipos-cardapio', icon: FaClipboardList, label: 'Tipos de Cardápio', screen: 'tipos_cardapio' },

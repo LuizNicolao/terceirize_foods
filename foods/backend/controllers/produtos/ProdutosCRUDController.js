@@ -542,15 +542,7 @@ class ProdutosCRUDController {
       return notFoundResponse(res, 'Produto não encontrado');
     }
 
-    // Verificar se produto está sendo usado em alguma tabela relacionada
-    const hasRelations = await executeQuery(
-      'SELECT COUNT(*) as count FROM almoxarifado_itens WHERE produto_id = ?',
-      [id]
-    );
-
-    if (hasRelations[0].count > 0) {
-      return errorResponse(res, 'Produto não pode ser excluído pois está sendo usado em almoxarifado', STATUS_CODES.BAD_REQUEST);
-    }
+    // Verificação de relacionamentos removida - tabela almoxarifado_itens foi removida
 
     // Excluir produto (soft delete - alterar status para inativo)
     await executeQuery(

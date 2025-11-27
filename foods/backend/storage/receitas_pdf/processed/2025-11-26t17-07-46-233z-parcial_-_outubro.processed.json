@@ -1,0 +1,922 @@
+{
+  "resumo": {
+    "total_refeicoes": 81,
+    "total_dias": 18,
+    "total_receitas_unicas": 76
+  },
+  "receitas_por_data": {
+    "1/10/2025": [
+      {
+        "turno": "Matutino",
+        "codigo": "R25.375",
+        "descricao": "Carne bovina em cubos refogada com tomate e cenoura, arroz, feijão, purê de batata, salada de alface e couve fatiado e um pêssego",
+        "ingredientes": [
+          "arroz",
+          "feijão",
+          "purê de batata",
+          "salada de alface e couve fatiado e um pêssego"
+        ],
+        "categoria_inferida": "matutino"
+      },
+      {
+        "turno": "Matutino",
+        "codigo": "R25.231",
+        "descricao": "Frango em iscas acebolado, arroz, feijão, batata refogada com tomate, salada de repolho roxo e uma maçã",
+        "ingredientes": [
+          "arroz",
+          "feijão",
+          "batata refogada com tomate",
+          "salada de repolho roxo e uma maçã"
+        ],
+        "categoria_inferida": "matutino"
+      },
+      {
+        "turno": "Noturno",
+        "codigo": "R25.375",
+        "descricao": "Carne bovina em cubos refogada com tomate e cenoura, arroz, feijão, purê de batata, salada de alface e couve fatiado e um pêssego",
+        "ingredientes": [
+          "arroz",
+          "feijão",
+          "purê de batata",
+          "salada de alface e couve fatiado e um pêssego"
+        ],
+        "categoria_inferida": "noturno"
+      },
+      {
+        "turno": "Noturno",
+        "codigo": "R25.231",
+        "descricao": "Frango em iscas acebolado, arroz, feijão, batata refogada com tomate, salada de repolho roxo e uma maçã",
+        "ingredientes": [
+          "arroz",
+          "feijão",
+          "batata refogada com tomate",
+          "salada de repolho roxo e uma maçã"
+        ],
+        "categoria_inferida": "noturno"
+      },
+      {
+        "turno": "Vespertino",
+        "codigo": "R25.375",
+        "descricao": "Carne bovina em cubos refogada com tomate e cenoura, arroz, feijão, purê de batata, salada de alface e couve fatiado e um pêssego",
+        "ingredientes": [
+          "arroz",
+          "feijão",
+          "purê de batata",
+          "salada de alface e couve fatiado e um pêssego"
+        ],
+        "categoria_inferida": "vespertino"
+      },
+      {
+        "turno": "Vespertino",
+        "codigo": "R25.231",
+        "descricao": "Frango em iscas acebolado, arroz, feijão, batata refogada com tomate, salada de repolho roxo e uma maçã",
+        "ingredientes": [
+          "arroz",
+          "feijão",
+          "batata refogada com tomate",
+          "salada de repolho roxo e uma maçã"
+        ],
+        "categoria_inferida": "vespertino"
+      }
+    ],
+    "2/10/2025": [
+      {
+        "turno": "Matutino",
+        "codigo": "R25.97",
+        "descricao": "Frango em iscas refogado com abobrinha, tomate, cebola e tempero verde, arroz, feijão, salada de pepino e uma tangerina",
+        "ingredientes": [
+          "tomate",
+          "cebola e tempero verde",
+          "arroz",
+          "feijão",
+          "salada de pepino e uma tangerina"
+        ],
+        "categoria_inferida": "matutino"
+      },
+      {
+        "turno": "Matutino",
+        "codigo": "R25.458",
+        "descricao": "Feijoada de carne bovina com legumes (feijão com carne bovina em cubos, batata doce e abóbora em cubos), arroz, farofa de cenoura ralada e uma tangerina",
+        "ingredientes": [
+          "batata doce e abóbora em cubos)",
+          "arroz",
+          "farofa de cenoura ralada e uma tangerina"
+        ],
+        "categoria_inferida": "matutino"
+      },
+      {
+        "turno": "Noturno",
+        "codigo": "R25.97",
+        "descricao": "Frango em iscas refogado com abobrinha, tomate, cebola e tempero verde, arroz, feijão, salada de pepino e uma tangerina",
+        "ingredientes": [
+          "tomate",
+          "cebola e tempero verde",
+          "arroz",
+          "feijão",
+          "salada de pepino e uma tangerina"
+        ],
+        "categoria_inferida": "noturno"
+      },
+      {
+        "turno": "Noturno",
+        "codigo": "R25.458",
+        "descricao": "Feijoada de carne bovina com legumes (feijão com carne bovina em cubos, batata doce e abóbora em cubos), arroz, farofa de cenoura ralada e uma tangerina",
+        "ingredientes": [
+          "batata doce e abóbora em cubos)",
+          "arroz",
+          "farofa de cenoura ralada e uma tangerina"
+        ],
+        "categoria_inferida": "noturno"
+      },
+      {
+        "turno": "Vespertino",
+        "codigo": "R25.97",
+        "descricao": "Frango em iscas refogado com abobrinha, tomate, cebola e tempero verde, arroz, feijão, salada de pepino e uma tangerina",
+        "ingredientes": [
+          "tomate",
+          "cebola e tempero verde",
+          "arroz",
+          "feijão",
+          "salada de pepino e uma tangerina"
+        ],
+        "categoria_inferida": "vespertino"
+      },
+      {
+        "turno": "Vespertino",
+        "codigo": "R25.458",
+        "descricao": "Feijoada de carne bovina com legumes (feijão com carne bovina em cubos, batata doce e abóbora em cubos), arroz, farofa de cenoura ralada e uma tangerina",
+        "ingredientes": [
+          "batata doce e abóbora em cubos)",
+          "arroz",
+          "farofa de cenoura ralada e uma tangerina"
+        ],
+        "categoria_inferida": "vespertino"
+      }
+    ],
+    "3/10/2025": [
+      {
+        "turno": "Matutino",
+        "codigo": "LL25.228",
+        "descricao": "Torta de carne (com carne moída, tomate, ervilha congelada, cebola e tempero verde), suco de uva integral sem adição de açúcar e uma banana",
+        "ingredientes": [
+          "tomate",
+          "ervilha congelada",
+          "cebola e tempero verde)",
+          "suco de uva integral sem adição de açúcar e uma banana"
+        ],
+        "categoria_inferida": "matutino"
+      },
+      {
+        "turno": "Matutino",
+        "codigo": "R24.202",
+        "descricao": "Carne bovina moída refogada com tomate em cubos e tempero verde, arroz, feijão, salada de couve flor e brócolis e uma banana",
+        "ingredientes": [
+          "arroz",
+          "feijão",
+          "salada de couve flor e brócolis e uma banana"
+        ],
+        "categoria_inferida": "matutino"
+      },
+      {
+        "turno": "Matutino",
+        "codigo": "LL24.22",
+        "descricao": "Pão massinha com peito de frango desfiado ensopado ao molho de tomate (feito na escola), alface, tomate em fatia, suco de laranja integral sem adição de açúcar e uma banana",
+        "ingredientes": [
+          "alface",
+          "tomate em fatia",
+          "suco de laranja integral sem adição de açúcar e uma banana"
+        ],
+        "categoria_inferida": "matutino"
+      },
+      {
+        "turno": "Noturno",
+        "codigo": "LL25.228",
+        "descricao": "Torta de carne (com carne moída, tomate, ervilha congelada, cebola e tempero verde), suco de uva integral sem adição de açúcar e uma banana",
+        "ingredientes": [
+          "tomate",
+          "ervilha congelada",
+          "cebola e tempero verde)",
+          "suco de uva integral sem adição de açúcar e uma banana"
+        ],
+        "categoria_inferida": "noturno"
+      },
+      {
+        "turno": "Noturno",
+        "codigo": "R24.202",
+        "descricao": "Carne bovina moída refogada com tomate em cubos e tempero verde, arroz, feijão, salada de couve flor e brócolis e uma banana",
+        "ingredientes": [
+          "arroz",
+          "feijão",
+          "salada de couve flor e brócolis e uma banana"
+        ],
+        "categoria_inferida": "noturno"
+      },
+      {
+        "turno": "Noturno",
+        "codigo": "LL24.22",
+        "descricao": "Pão massinha com peito de frango desfiado ensopado ao molho de tomate (feito na escola), alface, tomate em fatia, suco de laranja integral sem adição de açúcar e uma banana",
+        "ingredientes": [
+          "alface",
+          "tomate em fatia",
+          "suco de laranja integral sem adição de açúcar e uma banana"
+        ],
+        "categoria_inferida": "noturno"
+      },
+      {
+        "turno": "Vespertino",
+        "codigo": "LL25.228",
+        "descricao": "Torta de carne (com carne moída, tomate, ervilha congelada, cebola e tempero verde), suco de uva integral sem adição de açúcar e uma banana",
+        "ingredientes": [
+          "tomate",
+          "ervilha congelada",
+          "cebola e tempero verde)",
+          "suco de uva integral sem adição de açúcar e uma banana"
+        ],
+        "categoria_inferida": "vespertino"
+      },
+      {
+        "turno": "Vespertino",
+        "codigo": "R24.202",
+        "descricao": "Carne bovina moída refogada com tomate em cubos e tempero verde, arroz, feijão, salada de couve flor e brócolis e uma banana",
+        "ingredientes": [
+          "arroz",
+          "feijão",
+          "salada de couve flor e brócolis e uma banana"
+        ],
+        "categoria_inferida": "vespertino"
+      },
+      {
+        "turno": "Vespertino",
+        "codigo": "LL24.22",
+        "descricao": "Pão massinha com peito de frango desfiado ensopado ao molho de tomate (feito na escola), alface, tomate em fatia, suco de laranja integral sem adição de açúcar e uma banana",
+        "ingredientes": [
+          "alface",
+          "tomate em fatia",
+          "suco de laranja integral sem adição de açúcar e uma banana"
+        ],
+        "categoria_inferida": "vespertino"
+      }
+    ],
+    "6/10/2025": [
+      {
+        "turno": "Matutino",
+        "codigo": "R25.101",
+        "descricao": "Macarronada de frango (Macarrão (parafuso) com frango desfiado ensopado com molho de tomate), salada de repolho picado, salada de abóbora e uma laranja",
+        "ingredientes": [
+          "salada de repolho picado",
+          "salada de abóbora e uma laranja"
+        ],
+        "categoria_inferida": "matutino"
+      },
+      {
+        "turno": "Noturno",
+        "codigo": "R25.101",
+        "descricao": "Macarronada de frango (Macarrão (parafuso) com frango desfiado ensopado com molho de tomate), salada de repolho picado, salada de abóbora e uma laranja",
+        "ingredientes": [
+          "salada de repolho picado",
+          "salada de abóbora e uma laranja"
+        ],
+        "categoria_inferida": "noturno"
+      },
+      {
+        "turno": "Vespertino",
+        "codigo": "R25.101",
+        "descricao": "Macarronada de frango (Macarrão (parafuso) com frango desfiado ensopado com molho de tomate), salada de repolho picado, salada de abóbora e uma laranja",
+        "ingredientes": [
+          "salada de repolho picado",
+          "salada de abóbora e uma laranja"
+        ],
+        "categoria_inferida": "vespertino"
+      }
+    ],
+    "7/10/2025": [
+      {
+        "turno": "Matutino",
+        "codigo": "R25.81",
+        "descricao": "Carne bovina em iscas acebolada, arroz, feijão, batata doce assada, salada de alface e uma fatia de mamão",
+        "ingredientes": [
+          "arroz",
+          "feijão",
+          "batata doce assada",
+          "salada de alface e uma fatia de mamão"
+        ],
+        "categoria_inferida": "matutino"
+      },
+      {
+        "turno": "Noturno",
+        "codigo": "R25.81",
+        "descricao": "Carne bovina em iscas acebolada, arroz, feijão, batata doce assada, salada de alface e uma fatia de mamão",
+        "ingredientes": [
+          "arroz",
+          "feijão",
+          "batata doce assada",
+          "salada de alface e uma fatia de mamão"
+        ],
+        "categoria_inferida": "noturno"
+      },
+      {
+        "turno": "Vespertino",
+        "codigo": "R25.81",
+        "descricao": "Carne bovina em iscas acebolada, arroz, feijão, batata doce assada, salada de alface e uma fatia de mamão",
+        "ingredientes": [
+          "arroz",
+          "feijão",
+          "batata doce assada",
+          "salada de alface e uma fatia de mamão"
+        ],
+        "categoria_inferida": "vespertino"
+      }
+    ],
+    "8/10/2025": [
+      {
+        "turno": "Matutino",
+        "codigo": null,
+        "descricao": "FERIADO",
+        "ingredientes": [],
+        "categoria_inferida": "matutino"
+      }
+    ],
+    "9/10/2025": [
+      {
+        "turno": "Matutino",
+        "codigo": "R25.575",
+        "descricao": "Arroz colorido com frango (arroz integral, frango desfiado, abobrinha em cubos e milho verde congelado), feijão, salada de agrião e uma maçã",
+        "ingredientes": [
+          "frango desfiado",
+          "abobrinha em cubos e milho verde congelado)",
+          "feijão",
+          "salada de agrião e uma maçã"
+        ],
+        "categoria_inferida": "matutino"
+      },
+      {
+        "turno": "Noturno",
+        "codigo": "R25.575",
+        "descricao": "Arroz colorido com frango (arroz integral, frango desfiado, abobrinha em cubos e milho verde congelado), feijão, salada de agrião e uma maçã",
+        "ingredientes": [
+          "frango desfiado",
+          "abobrinha em cubos e milho verde congelado)",
+          "feijão",
+          "salada de agrião e uma maçã"
+        ],
+        "categoria_inferida": "noturno"
+      },
+      {
+        "turno": "Vespertino",
+        "codigo": "R25.575",
+        "descricao": "Arroz colorido com frango (arroz integral, frango desfiado, abobrinha em cubos e milho verde congelado), feijão, salada de agrião e uma maçã",
+        "ingredientes": [
+          "frango desfiado",
+          "abobrinha em cubos e milho verde congelado)",
+          "feijão",
+          "salada de agrião e uma maçã"
+        ],
+        "categoria_inferida": "vespertino"
+      }
+    ],
+    "10/10/2025": [
+      {
+        "turno": "Matutino",
+        "codigo": "LL25.64",
+        "descricao": "Bolo de cenoura nutritivo (cenoura, maçã, aveia e farinha de trigo integral), leite com café, açúcar e uma banana",
+        "ingredientes": [
+          "maçã",
+          "aveia e farinha de trigo integral)",
+          "leite com café",
+          "açúcar e uma banana"
+        ],
+        "categoria_inferida": "matutino"
+      },
+      {
+        "turno": "Matutino",
+        "codigo": "R25.312",
+        "descricao": "Filé de tilápia assado (temperado com limão, alho, cebola, e tempero verde), arroz, feijão, salada de batata com cenoura e tempero verde e uma banana",
+        "ingredientes": [
+          "alho",
+          "cebola",
+          "e tempero verde)",
+          "arroz",
+          "feijão",
+          "salada de batata com cenoura e tempero verde e uma banana"
+        ],
+        "categoria_inferida": "matutino"
+      },
+      {
+        "turno": "Noturno",
+        "codigo": "LL25.64",
+        "descricao": "Bolo de cenoura nutritivo (cenoura, maçã, aveia e farinha de trigo integral), leite com café, açúcar e uma banana",
+        "ingredientes": [
+          "maçã",
+          "aveia e farinha de trigo integral)",
+          "leite com café",
+          "açúcar e uma banana"
+        ],
+        "categoria_inferida": "noturno"
+      },
+      {
+        "turno": "Noturno",
+        "codigo": "R25.312",
+        "descricao": "Filé de tilápia assado (temperado com limão, alho, cebola, e tempero verde), arroz, feijão, salada de batata com cenoura e tempero verde e uma banana",
+        "ingredientes": [
+          "alho",
+          "cebola",
+          "e tempero verde)",
+          "arroz",
+          "feijão",
+          "salada de batata com cenoura e tempero verde e uma banana"
+        ],
+        "categoria_inferida": "noturno"
+      },
+      {
+        "turno": "Vespertino",
+        "codigo": "LL25.64",
+        "descricao": "Bolo de cenoura nutritivo (cenoura, maçã, aveia e farinha de trigo integral), leite com café, açúcar e uma banana",
+        "ingredientes": [
+          "maçã",
+          "aveia e farinha de trigo integral)",
+          "leite com café",
+          "açúcar e uma banana"
+        ],
+        "categoria_inferida": "vespertino"
+      },
+      {
+        "turno": "Vespertino",
+        "codigo": "R25.312",
+        "descricao": "Filé de tilápia assado (temperado com limão, alho, cebola, e tempero verde), arroz, feijão, salada de batata com cenoura e tempero verde e uma banana",
+        "ingredientes": [
+          "alho",
+          "cebola",
+          "e tempero verde)",
+          "arroz",
+          "feijão",
+          "salada de batata com cenoura e tempero verde e uma banana"
+        ],
+        "categoria_inferida": "vespertino"
+      }
+    ],
+    "13/10/2025": [
+      {
+        "turno": "Matutino",
+        "codigo": "LL24.83",
+        "descricao": "Salada de frutas (mamão, banana e laranja), aveia*, iogurte de mel (iogurte natural batido com mel) e biscoito caseiro sem gordura trans. *servir separadamente",
+        "ingredientes": [
+          "banana e laranja)",
+          "aveia*",
+          "iogurte de mel (iogurte natural batido com mel) e biscoito caseiro sem gordura trans. *servir separadamente"
+        ],
+        "categoria_inferida": "matutino"
+      },
+      {
+        "turno": "Matutino",
+        "codigo": "R25.341",
+        "descricao": "Estrogonofe de carne bovina em iscas com molho branco (feito na escola), arroz, batata doce assada, salada de beterraba ralada e uma laranja",
+        "ingredientes": [
+          "arroz",
+          "batata doce assada",
+          "salada de beterraba ralada e uma laranja"
+        ],
+        "categoria_inferida": "matutino"
+      },
+      {
+        "turno": "Noturno",
+        "codigo": "LL24.83",
+        "descricao": "Salada de frutas (mamão, banana e laranja), aveia*, iogurte de mel (iogurte natural batido com mel) e biscoito caseiro sem gordura trans. *servir separadamente",
+        "ingredientes": [
+          "banana e laranja)",
+          "aveia*",
+          "iogurte de mel (iogurte natural batido com mel) e biscoito caseiro sem gordura trans. *servir separadamente"
+        ],
+        "categoria_inferida": "noturno"
+      },
+      {
+        "turno": "Noturno",
+        "codigo": "R25.341",
+        "descricao": "Estrogonofe de carne bovina em iscas com molho branco (feito na escola), arroz, batata doce assada, salada de beterraba ralada e uma laranja",
+        "ingredientes": [
+          "arroz",
+          "batata doce assada",
+          "salada de beterraba ralada e uma laranja"
+        ],
+        "categoria_inferida": "noturno"
+      },
+      {
+        "turno": "Vespertino",
+        "codigo": "LL24.83",
+        "descricao": "Salada de frutas (mamão, banana e laranja), aveia*, iogurte de mel (iogurte natural batido com mel) e biscoito caseiro sem gordura trans. *servir separadamente",
+        "ingredientes": [
+          "banana e laranja)",
+          "aveia*",
+          "iogurte de mel (iogurte natural batido com mel) e biscoito caseiro sem gordura trans. *servir separadamente"
+        ],
+        "categoria_inferida": "vespertino"
+      },
+      {
+        "turno": "Vespertino",
+        "codigo": "R25.341",
+        "descricao": "Estrogonofe de carne bovina em iscas com molho branco (feito na escola), arroz, batata doce assada, salada de beterraba ralada e uma laranja",
+        "ingredientes": [
+          "arroz",
+          "batata doce assada",
+          "salada de beterraba ralada e uma laranja"
+        ],
+        "categoria_inferida": "vespertino"
+      }
+    ],
+    "14/10/2025": [
+      {
+        "turno": "Matutino",
+        "codigo": "R25.234",
+        "descricao": "Frango em cubos refogado com tomate e ervilha congelada, arroz, feijão, farofa de cenoura, salada de repolho e uma banana",
+        "ingredientes": [
+          "arroz",
+          "feijão",
+          "farofa de cenoura",
+          "salada de repolho e uma banana"
+        ],
+        "categoria_inferida": "matutino"
+      },
+      {
+        "turno": "Noturno",
+        "codigo": "R25.234",
+        "descricao": "Frango em cubos refogado com tomate e ervilha congelada, arroz, feijão, farofa de cenoura, salada de repolho e uma banana",
+        "ingredientes": [
+          "arroz",
+          "feijão",
+          "farofa de cenoura",
+          "salada de repolho e uma banana"
+        ],
+        "categoria_inferida": "noturno"
+      },
+      {
+        "turno": "Vespertino",
+        "codigo": "R25.234",
+        "descricao": "Frango em cubos refogado com tomate e ervilha congelada, arroz, feijão, farofa de cenoura, salada de repolho e uma banana",
+        "ingredientes": [
+          "arroz",
+          "feijão",
+          "farofa de cenoura",
+          "salada de repolho e uma banana"
+        ],
+        "categoria_inferida": "vespertino"
+      }
+    ],
+    "15/10/2025": [
+      {
+        "turno": "Matutino",
+        "codigo": "LL23.281",
+        "descricao": "Pão massinha com carne bovina moída ensopada com molho de tomate (feito na escola), alface, tomate em fatias, suco de uva integral sem adição de açúcar e uma maçã",
+        "ingredientes": [
+          "alface",
+          "tomate em fatias",
+          "suco de uva integral sem adição de açúcar e uma maçã"
+        ],
+        "categoria_inferida": "matutino"
+      },
+      {
+        "turno": "Noturno",
+        "codigo": "LL23.281",
+        "descricao": "Pão massinha com carne bovina moída ensopada com molho de tomate (feito na escola), alface, tomate em fatias, suco de uva integral sem adição de açúcar e uma maçã",
+        "ingredientes": [
+          "alface",
+          "tomate em fatias",
+          "suco de uva integral sem adição de açúcar e uma maçã"
+        ],
+        "categoria_inferida": "noturno"
+      },
+      {
+        "turno": "Vespertino",
+        "codigo": "LL23.281",
+        "descricao": "Pão massinha com carne bovina moída ensopada com molho de tomate (feito na escola), alface, tomate em fatias, suco de uva integral sem adição de açúcar e uma maçã",
+        "ingredientes": [
+          "alface",
+          "tomate em fatias",
+          "suco de uva integral sem adição de açúcar e uma maçã"
+        ],
+        "categoria_inferida": "vespertino"
+      }
+    ],
+    "16/10/2025": [
+      {
+        "turno": "Matutino",
+        "codigo": "R25.464",
+        "descricao": "Omelete de cenoura com queijo e orégano (Fortaia), arroz, feijão, salada de abobrinha com chuchu e uma fatia de mamão",
+        "ingredientes": [
+          "arroz",
+          "feijão",
+          "salada de abobrinha com chuchu e uma fatia de mamão"
+        ],
+        "categoria_inferida": "matutino"
+      },
+      {
+        "turno": "Noturno",
+        "codigo": "R25.464",
+        "descricao": "Omelete de cenoura com queijo e orégano (Fortaia), arroz, feijão, salada de abobrinha com chuchu e uma fatia de mamão",
+        "ingredientes": [
+          "arroz",
+          "feijão",
+          "salada de abobrinha com chuchu e uma fatia de mamão"
+        ],
+        "categoria_inferida": "noturno"
+      },
+      {
+        "turno": "Vespertino",
+        "codigo": "R25.464",
+        "descricao": "Omelete de cenoura com queijo e orégano (Fortaia), arroz, feijão, salada de abobrinha com chuchu e uma fatia de mamão",
+        "ingredientes": [
+          "arroz",
+          "feijão",
+          "salada de abobrinha com chuchu e uma fatia de mamão"
+        ],
+        "categoria_inferida": "vespertino"
+      }
+    ],
+    "17/10/2025": [
+      {
+        "turno": "Matutino",
+        "codigo": "R24.181",
+        "descricao": "Frango ensopado (coxa e sobrecoxa sem osso) com molho de tomate (feito na escola) e batata, arroz, feijão, couve-flor refogado, salada de brócolis e uma fatia de melancia",
+        "ingredientes": [
+          "arroz",
+          "feijão",
+          "couve-flor refogado",
+          "salada de brócolis e uma fatia de melancia"
+        ],
+        "categoria_inferida": "matutino"
+      },
+      {
+        "turno": "Noturno",
+        "codigo": "R24.181",
+        "descricao": "Frango ensopado (coxa e sobrecoxa sem osso) com molho de tomate (feito na escola) e batata, arroz, feijão, couve-flor refogado, salada de brócolis e uma fatia de melancia",
+        "ingredientes": [
+          "arroz",
+          "feijão",
+          "couve-flor refogado",
+          "salada de brócolis e uma fatia de melancia"
+        ],
+        "categoria_inferida": "noturno"
+      },
+      {
+        "turno": "Vespertino",
+        "codigo": "R24.181",
+        "descricao": "Frango ensopado (coxa e sobrecoxa sem osso) com molho de tomate (feito na escola) e batata, arroz, feijão, couve-flor refogado, salada de brócolis e uma fatia de melancia",
+        "ingredientes": [
+          "arroz",
+          "feijão",
+          "couve-flor refogado",
+          "salada de brócolis e uma fatia de melancia"
+        ],
+        "categoria_inferida": "vespertino"
+      }
+    ],
+    "20/10/2025": [
+      {
+        "turno": "Matutino",
+        "codigo": "R25.401",
+        "descricao": "Carreteiro (arroz integral, carne bovina em iscas, tomate e cebola), legumes refogados (cenoura e chuchu), salada de alface e uma laranja",
+        "ingredientes": [
+          "carne bovina em iscas",
+          "tomate e cebola)",
+          "legumes refogados (cenoura e chuchu)",
+          "salada de alface e uma laranja"
+        ],
+        "categoria_inferida": "matutino"
+      },
+      {
+        "turno": "Noturno",
+        "codigo": "R25.401",
+        "descricao": "Carreteiro (arroz integral, carne bovina em iscas, tomate e cebola), legumes refogados (cenoura e chuchu), salada de alface e uma laranja",
+        "ingredientes": [
+          "carne bovina em iscas",
+          "tomate e cebola)",
+          "legumes refogados (cenoura e chuchu)",
+          "salada de alface e uma laranja"
+        ],
+        "categoria_inferida": "noturno"
+      },
+      {
+        "turno": "Vespertino",
+        "codigo": "R25.401",
+        "descricao": "Carreteiro (arroz integral, carne bovina em iscas, tomate e cebola), legumes refogados (cenoura e chuchu), salada de alface e uma laranja",
+        "ingredientes": [
+          "carne bovina em iscas",
+          "tomate e cebola)",
+          "legumes refogados (cenoura e chuchu)",
+          "salada de alface e uma laranja"
+        ],
+        "categoria_inferida": "vespertino"
+      }
+    ],
+    "21/10/2025": [
+      {
+        "turno": "Matutino",
+        "codigo": "LL25.303",
+        "descricao": "Torta de frango com 50% aveia (com peito de frango desfiado, tomate e abobrinha em cubos, cebola e tempero verde), suco de uva integral sem adição de açúcar e uma banana",
+        "ingredientes": [
+          "tomate e abobrinha em cubos",
+          "cebola e tempero verde)",
+          "suco de uva integral sem adição de açúcar e uma banana"
+        ],
+        "categoria_inferida": "matutino"
+      },
+      {
+        "turno": "Matutino",
+        "codigo": "R25.335",
+        "descricao": "Frango em cubos refogado com tomate e ervilha congelada, arroz, feijão, farofa de beterraba, salada de repolho e uma banana",
+        "ingredientes": [
+          "arroz",
+          "feijão",
+          "farofa de beterraba",
+          "salada de repolho e uma banana"
+        ],
+        "categoria_inferida": "matutino"
+      },
+      {
+        "turno": "Noturno",
+        "codigo": "LL25.303",
+        "descricao": "Torta de frango com 50% aveia (com peito de frango desfiado, tomate e abobrinha em cubos, cebola e tempero verde), suco de uva integral sem adição de açúcar e uma banana",
+        "ingredientes": [
+          "tomate e abobrinha em cubos",
+          "cebola e tempero verde)",
+          "suco de uva integral sem adição de açúcar e uma banana"
+        ],
+        "categoria_inferida": "noturno"
+      },
+      {
+        "turno": "Noturno",
+        "codigo": "R25.335",
+        "descricao": "Frango em cubos refogado com tomate e ervilha congelada, arroz, feijão, farofa de beterraba, salada de repolho e uma banana",
+        "ingredientes": [
+          "arroz",
+          "feijão",
+          "farofa de beterraba",
+          "salada de repolho e uma banana"
+        ],
+        "categoria_inferida": "noturno"
+      },
+      {
+        "turno": "Vespertino",
+        "codigo": "LL25.303",
+        "descricao": "Torta de frango com 50% aveia (com peito de frango desfiado, tomate e abobrinha em cubos, cebola e tempero verde), suco de uva integral sem adição de açúcar e uma banana",
+        "ingredientes": [
+          "tomate e abobrinha em cubos",
+          "cebola e tempero verde)",
+          "suco de uva integral sem adição de açúcar e uma banana"
+        ],
+        "categoria_inferida": "vespertino"
+      },
+      {
+        "turno": "Vespertino",
+        "codigo": "R25.335",
+        "descricao": "Frango em cubos refogado com tomate e ervilha congelada, arroz, feijão, farofa de beterraba, salada de repolho e uma banana",
+        "ingredientes": [
+          "arroz",
+          "feijão",
+          "farofa de beterraba",
+          "salada de repolho e uma banana"
+        ],
+        "categoria_inferida": "vespertino"
+      }
+    ],
+    "22/10/2025": [
+      {
+        "turno": "Matutino",
+        "codigo": "R25.282",
+        "descricao": "Polenta com molho de carne moída (carne bovina moída e molho de tomate feito na escola), arroz, feijão, salada de couve-flor e uma tangerina",
+        "ingredientes": [
+          "arroz",
+          "feijão",
+          "salada de couve-flor e uma tangerina"
+        ],
+        "categoria_inferida": "matutino"
+      },
+      {
+        "turno": "Noturno",
+        "codigo": "R25.282",
+        "descricao": "Polenta com molho de carne moída (carne bovina moída e molho de tomate feito na escola), arroz, feijão, salada de couve-flor e uma tangerina",
+        "ingredientes": [
+          "arroz",
+          "feijão",
+          "salada de couve-flor e uma tangerina"
+        ],
+        "categoria_inferida": "noturno"
+      },
+      {
+        "turno": "Vespertino",
+        "codigo": "R25.282",
+        "descricao": "Polenta com molho de carne moída (carne bovina moída e molho de tomate feito na escola), arroz, feijão, salada de couve-flor e uma tangerina",
+        "ingredientes": [
+          "arroz",
+          "feijão",
+          "salada de couve-flor e uma tangerina"
+        ],
+        "categoria_inferida": "vespertino"
+      }
+    ],
+    "23/10/2025": [
+      {
+        "turno": "Matutino",
+        "codigo": "LL25.740",
+        "descricao": "Cuca de banana com aveia e canela, leite com café, açúcar e uma fatia de mamão",
+        "ingredientes": [
+          "leite com café",
+          "açúcar e uma fatia de mamão"
+        ],
+        "categoria_inferida": "matutino"
+      },
+      {
+        "turno": "Matutino",
+        "codigo": "R25.332",
+        "descricao": "Filé de Tilápia (temperado com limão, alho, cebola e tempero verde) ensopado com molho de tomate (feito na escola), arroz com espinafre, feijão, batata assada, salada de rúcula e uma fatia de mamão",
+        "ingredientes": [
+          "alho",
+          "cebola e tempero verde) ensopado com molho de tomate (feito na escola)",
+          "arroz com espinafre",
+          "feijão",
+          "batata assada",
+          "salada de rúcula e uma fatia de mamão"
+        ],
+        "categoria_inferida": "matutino"
+      },
+      {
+        "turno": "Noturno",
+        "codigo": "LL25.740",
+        "descricao": "Cuca de banana com aveia e canela, leite com café, açúcar e uma fatia de mamão",
+        "ingredientes": [
+          "leite com café",
+          "açúcar e uma fatia de mamão"
+        ],
+        "categoria_inferida": "noturno"
+      },
+      {
+        "turno": "Noturno",
+        "codigo": "R25.332",
+        "descricao": "Filé de Tilápia (temperado com limão, alho, cebola e tempero verde) ensopado com molho de tomate (feito na escola), arroz com espinafre, feijão, batata assada, salada de rúcula e uma fatia de mamão",
+        "ingredientes": [
+          "alho",
+          "cebola e tempero verde) ensopado com molho de tomate (feito na escola)",
+          "arroz com espinafre",
+          "feijão",
+          "batata assada",
+          "salada de rúcula e uma fatia de mamão"
+        ],
+        "categoria_inferida": "noturno"
+      },
+      {
+        "turno": "Vespertino",
+        "codigo": "LL25.740",
+        "descricao": "Cuca de banana com aveia e canela, leite com café, açúcar e uma fatia de mamão",
+        "ingredientes": [
+          "leite com café",
+          "açúcar e uma fatia de mamão"
+        ],
+        "categoria_inferida": "vespertino"
+      },
+      {
+        "turno": "Vespertino",
+        "codigo": "R25.332",
+        "descricao": "Filé de Tilápia (temperado com limão, alho, cebola e tempero verde) ensopado com molho de tomate (feito na escola), arroz com espinafre, feijão, batata assada, salada de rúcula e uma fatia de mamão",
+        "ingredientes": [
+          "alho",
+          "cebola e tempero verde) ensopado com molho de tomate (feito na escola)",
+          "arroz com espinafre",
+          "feijão",
+          "batata assada",
+          "salada de rúcula e uma fatia de mamão"
+        ],
+        "categoria_inferida": "vespertino"
+      }
+    ],
+    "24/10/2025": [
+      {
+        "turno": "Matutino",
+        "codigo": "R25.260",
+        "descricao": "Macarronada de frango (macarrão parafuso com frango desfiado ensopado com molho de tomate), salada de couve picada, salada de beterraba cozida e uma fatia de melancia",
+        "ingredientes": [
+          "salada de couve picada",
+          "salada de beterraba cozida e uma fatia de melancia"
+        ],
+        "categoria_inferida": "matutino"
+      },
+      {
+        "turno": "Noturno",
+        "codigo": "R25.260",
+        "descricao": "Macarronada de frango (macarrão parafuso com frango desfiado ensopado com molho de tomate), salada de couve picada, salada de beterraba cozida e uma fatia de melancia",
+        "ingredientes": [
+          "salada de couve picada",
+          "salada de beterraba cozida e uma fatia de melancia"
+        ],
+        "categoria_inferida": "noturno"
+      },
+      {
+        "turno": "Vespertino",
+        "codigo": "R25.260",
+        "descricao": "Macarronada de frango (macarrão parafuso com frango desfiado ensopado com molho de tomate), salada de couve picada, salada de beterraba cozida e uma fatia de melancia",
+        "ingredientes": [
+          "salada de couve picada",
+          "salada de beterraba cozida e uma fatia de melancia"
+        ],
+        "categoria_inferida": "vespertino"
+      }
+    ]
+  }
+}

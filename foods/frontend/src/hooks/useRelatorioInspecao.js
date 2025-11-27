@@ -24,7 +24,7 @@ export const useRelatorioInspecao = () => {
 
   // Hook de filtros customizados para RIR
   const customFilters = useFilters({
-    status_geral: ''
+    resultado_geral: ''
   });
 
   // Estados específicos do RIR
@@ -38,7 +38,7 @@ export const useRelatorioInspecao = () => {
    */
   const loadDataWithFilters = useCallback(async () => {
     const params = {
-      status_geral: customFilters.filters.status_geral || undefined,
+      resultado_geral: customFilters.filters.resultado_geral || undefined,
       search: baseEntity.searchTerm || undefined
     };
 
@@ -50,14 +50,14 @@ export const useRelatorioInspecao = () => {
       });
 
     await baseEntity.loadData(params);
-  }, [customFilters.filters.status_geral, baseEntity.searchTerm, baseEntity.currentPage, baseEntity.itemsPerPage, baseEntity.loadData]);
+  }, [customFilters.filters.resultado_geral, baseEntity.searchTerm, baseEntity.currentPage, baseEntity.itemsPerPage, baseEntity.loadData]);
 
   // Carregar dados quando filtros ou paginação mudam
   // Não inclui baseEntity.searchTerm nas dependências porque o useBaseEntity
   // já gerencia a busca com debounce internamente
   useEffect(() => {
     loadDataWithFilters();
-  }, [baseEntity.currentPage, baseEntity.itemsPerPage, customFilters.filters.status_geral]);
+  }, [baseEntity.currentPage, baseEntity.itemsPerPage, customFilters.filters.resultado_geral]);
 
   /**
    * Buscar RIR por ID (mantido para compatibilidade)
@@ -241,7 +241,7 @@ export const useRelatorioInspecao = () => {
   const handleClearFilters = useCallback(() => {
     baseEntity.setSearchTerm('');
     customFilters.setFilters({
-      status_geral: ''
+      resultado_geral: ''
     });
     // Recarregar dados sem filtros
     setTimeout(() => {
@@ -455,7 +455,7 @@ export const useRelatorioInspecao = () => {
 
     // Estados de filtros
     searchTerm: baseEntity.searchTerm,
-    statusFilter: customFilters.filters.status_geral,
+    statusFilter: customFilters.filters.resultado_geral,
 
     // Ações de modal (customizadas)
     handleAddRIR: baseEntity.handleAdd,
@@ -472,7 +472,7 @@ export const useRelatorioInspecao = () => {
     setSearchTerm: baseEntity.setSearchTerm,
     handleKeyPress,
     handleClearFilters,
-    setStatusFilter: (value) => customFilters.updateFilter('status_geral', value),
+    setStatusFilter: (value) => customFilters.updateFilter('resultado_geral', value),
     
     // Ações CRUD (customizadas)
     handleSubmitRIR: onSubmitCustom,

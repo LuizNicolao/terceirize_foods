@@ -202,6 +202,48 @@ class AlmoxarifadoService {
       };
     }
   }
+
+  /**
+   * Exportar almoxarifados para XLSX
+   */
+  async exportarXLSX(params = {}) {
+    try {
+      const response = await api.get('/almoxarifado/export/xlsx', {
+        params,
+        responseType: 'blob'
+      });
+      return {
+        success: true,
+        data: response.data
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao exportar XLSX'
+      };
+    }
+  }
+
+  /**
+   * Exportar almoxarifados para PDF
+   */
+  async exportarPDF(params = {}) {
+    try {
+      const response = await api.get('/almoxarifado/export/pdf', {
+        params,
+        responseType: 'blob'
+      });
+      return {
+        success: true,
+        data: response.data
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao exportar PDF'
+      };
+    }
+  }
 }
 
 export default new AlmoxarifadoService();

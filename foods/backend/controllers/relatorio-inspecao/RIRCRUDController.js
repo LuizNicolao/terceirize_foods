@@ -42,7 +42,7 @@ class RIRCRUDController {
 
     // Calcular status geral baseado nos produtos
     const produtosArray = produtos && Array.isArray(produtos) ? produtos : [];
-    const status_geral = RIRProdutosController.calcularStatusGeral(produtosArray);
+    const resultado_geral = RIRProdutosController.calcularStatusGeral(produtosArray);
 
     // Inserir relatório
     const result = await executeQuery(
@@ -57,7 +57,7 @@ class RIRCRUDController {
         ocorrencias,
         recebedor,
         visto_responsavel,
-        status_geral,
+        resultado_geral,
         usuario_cadastro_id,
         criado_em
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
@@ -72,7 +72,7 @@ class RIRCRUDController {
         ocorrencias || null,
         recebedor || null,
         visto_responsavel || null,
-        status_geral,
+        resultado_geral,
         usuario_id
       ]
     );
@@ -149,7 +149,7 @@ class RIRCRUDController {
 
     // Calcular status geral baseado nos produtos
     const produtosArray = produtos && Array.isArray(produtos) ? produtos : [];
-    const status_geral = RIRProdutosController.calcularStatusGeral(produtosArray);
+    const resultado_geral = RIRProdutosController.calcularStatusGeral(produtosArray);
 
     // Atualizar relatório
     await executeQuery(
@@ -164,7 +164,7 @@ class RIRCRUDController {
         ocorrencias = ?,
         recebedor = ?,
         visto_responsavel = ?,
-        status_geral = ?,
+        resultado_geral = ?,
         usuario_atualizacao_id = ?,
         atualizado_em = NOW()
       WHERE id = ?`,
@@ -179,7 +179,7 @@ class RIRCRUDController {
         ocorrencias || null,
         recebedor || null,
         visto_responsavel || null,
-        status_geral,
+        resultado_geral,
         usuario_id,
         id
       ]

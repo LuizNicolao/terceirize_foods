@@ -79,9 +79,9 @@ const RelatorioInspecaoTable = ({
                     {rir.total_produtos || 0} {rir.total_produtos === 1 ? 'item' : 'itens'}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap">
-                    {getStatusBadge ? getStatusBadge(rir.status_geral) : (
+                    {getStatusBadge ? getStatusBadge(rir.resultado_geral) : (
                       <span className="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
-                        {rir.status_geral || '-'}
+                        {rir.resultado_geral || '-'}
                       </span>
                     )}
                   </td>
@@ -118,9 +118,9 @@ const RelatorioInspecaoTable = ({
                   #{rir.id.toString().padStart(4, '0')}
                 </h3>
               </div>
-              {getStatusBadge ? getStatusBadge(rir.status_geral) : (
-                <span className="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
-                  {rir.status_geral || '-'}
+              {getStatusBadge ? getStatusBadge(rir.resultado_geral) : (
+                  <span className="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
+                  {rir.resultado_geral || '-'}
                 </span>
               )}
             </div>

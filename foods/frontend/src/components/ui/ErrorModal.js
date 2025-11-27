@@ -1,7 +1,7 @@
 import React from 'react';
 import { FaExclamationTriangle, FaTimes } from 'react-icons/fa';
 
-const ErrorModal = ({ isOpen, message, onClose }) => {
+const ErrorModal = ({ isOpen, message, onClose, title = 'Erro' }) => {
   if (!isOpen) return null;
 
   return (
@@ -16,7 +16,7 @@ const ErrorModal = ({ isOpen, message, onClose }) => {
         <div className="flex justify-between items-center mb-4 pb-4 border-b border-gray-200">
           <h3 className="text-red-500 text-lg font-semibold m-0 flex items-center gap-2">
             <FaExclamationTriangle />
-            Erro de Exclusão
+            {title}
           </h3>
           <button 
             className="bg-transparent border-none cursor-pointer text-gray-500 text-lg p-1 rounded transition-all duration-300 hover:bg-gray-100 hover:text-gray-700"

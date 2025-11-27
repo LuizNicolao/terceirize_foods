@@ -42,54 +42,7 @@ class DashboardStatsController {
     try {
       const alertas = [];
 
-      // Verificar produtos com estoque baixo
-      try {
-        const produtosEstoqueBaixo = await executeQuery(`
-          SELECT COUNT(DISTINCT ai.produto_id) as total
-          FROM almoxarifado_itens ai
-          INNER JOIN produtos p ON ai.produto_id = p.id
-          WHERE p.status = 1 
-          AND ai.quantidade <= 10 
-          AND ai.quantidade > 0
-        `);
-        
-        if (produtosEstoqueBaixo[0].total > 0) {
-          alertas.push({
-            id: 'estoque_baixo',
-            titulo: 'Produtos com Estoque Baixo',
-            descricao: `${produtosEstoqueBaixo[0].total} produtos estão com estoque baixo`,
-            nivel: 'medio',
-            data_hora: new Date().toISOString(),
-            tipo: 'estoque'
-          });
-        }
-      } catch (error) {
-        console.error('Erro ao verificar produtos com estoque baixo:', error.message);
-      }
-
-      // Verificar produtos sem estoque
-      try {
-        const produtosSemEstoque = await executeQuery(`
-          SELECT COUNT(DISTINCT p.id) as total
-          FROM produtos p
-          LEFT JOIN almoxarifado_itens ai ON p.id = ai.produto_id
-          WHERE p.status = 1 
-          AND (ai.produto_id IS NULL OR ai.quantidade = 0)
-        `);
-        
-        if (produtosSemEstoque[0].total > 0) {
-          alertas.push({
-            id: 'sem_estoque',
-            titulo: 'Produtos Sem Estoque',
-            descricao: `${produtosSemEstoque[0].total} produtos estão sem estoque`,
-            nivel: 'alto',
-            data_hora: new Date().toISOString(),
-            tipo: 'estoque'
-          });
-        }
-      } catch (error) {
-        console.error('Erro ao verificar produtos sem estoque:', error.message);
-      }
+      // Alertas de estoque removidos - tabela almoxarifado_itens foi removida
 
       // Verificar veículos com documentação vencendo
       try {

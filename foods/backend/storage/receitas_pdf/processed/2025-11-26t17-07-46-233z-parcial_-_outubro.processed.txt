@@ -1,0 +1,114 @@
+CARDÁPIO PROCESSADO
+===================
+
+📅 1/10/2025
+  • Matutino: (R25.375) Carne bovina em cubos refogada com tomate e cenoura, arroz, feijão, purê de batata, salada de alface e couve fatiado e um pêssego
+  • Matutino: (R25.231) Frango em iscas acebolado, arroz, feijão, batata refogada com tomate, salada de repolho roxo e uma maçã
+  • Noturno: (R25.375) Carne bovina em cubos refogada com tomate e cenoura, arroz, feijão, purê de batata, salada de alface e couve fatiado e um pêssego
+  • Noturno: (R25.231) Frango em iscas acebolado, arroz, feijão, batata refogada com tomate, salada de repolho roxo e uma maçã
+  • Vespertino: (R25.375) Carne bovina em cubos refogada com tomate e cenoura, arroz, feijão, purê de batata, salada de alface e couve fatiado e um pêssego
+  • Vespertino: (R25.231) Frango em iscas acebolado, arroz, feijão, batata refogada com tomate, salada de repolho roxo e uma maçã
+
+📅 2/10/2025
+  • Matutino: (R25.97) Frango em iscas refogado com abobrinha, tomate, cebola e tempero verde, arroz, feijão, salada de pepino e uma tangerina
+  • Matutino: (R25.458) Feijoada de carne bovina com legumes (feijão com carne bovina em cubos, batata doce e abóbora em cubos), arroz, farofa de cenoura ralada e uma tangerina
+  • Noturno: (R25.97) Frango em iscas refogado com abobrinha, tomate, cebola e tempero verde, arroz, feijão, salada de pepino e uma tangerina
+  • Noturno: (R25.458) Feijoada de carne bovina com legumes (feijão com carne bovina em cubos, batata doce e abóbora em cubos), arroz, farofa de cenoura ralada e uma tangerina
+  • Vespertino: (R25.97) Frango em iscas refogado com abobrinha, tomate, cebola e tempero verde, arroz, feijão, salada de pepino e uma tangerina
+  • Vespertino: (R25.458) Feijoada de carne bovina com legumes (feijão com carne bovina em cubos, batata doce e abóbora em cubos), arroz, farofa de cenoura ralada e uma tangerina
+
+📅 3/10/2025
+  • Matutino: (LL25.228) Torta de carne (com carne moída, tomate, ervilha congelada, cebola e tempero verde), suco de uva integral sem adição de açúcar e uma banana
+  • Matutino: (R24.202) Carne bovina moída refogada com tomate em cubos e tempero verde, arroz, feijão, salada de couve flor e brócolis e uma banana
+  • Matutino: (LL24.22) Pão massinha com peito de frango desfiado ensopado ao molho de tomate (feito na escola), alface, tomate em fatia, suco de laranja integral sem adição de açúcar e uma banana
+  • Noturno: (LL25.228) Torta de carne (com carne moída, tomate, ervilha congelada, cebola e tempero verde), suco de uva integral sem adição de açúcar e uma banana
+  • Noturno: (R24.202) Carne bovina moída refogada com tomate em cubos e tempero verde, arroz, feijão, salada de couve flor e brócolis e uma banana
+  • Noturno: (LL24.22) Pão massinha com peito de frango desfiado ensopado ao molho de tomate (feito na escola), alface, tomate em fatia, suco de laranja integral sem adição de açúcar e uma banana
+  • Vespertino: (LL25.228) Torta de carne (com carne moída, tomate, ervilha congelada, cebola e tempero verde), suco de uva integral sem adição de açúcar e uma banana
+  • Vespertino: (R24.202) Carne bovina moída refogada com tomate em cubos e tempero verde, arroz, feijão, salada de couve flor e brócolis e uma banana
+  • Vespertino: (LL24.22) Pão massinha com peito de frango desfiado ensopado ao molho de tomate (feito na escola), alface, tomate em fatia, suco de laranja integral sem adição de açúcar e uma banana
+
+📅 6/10/2025
+  • Matutino: (R25.101) Macarronada de frango (Macarrão (parafuso) com frango desfiado ensopado com molho de tomate), salada de repolho picado, salada de abóbora e uma laranja
+  • Noturno: (R25.101) Macarronada de frango (Macarrão (parafuso) com frango desfiado ensopado com molho de tomate), salada de repolho picado, salada de abóbora e uma laranja
+  • Vespertino: (R25.101) Macarronada de frango (Macarrão (parafuso) com frango desfiado ensopado com molho de tomate), salada de repolho picado, salada de abóbora e uma laranja
+
+📅 7/10/2025
+  • Matutino: (R25.81) Carne bovina em iscas acebolada, arroz, feijão, batata doce assada, salada de alface e uma fatia de mamão
+  • Noturno: (R25.81) Carne bovina em iscas acebolada, arroz, feijão, batata doce assada, salada de alface e uma fatia de mamão
+  • Vespertino: (R25.81) Carne bovina em iscas acebolada, arroz, feijão, batata doce assada, salada de alface e uma fatia de mamão
+
+📅 8/10/2025
+  • Matutino: FERIADO
+
+📅 9/10/2025
+  • Matutino: (R25.575) Arroz colorido com frango (arroz integral, frango desfiado, abobrinha em cubos e milho verde congelado), feijão, salada de agrião e uma maçã
+  • Noturno: (R25.575) Arroz colorido com frango (arroz integral, frango desfiado, abobrinha em cubos e milho verde congelado), feijão, salada de agrião e uma maçã
+  • Vespertino: (R25.575) Arroz colorido com frango (arroz integral, frango desfiado, abobrinha em cubos e milho verde congelado), feijão, salada de agrião e uma maçã
+
+📅 10/10/2025
+  • Matutino: (LL25.64) Bolo de cenoura nutritivo (cenoura, maçã, aveia e farinha de trigo integral), leite com café, açúcar e uma banana
+  • Matutino: (R25.312) Filé de tilápia assado (temperado com limão, alho, cebola, e tempero verde), arroz, feijão, salada de batata com cenoura e tempero verde e uma banana
+  • Noturno: (LL25.64) Bolo de cenoura nutritivo (cenoura, maçã, aveia e farinha de trigo integral), leite com café, açúcar e uma banana
+  • Noturno: (R25.312) Filé de tilápia assado (temperado com limão, alho, cebola, e tempero verde), arroz, feijão, salada de batata com cenoura e tempero verde e uma banana
+  • Vespertino: (LL25.64) Bolo de cenoura nutritivo (cenoura, maçã, aveia e farinha de trigo integral), leite com café, açúcar e uma banana
+  • Vespertino: (R25.312) Filé de tilápia assado (temperado com limão, alho, cebola, e tempero verde), arroz, feijão, salada de batata com cenoura e tempero verde e uma banana
+
+📅 13/10/2025
+  • Matutino: (LL24.83) Salada de frutas (mamão, banana e laranja), aveia*, iogurte de mel (iogurte natural batido com mel) e biscoito caseiro sem gordura trans. *servir separadamente
+  • Matutino: (R25.341) Estrogonofe de carne bovina em iscas com molho branco (feito na escola), arroz, batata doce assada, salada de beterraba ralada e uma laranja
+  • Noturno: (LL24.83) Salada de frutas (mamão, banana e laranja), aveia*, iogurte de mel (iogurte natural batido com mel) e biscoito caseiro sem gordura trans. *servir separadamente
+  • Noturno: (R25.341) Estrogonofe de carne bovina em iscas com molho branco (feito na escola), arroz, batata doce assada, salada de beterraba ralada e uma laranja
+  • Vespertino: (LL24.83) Salada de frutas (mamão, banana e laranja), aveia*, iogurte de mel (iogurte natural batido com mel) e biscoito caseiro sem gordura trans. *servir separadamente
+  • Vespertino: (R25.341) Estrogonofe de carne bovina em iscas com molho branco (feito na escola), arroz, batata doce assada, salada de beterraba ralada e uma laranja
+
+📅 14/10/2025
+  • Matutino: (R25.234) Frango em cubos refogado com tomate e ervilha congelada, arroz, feijão, farofa de cenoura, salada de repolho e uma banana
+  • Noturno: (R25.234) Frango em cubos refogado com tomate e ervilha congelada, arroz, feijão, farofa de cenoura, salada de repolho e uma banana
+  • Vespertino: (R25.234) Frango em cubos refogado com tomate e ervilha congelada, arroz, feijão, farofa de cenoura, salada de repolho e uma banana
+
+📅 15/10/2025
+  • Matutino: (LL23.281) Pão massinha com carne bovina moída ensopada com molho de tomate (feito na escola), alface, tomate em fatias, suco de uva integral sem adição de açúcar e uma maçã
+  • Noturno: (LL23.281) Pão massinha com carne bovina moída ensopada com molho de tomate (feito na escola), alface, tomate em fatias, suco de uva integral sem adição de açúcar e uma maçã
+  • Vespertino: (LL23.281) Pão massinha com carne bovina moída ensopada com molho de tomate (feito na escola), alface, tomate em fatias, suco de uva integral sem adição de açúcar e uma maçã
+
+📅 16/10/2025
+  • Matutino: (R25.464) Omelete de cenoura com queijo e orégano (Fortaia), arroz, feijão, salada de abobrinha com chuchu e uma fatia de mamão
+  • Noturno: (R25.464) Omelete de cenoura com queijo e orégano (Fortaia), arroz, feijão, salada de abobrinha com chuchu e uma fatia de mamão
+  • Vespertino: (R25.464) Omelete de cenoura com queijo e orégano (Fortaia), arroz, feijão, salada de abobrinha com chuchu e uma fatia de mamão
+
+📅 17/10/2025
+  • Matutino: (R24.181) Frango ensopado (coxa e sobrecoxa sem osso) com molho de tomate (feito na escola) e batata, arroz, feijão, couve-flor refogado, salada de brócolis e uma fatia de melancia
+  • Noturno: (R24.181) Frango ensopado (coxa e sobrecoxa sem osso) com molho de tomate (feito na escola) e batata, arroz, feijão, couve-flor refogado, salada de brócolis e uma fatia de melancia
+  • Vespertino: (R24.181) Frango ensopado (coxa e sobrecoxa sem osso) com molho de tomate (feito na escola) e batata, arroz, feijão, couve-flor refogado, salada de brócolis e uma fatia de melancia
+
+📅 20/10/2025
+  • Matutino: (R25.401) Carreteiro (arroz integral, carne bovina em iscas, tomate e cebola), legumes refogados (cenoura e chuchu), salada de alface e uma laranja
+  • Noturno: (R25.401) Carreteiro (arroz integral, carne bovina em iscas, tomate e cebola), legumes refogados (cenoura e chuchu), salada de alface e uma laranja
+  • Vespertino: (R25.401) Carreteiro (arroz integral, carne bovina em iscas, tomate e cebola), legumes refogados (cenoura e chuchu), salada de alface e uma laranja
+
+📅 21/10/2025
+  • Matutino: (LL25.303) Torta de frango com 50% aveia (com peito de frango desfiado, tomate e abobrinha em cubos, cebola e tempero verde), suco de uva integral sem adição de açúcar e uma banana
+  • Matutino: (R25.335) Frango em cubos refogado com tomate e ervilha congelada, arroz, feijão, farofa de beterraba, salada de repolho e uma banana
+  • Noturno: (LL25.303) Torta de frango com 50% aveia (com peito de frango desfiado, tomate e abobrinha em cubos, cebola e tempero verde), suco de uva integral sem adição de açúcar e uma banana
+  • Noturno: (R25.335) Frango em cubos refogado com tomate e ervilha congelada, arroz, feijão, farofa de beterraba, salada de repolho e uma banana
+  • Vespertino: (LL25.303) Torta de frango com 50% aveia (com peito de frango desfiado, tomate e abobrinha em cubos, cebola e tempero verde), suco de uva integral sem adição de açúcar e uma banana
+  • Vespertino: (R25.335) Frango em cubos refogado com tomate e ervilha congelada, arroz, feijão, farofa de beterraba, salada de repolho e uma banana
+
+📅 22/10/2025
+  • Matutino: (R25.282) Polenta com molho de carne moída (carne bovina moída e molho de tomate feito na escola), arroz, feijão, salada de couve-flor e uma tangerina
+  • Noturno: (R25.282) Polenta com molho de carne moída (carne bovina moída e molho de tomate feito na escola), arroz, feijão, salada de couve-flor e uma tangerina
+  • Vespertino: (R25.282) Polenta com molho de carne moída (carne bovina moída e molho de tomate feito na escola), arroz, feijão, salada de couve-flor e uma tangerina
+
+📅 23/10/2025
+  • Matutino: (LL25.740) Cuca de banana com aveia e canela, leite com café, açúcar e uma fatia de mamão
+  • Matutino: (R25.332) Filé de Tilápia (temperado com limão, alho, cebola e tempero verde) ensopado com molho de tomate (feito na escola), arroz com espinafre, feijão, batata assada, salada de rúcula e uma fatia de mamão
+  • Noturno: (LL25.740) Cuca de banana com aveia e canela, leite com café, açúcar e uma fatia de mamão
+  • Noturno: (R25.332) Filé de Tilápia (temperado com limão, alho, cebola e tempero verde) ensopado com molho de tomate (feito na escola), arroz com espinafre, feijão, batata assada, salada de rúcula e uma fatia de mamão
+  • Vespertino: (LL25.740) Cuca de banana com aveia e canela, leite com café, açúcar e uma fatia de mamão
+  • Vespertino: (R25.332) Filé de Tilápia (temperado com limão, alho, cebola e tempero verde) ensopado com molho de tomate (feito na escola), arroz com espinafre, feijão, batata assada, salada de rúcula e uma fatia de mamão
+
+📅 24/10/2025
+  • Matutino: (R25.260) Macarronada de frango (macarrão parafuso com frango desfiado ensopado com molho de tomate), salada de couve picada, salada de beterraba cozida e uma fatia de melancia
+  • Noturno: (R25.260) Macarronada de frango (macarrão parafuso com frango desfiado ensopado com molho de tomate), salada de couve picada, salada de beterraba cozida e uma fatia de melancia
+  • Vespertino: (R25.260) Macarronada de frango (macarrão parafuso com frango desfiado ensopado com molho de tomate), salada de couve picada, salada de beterraba cozida e uma fatia de melancia

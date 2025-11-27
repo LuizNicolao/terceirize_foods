@@ -323,7 +323,7 @@ const ImportarUnidadesEscolares = ({ isOpen, onClose, onImportSuccess }) => {
           </h3>
           <div className="text-yellow-700 space-y-2 text-sm">
             <p><strong>Colunas obrigatórias:</strong> Código Teknisa, Nome da Escola, Cidade, Estado</p>
-            <p><strong>Colunas opcionais:</strong> País, Endereço, Número, Bairro, CEP, Centro de Distribuição, Rota ID, Regional, Lote, C.C. Senior, Código Senior, Abastecimento, Ordem de Entrega, Status, Observações</p>
+            <p><strong>Colunas opcionais:</strong> País, Endereço, Número, Bairro, CEP, Centro de Distribuição, Rota ID, Regional, Centro de Custo (ou Centro de Custo ID), C.C. Senior, Código Senior, Abastecimento, Ordem de Entrega, Status, Observações</p>
             <p><strong>Formato de CEP:</strong> 00000-000 ou 00000000</p>
             <p><strong>Status:</strong> "ativo" ou "inativo" (padrão: ativo)</p>
             <p><strong>País:</strong> Padrão "Brasil" se não informado</p>

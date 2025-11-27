@@ -189,7 +189,7 @@ const ProdutoOrigemModal = ({
               disabled={viewMode}
             >
               <option value="">Selecione um grupo</option>
-              {grupos.filter(grupo => grupo.tipo === 'Compra').map(grupo => (
+              {grupos.filter(grupo => grupo.tipo && grupo.tipo.toLowerCase() === 'compra').map(grupo => (
                 <option key={grupo.id} value={grupo.id}>
                   {grupo.nome}
                 </option>
