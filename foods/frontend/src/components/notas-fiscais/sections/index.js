@@ -9,4 +9,6 @@ export { default as InformacoesFiscais } from './InformacoesFiscais';
 export { default as TransportadorVolumes } from './TransportadorVolumes';
 export { default as ProdutosNotaFiscal } from './ProdutosNotaFiscal';
 export { default as InformacoesAdicionais } from './InformacoesAdicionais';
+export { default as DadosParaEntrega } from './DadosParaEntrega';
+export { default as UploadArquivo } from './UploadArquivo';
 

@@ -15,7 +15,9 @@ import {
   InformacoesFiscais,
   TransportadorVolumes,
   ProdutosNotaFiscal,
-  InformacoesAdicionais
+  InformacoesAdicionais,
+  DadosParaEntrega,
+  UploadArquivo
 } from './sections';
 
 const NotaFiscalModal = ({ 
@@ -50,7 +52,7 @@ const NotaFiscalModal = ({
     fornecedor_id: '',
     filial_id: '',
     data_emissao: '',
-    data_entrada: '',
+    data_saida: '',
     valor_produtos: '0.00',
     valor_frete: '0.00',
     valor_seguro: '0.00',
@@ -82,10 +84,12 @@ const NotaFiscalModal = ({
     volumes_peso_bruto: '0.000',
     volumes_peso_liquido: '0.000',
     informacoes_complementares: '',
-    observacoes: ''
+    observacoes: '',
+    almoxarifado_id: ''
   });
 
   const [itens, setItens] = useState([]);
+  const [arquivoSelecionado, setArquivoSelecionado] = useState(null);
 
   // Carregar pedidos disponíveis
   useEffect(() => {
@@ -167,7 +171,7 @@ const NotaFiscalModal = ({
         fornecedor_id: notaFiscal.fornecedor_id ? String(notaFiscal.fornecedor_id) : '',
         filial_id: notaFiscal.filial_id ? String(notaFiscal.filial_id) : '',
         data_emissao: notaFiscal.data_emissao || '',
-        data_entrada: notaFiscal.data_entrada || '',
+        data_saida: notaFiscal.data_saida || '',
         valor_produtos: notaFiscal.valor_produtos || '0.00',
         valor_frete: notaFiscal.valor_frete || '0.00',
         valor_seguro: notaFiscal.valor_seguro || '0.00',
@@ -198,7 +202,8 @@ const NotaFiscalModal = ({
         volumes_peso_bruto: notaFiscal.volumes_peso_bruto || '0.000',
         volumes_peso_liquido: notaFiscal.volumes_peso_liquido || '0.000',
         informacoes_complementares: notaFiscal.informacoes_complementares || '',
-        observacoes: notaFiscal.observacoes || ''
+        observacoes: notaFiscal.observacoes || '',
+        almoxarifado_id: notaFiscal.almoxarifado_id ? String(notaFiscal.almoxarifado_id) : ''
       });
       setItens(notaFiscal.itens || []);
 
@@ -355,7 +360,7 @@ const NotaFiscalModal = ({
         fornecedor_id: '',
         filial_id: '',
         data_emissao: '',
-        data_entrada: '',
+        data_saida: '',
         valor_produtos: '0.00',
         valor_frete: '0.00',
         valor_seguro: '0.00',
@@ -386,7 +391,8 @@ const NotaFiscalModal = ({
         volumes_peso_bruto: '0.000',
         volumes_peso_liquido: '0.000',
         informacoes_complementares: '',
-        observacoes: ''
+        observacoes: '',
+        almoxarifado_id: ''
       });
       setItens([]);
       setPedidoSelecionado(null);
@@ -632,10 +638,10 @@ const NotaFiscalModal = ({
       return;
     }
 
-    if (!formData.data_entrada) {
+    if (!formData.data_saida) {
       isSubmittingRef.current = false;
       setSaving(false);
-      alert('Data de entrada é obrigatória');
+      alert('Data de saída é obrigatória');
       return;
     }
 
@@ -703,6 +709,31 @@ const NotaFiscalModal = ({
       return;
     }
 
+    // Validar almoxarifado obrigatório
+    const almoxarifadoId = formData.almoxarifado_id ? parseInt(formData.almoxarifado_id) : null;
+    if (!almoxarifadoId || almoxarifadoId <= 0) {
+      isSubmittingRef.current = false;
+      setSaving(false);
+      alert('Almoxarifado é obrigatório');
+      return;
+    }
+
+    // Validar arquivo obrigatório (apenas para criação, não para edição)
+    if (!notaFiscal && !arquivoSelecionado) {
+      isSubmittingRef.current = false;
+      setSaving(false);
+      alert('Arquivo da nota fiscal é obrigatório');
+      return;
+    }
+
+    // Criar FormData para enviar arquivo
+    const formDataToSend = new FormData();
+    
+    // Adicionar arquivo se houver
+    if (arquivoSelecionado) {
+      formDataToSend.append('arquivo_nota_fiscal', arquivoSelecionado);
+    }
+
     const notaFiscalData = {
       tipo_nota: formData.tipo_nota || 'ENTRADA',
       numero_nota: formData.numero_nota,
@@ -713,8 +744,9 @@ const NotaFiscalModal = ({
       filial_id: filialId,
       pedido_compra_id: formData.pedido_compra_id ? parseInt(formData.pedido_compra_id) : null,
       rir_id: formData.rir_id ? parseInt(formData.rir_id) : null,
+      almoxarifado_id: almoxarifadoId,
       data_emissao: formatDateToISO(formData.data_emissao),
-      data_entrada: formatDateToISO(formData.data_entrada),
+      data_saida: formatDateToISO(formData.data_saida),
       valor_produtos: calcularValorTotalProdutos(),
       valor_frete: parseCurrencyToNumber(formData.valor_frete),
       valor_seguro: parseCurrencyToNumber(formData.valor_seguro),
@@ -791,9 +823,23 @@ const NotaFiscalModal = ({
       })
     };
 
-    // Chamar onSubmit
+    // Adicionar todos os campos ao FormData
+    Object.keys(notaFiscalData).forEach(key => {
+      const value = notaFiscalData[key];
+      if (value !== null && value !== undefined) {
+        if (Array.isArray(value)) {
+          formDataToSend.append(key, JSON.stringify(value));
+        } else if (typeof value === 'object') {
+          formDataToSend.append(key, JSON.stringify(value));
+        } else {
+          formDataToSend.append(key, value);
+        }
+      }
+    });
+
+    // Chamar onSubmit com FormData
     // Nota: onSubmit pode ser síncrono ou assíncrono
-    const result = onSubmit(notaFiscalData);
+    const result = onSubmit(formDataToSend);
     
     // Se for uma Promise, tratar erro
     if (result && typeof result.then === 'function') {
@@ -954,7 +1000,25 @@ const NotaFiscalModal = ({
           isViewMode={isViewMode}
         />
 
-        {/* SEÇÃO 11: Ações do Formulário */}
+        {/* SEÇÃO 11: Dados para Entrega e Upload da Nota Fiscal - lado a lado */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <DadosParaEntrega
+            formData={formData}
+            onChange={handleFieldChange}
+            isViewMode={isViewMode}
+            filialId={formData.filial_id}
+          />
+
+          <UploadArquivo
+            formData={formData}
+            onChange={handleFieldChange}
+            isViewMode={isViewMode}
+            arquivoSelecionado={arquivoSelecionado}
+            onArquivoChange={setArquivoSelecionado}
+          />
+        </div>
+
+        {/* SEÇÃO 12: Ações do Formulário */}
         {!isViewMode && (
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
             <Button 

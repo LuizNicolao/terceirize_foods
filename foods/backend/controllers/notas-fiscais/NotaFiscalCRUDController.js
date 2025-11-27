@@ -13,6 +13,8 @@ const {
 } = require('../../middleware/responseHandler');
 const { asyncHandler } = require('../../middleware/responseHandler');
 const PedidosComprasHelpers = require('../pedidos-compras/PedidosComprasHelpers');
+const fs = require('fs');
+const path = require('path');
 
 class NotaFiscalCRUDController {
   
@@ -20,6 +22,16 @@ class NotaFiscalCRUDController {
    * Criar nova nota fiscal
    */
   static criarNotaFiscal = asyncHandler(async (req, res) => {
+    // Parsear campos JSON se vierem como string (FormData)
+    let bodyData = { ...req.body };
+    if (bodyData.itens && typeof bodyData.itens === 'string') {
+      try {
+        bodyData.itens = JSON.parse(bodyData.itens);
+      } catch (e) {
+        return errorResponse(res, 'Formato inválido do campo itens', STATUS_CODES.BAD_REQUEST);
+      }
+    }
+
     const {
       tipo_nota = 'ENTRADA',
       numero_nota,
@@ -29,8 +41,9 @@ class NotaFiscalCRUDController {
       filial_id,
       pedido_compra_id,
       rir_id,
+      almoxarifado_id,
       data_emissao,
-      data_entrada,
+      data_saida,
       valor_produtos = 0.00,
       valor_frete = 0.00,
       valor_seguro = 0.00,
@@ -57,7 +70,7 @@ class NotaFiscalCRUDController {
       observacoes,
       xml_path,
       itens = []
-    } = req.body;
+    } = bodyData;
 
     // Validações
     if (!numero_nota) {
@@ -72,12 +85,21 @@ class NotaFiscalCRUDController {
       return errorResponse(res, 'Filial é obrigatória', STATUS_CODES.BAD_REQUEST);
     }
 
+    if (!almoxarifado_id) {
+      return errorResponse(res, 'Almoxarifado é obrigatório', STATUS_CODES.BAD_REQUEST);
+    }
+
     if (!data_emissao) {
       return errorResponse(res, 'Data de emissão é obrigatória', STATUS_CODES.BAD_REQUEST);
     }
 
-    if (!data_entrada) {
-      return errorResponse(res, 'Data de entrada é obrigatória', STATUS_CODES.BAD_REQUEST);
+    if (!data_saida) {
+      return errorResponse(res, 'Data de saída é obrigatória', STATUS_CODES.BAD_REQUEST);
+    }
+
+    // Validar arquivo obrigatório
+    if (!req.file) {
+      return errorResponse(res, 'Arquivo da nota fiscal é obrigatório', STATUS_CODES.BAD_REQUEST);
     }
 
     if (!itens || itens.length === 0) {
@@ -155,30 +177,79 @@ class NotaFiscalCRUDController {
 
     // Converter datas para formato MySQL
     const dataEmissaoMySQL = convertISOToMySQL(data_emissao);
-    const dataEntradaMySQL = convertISOToMySQL(data_entrada);
+    const dataSaidaMySQL = convertISOToMySQL(data_saida);
+
+    // Buscar dados do fornecedor para nomear o arquivo
+    const fornecedorData = await executeQuery(
+      'SELECT razao_social FROM fornecedores WHERE id = ?',
+      [fornecedor_id]
+    );
+    const fornecedorNome = fornecedorData[0]?.razao_social || 'FORNECEDOR';
+
+    // Processar upload do arquivo
+    let arquivoPath = null;
+    if (req.file) {
+      // O diretório de upload já está definido no middleware
+      // req.file.path contém o caminho completo do arquivo temporário
+      const uploadDir = path.dirname(req.file.path);
+      
+      // Criar nome do arquivo: "Nº NOTA - FORNECEDOR.extensão"
+      const extensao = path.extname(req.file.originalname);
+      const nomeArquivo = `${numero_nota} - ${fornecedorNome}${extensao}`;
+      
+      // Remover caracteres inválidos do nome do arquivo
+      const nomeArquivoLimpo = nomeArquivo.replace(/[<>:"/\\|?*]/g, '_');
+      
+      // Caminho completo do arquivo final
+      const novoCaminho = path.join(uploadDir, nomeArquivoLimpo);
+      
+      // Se o arquivo temporário existe, renomear
+      if (fs.existsSync(req.file.path)) {
+        // Se já existe um arquivo com esse nome, adicionar timestamp
+        if (fs.existsSync(novoCaminho)) {
+          const timestamp = Date.now();
+          const nomeComTimestamp = `${numero_nota} - ${fornecedorNome}_${timestamp}${extensao}`;
+          const nomeComTimestampLimpo = nomeComTimestamp.replace(/[<>:"/\\|?*]/g, '_');
+          arquivoPath = path.join(uploadDir, nomeComTimestampLimpo);
+          fs.renameSync(req.file.path, arquivoPath);
+        } else {
+          fs.renameSync(req.file.path, novoCaminho);
+          arquivoPath = novoCaminho;
+        }
+      }
+      
+      // Converter para caminho relativo a partir da pasta foods
+      // O caminho absoluto é algo como: /home/luiznicolao/terceirize_foods/foods/arquivos/notas-fiscais/...
+      // Precisamos de: arquivos/notas-fiscais/...
+      const foodsRoot = path.join(__dirname, '../..'); // Volta para foods
+      arquivoPath = path.relative(foodsRoot, arquivoPath).replace(/\\/g, '/');
+    }
+
+    // Data de lançamento = data/hora atual
+    const dataLancamentoMySQL = new Date().toISOString().slice(0, 19).replace('T', ' ');
 
     // Inserir nota fiscal
     const insertQuery = `
       INSERT INTO notas_fiscais (
-        tipo_nota, numero_nota, serie, chave_acesso, fornecedor_id, filial_id, pedido_compra_id, rir_id,
-        data_emissao, data_entrada, valor_produtos, valor_frete, valor_seguro,
+        tipo_nota, numero_nota, serie, chave_acesso, fornecedor_id, filial_id, pedido_compra_id, rir_id, almoxarifado_id,
+        data_emissao, data_saida, data_lancamento, valor_produtos, valor_frete, valor_seguro,
         valor_desconto, valor_outras_despesas, valor_ipi, valor_icms, valor_icms_st,
         valor_pis, valor_cofins, valor_total, natureza_operacao, cfop, tipo_frete,
         transportadora_nome, transportadora_cnpj, transportadora_placa, transportadora_uf,
         volumes_quantidade, volumes_especie, volumes_marca, volumes_peso_bruto,
         volumes_peso_liquido, informacoes_complementares, observacoes, xml_path,
         status, usuario_cadastro_id
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     const notaFiscalResult = await executeQuery(insertQuery, [
-      tipo_nota, numero_nota, serie || null, chave_acesso || null, fornecedor_id, filial_id, pedido_compra_id || null, rir_id || null,
-      dataEmissaoMySQL, dataEntradaMySQL, valor_produtos, valor_frete, valor_seguro,
+      tipo_nota, numero_nota, serie || null, chave_acesso || null, fornecedor_id, filial_id, pedido_compra_id || null, rir_id || null, almoxarifado_id || null,
+      dataEmissaoMySQL, dataSaidaMySQL, dataLancamentoMySQL, valor_produtos, valor_frete, valor_seguro,
       valor_desconto, valor_outras_despesas, valor_ipi, valor_icms, valor_icms_st,
       valor_pis, valor_cofins, valor_total, natureza_operacao || null, cfop || null, tipo_frete,
       transportadora_nome || null, transportadora_cnpj || null, transportadora_placa || null, transportadora_uf || null,
       volumes_quantidade, volumes_especie || null, volumes_marca || null, volumes_peso_bruto,
-      volumes_peso_liquido, informacoes_complementares || null, observacoes || null, xml_path || null,
+      volumes_peso_liquido, informacoes_complementares || null, observacoes || null, arquivoPath || null,
       'LANCADA', req.user?.id || null
     ]);
 
@@ -312,8 +383,9 @@ class NotaFiscalCRUDController {
       filial_id,
       pedido_compra_id,
       rir_id,
+      almoxarifado_id,
       data_emissao,
-      data_entrada,
+      data_saida,
       valor_produtos,
       valor_frete,
       valor_seguro,
@@ -398,7 +470,7 @@ class NotaFiscalCRUDController {
 
     // Converter datas para formato MySQL
     const dataEmissaoMySQL = convertISOToMySQL(data_emissao);
-    const dataEntradaMySQL = convertISOToMySQL(data_entrada);
+    const dataSaidaMySQL = convertISOToMySQL(data_saida);
 
     // Atualizar nota fiscal
     const updateQuery = `
@@ -411,8 +483,9 @@ class NotaFiscalCRUDController {
         filial_id = ?,
         pedido_compra_id = ?,
         rir_id = ?,
+        almoxarifado_id = ?,
         data_emissao = ?,
-        data_entrada = ?,
+        data_saida = ?,
         valor_produtos = ?,
         valor_frete = ?,
         valor_seguro = ?,
@@ -444,8 +517,8 @@ class NotaFiscalCRUDController {
     `;
 
     await executeQuery(updateQuery, [
-      tipo_nota, numero_nota, serie, chave_acesso, fornecedor_id, filial_id, pedido_compra_id || null, rir_id || null,
-      dataEmissaoMySQL, dataEntradaMySQL, valor_produtos, valor_frete, valor_seguro,
+      tipo_nota, numero_nota, serie, chave_acesso, fornecedor_id, filial_id, pedido_compra_id || null, rir_id || null, almoxarifado_id || null,
+      dataEmissaoMySQL, dataSaidaMySQL, valor_produtos, valor_frete, valor_seguro,
       valor_desconto, valor_outras_despesas, valor_ipi, valor_icms, valor_icms_st,
       valor_pis, valor_cofins, valor_total, natureza_operacao, cfop, tipo_frete,
       transportadora_nome, transportadora_cnpj, transportadora_placa, transportadora_uf,

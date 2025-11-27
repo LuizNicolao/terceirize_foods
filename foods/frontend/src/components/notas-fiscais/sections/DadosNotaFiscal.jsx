@@ -80,14 +80,14 @@ const DadosNotaFiscal = ({ formData, onChange, isViewMode = false, rirSelecionad
           />
         </div>
         
-        {/* Data de Entrada - 1 coluna */}
+        {/* Data de Saída - 1 coluna */}
         <div className="col-span-1">
           <Input
-            label="Data de Entrada *"
-            name="data_entrada"
+            label="Data de Saída *"
+            name="data_saida"
             type="date"
-            value={formData.data_entrada || ''}
-            onChange={(e) => onChange('data_entrada', e.target.value)}
+            value={formData.data_saida || ''}
+            onChange={(e) => onChange('data_saida', e.target.value)}
             disabled={isViewMode}
             required
           />

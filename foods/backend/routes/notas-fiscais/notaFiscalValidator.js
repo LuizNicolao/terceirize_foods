@@ -51,14 +51,23 @@ const notaFiscalValidations = {
     body('fornecedor_id')
       .notEmpty()
       .withMessage('Fornecedor é obrigatório')
+      .toInt()
       .isInt({ min: 1 })
       .withMessage('Fornecedor deve ser um ID válido'),
     
     body('filial_id')
       .notEmpty()
       .withMessage('Filial é obrigatória')
+      .toInt()
       .isInt({ min: 1 })
       .withMessage('Filial deve ser um ID válido'),
+    
+    body('almoxarifado_id')
+      .notEmpty()
+      .withMessage('Almoxarifado é obrigatório')
+      .toInt()
+      .isInt({ min: 1 })
+      .withMessage('Almoxarifado deve ser um ID válido'),
     
     body('data_emissao')
       .notEmpty()
@@ -66,11 +75,11 @@ const notaFiscalValidations = {
       .isISO8601()
       .withMessage('Data de emissão deve estar no formato ISO 8601'),
     
-    body('data_entrada')
+    body('data_saida')
       .notEmpty()
-      .withMessage('Data de entrada é obrigatória')
+      .withMessage('Data de saída é obrigatória')
       .isISO8601()
-      .withMessage('Data de entrada deve estar no formato ISO 8601'),
+      .withMessage('Data de saída deve estar no formato ISO 8601'),
     
     body('valor_produtos')
       .optional()
@@ -128,7 +137,21 @@ const notaFiscalValidations = {
       .withMessage('Tipo de frete inválido'),
     
     body('itens')
-      .isArray({ min: 1 })
+      .custom((value) => {
+        // Aceitar array ou string JSON que será parseada pelo middleware
+        if (Array.isArray(value)) {
+          return value.length > 0;
+        }
+        if (typeof value === 'string') {
+          try {
+            const parsed = JSON.parse(value);
+            return Array.isArray(parsed) && parsed.length > 0;
+          } catch {
+            return false;
+          }
+        }
+        return false;
+      })
       .withMessage('A nota fiscal deve ter pelo menos um item'),
     
     body('itens.*.codigo_produto')
@@ -191,15 +214,21 @@ const notaFiscalValidations = {
       .isInt({ min: 1 })
       .withMessage('Filial deve ser um ID válido'),
     
+    body('almoxarifado_id')
+      .notEmpty()
+      .withMessage('Almoxarifado é obrigatório')
+      .isInt({ min: 1 })
+      .withMessage('Almoxarifado deve ser um ID válido'),
+    
     body('data_emissao')
       .optional()
       .isISO8601()
       .withMessage('Data de emissão deve estar no formato ISO 8601'),
     
-    body('data_entrada')
+    body('data_saida')
       .optional()
       .isISO8601()
-      .withMessage('Data de entrada deve estar no formato ISO 8601'),
+      .withMessage('Data de saída deve estar no formato ISO 8601'),
     
     body('itens')
       .optional()

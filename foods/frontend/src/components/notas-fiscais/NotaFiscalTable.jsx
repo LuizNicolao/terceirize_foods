@@ -7,6 +7,7 @@ const NotaFiscalTable = ({
   onEdit, 
   onDelete,
   onPrint,
+  onDownload,
   getFornecedorName,
   getFilialName,
   sortField,
@@ -44,18 +45,6 @@ const NotaFiscalTable = ({
     );
   };
 
-  const getTipoBadge = (tipo) => {
-    return (
-      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-        tipo === 'ENTRADA' 
-          ? 'bg-blue-100 text-blue-800' 
-          : 'bg-purple-100 text-purple-800'
-      }`}>
-        {tipo === 'ENTRADA' ? 'Entrada' : 'Saída'}
-      </span>
-    );
-  };
-
   if (notasFiscaisArray.length === 0) {
     return (
       <EmptyState
@@ -74,6 +63,13 @@ const NotaFiscalTable = ({
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
+                <SortableTableHeader
+                  label="Data Lançamento"
+                  field="data_lancamento"
+                  currentSort={sortField}
+                  currentDirection={sortDirection}
+                  onSort={onSort}
+                />
                 <SortableTableHeader
                   label="N Lancamento"
                   field="id"
@@ -95,9 +91,6 @@ const NotaFiscalTable = ({
                   currentDirection={sortDirection}
                   onSort={onSort}
                 />
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Tipo
-                </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Fornecedor
                 </th>
@@ -129,6 +122,9 @@ const NotaFiscalTable = ({
             <tbody className="bg-white divide-y divide-gray-200">
               {notasFiscaisArray.map((nota) => (
                 <tr key={nota.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {formatDate(nota.data_lancamento)}
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     {nota.id}
                   </td>
@@ -138,20 +134,10 @@ const NotaFiscalTable = ({
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {nota.serie || '-'}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {getTipoBadge(nota.tipo_nota)}
+                  <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
+                    {getFornecedorName(nota.fornecedor_id) || nota.fornecedor_nome || '-'}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
-                      {getFornecedorName(nota.fornecedor_id) || nota.fornecedor_nome || '-'}
-                    </div>
-                    {nota.fornecedor_fantasia && (
-                      <div className="text-xs text-gray-500">
-                        {nota.fornecedor_fantasia}
-                      </div>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
                     {getFilialName(nota.filial_id) || nota.filial_nome || '-'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -170,10 +156,12 @@ const NotaFiscalTable = ({
                         canEdit={true}
                         canDelete={true}
                         canPrint={!!onPrint}
+                        canDownload={!!onDownload}
                         onView={onView}
                         onEdit={null}
                         onDelete={null}
                         onPrint={onPrint}
+                        onDownload={(nota.xml_path && typeof nota.xml_path === 'string' && nota.xml_path.trim()) ? onDownload : null}
                         item={nota}
                         size="xs"
                       />
@@ -205,7 +193,6 @@ const NotaFiscalTable = ({
               </div>
               <div className="flex flex-col gap-1">
                 {getStatusBadge(nota.status)}
-                {getTipoBadge(nota.tipo_nota)}
               </div>
             </div>
             
@@ -218,9 +205,13 @@ const NotaFiscalTable = ({
                 <span className="text-gray-500">Data Emissão:</span>
                 <p className="font-medium">{formatDate(nota.data_emissao)}</p>
               </div>
-              <div className="col-span-2">
+              <div>
+                <span className="text-gray-500">Data Lançamento:</span>
+                <p className="font-medium">{formatDate(nota.data_lancamento)}</p>
+              </div>
+              <div>
                 <span className="text-gray-500">Valor Total:</span>
-                <p className="font-medium text-lg">{formatCurrency(nota.valor_total)}</p>
+                <p className="font-medium">{formatCurrency(nota.valor_total)}</p>
               </div>
             </div>
 
@@ -230,10 +221,12 @@ const NotaFiscalTable = ({
                 canEdit={true}
                 canDelete={true}
                 canPrint={!!onPrint}
+                canDownload={!!onDownload}
                 onView={onView}
                 onEdit={null}
                 onDelete={null}
                 onPrint={onPrint}
+                onDownload={nota.xml_path ? onDownload : null}
                 item={nota}
                 size="xs"
               />

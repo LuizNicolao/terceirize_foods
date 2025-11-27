@@ -35,8 +35,11 @@ class NotaFiscalListController {
         nf.filial_id,
         fil.filial as filial_nome,
         fil.codigo_filial,
+        nf.almoxarifado_id,
+        a.codigo as almoxarifado_codigo,
+        a.nome as almoxarifado_nome,
         nf.data_emissao,
-        nf.data_entrada,
+        nf.data_saida,
         nf.valor_produtos,
         nf.valor_frete,
         nf.valor_seguro,
@@ -52,6 +55,7 @@ class NotaFiscalListController {
         nf.cfop,
         nf.tipo_frete,
         nf.status,
+        nf.xml_path as xml_path,
         nf.usuario_cadastro_id,
         uc.nome as usuario_cadastro_nome,
         nf.usuario_lancamento_id,
@@ -63,6 +67,7 @@ class NotaFiscalListController {
       FROM notas_fiscais nf
       LEFT JOIN fornecedores f ON nf.fornecedor_id = f.id
       LEFT JOIN filiais fil ON nf.filial_id = fil.id
+      LEFT JOIN almoxarifado a ON nf.almoxarifado_id = a.id
       LEFT JOIN usuarios uc ON nf.usuario_cadastro_id = uc.id
       LEFT JOIN usuarios ul ON nf.usuario_lancamento_id = ul.id
       WHERE 1=1
@@ -217,11 +222,14 @@ class NotaFiscalListController {
         fil.bairro as filial_bairro,
         fil.cidade as filial_cidade,
         fil.estado as filial_estado,
+        a.codigo as almoxarifado_codigo,
+        a.nome as almoxarifado_nome,
         uc.nome as usuario_cadastro_nome,
         ul.nome as usuario_lancamento_nome
       FROM notas_fiscais nf
       LEFT JOIN fornecedores f ON nf.fornecedor_id = f.id
       LEFT JOIN filiais fil ON nf.filial_id = fil.id
+      LEFT JOIN almoxarifado a ON nf.almoxarifado_id = a.id
       LEFT JOIN usuarios uc ON nf.usuario_cadastro_id = uc.id
       LEFT JOIN usuarios ul ON nf.usuario_lancamento_id = ul.id
       WHERE nf.id = ?

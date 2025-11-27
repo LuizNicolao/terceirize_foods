@@ -25,6 +25,8 @@ const NotasFiscais = () => {
     estatisticas,
     pagination,
     filters,
+    sortField,
+    sortDirection,
     carregarNotasFiscais,
     carregarNotaFiscal,
     criarNotaFiscal,
@@ -34,7 +36,8 @@ const NotasFiscais = () => {
     atualizarPaginacao,
     limparSelecao,
     setNotaFiscalSelecionada,
-    handlePrintNotaFiscal
+    handlePrintNotaFiscal,
+    onSort
   } = useNotaFiscal();
 
   const {
@@ -137,6 +140,25 @@ const NotasFiscais = () => {
   const handleDeleteNotaFiscal = (notaFiscal) => {
     setNotaFiscalToDelete(notaFiscal);
     setShowDeleteConfirmModal(true);
+  };
+
+  const handleDownloadArquivo = async (notaFiscal) => {
+    if (!notaFiscal.xml_path || !notaFiscal.xml_path.trim()) {
+      toast.error('Arquivo não disponível para esta nota fiscal');
+      return;
+    }
+
+    try {
+      const resultado = await notaFiscalService.downloadArquivo(notaFiscal.id, notaFiscal.xml_path);
+      if (resultado.success) {
+        toast.success('Arquivo baixado com sucesso');
+      } else {
+        toast.error(resultado.error || 'Erro ao baixar arquivo');
+      }
+    } catch (error) {
+      console.error('Erro ao baixar arquivo:', error);
+      toast.error('Erro ao baixar arquivo');
+    }
   };
 
   const handleConfirmDelete = async () => {
@@ -320,8 +342,12 @@ const NotasFiscais = () => {
         onEdit={canEdit('notas_fiscais') ? handleEditNotaFiscal : null}
         onDelete={canDelete('notas_fiscais') ? handleDeleteNotaFiscal : null}
         onPrint={canView('notas_fiscais') ? handlePrintNotaFiscal : null}
+        onDownload={canView('notas_fiscais') ? handleDownloadArquivo : null}
         getFornecedorName={getFornecedorName}
         getFilialName={getFilialName}
+        sortField={sortField}
+        sortDirection={sortDirection}
+        onSort={onSort}
       />
 
       {/* Paginação */}

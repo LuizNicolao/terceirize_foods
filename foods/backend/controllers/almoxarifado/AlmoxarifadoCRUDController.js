@@ -121,10 +121,10 @@ class AlmoxarifadoCRUDController {
 
     // Atualizar vínculos conforme o tipo
     if (tipo_vinculo === 'unidade_escolar') {
-      // Atualizar unidade escolar com o ID do almoxarifado
+      // Atualizar unidade escolar com o ID do almoxarifado e centro_custo_id
       await executeQuery(
-        'UPDATE unidades_escolares SET almoxarifado_id = ? WHERE id = ?',
-        [novoAlmoxarifadoId, unidade_escolar_id]
+        'UPDATE unidades_escolares SET almoxarifado_id = ?, centro_custo_id = ? WHERE id = ?',
+        [novoAlmoxarifadoId, centro_custo_id || null, unidade_escolar_id]
       );
     } else {
       // Atualizar filial com a lista de IDs de almoxarifados
@@ -314,6 +314,15 @@ class AlmoxarifadoCRUDController {
     );
 
     const almoxarifado = almoxarifados[0];
+
+    // Atualizar vínculos conforme o tipo
+    if (almoxarifado.tipo_vinculo === 'unidade_escolar' && almoxarifado.unidade_escolar_id) {
+      // Atualizar unidade escolar com o ID do almoxarifado e centro_custo_id
+      await executeQuery(
+        'UPDATE unidades_escolares SET almoxarifado_id = ?, centro_custo_id = ? WHERE id = ?',
+        [id, almoxarifado.centro_custo_id || null, almoxarifado.unidade_escolar_id]
+      );
+    }
 
     // Adicionar links HATEOAS
     const data = res.addResourceLinks(almoxarifado);

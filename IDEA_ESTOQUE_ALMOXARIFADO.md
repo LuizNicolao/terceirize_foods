@@ -145,16 +145,6 @@ CREATE TABLE almoxarifado_reservas (
 - **Vantagem**: Automático, sem intervenção manual
 - **Desvantagem**: Pode não refletir a realidade física (produto pode ir para outro almoxarifado)
 
-**Opção B: Entrada Manual (Recomendado)**
-- Ao lançar a NF, cria uma "sugestão" de entrada de estoque
-- Usuário confirma e escolhe o almoxarifado de destino
-- Permite distribuir itens entre múltiplos almoxarifados
-- **Vantagem**: Mais flexível, reflete a realidade
-- **Desvantagem**: Requer ação manual
-
-**Opção C: Híbrida**
-- Entrada automática no almoxarifado padrão da filial
-- Permite ajuste manual posterior (transferência)
 
 ### 2.2 Campos adicionais na Nota Fiscal
 
@@ -212,7 +202,6 @@ Adicionar na tabela `notas_fiscais_itens`:
 
 - Verificar saldo disponível (quantidade_atual - quantidade_reservada)
 - Não permitir saída maior que o disponível
-- Permitir saída negativa apenas com permissão especial (ajuste)
 
 ---
 
@@ -404,42 +393,15 @@ Adicionar na tabela `notas_fiscais_itens`:
 
 ## ❓ 11. DECISÕES A TOMAR
 
-1. **Entrada automática ou manual?**
-   - Recomendação: Manual com opção de automática
-
-2. **Um produto pode estar em múltiplos almoxarifados?**
-   - Sim (já previsto na estrutura)
-
-3. **Permitir estoque negativo?**
-   - Não, exceto ajustes com permissão especial
-
 4. **Transferências entre filiais?**
-   - Definir regra de negócio
+   - Definir regra de negócio vou definir posteriormente
 
 5. **Custo médio ou FIFO?**
    - Recomendação: Custo médio (mais simples)
 
 6. **Obrigatório processar estoque ao lançar NF?**
-   - Recomendação: Não obrigatório, mas recomendado
+   - Recomendação: Não obrigatório, mas recomendado = sim
 
 7. **Permitir entrada parcial de itens da NF?**
-   - Sim (útil para casos de recebimento parcial)
-
----
-
-## 📝 12. PRÓXIMOS PASSOS
-
-1. **Revisar e aprovar estrutura de tabelas**
-2. **Definir regras de negócio específicas**
-3. **Priorizar funcionalidades**
-4. **Criar migrations SQL**
-5. **Desenvolver controllers e rotas**
-6. **Desenvolver interface do usuário**
-7. **Testes e validações**
-
----
-
-**Documento criado para discussão interna** 📋
-**Data:** 2025-01-XX
-**Autor:** Sistema de Gestão
+   - Sim (útil para casos de recebimento parcial) = não, apenas integral
 

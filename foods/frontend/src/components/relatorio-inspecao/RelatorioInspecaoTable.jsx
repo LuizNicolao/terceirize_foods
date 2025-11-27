@@ -133,11 +133,11 @@ const RelatorioInspecaoTable = ({
                 </h3>
               </div>
               <div className="flex gap-2">
-                {getStatusBadge ? getStatusBadge(rir.resultado_geral) : (
+              {getStatusBadge ? getStatusBadge(rir.resultado_geral) : (
                   <span className="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
-                    {rir.resultado_geral || '-'}
-                  </span>
-                )}
+                  {rir.resultado_geral || '-'}
+                </span>
+              )}
                 {rir.status === 'FINALIZADO' ? (
                   <span className="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
                     Finalizado

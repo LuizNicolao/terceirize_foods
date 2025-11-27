@@ -359,9 +359,9 @@ const AlmoxarifadoModal = ({
               </Input>
 
               {/* Unidade Escolar - Edição */}
-              {tipoVinculo === 'unidade_escolar' && !isViewMode && (
+              {tipoVinculo === 'unidade_escolar' && !isViewMode && filialSelecionada && (
                 <SearchableSelect
-                  label="Unidade Escolar"
+                  label="Unidade Escolar *"
                   value={unidadeEscolarSelecionada}
                   onChange={(value) => setUnidadeEscolarSelecionada(value)}
                   options={unidadesEscolares.map(unidade => ({
@@ -370,11 +370,9 @@ const AlmoxarifadoModal = ({
                     description: `${unidade.cidade}/${unidade.estado}`
                   }))}
                   placeholder={
-                    !filialSelecionada
-                      ? 'Selecione primeiro uma filial'
-                      : carregandoUnidadesEscolares
-                        ? 'Carregando unidades escolares...'
-                        : 'Digite para buscar unidade escolar...'
+                    carregandoUnidadesEscolares
+                      ? 'Carregando unidades escolares...'
+                      : 'Digite para buscar unidade escolar...'
                   }
                   disabled={!filialSelecionada || carregandoUnidadesEscolares}
                   loading={carregandoUnidadesEscolares}

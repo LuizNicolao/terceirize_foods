@@ -10,6 +10,8 @@ const { paginationMiddleware } = require('../../middleware/pagination');
 const { hateoasMiddleware } = require('../../middleware/hateoas');
 const { auditMiddleware, AUDIT_ACTIONS } = require('../../utils/audit');
 const NotasFiscaisController = require('../../controllers/notas-fiscais');
+const { uploadNotaFiscal, handleUploadError } = require('../../middleware/uploadNotaFiscal');
+const parseFormData = require('../../middleware/parseFormData');
 
 const router = express.Router();
 
@@ -26,6 +28,13 @@ router.get('/',
   NotasFiscaisController.listarNotasFiscais
 );
 
+// Download do arquivo da nota fiscal (deve vir antes de /:id para não conflitar)
+const NotaFiscalDownloadController = require('../../controllers/notas-fiscais/NotaFiscalDownloadController');
+router.get('/:id/download',
+  commonValidations.id,
+  NotaFiscalDownloadController.downloadArquivo
+);
+
 // Buscar nota fiscal por ID
 router.get('/:id', 
   commonValidations.id,
@@ -35,6 +44,9 @@ router.get('/:id',
 // Criar nota fiscal
 router.post('/', 
   checkScreenPermission('notas-fiscais', 'criar'),
+  uploadNotaFiscal,
+  handleUploadError,
+  parseFormData,
   auditMiddleware(AUDIT_ACTIONS.CREATE, 'notas-fiscais'),
   notaFiscalValidations.create,
   NotasFiscaisController.criarNotaFiscal

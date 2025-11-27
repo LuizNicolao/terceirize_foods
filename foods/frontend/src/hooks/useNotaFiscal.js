@@ -9,6 +9,7 @@ import ReactDOM from 'react-dom/client';
 import toast from 'react-hot-toast';
 import notaFiscalService from '../services/notaFiscalService';
 import NotaFiscalPrint from '../components/notas-fiscais/NotaFiscalPrint';
+import useTableSort from './common/useTableSort';
 
 export const useNotaFiscal = () => {
   const [notasFiscais, setNotasFiscais] = useState([]);
@@ -29,6 +30,19 @@ export const useNotaFiscal = () => {
     filial_id: '',
     data_inicio: '',
     data_fim: ''
+  });
+
+  // Hook de ordenação
+  const {
+    sortedData: notasFiscaisOrdenadas,
+    sortField,
+    sortDirection,
+    handleSort,
+    isSortingLocally
+  } = useTableSort({
+    data: notasFiscais,
+    threshold: 100,
+    totalItems: pagination.total
   });
 
   /**
@@ -313,12 +327,14 @@ export const useNotaFiscal = () => {
 
   return {
     // Estados
-    notasFiscais,
+    notasFiscais: notasFiscaisOrdenadas,
     notaFiscalSelecionada,
     loading,
     estatisticas,
     pagination,
     filters,
+    sortField,
+    sortDirection,
 
     // Ações
     carregarNotasFiscais,
@@ -330,7 +346,8 @@ export const useNotaFiscal = () => {
     atualizarPaginacao,
     limparSelecao,
     setNotaFiscalSelecionada,
-    handlePrintNotaFiscal
+    handlePrintNotaFiscal,
+    onSort: handleSort
   };
 };
 

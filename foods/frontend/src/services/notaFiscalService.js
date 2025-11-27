@@ -76,7 +76,15 @@ class NotaFiscalService {
    */
   async criar(notaFiscal) {
     try {
-      const response = await api.post('/notas-fiscais', notaFiscal);
+      // Se for FormData, usar headers multipart/form-data
+      const isFormData = notaFiscal instanceof FormData;
+      const config = isFormData ? {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      } : {};
+
+      const response = await api.post('/notas-fiscais', notaFiscal, config);
       
       return {
         success: true,
@@ -189,6 +197,75 @@ class NotaFiscalService {
       return {
         success: false,
         error: error.response?.data?.message || 'Erro ao exportar PDF'
+      };
+    }
+  }
+
+  /**
+   * Download do arquivo da nota fiscal
+   * @param {number} id - ID da nota fiscal
+   * @param {string} xmlPath - Caminho do arquivo (opcional, se não fornecido, busca da API)
+   */
+  async downloadArquivo(id, xmlPath = null) {
+    try {
+      // Se não temos o xmlPath, buscar primeiro a nota fiscal para obter o caminho
+      let filename = `nota_fiscal_${id}.pdf`;
+      if (xmlPath) {
+        // Extrair nome do arquivo do caminho
+        const pathParts = xmlPath.split('/');
+        filename = pathParts[pathParts.length - 1] || filename;
+      } else {
+        // Buscar nota fiscal para obter o xml_path
+        const notaResponse = await api.get(`/notas-fiscais/${id}`);
+        if (notaResponse.data?.data?.xml_path) {
+          const pathParts = notaResponse.data.data.xml_path.split('/');
+          filename = pathParts[pathParts.length - 1] || filename;
+        }
+      }
+      
+      const response = await api.get(`/notas-fiscais/${id}/download`, {
+        responseType: 'blob'
+      });
+      
+      // Tentar extrair do header também (fallback)
+      const contentDisposition = response.headers['content-disposition'] || response.headers['Content-Disposition'];
+      if (contentDisposition) {
+        // Tentar diferentes padrões de extração
+        let match = contentDisposition.match(/filename="([^"]+)"/);
+        if (!match) {
+          match = contentDisposition.match(/filename=([^;]+)/);
+        }
+        if (!match) {
+          match = contentDisposition.match(/filename\*=UTF-8''([^;]+)/);
+          if (match) {
+            filename = decodeURIComponent(match[1]);
+          }
+        } else {
+          const extractedName = match[1].trim().replace(/^["']|["']$/g, '');
+          if (extractedName && extractedName !== `nota_fiscal_${id}.pdf`) {
+            filename = extractedName;
+          }
+        }
+      }
+      
+      // Criar URL do blob e fazer download
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      
+      return {
+        success: true,
+        message: 'Arquivo baixado com sucesso'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao baixar arquivo'
       };
     }
   }

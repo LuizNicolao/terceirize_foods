@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaEye, FaEdit, FaTrash, FaPrint } from 'react-icons/fa';
+import { FaEye, FaEdit, FaTrash, FaPrint, FaDownload } from 'react-icons/fa';
 import Button from './Button';
 
 const ActionButtons = ({ 
@@ -7,10 +7,12 @@ const ActionButtons = ({
   canEdit = false, 
   canDelete = false,
   canPrint = false,
+  canDownload = false,
   onView, 
   onEdit, 
   onDelete,
   onPrint,
+  onDownload,
   item,
   size = "sm",
   className = ""
@@ -51,6 +53,19 @@ const ActionButtons = ({
           className="text-purple-600 hover:text-purple-800 hover:bg-purple-50"
         >
           <FaPrint className="w-3 h-3" />
+        </Button>
+      )}
+
+      {canDownload && (
+        <Button
+          variant="ghost"
+          size={size}
+          onClick={onDownload ? () => onDownload(item) : undefined}
+          title={onDownload ? "Download do Arquivo" : "Arquivo não disponível"}
+          disabled={!onDownload}
+          className={onDownload ? "text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50" : "text-gray-400 cursor-not-allowed opacity-50"}
+        >
+          <FaDownload className="w-3 h-3" />
         </Button>
       )}
       

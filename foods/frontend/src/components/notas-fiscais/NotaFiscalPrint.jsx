@@ -308,8 +308,8 @@ const NotaFiscalPrint = ({ notaFiscal }) => {
                 <tr>
                   <th>Data de Emissão</th>
                   <td>{formatDate(notaFiscal.data_emissao)}</td>
-                  <th>Data de Entrada</th>
-                  <td>{formatDate(notaFiscal.data_entrada)}</td>
+                  <th>Data de Saída</th>
+                  <td>{formatDate(notaFiscal.data_saida)}</td>
                 </tr>
                 <tr>
                   <th>Tipo de Nota</th>
