@@ -11,6 +11,12 @@ yarn-error.log*
 .env.development.local
 .env.test.local
 .env.production.local
+# Arquivos de desenvolvimento sem ponto inicial
+env.development
+env.production
+backend/env.development
+backend/env.production
+backend/config/database.js
 
 # Development files
 docker-compose.dev.yml

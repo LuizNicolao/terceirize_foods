@@ -208,40 +208,84 @@ router.get('/:id/restore/status', async (req, res) => {
   }
 });
 
-// Obter status de backup em execução
-router.get('/:id/status', async (req, res) => {
+// Obter logs de um backup (deve vir ANTES de rotas genéricas como /:id/status)
+router.get('/:id/logs', async (req, res) => {
   try {
-    const status = getBackupStatus(parseInt(req.params.id));
+    const backups = await executeQuery('SELECT * FROM backups WHERE id = ?', [req.params.id]);
     
-    if (!status) {
-      // Buscar no banco se não estiver rodando
-      const backups = await executeQuery('SELECT * FROM backups WHERE id = ?', [req.params.id]);
-      
-      if (!backups || backups.length === 0) {
-        return res.status(404).json({
-          success: false,
-          message: 'Backup not found'
-        });
-      }
-      
-      return res.json({
-        success: true,
-        data: {
-          running: false,
-          status: backups[0].status,
-          databaseName: backups[0].database_name,
-          fileSize: backups[0].file_size,
-          fileSizeFormatted: formatBytes(backups[0].file_size || 0),
-          createdAt: backups[0].created_at,
-          completedAt: backups[0].completed_at
-        }
+    if (!backups || backups.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Backup not found'
       });
     }
     
-    res.json({
-      success: true,
-      data: status
-    });
+    const backup = backups[0];
+    
+    // Extrair timestamp do file_path ou usar created_at
+    let timestamp = null;
+    
+    // Tentar extrair do file_path: database_name_YYYY-MM-DD_HHMMSS.sql.gz
+    if (backup.file_path) {
+      const fileName = path.basename(backup.file_path);
+      const match = fileName.match(/(\d{4}-\d{2}-\d{2}_\d{6})/);
+      if (match) {
+        timestamp = match[1];
+      }
+    }
+    
+    // Se não encontrou no file_path, usar created_at
+    if (!timestamp && backup.created_at) {
+      const date = new Date(backup.created_at);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      const seconds = String(date.getSeconds()).padStart(2, '0');
+      timestamp = `${year}-${month}-${day}_${hours}${minutes}${seconds}`;
+    }
+    
+    if (!timestamp) {
+      return res.status(404).json({
+        success: false,
+        message: 'Não foi possível determinar o timestamp do backup'
+      });
+    }
+    
+    // Construir caminho do log
+    const { getBackupBaseDir } = require('../services/backup');
+    const BACKUP_BASE_DIR = getBackupBaseDir();
+    const logPath = path.join(BACKUP_BASE_DIR, 'logs', `backup_${timestamp}.log`);
+    
+    // Verificar se o arquivo existe
+    try {
+      await fs.access(logPath);
+    } catch {
+      return res.status(404).json({
+        success: false,
+        message: 'Arquivo de log não encontrado'
+      });
+    }
+    
+    // Ler conteúdo do log
+    try {
+      const logContent = await fs.readFile(logPath, 'utf-8');
+      
+      res.json({
+        success: true,
+        data: {
+          log: logContent,
+          logPath: logPath,
+          timestamp: timestamp
+        }
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: `Erro ao ler arquivo de log: ${error.message}`
+      });
+    }
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -250,31 +294,14 @@ router.get('/:id/status', async (req, res) => {
   }
 });
 
-// Cancelar backup em execução
-router.post('/:id/cancel', async (req, res) => {
-  try {
-    const result = await cancelBackup(parseInt(req.params.id));
-    res.json({
-      success: true,
-      ...result
-    });
-  } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: error.message
-    });
-  }
-});
-
 // Obter status de backup em execução
 router.get('/:id/status', async (req, res) => {
   try {
-    const backupId = parseInt(req.params.id);
-    const status = getBackupStatus(backupId);
+    const status = getBackupStatus(parseInt(req.params.id));
     
     if (!status) {
       // Buscar no banco se não estiver rodando
-      const backups = await executeQuery('SELECT * FROM backups WHERE id = ?', [backupId]);
+      const backups = await executeQuery('SELECT * FROM backups WHERE id = ?', [req.params.id]);
       
       if (!backups || backups.length === 0) {
         return res.status(404).json({

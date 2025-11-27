@@ -9,7 +9,8 @@ export default function BackupsTable({
   onCancel,
   onDownload,
   onRestore,
-  onDelete
+  onDelete,
+  onViewLogs
 }) {
   if (loading) {
     return (
@@ -71,10 +72,12 @@ export default function BackupsTable({
                       canDownload={backup.status === 'completed'}
                       canRestore={backup.status === 'completed'}
                       canDelete={backup.status === 'completed' || backup.status === 'failed'}
+                      canViewLogs={true}
                       onCancel={() => onCancel(backup.id)}
                       onDownload={() => onDownload(backup.id)}
                       onRestore={() => onRestore(backup.id)}
                       onDelete={() => onDelete(backup.id)}
+                      onViewLogs={onViewLogs}
                       item={backup}
                     />
                   </td>

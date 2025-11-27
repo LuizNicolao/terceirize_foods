@@ -65,11 +65,11 @@ const authenticateToken = async (req, res, next) => {
     let users;
     try {
       [users] = await foodsDbPool.execute(
-        `SELECT id, nome, email, tipo_de_acesso, nivel_de_acesso, status 
-         FROM usuarios 
-         WHERE id = ?`,
-        [decoded.userId]
-      );
+      `SELECT id, nome, email, tipo_de_acesso, nivel_de_acesso, status 
+       FROM usuarios 
+       WHERE id = ?`,
+      [decoded.userId]
+    );
     } catch (dbError) {
       console.error('Erro ao buscar usuário no banco de dados:', dbError);
       return res.status(500).json({

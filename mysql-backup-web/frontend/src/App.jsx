@@ -41,7 +41,22 @@ function AppContent() {
   }, [])
 
   // Base path para funcionar em subdiretório
-  const basename = process.env.PUBLIC_URL || '/mysql-backup-web'
+  // Se a URL já começa com /mysql-backup-web, usa esse basename
+  // Caso contrário, usa vazio para funcionar na raiz
+  const getBasename = () => {
+    const pathname = window.location.pathname
+    if (pathname.startsWith('/mysql-backup-web')) {
+      return '/mysql-backup-web'
+    }
+    // Se PUBLIC_URL estiver definido, usa ele
+    if (process.env.PUBLIC_URL) {
+      return process.env.PUBLIC_URL
+    }
+    // Caso contrário, usa vazio (raiz)
+    return ''
+  }
+
+  const basename = getBasename()
 
   return (
     <Router basename={basename}>

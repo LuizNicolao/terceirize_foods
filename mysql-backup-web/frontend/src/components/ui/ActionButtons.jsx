@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaEye, FaEdit, FaTrash, FaDownload, FaRedo, FaStop } from 'react-icons/fa';
+import { FaEye, FaEdit, FaTrash, FaDownload, FaRedo, FaStop, FaFileAlt } from 'react-icons/fa';
 import Button from './Button';
 
 const ActionButtons = ({ 
@@ -9,12 +9,14 @@ const ActionButtons = ({
   canDownload = false,
   canRestore = false,
   canCancel = false,
+  canViewLogs = false,
   onView, 
   onEdit, 
   onDelete,
   onDownload,
   onRestore,
   onCancel,
+  onViewLogs,
   item,
   size = "sm",
   className = ""
@@ -78,6 +80,18 @@ const ActionButtons = ({
           className="text-orange-600 hover:text-orange-800 hover:bg-orange-50"
         >
           <FaStop className="w-3 h-3" />
+        </Button>
+      )}
+
+      {canViewLogs && onViewLogs && (
+        <Button
+          variant="ghost"
+          size={size}
+          onClick={() => onViewLogs(item)}
+          title="Ver Logs"
+          className="text-purple-600 hover:text-purple-800 hover:bg-purple-50"
+        >
+          <FaFileAlt className="w-3 h-3" />
         </Button>
       )}
       

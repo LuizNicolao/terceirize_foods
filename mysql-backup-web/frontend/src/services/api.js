@@ -55,9 +55,18 @@ api.interceptors.response.use(
         localStorage.removeItem('rememberMe')
         
         // Redirecionar para login apenas se não estiver na página de login
-        const basename = process.env.PUBLIC_URL || '/mysql-backup-web'
-        if (window.location.pathname !== `${basename}/login`) {
-          window.location.href = `${basename}/login`
+        // Detectar basename automaticamente
+        const getBasename = () => {
+          const pathname = window.location.pathname
+          if (pathname.startsWith('/mysql-backup-web')) {
+            return '/mysql-backup-web'
+          }
+          return process.env.PUBLIC_URL || ''
+        }
+        const basename = getBasename()
+        const loginPath = basename ? `${basename}/login` : '/login'
+        if (window.location.pathname !== loginPath) {
+          window.location.href = loginPath
         }
       }
     }

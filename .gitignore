@@ -12,6 +12,15 @@ node_modules/
 **/.env.local
 **/.env.production
 **/.env.development
+# Arquivos de desenvolvimento sem ponto inicial
+env.development
+env.production
+**/env.development
+**/env.production
+**/backend/env.development
+**/backend/env.production
+**/backend/config/redis.js
+**/docker-compose.dev.yml
 
 # Logs
 npm-debug.log*

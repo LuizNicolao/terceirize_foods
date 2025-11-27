@@ -1024,6 +1024,7 @@ module.exports = {
   cancelBackup,
   getBackupStatus,
   getRestoreStatus,
-  runningBackups
+  runningBackups,
+  getBackupBaseDir
 };
 

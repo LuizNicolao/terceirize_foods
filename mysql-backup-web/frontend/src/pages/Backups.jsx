@@ -8,6 +8,7 @@ import BackupsFilters from '../components/backups/BackupsFilters'
 import BackupsTable from '../components/backups/BackupsTable'
 import RestoreModal from '../components/backups/RestoreModal'
 import BackupModal from '../components/backups/BackupModal'
+import BackupLogsModal from '../components/backups/BackupLogsModal'
 
 export default function Backups() {
   const [backups, setBackups] = useState([])
@@ -46,6 +47,12 @@ export default function Backups() {
     elapsedTime: 0,
     fileSize: 0,
     selectedTables: []
+  })
+
+  // Estado para modal de logs
+  const [logsModal, setLogsModal] = useState({
+    isOpen: false,
+    backupId: null
   })
 
   useEffect(() => {
@@ -393,6 +400,13 @@ export default function Backups() {
     return `${minutes}m ${secs}s`
   }
 
+  const handleViewLogs = (backup) => {
+    setLogsModal({
+      isOpen: true,
+      backupId: backup.id
+    })
+  }
+
   return (
     <div className="p-3 sm:p-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3 sm:gap-4">
@@ -442,6 +456,7 @@ export default function Backups() {
         onDownload={handleDownload}
         onRestore={handleRestore}
         onDelete={handleDelete}
+        onViewLogs={handleViewLogs}
                       />
 
       <ConfirmModal
@@ -486,6 +501,12 @@ export default function Backups() {
         databaseName={restoreProgress.databaseName}
         elapsedTime={restoreProgress.elapsedTime}
         fileSize={restoreProgress.fileSize}
+      />
+
+      <BackupLogsModal
+        isOpen={logsModal.isOpen}
+        onClose={() => setLogsModal({ isOpen: false, backupId: null })}
+        backupId={logsModal.backupId}
       />
     </div>
   )
