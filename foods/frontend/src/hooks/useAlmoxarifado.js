@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import AlmoxarifadoService from '../services/almoxarifadoService';
+import FiliaisService from '../services/filiais';
+import CentroCustoService from '../services/centroCusto';
 import { useBaseEntity } from './common/useBaseEntity';
 import { useFilters } from './common/useFilters';
 import useTableSort from './common/useTableSort';
@@ -17,34 +19,51 @@ export const useAlmoxarifado = () => {
   // Hook de filtros customizados
   const customFilters = useFilters({ filialFilter: 'todos', centroCustoFilter: 'todos' });
 
-  // Hook de ordenação híbrida
+  // Estados para dados auxiliares (para os filtros)
+  const [filiais, setFiliais] = useState([]);
+  const [centrosCusto, setCentrosCusto] = useState([]);
+  const [loadingFiliais, setLoadingFiliais] = useState(false);
+  const [loadingCentrosCusto, setLoadingCentrosCusto] = useState(false);
+
+  /**
+   * Carrega dados com filtros customizados
+   */
+  const loadDataWithFilters = useCallback(async (customParams = {}) => {
+    const params = {
+      ...baseEntity.getPaginationParams(),
+      ...customFilters.getFilterParams(),
+      // Incluir parâmetros de ordenação do baseEntity se disponíveis
+      sortField: customParams.sortField !== undefined ? customParams.sortField : baseEntity.sortField || undefined,
+      sortDirection: customParams.sortDirection !== undefined ? customParams.sortDirection : baseEntity.sortDirection || undefined,
+      ...customParams
+    };
+
+    await baseEntity.loadData(params);
+  }, [baseEntity, customFilters]);
+
+  // Hook de ordenação híbrida (depois de loadDataWithFilters para poder usá-lo no callback)
   const {
     sortedData: almoxarifadosOrdenados,
-    sortField,
-    sortDirection,
+    sortField: localSortField,
+    sortDirection: localSortDirection,
     handleSort,
     isSortingLocally
   } = useTableSort({
     data: baseEntity.items,
     threshold: 100,
-    totalItems: baseEntity.totalItems
+    totalItems: baseEntity.totalItems,
+    onBackendSort: (field, direction) => {
+      // Atualizar estados de ordenação no baseEntity
+      baseEntity.setSortField(field);
+      baseEntity.setSortDirection(direction);
+      // Recarregar dados com nova ordenação, mantendo filtros customizados
+      loadDataWithFilters({ sortField: field, sortDirection: direction });
+    }
   });
 
-  /**
-   * Carrega dados com filtros customizados
-   */
-  const loadDataWithFilters = useCallback(async () => {
-    const params = {
-      ...baseEntity.getPaginationParams(),
-      ...customFilters.getFilterParams(),
-      search: customFilters.searchTerm || undefined,
-      status: customFilters.statusFilter === 'ativo' ? 1 : customFilters.statusFilter === 'inativo' ? 0 : undefined,
-      filial_id: customFilters.filters.filialFilter !== 'todos' ? customFilters.filters.filialFilter : undefined,
-      centro_custo_id: customFilters.filters.centroCustoFilter !== 'todos' ? customFilters.filters.centroCustoFilter : undefined
-    };
-
-    await baseEntity.loadData(params);
-  }, [baseEntity, customFilters]);
+  // Usar ordenação do baseEntity quando disponível, senão usar local
+  const sortField = baseEntity.sortField || localSortField;
+  const sortDirection = baseEntity.sortDirection || localSortDirection;
 
   /**
    * Submissão customizada
@@ -129,6 +148,52 @@ export const useAlmoxarifado = () => {
     }
   }, [loadDataWithFilters]);
 
+  /**
+   * Carrega filiais para o filtro
+   */
+  const loadFiliais = useCallback(async () => {
+    try {
+      setLoadingFiliais(true);
+      const response = await FiliaisService.buscarAtivas();
+      if (response.success) {
+        const items = Array.isArray(response.data) ? response.data : [];
+        setFiliais(items);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar filiais:', error);
+      toast.error('Erro ao carregar filiais');
+      setFiliais([]);
+    } finally {
+      setLoadingFiliais(false);
+    }
+  }, []);
+
+  /**
+   * Carrega centros de custo para o filtro
+   */
+  const loadCentrosCusto = useCallback(async () => {
+    try {
+      setLoadingCentrosCusto(true);
+      const response = await CentroCustoService.buscarAtivos();
+      if (response.success) {
+        const items = Array.isArray(response.data) ? response.data : [];
+        setCentrosCusto(items);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar centros de custo:', error);
+      toast.error('Erro ao carregar centros de custo');
+      setCentrosCusto([]);
+    } finally {
+      setLoadingCentrosCusto(false);
+    }
+  }, []);
+
+  // Carregar dados auxiliares ao montar o componente
+  useEffect(() => {
+    loadFiliais();
+    loadCentrosCusto();
+  }, [loadFiliais, loadCentrosCusto]);
+
   // Carregar dados quando filtros mudam
   useEffect(() => {
     loadDataWithFilters();
@@ -174,6 +239,12 @@ export const useAlmoxarifado = () => {
     statusFilter: customFilters.statusFilter,
     filialFilter: customFilters.filters.filialFilter,
     centroCustoFilter: customFilters.filters.centroCustoFilter,
+    
+    // Dados auxiliares para filtros
+    filiais,
+    centrosCusto,
+    loadingFiliais,
+    loadingCentrosCusto,
     
     // Estados de validação (do hook base)
     validationErrors: baseEntity.validationErrors,

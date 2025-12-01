@@ -1,0 +1,194 @@
+import api from './api';
+
+class EstoqueService {
+  async listar(params = {}) {
+    try {
+      const response = await api.get('/almoxarifado-estoque', { params });
+      
+      let estoques = [];
+      let pagination = null;
+      let statistics = null;
+      
+      if (response.data.data) {
+        if (response.data.data.items) {
+          estoques = response.data.data.items;
+          pagination = response.data.data._meta?.pagination;
+          statistics = response.data.data._meta?.statistics;
+        } else {
+          estoques = response.data.data;
+        }
+      } else if (Array.isArray(response.data)) {
+        estoques = response.data;
+      }
+      
+      if (!pagination) {
+        pagination = response.data.pagination || response.data.meta?.pagination;
+      }
+      if (!statistics) {
+        statistics = response.data.statistics || response.data.meta?.statistics;
+      }
+      
+      return {
+        success: true,
+        data: estoques,
+        pagination: pagination || response.data.pagination || response.data.meta?.pagination,
+        statistics: statistics || response.data.statistics || response.data.meta?.statistics
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Erro ao carregar estoques'
+      };
+    }
+  }
+
+  async buscarPorId(id) {
+    try {
+      const response = await api.get(`/almoxarifado-estoque/${id}`);
+      
+      let estoque = null;
+      
+      if (response.data.data) {
+        estoque = response.data.data;
+      } else {
+        estoque = response.data;
+      }
+      
+      return {
+        success: true,
+        data: estoque
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Erro ao buscar estoque'
+      };
+    }
+  }
+
+  async criar(data) {
+    try {
+      const response = await api.post('/almoxarifado-estoque', data);
+      
+      let estoque = null;
+      
+      if (response.data.data) {
+        estoque = response.data.data;
+      } else {
+        estoque = response.data;
+      }
+      
+      return {
+        success: true,
+        data: estoque,
+        message: 'Estoque criado com sucesso!'
+      };
+    } catch (error) {
+      if (error.response?.status === 422) {
+        return {
+          success: false,
+          message: error.response.data.message || 'Dados inválidos',
+          validationErrors: error.response.data.errors,
+          errorCategories: error.response.data.errorCategories
+        };
+      }
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Erro ao criar estoque'
+      };
+    }
+  }
+
+  async atualizar(id, data) {
+    try {
+      const response = await api.put(`/almoxarifado-estoque/${id}`, data);
+      
+      let estoque = null;
+      
+      if (response.data.data) {
+        estoque = response.data.data;
+      } else {
+        estoque = response.data;
+      }
+      
+      return {
+        success: true,
+        data: estoque,
+        message: 'Estoque atualizado com sucesso!'
+      };
+    } catch (error) {
+      if (error.response?.status === 422) {
+        return {
+          success: false,
+          message: error.response.data.message || 'Dados inválidos',
+          validationErrors: error.response.data.errors,
+          errorCategories: error.response.data.errorCategories
+        };
+      }
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Erro ao atualizar estoque'
+      };
+    }
+  }
+
+  async excluir(id) {
+    try {
+      await api.delete(`/almoxarifado-estoque/${id}`);
+      return {
+        success: true,
+        message: 'Estoque excluído com sucesso!'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Erro ao excluir estoque'
+      };
+    }
+  }
+
+  /**
+   * Exportar estoques para XLSX
+   */
+  async exportarXLSX(params = {}) {
+    try {
+      const response = await api.get('/almoxarifado-estoque/export/xlsx', {
+        params,
+        responseType: 'blob'
+      });
+      return {
+        success: true,
+        data: response.data
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao exportar XLSX'
+      };
+    }
+  }
+
+  /**
+   * Exportar estoques para PDF
+   */
+  async exportarPDF(params = {}) {
+    try {
+      const response = await api.get('/almoxarifado-estoque/export/pdf', {
+        params,
+        responseType: 'blob'
+      });
+      return {
+        success: true,
+        data: response.data
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao exportar PDF'
+      };
+    }
+  }
+}
+
+export default new EstoqueService();
+

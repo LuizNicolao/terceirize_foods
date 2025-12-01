@@ -17,7 +17,7 @@ class AlmoxarifadoListController {
    * Listar almoxarifados com paginação, busca e HATEOAS
    */
   static listarAlmoxarifados = asyncHandler(async (req, res) => {
-    const { search = '', status, filial_id, centro_custo_id } = req.query;
+    const { search = '', status, filial_id, centro_custo_id, tipo_vinculo, sortField, sortDirection } = req.query;
     const pagination = req.pagination;
 
     // Query base com dados da filial e centro de custo
@@ -62,7 +62,8 @@ class AlmoxarifadoListController {
 
     if (status !== undefined && status !== '') {
       baseQuery += ' AND a.status = ?';
-      params.push(status === 1 || status === '1' ? 1 : 0);
+      const statusValue = status === 1 || status === '1' ? 1 : 0;
+      params.push(statusValue);
     }
 
     if (filial_id) {
@@ -70,12 +71,45 @@ class AlmoxarifadoListController {
       params.push(filial_id);
     }
 
+    if (tipo_vinculo) {
+      if (tipo_vinculo === 'filial') {
+        // Filtrar apenas almoxarifados do tipo "filial" (não incluir os de unidades escolares)
+        baseQuery += ' AND a.tipo_vinculo = ? AND (a.unidade_escolar_id IS NULL OR a.unidade_escolar_id = 0)';
+        params.push('filial');
+      } else if (tipo_vinculo === 'unidade_escolar') {
+        // Filtrar apenas almoxarifados do tipo "unidade_escolar"
+        baseQuery += ' AND a.tipo_vinculo = ?';
+        params.push('unidade_escolar');
+      }
+    }
+
     if (centro_custo_id) {
       baseQuery += ' AND a.centro_custo_id = ?';
       params.push(centro_custo_id);
     }
 
-    baseQuery += ' ORDER BY a.nome ASC';
+    // Aplicar ordenação
+    let orderBy = 'a.nome ASC';
+    if (sortField && sortDirection) {
+      const validFields = ['codigo', 'nome', 'status', 'filial_nome', 'centro_custo_nome', 'criado_em', 'atualizado_em'];
+      if (validFields.includes(sortField)) {
+        const direction = sortDirection.toLowerCase() === 'desc' ? 'DESC' : 'ASC';
+        
+        // Mapear campos para colunas do banco
+        const fieldMap = {
+          'codigo': 'a.codigo',
+          'nome': 'a.nome',
+          'status': 'a.status',
+          'filial_nome': 'f.filial',
+          'centro_custo_nome': 'cc.nome',
+          'criado_em': 'a.criado_em',
+          'atualizado_em': 'a.atualizado_em'
+        };
+        
+        orderBy = `${fieldMap[sortField]} ${direction}`;
+      }
+    }
+    baseQuery += ` ORDER BY ${orderBy}`;
 
     // Aplicar paginação manualmente
     const limit = pagination.limit;
@@ -106,6 +140,16 @@ class AlmoxarifadoListController {
     if (filial_id) {
       countQuery += ' AND a.filial_id = ?';
       countParams.push(filial_id);
+    }
+
+    if (tipo_vinculo) {
+      if (tipo_vinculo === 'filial') {
+        countQuery += ' AND a.tipo_vinculo = ? AND (a.unidade_escolar_id IS NULL OR a.unidade_escolar_id = 0)';
+        countParams.push('filial');
+      } else if (tipo_vinculo === 'unidade_escolar') {
+        countQuery += ' AND a.tipo_vinculo = ?';
+        countParams.push('unidade_escolar');
+      }
     }
     
     if (centro_custo_id) {
@@ -138,6 +182,16 @@ class AlmoxarifadoListController {
     if (filial_id) {
       statsQuery += ' AND a.filial_id = ?';
       statsParams.push(filial_id);
+    }
+
+    if (tipo_vinculo) {
+      if (tipo_vinculo === 'filial') {
+        statsQuery += ' AND a.tipo_vinculo = ? AND (a.unidade_escolar_id IS NULL OR a.unidade_escolar_id = 0)';
+        statsParams.push('filial');
+      } else if (tipo_vinculo === 'unidade_escolar') {
+        statsQuery += ' AND a.tipo_vinculo = ?';
+        statsParams.push('unidade_escolar');
+      }
     }
     
     if (centro_custo_id) {

@@ -47,10 +47,10 @@ const AlmoxarifadosTable = ({
                   currentDirection={sortDirection}
                   onSort={onSort}
                 />
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Filial
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Centro de Custo
                 </th>
                 <SortableTableHeader
@@ -60,7 +60,7 @@ const AlmoxarifadosTable = ({
                   currentDirection={sortDirection}
                   onSort={onSort}
                 />
-                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Ações
                 </th>
               </tr>
@@ -68,35 +68,25 @@ const AlmoxarifadosTable = ({
             <tbody className="bg-white divide-y divide-gray-200">
               {almoxarifados.map((almoxarifado) => (
                 <tr key={almoxarifado.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
+                  <td className="px-6 py-2 whitespace-nowrap text-sm text-gray-900 font-medium">
                     {almoxarifado.codigo || '-'}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-2 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">
                       {almoxarifado.nome}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-2 whitespace-nowrap">
                     <div className="text-sm text-gray-900">
                       {almoxarifado.filial_nome || '-'}
                     </div>
-                    {almoxarifado.codigo_filial && (
-                      <div className="text-xs text-gray-500">
-                        {almoxarifado.codigo_filial}
-                      </div>
-                    )}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-2 whitespace-nowrap">
                     <div className="text-sm text-gray-900">
                       {almoxarifado.centro_custo_nome || '-'}
                     </div>
-                    {almoxarifado.centro_custo_codigo && (
-                      <div className="text-xs text-gray-500">
-                        {almoxarifado.centro_custo_codigo}
-                      </div>
-                    )}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-2 whitespace-nowrap">
                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                       almoxarifado.status === 1 
                         ? 'bg-green-100 text-green-800' 
@@ -105,7 +95,7 @@ const AlmoxarifadosTable = ({
                       {getStatusLabel(almoxarifado.status)}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                  <td className="px-6 py-2 whitespace-nowrap text-center text-sm font-medium">
                     <ActionButtons
                       canView={canView('almoxarifado') && onView}
                       canEdit={canEdit('almoxarifado') && onEdit}

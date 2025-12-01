@@ -1,69 +1,64 @@
 import React from 'react';
-import { FaPlus, FaQuestionCircle } from 'react-icons/fa';
+import { FaQuestionCircle } from 'react-icons/fa';
 import { usePermissions } from '../../contexts/PermissionsContext';
-import { useAlmoxarifado } from '../../hooks/useAlmoxarifado';
+import { useEstoque } from '../../hooks/useEstoque';
 import { useAuditoria } from '../../hooks/common/useAuditoria';
 import { useExport } from '../../hooks/common/useExport';
-import { Button, ValidationErrorModal, ConfirmModal } from '../../components/ui';
+import { Button, ValidationErrorModal } from '../../components/ui';
 import { CadastroFilterBarSearchable } from '../../components/ui';
 import { Pagination } from '../../components/ui';
-import { AlmoxarifadoModal } from '../../components/almoxarifado';
-import AlmoxarifadosStats from '../../components/almoxarifado/AlmoxarifadosStats';
-import AlmoxarifadosTable from '../../components/almoxarifado/AlmoxarifadosTable';
+import { EstoqueModal, EstoqueTable, EstoqueStats } from '../../components/estoque';
 import { AuditModal, ExportButtons } from '../../components/shared';
-import AlmoxarifadoService from '../../services/almoxarifadoService';
+import EstoqueService from '../../services/estoqueService';
 
-const Almoxarifado = () => {
-  const { canCreate, canEdit, canDelete, canView } = usePermissions();
+const Estoque = () => {
+  const { canView } = usePermissions();
   
   // Hooks customizados
   const {
-    almoxarifados,
+    estoques,
     loading,
     showModal,
     viewMode,
-    editingAlmoxarifado,
+    editingEstoque,
     showValidationModal,
     validationErrors,
     searchTerm,
-    statusFilter,
-    filialFilter,
-    centroCustoFilter,
-    filiais,
-    centrosCusto,
-    loadingFiliais,
-    loadingCentrosCusto,
     currentPage,
     totalPages,
     totalItems,
     itemsPerPage,
     estatisticas,
-    showDeleteConfirmModal,
-    almoxarifadoToDelete,
     onSubmit,
-    handleDeleteAlmoxarifado,
-    handleConfirmDelete,
-    handleCloseDeleteModal,
-    handleAddAlmoxarifado,
-    handleViewAlmoxarifado,
-    handleEditAlmoxarifado,
+    handleViewEstoque,
     handleCloseModal,
     handleCloseValidationModal,
     handlePageChange,
     handleItemsPerPageChange,
     setSearchTerm,
     handleKeyPress,
-    setStatusFilter,
+    filialFilter,
     setFilialFilter,
-    setCentroCustoFilter,
+    filiais,
+    almoxarifadoFilter,
+    setAlmoxarifadoFilter,
+    almoxarifados,
+    grupoFilter,
+    setGrupoFilter,
+    grupos,
+    subgrupoFilter,
+    setSubgrupoFilter,
+    subgrupos,
     handleClearFilters,
     formatDate,
+    formatCurrency,
+    formatNumber,
     getStatusLabel,
     sortField,
     sortDirection,
     handleSort,
-    carregarAlmoxarifados
-  } = useAlmoxarifado();
+    carregarEstoques
+  } = useEstoque();
 
   const {
     showAuditModal,
@@ -79,31 +74,25 @@ const Almoxarifado = () => {
     handleExportAuditXLSX,
     handleExportAuditPDF,
     setAuditFilters
-  } = useAuditoria('almoxarifado');
+  } = useAuditoria('almoxarifado_estoque');
 
   // Hook de exportação
-  const { handleExportXLSX: exportXLSX, handleExportPDF: exportPDF } = useExport(AlmoxarifadoService);
+  const { handleExportXLSX: exportXLSX, handleExportPDF: exportPDF } = useExport(EstoqueService);
 
   // Funções wrapper para exportação com filtros
   const handleExportXLSX = React.useCallback(() => {
     const params = {
-      search: searchTerm || undefined,
-      status: statusFilter && statusFilter !== 'todos' ? (statusFilter === 'ativo' ? 1 : 0) : undefined,
-      filial_id: filialFilter && filialFilter !== 'todos' ? filialFilter : undefined,
-      centro_custo_id: centroCustoFilter && centroCustoFilter !== 'todos' ? centroCustoFilter : undefined
+      search: searchTerm || undefined
     };
     return exportXLSX(params);
-  }, [exportXLSX, searchTerm, statusFilter, filialFilter, centroCustoFilter]);
+  }, [exportXLSX, searchTerm]);
 
   const handleExportPDF = React.useCallback(() => {
     const params = {
-      search: searchTerm || undefined,
-      status: statusFilter && statusFilter !== 'todos' ? (statusFilter === 'ativo' ? 1 : 0) : undefined,
-      filial_id: filialFilter && filialFilter !== 'todos' ? filialFilter : undefined,
-      centro_custo_id: centroCustoFilter && centroCustoFilter !== 'todos' ? centroCustoFilter : undefined
+      search: searchTerm || undefined
     };
     return exportPDF(params);
-  }, [exportPDF, searchTerm, statusFilter, filialFilter, centroCustoFilter]);
+  }, [exportPDF, searchTerm]);
 
   if (loading) {
     return (
@@ -120,7 +109,7 @@ const Almoxarifado = () => {
     <div className="p-3 sm:p-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3 sm:gap-4">
-        <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Almoxarifados</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Estoque</h1>
         <div className="flex gap-2 sm:gap-3">
           <Button
             onClick={handleOpenAuditModal}
@@ -131,29 +120,20 @@ const Almoxarifado = () => {
             <FaQuestionCircle className="mr-1 sm:mr-2" />
             <span className="hidden sm:inline">Auditoria</span>
           </Button>
-          {canCreate('almoxarifado') && (
-            <Button onClick={handleAddAlmoxarifado} size="sm">
-              <FaPlus className="mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">Adicionar</span>
-              <span className="sm:hidden">Adicionar</span>
-            </Button>
-          )}
         </div>
       </div>
 
       {/* Estatísticas */}
-      <AlmoxarifadosStats estatisticas={estatisticas} />
+      <EstoqueStats estatisticas={estatisticas} />
 
       {/* Filtros */}
       <CadastroFilterBarSearchable
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         onKeyPress={handleKeyPress}
-        statusFilter={statusFilter}
-        onStatusFilterChange={setStatusFilter}
         onClear={handleClearFilters}
-        placeholder="Buscar por nome, código, filial ou centro de custo..."
-        useSearchableSelect={false}
+        placeholder="Buscar por produto, almoxarifado ou lote..."
+        useSearchableSelect={true}
         additionalFilters={[
           {
             label: 'Filial',
@@ -165,21 +145,44 @@ const Almoxarifado = () => {
                 value: filial.id.toString(),
                 label: filial.filial || filial.nome || `Filial ${filial.id}`
               }))
-            ],
-            loading: loadingFiliais
+            ]
           },
           {
-            label: 'Centro de Custo',
-            value: centroCustoFilter || 'todos',
-            onChange: setCentroCustoFilter,
+            label: 'Almoxarifado',
+            value: almoxarifadoFilter || 'todos',
+            onChange: setAlmoxarifadoFilter,
             options: [
-              { value: 'todos', label: 'Todos os centros de custo' },
-              ...(centrosCusto || []).map(centro => ({
-                value: centro.id.toString(),
-                label: centro.nome || `Centro de Custo ${centro.id}`
+              { value: 'todos', label: 'Todos os almoxarifados' },
+              ...(Array.isArray(almoxarifados) ? almoxarifados.map(almoxarifado => ({
+                value: almoxarifado?.id?.toString() || '',
+                label: almoxarifado?.nome || almoxarifado?.nome || `Almoxarifado ${almoxarifado?.id || ''}`
+              })).filter(opt => opt.value) : [])
+            ]
+          },
+          {
+            label: 'Grupo',
+            value: grupoFilter || 'todos',
+            onChange: setGrupoFilter,
+            options: [
+              { value: 'todos', label: 'Todos os grupos' },
+              ...(Array.isArray(grupos) ? grupos.map(grupo => ({
+                value: grupo?.id?.toString() || '',
+                label: grupo?.nome || `Grupo ${grupo?.id || ''}`
+              })).filter(opt => opt.value) : [])
+            ]
+          },
+          {
+            label: 'Subgrupo',
+            value: subgrupoFilter || 'todos',
+            onChange: setSubgrupoFilter,
+            disabled: grupoFilter === 'todos' || !grupoFilter,
+            options: [
+              { value: 'todos', label: 'Todos os subgrupos' },
+              ...(subgrupos || []).map(subgrupo => ({
+                value: subgrupo.id.toString(),
+                label: subgrupo.nome || `Subgrupo ${subgrupo.id}`
               }))
-            ],
-            loading: loadingCentrosCusto
+            ]
           }
         ]}
       />
@@ -189,41 +192,39 @@ const Almoxarifado = () => {
         <ExportButtons
           onExportXLSX={handleExportXLSX}
           onExportPDF={handleExportPDF}
-          disabled={!canView('almoxarifado')}
+          disabled={!canView('almoxarifado_estoque')}
         />
       </div>
 
       {/* Tabela */}
-      <AlmoxarifadosTable
-        almoxarifados={almoxarifados}
+      <EstoqueTable
+        estoques={estoques}
         canView={canView}
-        canEdit={canEdit}
-        canDelete={canDelete}
-        onView={handleViewAlmoxarifado}
-        onEdit={handleEditAlmoxarifado}
-        onDelete={handleDeleteAlmoxarifado}
+        onView={handleViewEstoque}
         getStatusLabel={getStatusLabel}
         formatDate={formatDate}
+        formatCurrency={formatCurrency}
+        formatNumber={formatNumber}
         sortField={sortField}
         sortDirection={sortDirection}
         onSort={handleSort}
       />
 
-      {/* Modal de Almoxarifado */}
-      <AlmoxarifadoModal
+      {/* Modal de Estoque */}
+      <EstoqueModal
         isOpen={showModal}
         onClose={handleCloseModal}
         onSubmit={onSubmit}
-        almoxarifado={editingAlmoxarifado}
+        estoque={editingEstoque}
         isViewMode={viewMode}
-        onSuccess={carregarAlmoxarifados}
+        onSuccess={carregarEstoques}
       />
 
       {/* Modal de Auditoria */}
       <AuditModal
         isOpen={showAuditModal}
         onClose={handleCloseAuditModal}
-        title="Relatório de Auditoria - Almoxarifados"
+        title="Relatório de Auditoria - Estoque"
         auditLogs={auditLogs}
         auditLoading={auditLoading}
         auditFilters={auditFilters}
@@ -253,21 +254,9 @@ const Almoxarifado = () => {
         itemsPerPage={itemsPerPage}
         onItemsPerPageChange={handleItemsPerPageChange}
       />
-
-      {/* Modal de Confirmação de Exclusão */}
-      <ConfirmModal
-        isOpen={showDeleteConfirmModal}
-        onClose={handleCloseDeleteModal}
-        onConfirm={handleConfirmDelete}
-        title="Excluir Almoxarifado"
-        message={`Tem certeza que deseja excluir o almoxarifado "${almoxarifadoToDelete?.nome}"?`}
-        confirmText="Excluir"
-        cancelText="Cancelar"
-        type="danger"
-      />
     </div>
   );
 };
 
-export default Almoxarifado;
+export default Estoque;
 
