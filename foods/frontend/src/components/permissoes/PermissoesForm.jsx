@@ -20,7 +20,8 @@ const PermissoesForm = ({
       { key: 'clientes', label: 'Clientes' },
       { key: 'filiais', label: 'Filiais' },
       { key: 'centro_custo', label: 'Centro de Custo' },
-      { key: 'almoxarifado', label: 'Almoxarifado' }
+      { key: 'almoxarifado', label: 'Almoxarifado' },
+      { key: 'almoxarifado_estoque', label: 'Estoque' }
     ],
     'Produtos e Categorias': [
       { key: 'produtos', label: 'Produtos' },
@@ -31,6 +32,7 @@ const PermissoesForm = ({
       { key: 'unidades_escolares', label: 'Unidades Escolares' },
       { key: 'marcas', label: 'Marcas' },
       { key: 'produto_origem', label: 'Produtos Origem' },
+      { key: 'produto_comercial', label: 'Produtos Comerciais' },
       { key: 'produto_generico', label: 'Produtos Genéricos' },
       { key: 'intolerancias', label: 'Intolerâncias' },
       { key: 'patrimonios', label: 'Patrimônios' },

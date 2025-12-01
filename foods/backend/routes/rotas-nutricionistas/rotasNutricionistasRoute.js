@@ -47,6 +47,12 @@ router.get('/ativas/listar',
   RotasNutricionistasController.buscarRotasAtivas
 );
 
+// GET /api/rotas-nutricionistas/disponiveis/filial/:filialId - Buscar escolas disponíveis para rotas nutricionistas
+router.get('/disponiveis/filial/:filialId',
+  checkPermission('visualizar'),
+  RotasNutricionistasController.buscarEscolasDisponiveis
+);
+
 // GET /api/rotas-nutricionistas/:id - Buscar rota nutricionista por ID
 router.get('/:id', 
   checkPermission('visualizar'),

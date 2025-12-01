@@ -72,6 +72,10 @@ export const useBaseEntity = (entityName, service, options = {}) => {
         } else if (response.data && Array.isArray(response.data[entityName])) {
           // Estrutura aninhada: response.data.{entityName} é um array
           items = response.data[entityName];
+          // Se pagination está dentro de data, usar ela
+          if (response.data.pagination) {
+            paginationData = response.data.pagination;
+          }
         } else if (response.data && Array.isArray(response.data.receitas)) {
           // Estrutura específica para receitas
           items = response.data.receitas;
@@ -81,6 +85,12 @@ export const useBaseEntity = (entityName, service, options = {}) => {
             total: response.data.totalItems || 0,
             pages: response.data.totalPages || 1
           };
+        } else if (response.data && Array.isArray(response.data.rotas)) {
+          // Estrutura específica para rotas nutricionistas
+          items = response.data.rotas;
+          if (response.data.pagination) {
+            paginationData = response.data.pagination;
+          }
         }
         
         setItems(items);

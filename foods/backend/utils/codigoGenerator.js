@@ -6,6 +6,7 @@
 // Prefixos para códigos de vitrine por tipo de entidade
 const PREFIXOS_VITRINE = {
   PRODUTO_ORIGEM: 'ORIG',
+  PRODUTO_COMERCIAL: 'COM',
   PRODUTO_GENERICO: 'GEN',
   PRODUTO: 'PROD',
   GRUPO: 'GRP',
@@ -158,6 +159,15 @@ const gerarCodigoProdutoOrigem = (id) => {
 };
 
 /**
+ * Gera um código de vitrine para produto comercial
+ * @param {number} id - ID do produto comercial
+ * @returns {string} Código de vitrine
+ */
+const gerarCodigoProdutoComercial = (id) => {
+  return gerarCodigoVitrine('PRODUTO_COMERCIAL', id);
+};
+
+/**
  * Gera um código de vitrine para produto genérico
  * @param {number} id - ID do produto genérico
  * @returns {string} Código de vitrine
@@ -256,6 +266,7 @@ module.exports = {
   gerarCodigoClasse,
   gerarCodigoProduto,
   gerarCodigoProdutoOrigem,
+  gerarCodigoProdutoComercial,
   gerarCodigoProdutoGenerico,
   obterInfoPrefixos,
   gerarCodigo

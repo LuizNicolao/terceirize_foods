@@ -47,10 +47,10 @@ const CentrosCustoTable = ({
                   currentDirection={sortDirection}
                   onSort={onSort}
                 />
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Filial
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Descrição
                 </th>
                 <SortableTableHeader
@@ -60,7 +60,7 @@ const CentrosCustoTable = ({
                   currentDirection={sortDirection}
                   onSort={onSort}
                 />
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Ações
                 </th>
               </tr>
@@ -68,30 +68,25 @@ const CentrosCustoTable = ({
             <tbody className="bg-white divide-y divide-gray-200">
               {centrosCusto.map((centroCusto) => (
                 <tr key={centroCusto.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
+                  <td className="px-6 py-2 whitespace-nowrap text-sm text-gray-900 font-medium">
                     {centroCusto.codigo || '-'}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-2 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">
                       {centroCusto.nome}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-2 whitespace-nowrap">
                     <div className="text-sm text-gray-900">
                       {centroCusto.filial_nome || '-'}
                     </div>
-                    {centroCusto.codigo_filial && (
-                      <div className="text-xs text-gray-500">
-                        {centroCusto.codigo_filial}
-                      </div>
-                    )}
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-6 py-2">
                     <div className="text-sm text-gray-500 truncate max-w-xs">
                       {centroCusto.descricao || '-'}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-2 whitespace-nowrap">
                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                       centroCusto.status === 1 
                         ? 'bg-green-100 text-green-800' 
@@ -100,7 +95,7 @@ const CentrosCustoTable = ({
                       {getStatusLabel(centroCusto.status)}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <td className="px-6 py-2 whitespace-nowrap text-right text-sm font-medium">
                     <ActionButtons
                       canView={canView('centro_custo') && onView}
                       canEdit={canEdit('centro_custo') && onEdit}

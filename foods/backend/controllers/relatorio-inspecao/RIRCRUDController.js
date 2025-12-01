@@ -28,6 +28,7 @@ class RIRCRUDController {
       cnpj_fornecedor,
       nota_fiscal_id,
       produtos,
+      checklist_json,
       ocorrencias,
       recebedor,
       visto_responsavel
@@ -78,9 +79,8 @@ class RIRCRUDController {
         condicoes_caminhao,
         acondicionamento,
         condicoes_embalagem,
-        usuario_cadastro_id,
-        criado_em
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
+        usuario_cadastro_id
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         data_inspecao,
         hora_inspecao,

@@ -5,6 +5,7 @@ import {
   FaUsers, 
   FaTruck, 
   FaBox, 
+  FaBoxes,
   FaLayerGroup, 
   FaRulerCombined,
   FaTag,
@@ -82,6 +83,7 @@ const menuGroups = [
       { path: '/foods/filiais', icon: FaStore, label: 'Filiais', screen: 'filiais' },
       { path: '/foods/centro-custo', icon: FaDollarSign, label: 'Centro de Custo', screen: 'centro_custo' },
       { path: '/foods/almoxarifado', icon: FaWarehouse, label: 'Almoxarifado', screen: 'almoxarifado' },
+      { path: '/foods/estoque', icon: FaBoxes, label: 'Estoque', screen: 'almoxarifado_estoque' },
     ]
   },
   {
@@ -92,6 +94,7 @@ const menuGroups = [
       { path: '/foods/subgrupos', icon: FaSitemap, label: 'Subgrupos', screen: 'subgrupos' },
       { path: '/foods/classes', icon: FaCubes, label: 'Classes', screen: 'classes' },
       { path: '/foods/produto-origem', icon: FaBox, label: 'Produtos Origem', screen: 'produto_origem' },
+      { path: '/foods/produto-comercial', icon: FaBox, label: 'Produtos Comerciais', screen: 'produto_comercial' },
       { path: '/foods/produto-generico', icon: FaBox, label: 'Produtos Genéricos', screen: 'produto_generico' },
       { path: '/foods/intolerancias', icon: FaAllergies, label: 'Intolerâncias', screen: 'intolerancias' },
       { path: '/foods/unidades', icon: FaRulerCombined, label: 'Unidades', screen: 'unidades' },

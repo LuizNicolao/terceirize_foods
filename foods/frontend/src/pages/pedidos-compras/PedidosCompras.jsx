@@ -167,7 +167,7 @@ const PedidosCompras = () => {
       </div>
 
       {/* Export Buttons */}
-      <div className="mb-6 flex justify-end">
+      <div className="mb-6 flex justify-start">
         <ExportButtons
           onExportXLSX={handleExportXLSX}
           onExportPDF={handleExportPDF}

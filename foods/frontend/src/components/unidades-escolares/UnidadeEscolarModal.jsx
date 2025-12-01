@@ -85,10 +85,27 @@ const UnidadeEscolarModal = ({
             const dados = response.data?.data || response.data || [];
             // Filtrar apenas os do tipo "unidade_escolar" que não estão vinculados a outra unidade
             // ou que já estão vinculados à unidade atual (para permitir edição)
-            const almoxarifadosDisponiveis = dados.filter(
+            let almoxarifadosDisponiveis = dados.filter(
               almox => (almox.tipo_vinculo === 'unidade_escolar' || !almox.tipo_vinculo) && 
                        (!almox.unidade_escolar_id || String(almox.unidade_escolar_id) === String(unidade?.id))
             );
+            
+            // Se a unidade tem um almoxarifado vinculado mas ele não está na lista, adicionar
+            if (unidade?.almoxarifado_id && unidade?.almoxarifado_nome) {
+              const almoxarifadoJaNaLista = almoxarifadosDisponiveis.find(
+                a => String(a.id) === String(unidade.almoxarifado_id)
+              );
+              
+              if (!almoxarifadoJaNaLista) {
+                // Adicionar o almoxarifado vinculado à lista para que possa ser exibido
+                almoxarifadosDisponiveis.push({
+                  id: unidade.almoxarifado_id,
+                  codigo: unidade.almoxarifado_codigo || '',
+                  nome: unidade.almoxarifado_nome
+                });
+              }
+            }
+            
             setAlmoxarifados(almoxarifadosDisponiveis);
           }
         } catch (error) {
@@ -98,12 +115,21 @@ const UnidadeEscolarModal = ({
           setCarregandoAlmoxarifados(false);
         }
       } else if (!filialParaBuscar) {
+        // Se não há filial, mas há um almoxarifado vinculado na unidade, adicionar à lista
+        if (unidade?.almoxarifado_id && unidade?.almoxarifado_nome) {
+          setAlmoxarifados([{
+            id: unidade.almoxarifado_id,
+            codigo: unidade.almoxarifado_codigo || '',
+            nome: unidade.almoxarifado_nome
+          }]);
+        } else {
         setAlmoxarifados([]);
+        }
       }
     };
 
     carregarAlmoxarifados();
-  }, [filialSelecionada, isOpen, unidade?.filial_id, unidade?.id]);
+  }, [filialSelecionada, isOpen, unidade?.filial_id, unidade?.id, unidade?.almoxarifado_id, unidade?.almoxarifado_nome, unidade?.almoxarifado_codigo]);
 
   React.useEffect(() => {
     if (isOpen) {
@@ -307,15 +333,17 @@ const UnidadeEscolarModal = ({
                   label="Supervisão"
                   type="text"
                   placeholder="Nome do supervisor"
-                  {...register('supervisao')}
-                  disabled={isViewMode}
+                  value={unidade?.supervisor_nome || ''}
+                  disabled={true}
+                  readOnly={true}
                 />
                 <Input
                   label="Coordenação"
                   type="text"
                   placeholder="Nome do coordenador"
-                  {...register('coordenacao')}
-                  disabled={isViewMode}
+                  value={unidade?.coordenador_nome || ''}
+                  disabled={true}
+                  readOnly={true}
                 />
               </div>
               <Input
@@ -507,20 +535,19 @@ const UnidadeEscolarModal = ({
                   label="Centro de Custo"
                   type="select"
                   name="centro_custo_id"
-                  value={centroCustoId}
+                  value={centroCustoId || (unidade?.centro_custo_id ? String(unidade.centro_custo_id) : '')}
                   onChange={(e) => {
-                    const value = e.target.value;
-                    setCentroCustoId(value);
-                    setValue('centro_custo_id', value, { shouldValidate: false, shouldDirty: false });
+                    // Não permitir alteração - campo somente leitura
                   }}
-                  disabled={isViewMode || (!filialSelecionada && !unidade?.filial_id) || carregandoCentrosCusto}
+                  disabled={true}
+                  readOnly={true}
                 >
-                  <option value="">
-                    {(!filialSelecionada && !unidade?.filial_id)
-                      ? 'Selecione primeiro uma filial' 
-                      : carregandoCentrosCusto 
-                        ? 'Carregando...' 
-                        : 'Selecione um centro de custo'}
+                  <option value={centroCustoId || (unidade?.centro_custo_id ? String(unidade.centro_custo_id) : '')}>
+                    {centroCustoId && centrosCusto.find(cc => String(cc.id) === String(centroCustoId))
+                      ? `${centrosCusto.find(cc => String(cc.id) === String(centroCustoId)).codigo} - ${centrosCusto.find(cc => String(cc.id) === String(centroCustoId)).nome}`
+                      : unidade?.centro_custo_nome
+                        ? `${unidade.centro_custo_codigo || ''} - ${unidade.centro_custo_nome}`
+                        : 'Nenhum centro de custo selecionado'}
                   </option>
                   {centrosCusto.map(centroCusto => (
                     <option key={centroCusto.id} value={String(centroCusto.id)}>
@@ -532,19 +559,18 @@ const UnidadeEscolarModal = ({
                   label="Almoxarifado"
                   type="select"
                   name="almoxarifado_id"
-                  value={almoxarifadoId}
+                  value={almoxarifadoId || (unidade?.almoxarifado_id ? String(unidade.almoxarifado_id) : '')}
                   onChange={(e) => {
-                    const value = e.target.value;
-                    setAlmoxarifadoId(value);
-                    setValue('almoxarifado_id', value, { shouldValidate: false, shouldDirty: false });
+                    // Não permitir alteração - campo somente leitura
                   }}
                   disabled={true}
+                  readOnly={true}
                 >
-                  <option value="">
-                    {carregandoAlmoxarifados 
-                      ? 'Carregando...' 
-                      : almoxarifadoId 
-                        ? 'Almoxarifado vinculado' 
+                  <option value={almoxarifadoId || (unidade?.almoxarifado_id ? String(unidade.almoxarifado_id) : '')}>
+                    {almoxarifadoId && almoxarifados.find(a => String(a.id) === String(almoxarifadoId))
+                      ? `${almoxarifados.find(a => String(a.id) === String(almoxarifadoId)).codigo} - ${almoxarifados.find(a => String(a.id) === String(almoxarifadoId)).nome}`
+                      : unidade?.almoxarifado_nome
+                        ? `${unidade.almoxarifado_codigo || ''} - ${unidade.almoxarifado_nome}`
                         : 'Nenhum almoxarifado vinculado'}
                   </option>
                   {almoxarifados.map(almoxarifado => (

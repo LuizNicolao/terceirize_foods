@@ -60,6 +60,7 @@ export const useFilters = (initialFilters = {}) => {
     const filterMapping = {
       'rotaFilter': 'rota_id',
       'filialFilter': 'filial_id',
+      'centroCustoFilter': 'centro_custo_id',
       'grupoFilter': 'grupo_id',
       'subgrupoFilter': 'subgrupo_id',
       'classeFilter': 'classe_id',
@@ -72,7 +73,16 @@ export const useFilters = (initialFilters = {}) => {
     Object.entries(filters).forEach(([key, value]) => {
       if (value && value !== 'todos' && value !== '') {
         const apiKey = filterMapping[key] || key;
+        // Converter IDs para número inteiro quando necessário
+        if ((apiKey === 'rota_id' || apiKey === 'filial_id' || apiKey === 'centro_custo_id' || apiKey === 'grupo_id' || apiKey === 'subgrupo_id' || apiKey === 'classe_id')) {
+          // Garantir que seja convertido para número, mesmo se já for número
+          const numValue = typeof value === 'string' ? parseInt(value, 10) : Number(value);
+          if (!isNaN(numValue) && numValue > 0) {
+            params[apiKey] = numValue;
+          }
+        } else {
         params[apiKey] = value;
+        }
       }
     });
 

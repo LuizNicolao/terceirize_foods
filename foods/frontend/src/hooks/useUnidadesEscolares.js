@@ -10,24 +10,36 @@ export const useUnidadesEscolares = () => {
   // Hook base para funcionalidades CRUD
   const baseEntity = useBaseEntity('unidades escolares', UnidadesEscolaresService, {
     initialItemsPerPage: 20,
-    initialFilters: { rotaFilter: 'todos', filialFilter: 'todos' },
+    initialFilters: { rotaFilter: '', filialFilter: 'todos' },
     enableStats: true,
     enableDelete: true
   });
 
 
   // Hook de ordenação híbrida
+  // Usar itemsPerPage como threshold para garantir ordenação no backend quando há paginação
   const {
     sortedData: unidadesOrdenadas,
-    sortField,
-    sortDirection,
+    sortField: localSortField,
+    sortDirection: localSortDirection,
     handleSort,
     isSortingLocally
   } = useTableSort({
     data: baseEntity.items,
-    threshold: 100,
-    totalItems: baseEntity.totalItems
+    threshold: baseEntity.itemsPerPage || 20, // Usar itemsPerPage para garantir ordenação no backend quando há paginação
+    totalItems: baseEntity.totalItems,
+    onBackendSort: (field, direction) => {
+      // Atualizar estados de ordenação no baseEntity
+      baseEntity.setSortField(field);
+      baseEntity.setSortDirection(direction);
+      // Recarregar dados com nova ordenação
+      baseEntity.loadData({ sortField: field, sortDirection: direction });
+    }
   });
+
+  // Usar ordenação do baseEntity quando disponível, senão usar local
+  const sortField = baseEntity.sortField || localSortField;
+  const sortDirection = baseEntity.sortDirection || localSortDirection;
 
   // Estados específicos das unidades escolares
   const [rotas, setRotas] = useState([]);
@@ -105,7 +117,7 @@ export const useUnidadesEscolares = () => {
         estado: filtros.estado || baseEntity.filters.estado || undefined,
         cidade: filtros.cidade || baseEntity.filters.cidade || undefined,
         centro_distribuicao: filtros.centro_distribuicao || baseEntity.filters.centro_distribuicao || undefined,
-        rota_id: filtros.rota_id || baseEntity.filters.rotaFilter || undefined,
+        rota_id: filtros.rota_id || (baseEntity.filters.rotaFilter && baseEntity.filters.rotaFilter !== 'todos' && baseEntity.filters.rotaFilter !== '' ? parseInt(baseEntity.filters.rotaFilter) : undefined),
         filial_id: filtros.filial_id || baseEntity.filters.filialFilter || undefined
       };
 
@@ -314,7 +326,7 @@ export const useUnidadesEscolares = () => {
       // Quando a filial muda, recarregar rotas filtradas por essa filial
       loadRotas(value);
       // Resetar filtro de rota para 'todos' quando mudar a filial
-      baseEntity.updateFilter('rotaFilter', 'todos');
+      baseEntity.updateFilter('rotaFilter', '');
     },
     
     // Ações de CRUD (customizadas)

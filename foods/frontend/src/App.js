@@ -23,6 +23,7 @@ import Veiculos from './pages/veiculos/Veiculos';
 import Motoristas from './pages/motoristas/Motoristas';
 import Ajudantes from './pages/ajudantes/Ajudantes';
 import ProdutoOrigem from './pages/produto-origem/ProdutoOrigem';
+import ProdutoComercial from './pages/produto-comercial/ProdutoComercial';
 import ProdutoGenerico from './pages/produto-generico/ProdutoGenerico';
 import Intolerancias from './pages/intolerancias/Intolerancias';
 import Patrimonios from './pages/patrimonios/Patrimonios';
@@ -46,6 +47,7 @@ import PedidosCompras from './pages/pedidos-compras/PedidosCompras';
 import NotasFiscais from './pages/notas-fiscais/NotasFiscais';
 import CentroCusto from './pages/centro-custo/CentroCusto';
 import Almoxarifado from './pages/almoxarifado/Almoxarifado';
+import Estoque from './pages/estoque/Estoque';
 import PdfTemplates from './pages/pdf-templates/PdfTemplates';
 
 // Componente para rotas protegidas com autenticação
@@ -334,6 +336,17 @@ const App = () => {
       />
 
       <Route 
+        path="/foods/produto-comercial" 
+        element={
+          <AuthenticatedRoute>
+            <ProtectedRoute screen="produto_comercial">
+              <ProdutoComercial />
+            </ProtectedRoute>
+          </AuthenticatedRoute>
+        } 
+      />
+
+      <Route 
         path="/foods/produto-generico" 
         element={
           <AuthenticatedRoute>
@@ -505,6 +518,17 @@ const App = () => {
           <AuthenticatedRoute>
             <ProtectedRoute screen="almoxarifado">
               <Almoxarifado />
+            </ProtectedRoute>
+          </AuthenticatedRoute>
+        } 
+      />
+
+      <Route 
+        path="/foods/estoque" 
+        element={
+          <AuthenticatedRoute>
+            <ProtectedRoute screen="almoxarifado_estoque">
+              <Estoque />
             </ProtectedRoute>
           </AuthenticatedRoute>
         } 

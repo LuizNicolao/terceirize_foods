@@ -263,20 +263,46 @@ class NotaFiscalCRUDController {
       // Calcular valor total do item
       const valor_total_item = (parseFloat(item.quantidade) * parseFloat(item.valor_unitario)) - parseFloat(item.valor_desconto || 0);
 
+      // Buscar grupo_id e grupo_nome do produto_generico
+      let grupoId = null;
+      let grupoNome = null;
+      
+      if (item.produto_generico_id) {
+        try {
+          const produtoGrupo = await executeQuery(
+            `SELECT pg.grupo_id, g.nome as grupo_nome
+             FROM produto_generico pg
+             LEFT JOIN grupos g ON pg.grupo_id = g.id
+             WHERE pg.id = ?`,
+            [item.produto_generico_id]
+          );
+          
+          if (produtoGrupo && produtoGrupo.length > 0) {
+            grupoId = produtoGrupo[0].grupo_id || null;
+            grupoNome = produtoGrupo[0].grupo_nome || null;
+          }
+        } catch (error) {
+          console.error('Erro ao buscar grupo do produto:', error);
+          // Continua sem grupo_id e grupo_nome em caso de erro
+        }
+      }
+
       const itemQuery = `
         INSERT INTO notas_fiscais_itens (
-          nota_fiscal_id, produto_generico_id, numero_item, codigo_produto, descricao,
+          nota_fiscal_id, produto_generico_id, grupo_id, grupo_nome, numero_item, codigo_produto, descricao,
           ncm, cfop, unidade_comercial, quantidade, valor_unitario, valor_total,
           valor_desconto, valor_frete, valor_seguro, valor_outras_despesas,
           valor_ipi, aliquota_ipi, valor_icms, aliquota_icms, valor_icms_st,
           aliquota_icms_st, valor_pis, aliquota_pis, valor_cofins, aliquota_cofins,
           informacoes_adicionais
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `;
 
       await executeQuery(itemQuery, [
         notaFiscalId,
         item.produto_generico_id || null,
+        grupoId,
+        grupoNome,
         numero_item,
         item.codigo_produto,
         item.descricao,
@@ -302,6 +328,209 @@ class NotaFiscalCRUDController {
         item.aliquota_cofins || 0.00,
         item.informacoes_adicionais || null
       ]);
+    }
+
+    // Processar entrada de estoque se for nota fiscal de ENTRADA e tiver almoxarifado_id
+    if (tipo_nota === 'ENTRADA' && almoxarifado_id) {
+      const usuarioId = req.user?.id || null;
+      
+      // Buscar produtos do RIR se houver vínculo para obter lote e validade
+      let produtosRIR = [];
+      
+      // Buscar RIR diretamente pelo rir_id
+      if (rir_id) {
+        try {
+          const produtosRIRQuery = await executeQuery(
+            `SELECT pi.produto_generico_id, rip.lote, rip.validade 
+             FROM relatorio_inspecao_produtos rip
+             LEFT JOIN pedido_compras_itens pi ON rip.pedido_item_id = pi.id
+             WHERE rip.relatorio_inspecao_id = ? AND pi.produto_generico_id IS NOT NULL`,
+            [rir_id]
+          );
+          produtosRIR = produtosRIRQuery || [];
+        } catch (error) {
+          console.error('Erro ao buscar produtos do RIR para lote/validade:', error);
+        }
+      }
+      
+      // Se não encontrou pelo rir_id, tentar buscar pelo pedido_compra_id
+      // Buscar através do pedido_item_id que está na tabela relatorio_inspecao_produtos
+      if (produtosRIR.length === 0 && pedido_compra_id) {
+        try {
+          const produtosRIRQuery = await executeQuery(
+            `SELECT pi.produto_generico_id, rip.lote, rip.validade 
+             FROM relatorio_inspecao_produtos rip
+             LEFT JOIN pedido_compras_itens pi ON rip.pedido_item_id = pi.id
+             WHERE pi.pedido_id = ? AND pi.produto_generico_id IS NOT NULL`,
+            [pedido_compra_id]
+          );
+          produtosRIR = produtosRIRQuery || [];
+        } catch (error) {
+          console.error('Erro ao buscar produtos do RIR pelo pedido_compra_id:', error);
+        }
+      }
+
+      // Criar mapa de lote/validade por produto_generico_id do RIR
+      const mapaRIR = {};
+      produtosRIR.forEach(prod => {
+        if (prod.produto_generico_id) {
+          mapaRIR[prod.produto_generico_id] = {
+            lote: prod.lote || null,
+            validade: prod.validade || null
+          };
+        }
+      });
+      
+      for (let i = 0; i < itens.length; i++) {
+        const item = itens[i];
+        
+        // Apenas processar itens que tenham produto_generico_id
+        if (!item.produto_generico_id) {
+          continue;
+        }
+
+        const quantidade = parseFloat(item.quantidade) || 0;
+        const valorUnitario = parseFloat(item.valor_unitario) || 0;
+        
+        // Buscar lote e validade do RIR ou usar valores do item
+        const dadosRIR = mapaRIR[item.produto_generico_id];
+        const lote = item.lote || (dadosRIR?.lote) || null;
+        const dataValidade = item.data_validade || (dadosRIR?.validade) || null;
+
+        // Buscar grupo_id e grupo_nome do produto_generico
+        let grupoId = null;
+        let grupoNome = null;
+        
+        try {
+          const produtoGrupo = await executeQuery(
+            `SELECT pg.grupo_id, g.nome as grupo_nome
+             FROM produto_generico pg
+             LEFT JOIN grupos g ON pg.grupo_id = g.id
+             WHERE pg.id = ?`,
+            [item.produto_generico_id]
+          );
+          
+          if (produtoGrupo && produtoGrupo.length > 0) {
+            grupoId = produtoGrupo[0].grupo_id || null;
+            grupoNome = produtoGrupo[0].grupo_nome || null;
+          }
+        } catch (error) {
+          console.error('Erro ao buscar grupo do produto para estoque:', error);
+          // Continua sem grupo_id e grupo_nome em caso de erro
+        }
+
+        if (quantidade <= 0) {
+          continue;
+        }
+
+        // Buscar estoque existente para este produto neste almoxarifado (com mesmo lote e validade)
+        // Se não houver lote/validade, buscar sem filtro de lote/validade (agrupa todos)
+        let estoqueExistente = [];
+        
+        if (lote || dataValidade) {
+          // Buscar com lote/validade específicos
+          estoqueExistente = await executeQuery(
+            `SELECT id, quantidade_atual, valor_unitario_medio 
+             FROM almoxarifado_estoque 
+             WHERE almoxarifado_id = ? 
+               AND produto_generico_id = ? 
+               AND COALESCE(lote, '') = COALESCE(?, '') 
+               AND COALESCE(data_validade, '') = COALESCE(?, '') 
+               AND status = 'ATIVO'
+             LIMIT 1`,
+            [almoxarifado_id, item.produto_generico_id, lote || '', dataValidade || '']
+          );
+        } else {
+          // Buscar sem lote/validade (primeiro registro sem lote/validade)
+          estoqueExistente = await executeQuery(
+            `SELECT id, quantidade_atual, valor_unitario_medio 
+             FROM almoxarifado_estoque 
+             WHERE almoxarifado_id = ? 
+               AND produto_generico_id = ? 
+               AND (lote IS NULL OR lote = '')
+               AND (data_validade IS NULL)
+               AND status = 'ATIVO'
+             LIMIT 1`,
+            [almoxarifado_id, item.produto_generico_id]
+          );
+        }
+
+        if (estoqueExistente.length > 0) {
+          // Atualizar estoque existente - calcular custo médio ponderado
+          const estoque = estoqueExistente[0];
+          const quantidadeAtual = parseFloat(estoque.quantidade_atual) || 0;
+          const valorMedioAtual = parseFloat(estoque.valor_unitario_medio) || 0;
+
+          // Calcular novo custo médio ponderado
+          const valorTotalAtual = quantidadeAtual * valorMedioAtual;
+          const valorTotalNovo = quantidade * valorUnitario;
+          const novaQuantidadeTotal = quantidadeAtual + quantidade;
+          const novoValorMedio = novaQuantidadeTotal > 0 
+            ? (valorTotalAtual + valorTotalNovo) / novaQuantidadeTotal 
+            : valorUnitario;
+
+          // Atualizar lote e data_validade se vierem do RIR e o estoque não tiver esses valores
+          // ou se os valores do RIR forem diferentes dos atuais
+          const atualizarLoteValidade = (lote && lote.trim()) || dataValidade;
+          
+          if (atualizarLoteValidade) {
+            await executeQuery(
+              `UPDATE almoxarifado_estoque 
+               SET quantidade_atual = ?,
+                   valor_unitario_medio = ?,
+                   grupo_id = ?,
+                   grupo_nome = ?,
+                   lote = COALESCE(?, lote),
+                   data_validade = COALESCE(?, data_validade),
+                   usuario_atualizacao_id = ?,
+                   atualizado_em = NOW()
+               WHERE id = ?`,
+              [novaQuantidadeTotal, novoValorMedio, grupoId, grupoNome, lote || null, dataValidade || null, usuarioId, estoque.id]
+            );
+          } else {
+          await executeQuery(
+            `UPDATE almoxarifado_estoque 
+             SET quantidade_atual = ?,
+                 valor_unitario_medio = ?,
+                 grupo_id = ?,
+                 grupo_nome = ?,
+                 usuario_atualizacao_id = ?,
+                 atualizado_em = NOW()
+             WHERE id = ?`,
+            [novaQuantidadeTotal, novoValorMedio, grupoId, grupoNome, usuarioId, estoque.id]
+          );
+          }
+        } else {
+          // Criar novo registro de estoque
+          await executeQuery(
+            `INSERT INTO almoxarifado_estoque (
+              almoxarifado_id, 
+              produto_generico_id,
+              grupo_id,
+              grupo_nome,
+              quantidade_atual, 
+              quantidade_reservada,
+              valor_unitario_medio,
+              lote,
+              data_validade,
+              status,
+              usuario_cadastro_id,
+              criado_em
+            ) VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, 'ATIVO', ?, NOW())`,
+            [
+              almoxarifado_id,
+              item.produto_generico_id,
+              grupoId,
+              grupoNome,
+              quantidade,
+              valorUnitario,
+              lote,
+              dataValidade,
+              usuarioId
+            ]
+          );
+        }
+      }
     }
 
     // Buscar nota fiscal criada com relacionamentos
@@ -542,20 +771,46 @@ class NotaFiscalCRUDController {
 
         const valor_total_item = (parseFloat(item.quantidade) * parseFloat(item.valor_unitario)) - parseFloat(item.valor_desconto || 0);
 
+        // Buscar grupo_id e grupo_nome do produto_generico
+        let grupoId = null;
+        let grupoNome = null;
+        
+        if (item.produto_generico_id) {
+          try {
+            const produtoGrupo = await executeQuery(
+              `SELECT pg.grupo_id, g.nome as grupo_nome
+               FROM produto_generico pg
+               LEFT JOIN grupos g ON pg.grupo_id = g.id
+               WHERE pg.id = ?`,
+              [item.produto_generico_id]
+            );
+            
+            if (produtoGrupo && produtoGrupo.length > 0) {
+              grupoId = produtoGrupo[0].grupo_id || null;
+              grupoNome = produtoGrupo[0].grupo_nome || null;
+            }
+          } catch (error) {
+            console.error('Erro ao buscar grupo do produto:', error);
+            // Continua sem grupo_id e grupo_nome em caso de erro
+          }
+        }
+
         const itemQuery = `
           INSERT INTO notas_fiscais_itens (
-            nota_fiscal_id, produto_generico_id, numero_item, codigo_produto, descricao,
+            nota_fiscal_id, produto_generico_id, grupo_id, grupo_nome, numero_item, codigo_produto, descricao,
             ncm, cfop, unidade_comercial, quantidade, valor_unitario, valor_total,
             valor_desconto, valor_frete, valor_seguro, valor_outras_despesas,
             valor_ipi, aliquota_ipi, valor_icms, aliquota_icms, valor_icms_st,
             aliquota_icms_st, valor_pis, aliquota_pis, valor_cofins, aliquota_cofins,
             informacoes_adicionais
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
 
         await executeQuery(itemQuery, [
           id,
           item.produto_generico_id || null,
+          grupoId,
+          grupoNome,
           numero_item,
           item.codigo_produto,
           item.descricao,

@@ -53,9 +53,13 @@ export const usePagination = (initialItemsPerPage = 20) => {
    * Calcula parâmetros de paginação para API
    */
   const getPaginationParams = useCallback(() => {
+    // Se itemsPerPage for 999999 (Todos), limitar a 100 (máximo permitido pelo backend)
+    // O backend geralmente tem limite máximo de 100
+    const limit = itemsPerPage >= 999999 ? 100 : Math.min(itemsPerPage, 100);
+    
     return {
       page: currentPage,
-      limit: itemsPerPage
+      limit: limit
     };
   }, [currentPage, itemsPerPage]);
 

@@ -57,6 +57,16 @@ const pedidosComprasValidations = {
       .trim()
       .isLength({ max: 18 })
       .withMessage('O CNPJ deve ter no máximo 18 caracteres'),
+    body('forma_pagamento_id')
+      .notEmpty()
+      .withMessage('A forma de pagamento é obrigatória')
+      .isInt({ min: 1 })
+      .withMessage('ID da forma de pagamento deve ser um número inteiro positivo'),
+    body('prazo_pagamento_id')
+      .notEmpty()
+      .withMessage('O prazo de pagamento é obrigatório')
+      .isInt({ min: 1 })
+      .withMessage('ID do prazo de pagamento deve ser um número inteiro positivo'),
     body('itens')
       .isArray({ min: 1 })
       .withMessage('É necessário adicionar pelo menos um item ao pedido'),
@@ -92,6 +102,16 @@ const pedidosComprasValidations = {
       .trim()
       .isLength({ max: 18 })
       .withMessage('O CNPJ deve ter no máximo 18 caracteres'),
+    body('forma_pagamento_id')
+      .notEmpty()
+      .withMessage('A forma de pagamento é obrigatória')
+      .isInt({ min: 1 })
+      .withMessage('ID da forma de pagamento deve ser um número inteiro positivo'),
+    body('prazo_pagamento_id')
+      .notEmpty()
+      .withMessage('O prazo de pagamento é obrigatório')
+      .isInt({ min: 1 })
+      .withMessage('ID do prazo de pagamento deve ser um número inteiro positivo'),
     body('status')
       .optional()
       .isIn(['em_digitacao', 'aprovado', 'enviado', 'confirmado', 'em_transito', 'entregue', 'cancelado'])

@@ -72,7 +72,8 @@ const SearchableSelect = ({
   // Atualizar opção selecionada quando value mudar
   useEffect(() => {
     if (value) {
-      const option = options.find(opt => opt.value === value);
+      // Comparar como string para garantir que funcione mesmo se um for string e outro número
+      const option = options.find(opt => String(opt.value) === String(value));
       setSelectedOption(option);
       if (option) {
         setSearchTerm(option.label || option.value);

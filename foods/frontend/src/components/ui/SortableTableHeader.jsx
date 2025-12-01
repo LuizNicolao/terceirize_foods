@@ -47,7 +47,7 @@ const SortableTableHeader = ({
 
   return (
     <th 
-      className={`px-6 py-3 ${alignClass} text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors select-none ${className}`}
+      className={`px-6 py-2 ${alignClass} text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors select-none ${className}`}
       onClick={handleClick}
       title={`Ordenar por ${label}`}
     >

@@ -47,6 +47,14 @@ class PedidosComprasCRUDController {
       return errorResponse(res, 'O nome do fornecedor é obrigatório', STATUS_CODES.BAD_REQUEST);
     }
 
+    if (!forma_pagamento_id) {
+      return errorResponse(res, 'A forma de pagamento é obrigatória', STATUS_CODES.BAD_REQUEST);
+    }
+
+    if (!prazo_pagamento_id) {
+      return errorResponse(res, 'O prazo de pagamento é obrigatório', STATUS_CODES.BAD_REQUEST);
+    }
+
     if (!itens || !Array.isArray(itens) || itens.length === 0) {
       return errorResponse(res, 'É necessário adicionar pelo menos um item ao pedido', STATUS_CODES.BAD_REQUEST);
     }
@@ -242,6 +250,15 @@ class PedidosComprasCRUDController {
     // Validar campos obrigatórios
     if (fornecedor_nome && fornecedor_nome.trim() === '') {
       return errorResponse(res, 'O nome do fornecedor é obrigatório', STATUS_CODES.BAD_REQUEST);
+    }
+
+    // Validar forma e prazo de pagamento se forem fornecidos (mas devem estar sempre presentes)
+    if (forma_pagamento_id === undefined || forma_pagamento_id === null) {
+      return errorResponse(res, 'A forma de pagamento é obrigatória', STATUS_CODES.BAD_REQUEST);
+    }
+
+    if (prazo_pagamento_id === undefined || prazo_pagamento_id === null) {
+      return errorResponse(res, 'O prazo de pagamento é obrigatório', STATUS_CODES.BAD_REQUEST);
     }
 
     // Buscar dados das filiais se necessário

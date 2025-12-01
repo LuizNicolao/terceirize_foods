@@ -23,6 +23,7 @@ const PedidosComprasModal = ({
     errors,
     setValue,
     watch,
+    trigger,
     saving,
     setSaving,
     solicitacaoSelecionada,
@@ -46,6 +47,19 @@ const PedidosComprasModal = ({
   } = usePedidosComprasModal({ pedidoCompras, isOpen, solicitacoesDisponiveis });
 
   const handleFormSubmit = async (data) => {
+    // Validar campos obrigatórios
+    if (!data.forma_pagamento_id) {
+      toast.error('Forma de pagamento é obrigatória');
+      await trigger('forma_pagamento_id');
+      return;
+    }
+    
+    if (!data.prazo_pagamento_id) {
+      toast.error('Prazo de pagamento é obrigatório');
+      await trigger('prazo_pagamento_id');
+      return;
+    }
+
     // Validar se há itens selecionados
     if (!pedidoCompras && itensSelecionados.length === 0) {
       toast.error('Selecione pelo menos um item para criar o pedido');
@@ -158,6 +172,7 @@ const PedidosComprasModal = ({
           errors={errors}
           setValue={setValue}
           watch={watch}
+          trigger={trigger}
           solicitacaoSelecionada={solicitacaoSelecionada}
           itensDisponiveis={itensDisponiveis}
           itensSelecionados={itensSelecionados}

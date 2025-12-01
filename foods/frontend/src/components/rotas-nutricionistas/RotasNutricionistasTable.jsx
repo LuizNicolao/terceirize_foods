@@ -1,6 +1,6 @@
 import React from 'react';
-import { FaBuilding, FaUser, FaUserTie, FaUserGraduate } from 'react-icons/fa';
-import { ActionButtons, Table, EmptyState } from '../ui';
+import { FaBuilding, FaUser, FaUserTie, FaUserGraduate, FaSchool } from 'react-icons/fa';
+import { ActionButtons, Table, EmptyState, SortableTableHeader } from '../ui';
 
 const RotasNutricionistasTable = ({ 
   rotasNutricionistas, 
@@ -13,7 +13,10 @@ const RotasNutricionistasTable = ({
   getUsuarioName,
   getSupervisorName,
   getCoordenadorName,
-  loadingUsuarios
+  loadingUsuarios,
+  sortField,
+  sortDirection,
+  onSort
 }) => {
   if (rotasNutricionistas.length === 0) {
     return (
@@ -39,6 +42,16 @@ const RotasNutricionistasTable = ({
     );
   };
 
+  // Função para calcular quantidade de escolas
+  const getQuantidadeEscolas = (escolasResponsaveis) => {
+    if (!escolasResponsaveis || escolasResponsaveis.trim() === '') {
+      return 0;
+    }
+    // Contar IDs separados por vírgula
+    const ids = escolasResponsaveis.split(',').map(id => id.trim()).filter(id => id !== '');
+    return ids.length;
+  };
+
   return (
     <>
       {/* Versão Desktop - Tabela completa */}
@@ -46,12 +59,45 @@ const RotasNutricionistasTable = ({
         <Table>
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Código</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Usuário</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supervisor</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Coordenador</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+              <SortableTableHeader
+                label="Código"
+                field="codigo"
+                currentSort={sortField}
+                currentDirection={sortDirection}
+                onSort={onSort}
+              />
+              <SortableTableHeader
+                label="Usuário"
+                field="usuario_id"
+                currentSort={sortField}
+                currentDirection={sortDirection}
+                onSort={onSort}
+              />
+              <SortableTableHeader
+                label="Supervisor"
+                field="supervisor_id"
+                currentSort={sortField}
+                currentDirection={sortDirection}
+                onSort={onSort}
+              />
+              <SortableTableHeader
+                label="Coordenador"
+                field="coordenador_id"
+                currentSort={sortField}
+                currentDirection={sortDirection}
+                onSort={onSort}
+              />
+              <SortableTableHeader
+                label="Status"
+                field="status"
+                currentSort={sortField}
+                currentDirection={sortDirection}
+                onSort={onSort}
+              />
+              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Escolas
+              </th>
+              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -95,6 +141,14 @@ const RotasNutricionistasTable = ({
                 </td>
                 <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                   {getStatusBadge(rota.status)}
+                </td>
+                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 text-center">
+                  <div className="flex items-center justify-center">
+                    <FaSchool className="h-4 w-4 text-orange-600 mr-2" />
+                    <span className="font-medium">
+                      {getQuantidadeEscolas(rota.escolas_responsaveis)}
+                    </span>
+                  </div>
                 </td>
                 <td className="px-3 py-2 whitespace-nowrap text-sm font-medium">
                   <ActionButtons
@@ -181,6 +235,19 @@ const RotasNutricionistasTable = ({
                     {loadingUsuarios ? 'Carregando...' : getCoordenadorName(rota.coordenador_id)}
                   </div>
                   <div className="text-xs text-gray-500">Coordenador</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Quantidade de escolas */}
+            <div className="mb-3">
+              <div className="flex items-center mb-2">
+                <FaSchool className="h-4 w-4 text-orange-600 mr-2" />
+                <div className="flex-1">
+                  <div className="text-sm font-medium text-gray-900">
+                    {getQuantidadeEscolas(rota.escolas_responsaveis)} escola{getQuantidadeEscolas(rota.escolas_responsaveis) !== 1 ? 's' : ''}
+                  </div>
+                  <div className="text-xs text-gray-500">Escolas vinculadas</div>
                 </div>
               </div>
             </div>

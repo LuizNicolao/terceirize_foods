@@ -12,7 +12,7 @@ class RotasNutricionistasCRUDController {
    */
     static async listar(req, res) {
     try {
-      const { search, status, usuario_id, supervisor_id, coordenador_id, email } = req.query;
+      const { search, status, usuario_id, supervisor_id, coordenador_id, email, filial_id } = req.query;
       const pagination = req.pagination;
       
 
@@ -74,9 +74,48 @@ class RotasNutricionistasCRUDController {
         queryParams.push(email);
       }
 
+      if (filial_id) {
+        query += ` AND rn.usuario_id IN (
+          SELECT uf.usuario_id 
+          FROM usuarios_filiais uf 
+          WHERE uf.filial_id = ?
+        )`;
+        queryParams.push(filial_id);
+      }
+
+      // Aplicar ordenação
+      const { sortField, sortDirection } = req.query;
+      let orderBy = 'rn.criado_em DESC';
+      if (sortField && sortDirection) {
+        const validFields = ['codigo', 'usuario_nome', 'supervisor_nome', 'coordenador_nome', 'status', 'criado_em', 'atualizado_em'];
+        if (validFields.includes(sortField)) {
+          const direction = sortDirection.toLowerCase() === 'desc' ? 'DESC' : 'ASC';
+          
+          // Mapear campos para colunas do banco
+          const fieldMap = {
+            'codigo': 'rn.codigo',
+            'usuario_nome': 'u.nome',
+            'supervisor_nome': 's.nome',
+            'coordenador_nome': 'c.nome',
+            'status': 'rn.status',
+            'criado_em': 'rn.criado_em',
+            'atualizado_em': 'rn.atualizado_em'
+          };
+          
+          orderBy = `${fieldMap[sortField]} ${direction}`;
+        }
+      }
+
       // Query para contar total de registros
       // Query de contagem simplificada (seguindo o padrão das outras páginas)
-      const countQuery = `SELECT COUNT(*) as total FROM rotas_nutricionistas rn LEFT JOIN usuarios u ON rn.usuario_id = u.id WHERE 1=1${search ? ' AND (rn.codigo LIKE ? OR rn.observacoes LIKE ?)' : ''}${status ? ' AND rn.status = ?' : ''}${usuario_id ? ' AND rn.usuario_id = ?' : ''}${supervisor_id ? ' AND rn.supervisor_id = ?' : ''}${coordenador_id ? ' AND rn.coordenador_id = ?' : ''}${email ? ' AND u.email = ?' : ''}`;
+      let countQuery = `SELECT COUNT(*) as total FROM rotas_nutricionistas rn LEFT JOIN usuarios u ON rn.usuario_id = u.id WHERE 1=1`;
+      if (search) countQuery += ` AND (rn.codigo LIKE ? OR rn.observacoes LIKE ?)`;
+      if (status) countQuery += ` AND rn.status = ?`;
+      if (usuario_id) countQuery += ` AND rn.usuario_id = ?`;
+      if (supervisor_id) countQuery += ` AND rn.supervisor_id = ?`;
+      if (coordenador_id) countQuery += ` AND rn.coordenador_id = ?`;
+      if (email) countQuery += ` AND u.email = ?`;
+      if (filial_id) countQuery += ` AND rn.usuario_id IN (SELECT uf.usuario_id FROM usuarios_filiais uf WHERE uf.filial_id = ?)`;
       const countParams = [];
       
       
@@ -104,12 +143,16 @@ class RotasNutricionistasCRUDController {
       if (email) {
         countParams.push(email);
       }
+
+      if (filial_id) {
+        countParams.push(filial_id);
+      }
       
       const countResult = await executeQuery(countQuery, countParams);
       const totalItems = parseInt(countResult[0]?.total) || 0;
 
-              // Aplicar paginação e ordenação
-        query += ` ORDER BY rn.criado_em DESC`;
+      // Aplicar ordenação
+      query += ` ORDER BY ${orderBy}`;
         
       // Aplicar paginação manualmente (seguindo o padrão das outras páginas)
       const limit = pagination.limit;
@@ -253,24 +296,36 @@ class RotasNutricionistasCRUDController {
 
       const novaRotaId = result.insertId;
 
-      // Vincular unidades escolares à rota nutricionista
-      if (escolas_responsaveis && escolas_responsaveis.trim()) {
-        const escolasIds = escolas_responsaveis.split(',').map(id => id.trim()).filter(id => id);
+      // Vincular unidades escolares à rota nutricionista usando a nova tabela normalizada
+      if (escolas_responsaveis) {
+        // Aceitar tanto array quanto string separada por vírgula
+        let escolasIds = [];
+        if (Array.isArray(escolas_responsaveis)) {
+          escolasIds = escolas_responsaveis.map(id => parseInt(id)).filter(id => !isNaN(id) && id > 0);
+        } else if (typeof escolas_responsaveis === 'string' && escolas_responsaveis.trim()) {
+          escolasIds = escolas_responsaveis.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id) && id > 0);
+        }
         
+        // Inserir relacionamentos na nova tabela
         for (const escolaId of escolasIds) {
-          if (escolaId) {
             // Verificar se a unidade escolar existe
             const unidadeExistente = await executeQuery(
-              'SELECT id, rota_nutricionista_id FROM unidades_escolares WHERE id = ?',
+            'SELECT id FROM unidades_escolares WHERE id = ?',
               [escolaId]
             );
 
             if (unidadeExistente.length > 0) {
-              // Vincular a unidade à rota nutricionista
+            // Inserir na tabela normalizada
+            try {
               await executeQuery(
-                'UPDATE unidades_escolares SET rota_nutricionista_id = ? WHERE id = ?',
+                'INSERT INTO rotas_nutricionistas_escolas (rota_nutricionista_id, unidade_escolar_id) VALUES (?, ?)',
                 [novaRotaId, escolaId]
               );
+            } catch (error) {
+              // Ignorar erro de duplicata (já existe o relacionamento)
+              if (error.code !== 'ER_DUP_ENTRY') {
+                throw error;
+              }
             }
           }
         }
@@ -402,19 +457,25 @@ class RotasNutricionistasCRUDController {
       await executeQuery(updateQuery, updateValues);
 
       // Atualizar vínculos das unidades escolares se escolas_responsaveis foi alterado
+      // Usar a nova tabela normalizada
       if (escolas_responsaveis !== undefined) {
-        // Primeiro, remover vínculos antigos desta rota nutricionista
+        // Primeiro, remover vínculos antigos desta rota nutricionista da tabela normalizada
         await executeQuery(
-          'UPDATE unidades_escolares SET rota_nutricionista_id = NULL WHERE rota_nutricionista_id = ?',
+          'DELETE FROM rotas_nutricionistas_escolas WHERE rota_nutricionista_id = ?',
           [id]
         );
 
-        // Depois, adicionar novos vínculos
-        if (escolas_responsaveis && escolas_responsaveis.trim()) {
-          const escolasIds = escolas_responsaveis.split(',').map(id => id.trim()).filter(id => id);
+        // Depois, adicionar novos vínculos na tabela normalizada
+        if (escolas_responsaveis) {
+          // Aceitar tanto array quanto string separada por vírgula
+          let escolasIds = [];
+          if (Array.isArray(escolas_responsaveis)) {
+            escolasIds = escolas_responsaveis.map(id => parseInt(id)).filter(id => !isNaN(id) && id > 0);
+          } else if (typeof escolas_responsaveis === 'string' && escolas_responsaveis.trim()) {
+            escolasIds = escolas_responsaveis.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id) && id > 0);
+          }
           
           for (const escolaId of escolasIds) {
-            if (escolaId) {
               // Verificar se a unidade escolar existe
               const unidadeExistente = await executeQuery(
                 'SELECT id FROM unidades_escolares WHERE id = ?',
@@ -422,11 +483,17 @@ class RotasNutricionistasCRUDController {
               );
 
               if (unidadeExistente.length > 0) {
-                // Vincular a unidade à rota nutricionista
+              // Inserir na tabela normalizada
+              try {
                 await executeQuery(
-                  'UPDATE unidades_escolares SET rota_nutricionista_id = ? WHERE id = ?',
+                  'INSERT INTO rotas_nutricionistas_escolas (rota_nutricionista_id, unidade_escolar_id) VALUES (?, ?)',
                   [id, escolaId]
                 );
+              } catch (error) {
+                // Ignorar erro de duplicata (já existe o relacionamento)
+                if (error.code !== 'ER_DUP_ENTRY') {
+                  throw error;
+                }
               }
             }
           }
@@ -565,6 +632,91 @@ class RotasNutricionistasCRUDController {
       res.status(500).json({
         success: false,
         message: 'Erro interno do servidor'
+      });
+    }
+  }
+
+  /**
+   * Buscar escolas disponíveis para rotas nutricionistas
+   * Exclui escolas já vinculadas a outras rotas nutricionistas (exceto a rota atual se estiver editando)
+   */
+  static async buscarEscolasDisponiveis(req, res) {
+    try {
+      const { filialId } = req.params;
+      const { rotaId } = req.query;
+
+      if (!filialId) {
+        return res.status(400).json({
+          success: false,
+          error: 'Filial é obrigatória',
+          message: 'ID da filial é obrigatório'
+        });
+      }
+
+      // Buscar todas as escolas vinculadas a outras rotas nutricionistas
+      // Usa a nova tabela rotas_nutricionistas_escolas (normalizada)
+      let escolasVinculadasQuery = `
+        SELECT DISTINCT rne.unidade_escolar_id as escola_id
+        FROM rotas_nutricionistas_escolas rne
+        INNER JOIN rotas_nutricionistas rn ON rne.rota_nutricionista_id = rn.id
+        WHERE rn.status = 'ativo'
+      `;
+
+      const escolasVinculadasParams = [];
+
+      // Se estiver editando, excluir a rota atual da lista de escolas vinculadas
+      if (rotaId) {
+        escolasVinculadasQuery += ` AND rn.id != ?`;
+        escolasVinculadasParams.push(rotaId);
+      }
+
+      const escolasVinculadas = await executeQuery(escolasVinculadasQuery, escolasVinculadasParams);
+      const escolasVinculadasIds = escolasVinculadas
+        .map(e => e.escola_id)
+        .filter(id => id && !isNaN(id) && id > 0);
+
+      // Query para buscar escolas disponíveis da filial
+      let query = `
+        SELECT 
+          ue.id,
+          ue.codigo_teknisa,
+          ue.nome_escola,
+          ue.cidade,
+          ue.estado,
+          ue.endereco,
+          ue.numero,
+          ue.bairro,
+          ue.centro_distribuicao,
+          ue.status
+        FROM unidades_escolares ue
+        WHERE ue.filial_id = ? 
+          AND ue.status = 'ativo'
+      `;
+
+      const params = [filialId];
+
+      // Excluir escolas já vinculadas a outras rotas nutricionistas
+      if (escolasVinculadasIds.length > 0) {
+        const placeholders = escolasVinculadasIds.map(() => '?').join(',');
+        query += ` AND ue.id NOT IN (${placeholders})`;
+        params.push(...escolasVinculadasIds);
+      }
+
+      query += ` ORDER BY ue.nome_escola ASC`;
+
+      const escolas = await executeQuery(query, params);
+
+      res.json({
+        success: true,
+        data: escolas
+      });
+
+    } catch (error) {
+      console.error('Erro ao buscar escolas disponíveis para rota nutricionista:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro interno do servidor',
+        message: 'Não foi possível buscar as escolas disponíveis'
       });
     }
   }

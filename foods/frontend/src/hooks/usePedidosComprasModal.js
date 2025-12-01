@@ -14,7 +14,7 @@ import produtoGenericoService from '../services/produtoGenerico';
 import api from '../services/api';
 
 export const usePedidosComprasModal = ({ pedidoCompras, isOpen, solicitacoesDisponiveis = [] }) => {
-  const { register, handleSubmit, reset, formState: { errors }, setValue, watch } = useForm();
+  const { register, handleSubmit, reset, formState: { errors }, setValue, watch, trigger } = useForm();
   
   // Estados
   const [saving, setSaving] = useState(false);
@@ -743,6 +743,7 @@ export const usePedidosComprasModal = ({ pedidoCompras, isOpen, solicitacoesDisp
     setValue,
     watch,
     reset,
+    trigger,
     
     // Estados
     saving,

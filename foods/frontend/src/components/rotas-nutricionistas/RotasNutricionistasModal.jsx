@@ -176,9 +176,10 @@ const RotasNutricionistasModal = ({
 
   const handleFormSubmit = (data) => {
     // Adicionar escolas selecionadas aos dados do formulário
+    // Enviar como array (backend aceita array ou string)
     const formDataWithEscolas = {
       ...data,
-      escolas_responsaveis: escolasSelecionadas.join(',')
+      escolas_responsaveis: escolasSelecionadas
     };
     onSubmit(formDataWithEscolas);
   };
@@ -207,7 +208,8 @@ const RotasNutricionistasModal = ({
             usuarios={usuarios}
             usuariosFiltrados={usuariosFiltrados}
             filtrando={filtrando}
-            watchedUsuarioId={watchedUsuarioId}
+            watch={watch}
+            setValue={setValue}
           />
         </div>
 
@@ -219,6 +221,7 @@ const RotasNutricionistasModal = ({
             isViewMode={isViewMode}
             unidadesEscolaresFiltradas={unidadesEscolaresFiltradas}
             watchedUsuarioId={watchedUsuarioId}
+            rotaId={rota?.id || null}
           />
         </div>
         

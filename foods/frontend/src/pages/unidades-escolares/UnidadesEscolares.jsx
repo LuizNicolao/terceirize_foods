@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
-import { FaPlus, FaQuestionCircle } from 'react-icons/fa';
+import { FaPlus, FaQuestionCircle, FaList, FaMap } from 'react-icons/fa';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { useUnidadesEscolares } from '../../hooks/useUnidadesEscolares';
 import { useAuditoria } from '../../hooks/common/useAuditoria';
 import { useExport } from '../../hooks/common/useExport';
 import UnidadesEscolaresService from '../../services/unidadesEscolares';
 import { Button, ValidationErrorModal, ConfirmModal } from '../../components/ui';
-import { CadastroFilterBar } from '../../components/ui';
+import { CadastroFilterBarSearchable } from '../../components/ui';
 import { Pagination } from '../../components/ui';
-import { UnidadeEscolarModal, UnidadesEscolaresTable, UnidadesEscolaresStats, ImportarUnidadesEscolares } from '../../components/unidades-escolares';
+import { UnidadeEscolarModal, UnidadesEscolaresTable, UnidadesEscolaresStats, ImportarUnidadesEscolares, MapaContent } from '../../components/unidades-escolares';
 import { AuditModal, ExportButtons } from '../../components/shared';
 
 const UnidadesEscolares = () => {
@@ -16,6 +16,9 @@ const UnidadesEscolares = () => {
   
   // Estado para modal de importação
   const [showImportModal, setShowImportModal] = useState(false);
+  
+  // Estado para controlar a aba ativa (lista ou mapa)
+  const [activeTab, setActiveTab] = useState('lista'); // 'lista' ou 'mapa'
   
   // Hooks customizados
   const {
@@ -129,8 +132,36 @@ const UnidadesEscolares = () => {
       {/* Estatísticas */}
       <UnidadesEscolaresStats estatisticas={estatisticas} />
 
+      {/* Abas */}
+      <div className="border-b border-gray-200 mb-4">
+        <nav className="-mb-px flex space-x-8">
+          <button
+            onClick={() => setActiveTab('lista')}
+            className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${
+              activeTab === 'lista'
+                ? 'border-green-500 text-green-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            <FaList />
+            Lista
+          </button>
+          <button
+            onClick={() => setActiveTab('mapa')}
+            className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${
+              activeTab === 'mapa'
+                ? 'border-green-500 text-green-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            <FaMap />
+            Mapa
+          </button>
+        </nav>
+      </div>
+
       {/* Filtros */}
-      <CadastroFilterBar
+      <CadastroFilterBarSearchable
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         onKeyPress={handleKeyPress}
@@ -139,13 +170,11 @@ const UnidadesEscolares = () => {
             label: 'Rota',
             value: rotaFilter,
             onChange: setRotaFilter,
-            options: [
-              { value: 'todos', label: loadingRotas ? 'Carregando...' : 'Todas as rotas' },
-              ...rotas.map(rota => ({
+            options: rotas.map(rota => ({
                 value: rota.id.toString(),
-                label: rota.nome
-              }))
-            ]
+              label: rota.codigo ? `${rota.codigo} - ${rota.nome}` : rota.nome
+            })),
+            useSearchable: true // Forçar uso de SearchableSelect para rota
           },
           {
             label: 'Filial',
@@ -161,9 +190,11 @@ const UnidadesEscolares = () => {
           }
         ]}
         placeholder="Buscar por código, nome, cidade ou estado..."
+        useSearchableSelect={true}
       />
 
       {/* Ações de Exportação */}
+      {activeTab === 'lista' && (
       <div className="mb-4">
         <ExportButtons
           onExportXLSX={handleExportXLSX}
@@ -171,23 +202,47 @@ const UnidadesEscolares = () => {
           disabled={!canView('unidades_escolares')}
         />
       </div>
+      )}
 
-      {/* Tabela */}
-      <UnidadesEscolaresTable
-        unidades={unidades}
-        canView={canView}
-        canEdit={canEdit}
-        canDelete={canDelete}
-        onView={handleViewUnidade}
-        onEdit={handleEditUnidade}
-        onDelete={handleDeleteUnidade}
-        getRotaName={getRotaName}
-        loadingRotas={loadingRotas}
-      
-        sortField={sortField}
-        sortDirection={sortDirection}
-        onSort={handleSort}
-      />
+      {/* Conteúdo das Abas */}
+      {activeTab === 'lista' && (
+        <>
+          {/* Tabela */}
+          <UnidadesEscolaresTable
+            unidades={unidades}
+            canView={canView}
+            canEdit={canEdit}
+            canDelete={canDelete}
+            onView={handleViewUnidade}
+            onEdit={handleEditUnidade}
+            onDelete={handleDeleteUnidade}
+            getRotaName={getRotaName}
+            loadingRotas={loadingRotas}
+            sortField={sortField}
+            sortDirection={sortDirection}
+            onSort={handleSort}
+          />
+
+          {/* Paginação - sempre mostrar para permitir mudança de itens por página */}
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+            totalItems={totalItems}
+            itemsPerPage={itemsPerPage}
+            onItemsPerPageChange={handleItemsPerPageChange}
+          />
+        </>
+      )}
+
+      {/* Mapa só é renderizado quando a aba está ativa - economiza recursos */}
+      {activeTab === 'mapa' && (
+        <MapaContent
+          filialId={filialFilter && filialFilter !== 'todos' ? parseInt(filialFilter) : null}
+          rotaId={rotaFilter && rotaFilter !== 'todos' && rotaFilter !== '' ? parseInt(rotaFilter) : null}
+          searchTerm={searchTerm}
+        />
+      )}
 
       {/* Modal de Unidade Escolar */}
       <UnidadeEscolarModal
@@ -214,16 +269,6 @@ const UnidadesEscolares = () => {
         onExportXLSX={handleExportAuditXLSX}
         onExportPDF={handleExportAuditPDF}
         onFilterChange={(field, value) => setAuditFilters(prev => ({ ...prev, [field]: value }))}
-      />
-
-      {/* Paginação - sempre mostrar para permitir mudança de itens por página */}
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={handlePageChange}
-        totalItems={totalItems}
-        itemsPerPage={itemsPerPage}
-        onItemsPerPageChange={handleItemsPerPageChange}
       />
 
       {/* Modal de Erros de Validação */}

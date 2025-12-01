@@ -13,6 +13,7 @@ const PedidosComprasModalBody = ({
   errors,
   setValue,
   watch,
+  trigger,
   
   // Estados
   solicitacaoSelecionada,
@@ -115,6 +116,8 @@ const PedidosComprasModalBody = ({
         formasPagamento={formasPagamento}
         prazosPagamento={prazosPagamento}
         isViewMode={isViewMode}
+        errors={errors}
+        trigger={trigger}
       />
 
       {/* Itens do Pedido */}

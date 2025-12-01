@@ -25,6 +25,7 @@ const veiculosRoutes = require('./veiculos');
 const motoristasRoutes = require('./motoristas');
 const ajudantesRoutes = require('./ajudantes');
 const produtoOrigemRoutes = require('./produto-origem');
+const produtoComercialRoutes = require('./produto-comercial');
 const produtoGenericoRoutes = require('./produto-generico');
 const intoleranciasRoutes = require('./intolerancias');
 const rotasNutricionistasRoutes = require('./rotas-nutricionistas');
@@ -45,6 +46,7 @@ const prazosPagamentoRoutes = require('./prazos-pagamento');
 const pedidosComprasRoutes = require('./pedidos-compras');
 const centroCustoRoutes = require('./centro-custo');
 const almoxarifadoRoutes = require('./almoxarifado');
+const almoxarifadoEstoqueRoutes = require('./almoxarifado-estoque');
 const notasFiscaisRoutes = require('./notas-fiscais/notaFiscalRoute');
 const pdfTemplatesRoutes = require('./pdf-templates');
 const openaiRoutes = require('./openai/openaiRoute');
@@ -77,6 +79,7 @@ const routes = [
   { path: '/motoristas', router: motoristasRoutes },
   { path: '/ajudantes', router: ajudantesRoutes },
   { path: '/produto-origem', router: produtoOrigemRoutes },
+  { path: '/produto-comercial', router: produtoComercialRoutes },
   { path: '/produto-generico', router: produtoGenericoRoutes },
   { path: '/efetivos', router: efetivosRoutes },
   { path: '/patrimonios', router: patrimoniosRoutes },
@@ -93,6 +96,7 @@ const routes = [
   { path: '/pedidos-compras', router: pedidosComprasRoutes },
   { path: '/centro-custo', router: centroCustoRoutes },
   { path: '/almoxarifado', router: almoxarifadoRoutes },
+  { path: '/almoxarifado-estoque', router: almoxarifadoEstoqueRoutes },
   { path: '/notas-fiscais', router: notasFiscaisRoutes },
   { path: '/pdf-templates', router: pdfTemplatesRoutes },
   { path: '/openai', router: openaiRoutes },

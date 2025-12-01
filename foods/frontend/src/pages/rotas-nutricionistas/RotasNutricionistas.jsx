@@ -6,7 +6,7 @@ import { useAuditoria } from '../../hooks/common/useAuditoria';
 import { useExport } from '../../hooks/common/useExport';
 import RotasNutricionistasService from '../../services/rotasNutricionistas';
 import { Button, ValidationErrorModal } from '../../components/ui';
-import { CadastroFilterBar } from '../../components/ui';
+import { CadastroFilterBarSearchable } from '../../components/ui';
 import { Pagination } from '../../components/ui';
 import { RotasNutricionistasStats, RotasNutricionistasTable, RotasNutricionistasModal } from '../../components/rotas-nutricionistas';
 import { AuditModal, ExportButtons } from '../../components/shared';
@@ -40,11 +40,15 @@ const RotasNutricionistas = () => {
     showDeleteModal,
     rotaToDelete,
     handleSave,
+    sortField,
+    sortDirection,
+    handleSort,
     openCreateModal,
     openEditModal,
     openViewModal,
     closeModal,
     handlePageChange,
+    handleItemsPerPageChange,
     handleLimitChange,
     handleSearch,
     handleKeyPress,
@@ -52,6 +56,10 @@ const RotasNutricionistas = () => {
     handleUsuarioFilter,
     handleSupervisorFilter,
     handleCoordenadorFilter,
+    filialFilter,
+    filiais,
+    loadingFiliais,
+    setFilialFilter,
     clearFilters,
     openDeleteModal,
     closeDeleteModal,
@@ -116,12 +124,28 @@ const RotasNutricionistas = () => {
       />
 
       {/* Filtros */}
-      <CadastroFilterBar
+      <CadastroFilterBarSearchable
         searchTerm={searchTerm}
         onSearchChange={handleSearch}
         onKeyPress={handleKeyPress}
         onClear={() => clearFilters()}
         placeholder="Buscar por código, usuário, supervisor ou coordenador..."
+        useSearchableSelect={false}
+        additionalFilters={[
+          {
+            label: 'Filial',
+            value: filialFilter || 'todos',
+            onChange: setFilialFilter,
+            options: [
+              { value: 'todos', label: loadingFiliais ? 'Carregando...' : 'Todas as filiais' },
+              ...(filiais || []).map(filial => ({
+                value: filial.id.toString(),
+                label: filial.filial || filial.nome || `Filial ${filial.id}`
+              }))
+            ],
+            loading: loadingFiliais
+          }
+        ]}
       />
 
       {/* Ações de Exportação */}
@@ -156,20 +180,21 @@ const RotasNutricionistas = () => {
             return coordenador ? coordenador.nome : 'N/A';
           }}
           loadingUsuarios={false}
+          sortField={sortField}
+          sortDirection={sortDirection}
+          onSort={handleSort}
         />
       </div>
 
       {/* Paginação */}
-      <div className="mt-6">
         <Pagination
           currentPage={currentPage}
           totalPages={totalPages}
           onPageChange={handlePageChange}
           totalItems={totalItems}
           itemsPerPage={itemsPerPage}
-          onLimitChange={handleLimitChange}
+        onItemsPerPageChange={handleItemsPerPageChange}
         />
-      </div>
 
       {/* Modal de Formulário */}
       <RotasNutricionistasModal

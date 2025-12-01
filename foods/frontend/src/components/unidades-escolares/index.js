@@ -5,3 +5,4 @@ export { default as UnidadesEscolaresActions } from './UnidadesEscolaresActions'
 export { default as ImportarUnidadesEscolares } from './ImportarUnidadesEscolares';
 export { default as AlmoxarifadoContent } from './AlmoxarifadoContent';
 export { default as TiposCardapioContent } from './TiposCardapioContent';
+export { default as MapaContent } from './MapaContent';

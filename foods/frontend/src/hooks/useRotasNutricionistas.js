@@ -1,130 +1,124 @@
 import { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import RotasNutricionistasService from '../services/rotasNutricionistas';
-import { useAuditoria } from './common/useAuditoria';
-import { useExport } from './common/useExport';
-import { useDebouncedSearch } from './common/useDebouncedSearch';
+import FiliaisService from '../services/filiais';
+import { useBaseEntity } from './common/useBaseEntity';
+import { useFilters } from './common/useFilters';
 import useTableSort from './common/useTableSort';
 
 export const useRotasNutricionistas = () => {
-  // Hook de busca com debounce
-  const debouncedSearch = useDebouncedSearch(500);
-
-  // Estados específicos das rotas nutricionistas
-  const [rotas, setRotas] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState(null);
-
-  // Estados de paginação
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
-  
-  // Hook de ordenação híbrida
-  const {
-    sortedData: rotasOrdenadas,
-    sortField,
-    sortDirection,
-    handleSort,
-    isSortingLocally
-  } = useTableSort({
-    data: rotas,
-    threshold: 100,
-    totalItems: totalItems || 0
+  // Hook base para funcionalidades CRUD
+  const baseEntity = useBaseEntity('rotas-nutricionistas', RotasNutricionistasService, {
+    initialItemsPerPage: 20,
+    initialFilters: {},
+    enableStats: true,
+    enableDelete: true
   });
 
-  // Estados de filtro
-  const [statusFilter, setStatusFilter] = useState('');
-  const [usuarioFilter, setUsuarioFilter] = useState('');
-  const [supervisorFilter, setSupervisorFilter] = useState('');
-  const [coordenadorFilter, setCoordenadorFilter] = useState('');
-
-  // Estados de modal
-  const [showModal, setShowModal] = useState(false);
-  const [modalMode, setModalMode] = useState('create'); // 'create', 'edit', 'view'
-  const [selectedRota, setSelectedRota] = useState(null);
-
-  // Estados de confirmação
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [rotaToDelete, setRotaToDelete] = useState(null);
+  // Hook de filtros customizados
+  const customFilters = useFilters({ filialFilter: 'todos' });
 
   // Estados para dados relacionados
   const [usuarios, setUsuarios] = useState([]);
   const [supervisores, setSupervisores] = useState([]);
   const [coordenadores, setCoordenadores] = useState([]);
   const [unidadesEscolares, setUnidadesEscolares] = useState([]);
+  const [filiais, setFiliais] = useState([]);
   const [loadingUsuarios, setLoadingUsuarios] = useState(false);
+  const [loadingFiliais, setLoadingFiliais] = useState(false);
 
-  // Estados de estatísticas
-  const [estatisticas, setEstatisticas] = useState({
-    total_rotas: 0,
-    rotas_ativas: 0,
-    rotas_inativas: 0,
-    total_usuarios: 0,
-    total_supervisores: 0,
-    total_coordenadores: 0,
-    total_escolas: 0
+  /**
+   * Carrega dados com filtros customizados
+   */
+  const loadDataWithFilters = useCallback(async (customParams = {}) => {
+    // Obter parâmetros de filtros customizados (sem status, pois vamos tratar separadamente)
+    const filterParams = customFilters.getFilterParams();
+    // Remover status do filterParams se existir, pois vamos tratar separadamente
+    delete filterParams.status;
+    
+    const params = {
+      ...baseEntity.getPaginationParams(),
+      ...filterParams,
+      search: customFilters.searchTerm || undefined,
+      // Só enviar status se for 'ativo' ou 'inativo', não enviar se for 'todos' ou vazio
+      // O backend espera string 'ativo' ou 'inativo', não número
+      status: (customFilters.statusFilter && customFilters.statusFilter !== 'todos' && customFilters.statusFilter !== '') 
+        ? customFilters.statusFilter 
+        : undefined,
+      usuario_id: customFilters.filters.usuarioFilter || undefined,
+      supervisor_id: customFilters.filters.supervisorFilter || undefined,
+      coordenador_id: customFilters.filters.coordenadorFilter || undefined,
+      // Incluir parâmetros de ordenação do baseEntity se disponíveis
+      sortField: customParams.sortField !== undefined ? customParams.sortField : baseEntity.sortField || undefined,
+      sortDirection: customParams.sortDirection !== undefined ? customParams.sortDirection : baseEntity.sortDirection || undefined,
+      ...customParams
+    };
+
+    await baseEntity.loadData(params);
+  }, [baseEntity, customFilters]);
+
+  // Hook de ordenação híbrida (depois de loadDataWithFilters para poder usá-lo no callback)
+  // Usar itemsPerPage como threshold para garantir ordenação no backend quando há paginação
+  const {
+    sortedData: rotasOrdenadas,
+    sortField: localSortField,
+    sortDirection: localSortDirection,
+    handleSort,
+    isSortingLocally
+  } = useTableSort({
+    data: baseEntity.items,
+    threshold: baseEntity.itemsPerPage || 20, // Usar itemsPerPage para garantir ordenação no backend quando há paginação
+    totalItems: baseEntity.totalItems,
+    onBackendSort: (field, direction) => {
+      // Atualizar estados de ordenação no baseEntity
+      baseEntity.setSortField(field);
+      baseEntity.setSortDirection(direction);
+      // Recarregar dados com nova ordenação, mantendo filtros customizados
+      loadDataWithFilters({ sortField: field, sortDirection: direction });
+    }
   });
 
-  // Hooks personalizados
-  const { showAuditModal, openAuditModal, closeAuditModal } = useAuditoria();
-  const { exportToXLSX, exportToPDF, exporting } = useExport();
+  // Usar ordenação do baseEntity quando disponível, senão usar local
+  const sortField = baseEntity.sortField || localSortField;
+  const sortDirection = baseEntity.sortDirection || localSortDirection;
 
-  // Carregar rotas nutricionistas
-  const loadRotas = useCallback(async (page = currentPage) => {
+  /**
+   * Submissão customizada
+   */
+  const onSubmitCustom = useCallback(async (data) => {
+    await baseEntity.onSubmit(data);
+  }, [baseEntity]);
+
+  /**
+   * Exclusão customizada que recarrega dados
+   */
+  const handleDeleteCustom = useCallback(async () => {
+    await baseEntity.handleConfirmDelete();
+  }, [baseEntity]);
+
+  /**
+   * Carregar filiais para o filtro
+   */
+  const loadFiliais = useCallback(async () => {
     try {
-      setLoading(true);
-      setError(null);
-
-      const params = {
-        page,
-        limit: itemsPerPage,
-        search: debouncedSearch.debouncedSearchTerm || undefined,
-        status: statusFilter || undefined,
-        usuario_id: usuarioFilter || undefined,
-        supervisor_id: supervisorFilter || undefined,
-        coordenador_id: coordenadorFilter || undefined
-      };
-
-      const result = await RotasNutricionistasService.listar(params);
-
-      if (result.success) {
-        setRotas(result.data.rotas || []);
-        
-        if (result.data.pagination) {
-          setCurrentPage(result.data.pagination.currentPage);
-          setTotalPages(result.data.pagination.totalPages);
-          setTotalItems(result.data.pagination.totalItems);
-          setItemsPerPage(result.data.pagination.itemsPerPage);
-        }
-
-        // Calcular estatísticas
-        const total = result.data.rotas?.length || 0;
-        const ativas = result.data.rotas?.filter(r => r.status === 'ativo').length || 0;
-        const inativas = result.data.rotas?.filter(r => r.status === 'inativo').length || 0;
-
-        setEstatisticas(prev => ({
-          ...prev,
-          total_rotas: result.data.pagination?.totalItems || total,
-          rotas_ativas: ativas,
-          rotas_inativas: inativas
-        }));
-      } else {
-        setError(result.error || 'Erro ao carregar rotas nutricionistas');
-        toast.error(result.error || 'Erro ao carregar rotas nutricionistas');
+      setLoadingFiliais(true);
+      const response = await FiliaisService.buscarAtivas();
+      if (response.success) {
+        const items = Array.isArray(response.data) ? response.data : [];
+        setFiliais(items);
       }
     } catch (error) {
-      console.error('Erro ao carregar rotas nutricionistas:', error);
-      setError('Erro de conexão');
-      toast.error('Erro de conexão');
+      console.error('Erro ao carregar filiais:', error);
+      toast.error('Erro ao carregar filiais');
+      setFiliais([]);
     } finally {
-      setLoading(false);
+      setLoadingFiliais(false);
     }
-  }, [currentPage, itemsPerPage, debouncedSearch.debouncedSearchTerm, statusFilter, usuarioFilter, supervisorFilter, coordenadorFilter]);
+  }, []);
 
-  // Carregar usuários, supervisores e coordenadores
+  /**
+   * Carregar usuários, supervisores e coordenadores
+   */
   const loadUsuarios = useCallback(async () => {
     try {
       setLoadingUsuarios(true);
@@ -144,13 +138,6 @@ export const useRotasNutricionistas = () => {
         setUsuarios(usuarios);
         setSupervisores(supervisores);
         setCoordenadores(coordenadores);
-
-        setEstatisticas(prev => ({
-          ...prev,
-          total_usuarios: usuarios.length,
-          total_supervisores: supervisores.length,
-          total_coordenadores: coordenadores.length
-        }));
       } else {
         // Em caso de erro, garantir arrays vazios
         setUsuarios([]);
@@ -161,10 +148,6 @@ export const useRotasNutricionistas = () => {
       // Carregar unidades escolares
       if (unidadesResult.success) {
         setUnidadesEscolares(unidadesResult.data);
-        setEstatisticas(prev => ({
-          ...prev,
-          total_escolas: unidadesResult.data.length
-        }));
       } else {
         setUnidadesEscolares([]);
       }
@@ -179,7 +162,9 @@ export const useRotasNutricionistas = () => {
     }
   }, []);
 
-  // Filtrar usuários por filial
+  /**
+   * Filtrar usuários por filial
+   */
   const filtrarUsuariosPorFilial = useCallback(async (tipo, filialId) => {
     if (!filialId) return [];
     
@@ -192,7 +177,9 @@ export const useRotasNutricionistas = () => {
     }
   }, []);
 
-  // Filtrar unidades escolares por filial
+  /**
+   * Filtrar unidades escolares por filial
+   */
   const filtrarUnidadesEscolaresPorFilial = useCallback(async (filialId) => {
     if (!filialId) return [];
     
@@ -205,279 +192,153 @@ export const useRotasNutricionistas = () => {
     }
   }, []);
 
-  // Efeito para carregar dados iniciais
+  /**
+   * Funções auxiliares
+   */
+  const handleClearFilters = useCallback(() => {
+    customFilters.setSearchTerm('');
+    customFilters.setStatusFilter('todos');
+    customFilters.updateFilter('usuarioFilter', '');
+    customFilters.updateFilter('supervisorFilter', '');
+    customFilters.updateFilter('coordenadorFilter', '');
+    customFilters.updateFilter('filialFilter', 'todos');
+    baseEntity.handlePageChange(1);
+  }, [customFilters, baseEntity]);
+
+  const handleKeyPress = useCallback((e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      loadDataWithFilters();
+    }
+  }, [loadDataWithFilters]);
+
+  // Carregar usuários e filiais na inicialização
   useEffect(() => {
-    loadRotas();
     loadUsuarios();
-  }, [loadRotas, loadUsuarios]);
+    loadFiliais();
+  }, [loadUsuarios, loadFiliais]);
 
-  // Funções de modal
-  const openCreateModal = () => {
-    setSelectedRota(null);
-    setModalMode('create');
-    setShowModal(true);
-  };
-
-  const openEditModal = (rota) => {
-    setSelectedRota(rota);
-    setModalMode('edit');
-    setShowModal(true);
-  };
-
-  const openViewModal = (rota) => {
-    setSelectedRota(rota);
-    setModalMode('view');
-    setShowModal(true);
-  };
-
-  const closeModal = () => {
-    setShowModal(false);
-    setSelectedRota(null);
-    setModalMode('create');
-  };
-
-  // Função para salvar rota
-  const handleSave = async (data) => {
-    try {
-      setSaving(true);
-
-      let result;
-      if (modalMode === 'create') {
-        result = await RotasNutricionistasService.criar(data);
-        if (result.success) {
-          toast.success('Rota nutricionista criada com sucesso!');
-        }
-      } else if (modalMode === 'edit') {
-        result = await RotasNutricionistasService.atualizar(selectedRota.id, data);
-        if (result.success) {
-          toast.success('Rota nutricionista atualizada com sucesso!');
-        }
-      }
-
-      if (result.success) {
-        closeModal();
-        await loadRotas();
-      } else {
-        toast.error(result.error || 'Erro ao salvar rota nutricionista');
-      }
-    } catch (error) {
-      console.error('Erro ao salvar rota nutricionista:', error);
-      toast.error('Erro ao salvar rota nutricionista');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  // Funções de exclusão
-  const openDeleteModal = (rota) => {
-    setRotaToDelete(rota);
-    setShowDeleteModal(true);
-  };
-
-  const closeDeleteModal = () => {
-    setShowDeleteModal(false);
-    setRotaToDelete(null);
-  };
-
-  const handleDelete = async () => {
-    if (!rotaToDelete) return;
-
-    try {
-      setSaving(true);
-      const result = await RotasNutricionistasService.excluir(rotaToDelete.id);
-
-      if (result.success) {
-        toast.success('Rota nutricionista excluída com sucesso!');
-        closeDeleteModal();
-        await loadRotas();
-      } else {
-        toast.error(result.error || 'Erro ao excluir rota nutricionista');
-      }
-    } catch (error) {
-      console.error('Erro ao excluir rota nutricionista:', error);
-      toast.error('Erro ao excluir rota nutricionista');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  // Funções de paginação
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-    loadRotas(page);
-  };
-
-  const handleLimitChange = (limit) => {
-    setItemsPerPage(limit);
-    setCurrentPage(1);
-    loadRotas(1);
-  };
-
-  // Funções de filtro
-  const handleSearch = (term) => {
-    debouncedSearch.updateSearchTerm(term);
-    setCurrentPage(1);
-  };
-
-  const handleStatusFilter = (status) => {
-    setStatusFilter(status);
-    setCurrentPage(1);
-  };
-
-  const handleUsuarioFilter = (usuario) => {
-    setUsuarioFilter(usuario);
-    setCurrentPage(1);
-  };
-
-  const handleSupervisorFilter = (supervisor) => {
-    setSupervisorFilter(supervisor);
-    setCurrentPage(1);
-  };
-
-  const handleCoordenadorFilter = (coordenador) => {
-    setCoordenadorFilter(coordenador);
-    setCurrentPage(1);
-  };
-
-  const clearFilters = () => {
-    debouncedSearch.clearSearch();
-    setStatusFilter('');
-    setUsuarioFilter('');
-    setSupervisorFilter('');
-    setCoordenadorFilter('');
-    setCurrentPage(1);
-  };
-
-  // Funções de exportação
-  const handleExportXLSX = async () => {
-    try {
-      const params = {
-        search: debouncedSearch.debouncedSearchTerm || undefined,
-        status: statusFilter || undefined,
-        usuario_id: usuarioFilter || undefined,
-        supervisor_id: supervisorFilter || undefined,
-        coordenador_id: coordenadorFilter || undefined
-      };
-
-      await exportToXLSX(() => RotasNutricionistasService.exportarXLSX(params), 'rotas-nutricionistas');
-    } catch (error) {
-      console.error('Erro ao exportar XLSX:', error);
-      toast.error('Erro ao exportar para Excel');
-    }
-  };
-
-  const handleExportPDF = async () => {
-    try {
-      const params = {
-        search: debouncedSearch.debouncedSearchTerm || undefined,
-        status: statusFilter || undefined,
-        usuario_id: usuarioFilter || undefined,
-        supervisor_id: supervisorFilter || undefined,
-        coordenador_id: coordenadorFilter || undefined
-      };
-
-      await exportToPDF(() => RotasNutricionistasService.exportarPDF(params), 'rotas-nutricionistas');
-    } catch (error) {
-      console.error('Erro ao exportar PDF:', error);
-      toast.error('Erro ao exportar para PDF');
-    }
-  };
+  // Carregar dados quando filtros ou paginação mudam
+  useEffect(() => {
+    loadDataWithFilters();
+  }, [
+    customFilters.searchTerm,
+    customFilters.statusFilter,
+    customFilters.filters.usuarioFilter,
+    customFilters.filters.supervisorFilter,
+    customFilters.filters.coordenadorFilter,
+    customFilters.filters.filialFilter,
+    baseEntity.currentPage,
+    baseEntity.itemsPerPage
+  ]);
 
   return {
-    // Estados principais
-    rotas: isSortingLocally ? rotasOrdenadas : rotas,
+    // Estados principais (do hook base)
+    rotas: isSortingLocally ? rotasOrdenadas : baseEntity.items,
+    loading: baseEntity.loading,
     
     // Estados de ordenação
     sortField,
     sortDirection,
     isSortingLocally,
-    loading,
-    saving,
-    error,
-
-    // Estados de paginação
-    currentPage,
-    totalPages,
-    totalItems,
-    itemsPerPage,
-
-    // Estados de filtro
-    searchTerm: debouncedSearch.searchTerm,
-    isSearching: debouncedSearch.isSearching,
-    statusFilter,
-    usuarioFilter,
-    supervisorFilter,
-    coordenadorFilter,
-
-    // Estados de modal
-    showModal,
-    modalMode,
-    selectedRota,
-
-    // Estados de confirmação
-    showDeleteModal,
-    rotaToDelete,
-
+    handleSort,
+    
+    // Estados de modal (do hook base)
+    showModal: baseEntity.showModal,
+    viewMode: baseEntity.viewMode,
+    selectedRota: baseEntity.editingItem,
+    modalMode: baseEntity.viewMode ? 'view' : (baseEntity.editingItem ? 'edit' : 'create'),
+    
+    // Estados de exclusão (do hook base)
+    showDeleteModal: baseEntity.showDeleteConfirmModal,
+    rotaToDelete: baseEntity.itemToDelete,
+    
+    // Estados de paginação (do hook base)
+    currentPage: baseEntity.currentPage,
+    totalPages: baseEntity.totalPages,
+    totalItems: baseEntity.totalItems,
+    itemsPerPage: baseEntity.itemsPerPage,
+    
+    // Estados de filtros
+    searchTerm: customFilters.searchTerm || baseEntity.searchTerm,
+    statusFilter: customFilters.statusFilter || '',
+    usuarioFilter: customFilters.filters.usuarioFilter || '',
+    supervisorFilter: customFilters.filters.supervisorFilter || '',
+    coordenadorFilter: customFilters.filters.coordenadorFilter || '',
+    filialFilter: customFilters.filters.filialFilter || 'todos',
+    
+    // Estados de validação (do hook base)
+    validationErrors: baseEntity.validationErrors,
+    showValidationModal: baseEntity.showValidationModal,
+    
     // Estados para dados relacionados
     usuarios,
     supervisores,
     coordenadores,
     unidadesEscolares,
+    filiais,
     loadingUsuarios,
-
+    loadingFiliais,
+    
     // Estados de estatísticas
-    estatisticas,
-
-    // Estados de auditoria
-    showAuditModal,
-
-    // Estados de exportação
-    exporting,
-
-    // Funções principais
-    loadRotas,
+    estatisticas: baseEntity.estatisticas,
+    
+    // Ações de modal (customizadas)
+    openCreateModal: baseEntity.handleAdd,
+    openViewModal: (rota) => baseEntity.handleView(rota),
+    openEditModal: (rota) => baseEntity.handleEdit(rota),
+    closeModal: baseEntity.handleCloseModal,
+    handleSave: onSubmitCustom,
+    
+    // Ações de paginação (do hook base)
+    handlePageChange: baseEntity.handlePageChange,
+    handleItemsPerPageChange: baseEntity.handleItemsPerPageChange,
+    handleLimitChange: baseEntity.handleItemsPerPageChange, // Alias para compatibilidade
+    
+    // Ações de filtros
+    handleSearch: customFilters.setSearchTerm,
+    setSearchTerm: customFilters.setSearchTerm,
+    handleKeyPress,
+    handleStatusFilter: customFilters.setStatusFilter,
+    handleUsuarioFilter: (value) => {
+      customFilters.updateFilter('usuarioFilter', value);
+      baseEntity.handlePageChange(1);
+    },
+    handleSupervisorFilter: (value) => {
+      customFilters.updateFilter('supervisorFilter', value);
+      baseEntity.handlePageChange(1);
+    },
+    handleCoordenadorFilter: (value) => {
+      customFilters.updateFilter('coordenadorFilter', value);
+      baseEntity.handlePageChange(1);
+    },
+    handleFilialFilter: (value) => {
+      customFilters.updateFilter('filialFilter', value);
+      baseEntity.handlePageChange(1);
+    },
+    setFilialFilter: (value) => customFilters.updateFilter('filialFilter', value),
+    clearFilters: handleClearFilters,
+    
+    // Ações de CRUD (customizadas)
+    onSubmit: onSubmitCustom,
+    handleDelete: handleDeleteCustom,
+    openDeleteModal: baseEntity.handleDelete,
+    closeDeleteModal: baseEntity.handleCloseDeleteModal,
+    
+    // Ações de validação (do hook base)
+    handleCloseValidationModal: baseEntity.handleCloseValidationModal,
+    
+    // Funções de carregamento
     loadUsuarios,
-
-    // Funções de modal
-    openCreateModal,
-    openEditModal,
-    openViewModal,
-    closeModal,
-    handleSave,
-
-    // Funções de exclusão
-    openDeleteModal,
-    closeDeleteModal,
-    handleDelete,
-
-    // Funções de paginação
-    handlePageChange,
-    handleLimitChange,
-
-    // Funções de filtro
-    handleSearch,
-    setSearchTerm: debouncedSearch.updateSearchTerm,
-    handleKeyPress: debouncedSearch.handleKeyPress,
-    clearSearch: debouncedSearch.clearSearch,
-    handleStatusFilter,
-    handleUsuarioFilter,
-    handleSupervisorFilter,
-    handleCoordenadorFilter,
-    clearFilters,
-
-    // Funções de exportação
-    handleExportXLSX,
-    handleExportPDF,
-
-    // Funções de auditoria
-    openAuditModal,
-    closeAuditModal,
-
+    loadRotas: loadDataWithFilters,
+    
     // Filtros inteligentes
     filtrarUsuariosPorFilial,
     filtrarUnidadesEscolaresPorFilial,
     
-    // Ações de ordenação
-    handleSort
+    // Estados adicionais para compatibilidade
+    saving: baseEntity.loading,
+    error: null
   };
 };
+

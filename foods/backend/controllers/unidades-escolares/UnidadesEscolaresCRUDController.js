@@ -39,19 +39,36 @@ class UnidadesEscolaresCRUDController {
         almoxarifado_id
       } = req.body;
 
-      // Verificar se a rota existe (se fornecida)
+      // Verificar se as rotas existem (se fornecidas)
+      // rota_id pode ser um único ID, array de IDs, ou string com vírgulas
+      let rotasIds = [];
       if (rota_id) {
-        const rota = await executeQuery(
-          'SELECT id FROM rotas WHERE id = ?',
-          [rota_id]
-        );
+        if (Array.isArray(rota_id)) {
+          rotasIds = rota_id.map(id => parseInt(id)).filter(id => !isNaN(id) && id > 0);
+        } else if (typeof rota_id === 'string' && rota_id.includes(',')) {
+          rotasIds = rota_id.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id) && id > 0);
+        } else {
+          const rotaIdNum = parseInt(rota_id);
+          if (!isNaN(rotaIdNum) && rotaIdNum > 0) {
+            rotasIds = [rotaIdNum];
+          }
+        }
 
-        if (rota.length === 0) {
-          return res.status(400).json({
-            success: false,
-            error: 'Rota não encontrada',
-            message: 'A rota especificada não foi encontrada'
-          });
+        // Verificar se todas as rotas existem
+        if (rotasIds.length > 0) {
+          const placeholders = rotasIds.map(() => '?').join(',');
+          const rotasExistentes = await executeQuery(
+            `SELECT id FROM rotas WHERE id IN (${placeholders})`,
+            rotasIds
+          );
+
+          if (rotasExistentes.length !== rotasIds.length) {
+            return res.status(400).json({
+              success: false,
+              error: 'Rota não encontrada',
+              message: 'Uma ou mais rotas especificadas não foram encontradas'
+            });
+          }
         }
       }
 
@@ -170,9 +187,42 @@ class UnidadesEscolaresCRUDController {
       const result = await executeQuery(insertQuery, insertParams);
       const newId = result.insertId;
 
-      // Buscar unidade escolar criada
+      // Criar relacionamentos com rotas na nova tabela normalizada
+      if (rotasIds.length > 0) {
+        for (const rotaId of rotasIds) {
+          try {
+            await executeQuery(
+              'INSERT INTO unidades_escolares_rotas (unidade_escolar_id, rota_id) VALUES (?, ?)',
+              [newId, rotaId]
+            );
+          } catch (error) {
+            // Ignorar erro de duplicata (já existe o relacionamento)
+            if (error.code !== 'ER_DUP_ENTRY') {
+              throw error;
+            }
+          }
+        }
+      }
+
+      // Buscar unidade escolar criada com rotas agregadas
       const newUnidade = await executeQuery(
-        'SELECT ue.*, r.nome as rota_nome, f.filial as filial_nome, cc.codigo as centro_custo_codigo, cc.nome as centro_custo_nome, a.codigo as almoxarifado_codigo, a.nome as almoxarifado_nome FROM unidades_escolares ue LEFT JOIN rotas r ON ue.rota_id = r.id LEFT JOIN filiais f ON ue.filial_id = f.id LEFT JOIN centro_custo cc ON ue.centro_custo_id = cc.id LEFT JOIN almoxarifado a ON ue.almoxarifado_id = a.id WHERE ue.id = ?',
+        `SELECT 
+          ue.*, 
+          GROUP_CONCAT(DISTINCT r.nome ORDER BY r.nome SEPARATOR ', ') as rota_nome,
+          GROUP_CONCAT(DISTINCT uer.rota_id ORDER BY uer.rota_id SEPARATOR ',') as rota_id,
+          f.filial as filial_nome, 
+          cc.codigo as centro_custo_codigo, 
+          cc.nome as centro_custo_nome, 
+          a.codigo as almoxarifado_codigo, 
+          a.nome as almoxarifado_nome 
+        FROM unidades_escolares ue 
+        LEFT JOIN unidades_escolares_rotas uer ON ue.id = uer.unidade_escolar_id
+        LEFT JOIN rotas r ON uer.rota_id = r.id
+        LEFT JOIN filiais f ON ue.filial_id = f.id 
+        LEFT JOIN centro_custo cc ON ue.centro_custo_id = cc.id 
+        LEFT JOIN almoxarifado a ON ue.almoxarifado_id = a.id 
+        WHERE ue.id = ?
+        GROUP BY ue.id, f.filial, cc.codigo, cc.nome, a.codigo, a.nome`,
         [newId]
       );
 
@@ -348,10 +398,8 @@ class UnidadesEscolaresCRUDController {
         updateFields.push('centro_distribuicao = ?');
         updateParams.push(centro_distribuicao);
       }
-      if (rota_id !== undefined) {
-        updateFields.push('rota_id = ?');
-        updateParams.push(rota_id);
-      }
+      // rota_id será tratado separadamente para atualizar a tabela normalizada
+      // Não atualizar o campo rota_id diretamente (mantido para compatibilidade)
       if (regional !== undefined) {
         updateFields.push('regional = ?');
         updateParams.push(regional);
@@ -438,9 +486,49 @@ class UnidadesEscolaresCRUDController {
         updateParams
       );
 
-      // Buscar unidade escolar atualizada
+      // Atualizar relacionamentos com rotas na nova tabela normalizada
+      if (rota_id !== undefined) {
+        // Remover relacionamentos antigos
+        await executeQuery(
+          'DELETE FROM unidades_escolares_rotas WHERE unidade_escolar_id = ?',
+          [id]
+        );
+
+        // Adicionar novos relacionamentos
+        if (rotasIds.length > 0) {
+          for (const rotaId of rotasIds) {
+            try {
+              await executeQuery(
+                'INSERT INTO unidades_escolares_rotas (unidade_escolar_id, rota_id) VALUES (?, ?)',
+                [id, rotaId]
+              );
+            } catch (error) {
+              // Ignorar erro de duplicata
+              if (error.code !== 'ER_DUP_ENTRY') {
+                throw error;
+              }
+            }
+          }
+        }
+      }
+
+      // Buscar unidade escolar atualizada com rotas agregadas
       const updatedUnidade = await executeQuery(
-        'SELECT ue.*, r.nome as rota_nome, cc.codigo as centro_custo_codigo, cc.nome as centro_custo_nome, a.codigo as almoxarifado_codigo, a.nome as almoxarifado_nome FROM unidades_escolares ue LEFT JOIN rotas r ON ue.rota_id = r.id LEFT JOIN centro_custo cc ON ue.centro_custo_id = cc.id LEFT JOIN almoxarifado a ON ue.almoxarifado_id = a.id WHERE ue.id = ?',
+        `SELECT 
+          ue.*, 
+          GROUP_CONCAT(DISTINCT r.nome ORDER BY r.nome SEPARATOR ', ') as rota_nome,
+          GROUP_CONCAT(DISTINCT uer.rota_id ORDER BY uer.rota_id SEPARATOR ',') as rota_id,
+          cc.codigo as centro_custo_codigo, 
+          cc.nome as centro_custo_nome, 
+          a.codigo as almoxarifado_codigo, 
+          a.nome as almoxarifado_nome 
+        FROM unidades_escolares ue 
+        LEFT JOIN unidades_escolares_rotas uer ON ue.id = uer.unidade_escolar_id
+        LEFT JOIN rotas r ON uer.rota_id = r.id
+        LEFT JOIN centro_custo cc ON ue.centro_custo_id = cc.id 
+        LEFT JOIN almoxarifado a ON ue.almoxarifado_id = a.id 
+        WHERE ue.id = ?
+        GROUP BY ue.id, cc.codigo, cc.nome, a.codigo, a.nome`,
         [id]
       );
 

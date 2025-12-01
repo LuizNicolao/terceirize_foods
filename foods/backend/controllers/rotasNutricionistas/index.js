@@ -14,6 +14,7 @@ module.exports = {
   atualizar: RotasNutricionistasCRUDController.atualizar,
   excluir: RotasNutricionistasCRUDController.excluir,
   buscarRotasAtivas: RotasNutricionistasCRUDController.buscarRotasAtivas,
+  buscarEscolasDisponiveis: RotasNutricionistasCRUDController.buscarEscolasDisponiveis,
 
   // Controller para exportação
   exportarXLSX: RotasNutricionistasExportController.exportarXLSX,

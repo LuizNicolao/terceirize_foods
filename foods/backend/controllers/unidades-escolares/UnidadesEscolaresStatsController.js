@@ -37,22 +37,14 @@ class UnidadesEscolaresStatsController {
         params.push(req.user.id);
 
         // Filtro 2: Apenas unidades escolares vinculadas ao nutricionista nas rotas nutricionistas
+        // Usa a nova tabela rotas_nutricionistas_escolas (normalizada)
         whereConditions.push(`
           ue.id IN (
-            SELECT DISTINCT CAST(TRIM(SUBSTRING_INDEX(SUBSTRING_INDEX(rn.escolas_responsaveis, ',', numbers.n), ',', -1)) AS UNSIGNED) as escola_id
-            FROM rotas_nutricionistas rn
-            CROSS JOIN (
-              SELECT 1 n UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION 
-              SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9 UNION SELECT 10 UNION
-              SELECT 11 UNION SELECT 12 UNION SELECT 13 UNION SELECT 14 UNION SELECT 15 UNION
-              SELECT 16 UNION SELECT 17 UNION SELECT 18 UNION SELECT 19 UNION SELECT 20
-            ) numbers
+            SELECT rne.unidade_escolar_id
+            FROM rotas_nutricionistas_escolas rne
+            INNER JOIN rotas_nutricionistas rn ON rne.rota_nutricionista_id = rn.id
             WHERE rn.usuario_id = ? 
               AND rn.status = 'ativo'
-              AND rn.escolas_responsaveis IS NOT NULL 
-              AND rn.escolas_responsaveis != ''
-              AND CHAR_LENGTH(rn.escolas_responsaveis) - CHAR_LENGTH(REPLACE(rn.escolas_responsaveis, ',', '')) >= numbers.n - 1
-              AND TRIM(SUBSTRING_INDEX(SUBSTRING_INDEX(rn.escolas_responsaveis, ',', numbers.n), ',', -1)) != ''
           )
         `);
         params.push(req.user.id);
@@ -90,9 +82,19 @@ class UnidadesEscolaresStatsController {
       }
 
       // Filtro por rota
+      // Usa a nova tabela unidades_escolares_rotas (normalizada)
       if (rota_id) {
-        whereConditions.push('ue.rota_id = ?');
-        params.push(rota_id);
+        const rotaIdNum = parseInt(rota_id, 10);
+        if (!isNaN(rotaIdNum)) {
+          whereConditions.push(`
+            ue.id IN (
+              SELECT uer.unidade_escolar_id
+              FROM unidades_escolares_rotas uer
+              WHERE uer.rota_id = ?
+            )
+          `);
+          params.push(rotaIdNum);
+        }
       }
 
       // Filtro por filial

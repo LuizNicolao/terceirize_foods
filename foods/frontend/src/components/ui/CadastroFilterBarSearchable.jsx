@@ -56,8 +56,11 @@ const CadastroFilterBarSearchable = ({
 
       {/* Filtros adicionais */}
       {additionalFilters.map((filter, index) => {
-        if (useSearchableSelect && filter.options && filter.options.length > 10) {
-          // Usar SearchableSelect para listas grandes
+        // Usar SearchableSelect se useSearchableSelect=true E (lista grande OU useSearchable=true no filtro)
+        const shouldUseSearchable = (useSearchableSelect && filter.options && filter.options.length > 10) || filter.useSearchable;
+        
+        if (shouldUseSearchable) {
+          // Usar SearchableSelect para listas grandes ou quando explicitamente solicitado
           return (
             <div key={index} className="min-w-[200px]">
               <SearchableSelect
@@ -67,6 +70,8 @@ const CadastroFilterBarSearchable = ({
                 options={filter.options}
                 placeholder={`Selecionar ${filter.label.toLowerCase()}...`}
                 disabled={filter.disabled}
+                showClearButton={true}
+                usePortal={false}
                 filterBy={(option, searchTerm) => {
                   const label = option.label.toLowerCase();
                   const term = searchTerm.toLowerCase();

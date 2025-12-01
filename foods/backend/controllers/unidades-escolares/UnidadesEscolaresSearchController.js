@@ -29,20 +29,11 @@ class UnidadesEscolaresSearchController {
         // Filtro 2: Apenas unidades escolares vinculadas ao nutricionista nas rotas nutricionistas
         whereConditions.push(`
           ue.id IN (
-            SELECT DISTINCT CAST(TRIM(SUBSTRING_INDEX(SUBSTRING_INDEX(rn.escolas_responsaveis, ',', numbers.n), ',', -1)) AS UNSIGNED) as escola_id
-            FROM rotas_nutricionistas rn
-            CROSS JOIN (
-              SELECT 1 n UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION 
-              SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9 UNION SELECT 10 UNION
-              SELECT 11 UNION SELECT 12 UNION SELECT 13 UNION SELECT 14 UNION SELECT 15 UNION
-              SELECT 16 UNION SELECT 17 UNION SELECT 18 UNION SELECT 19 UNION SELECT 20
-            ) numbers
+            SELECT rne.unidade_escolar_id
+            FROM rotas_nutricionistas_escolas rne
+            INNER JOIN rotas_nutricionistas rn ON rne.rota_nutricionista_id = rn.id
             WHERE rn.usuario_id = ? 
               AND rn.status = 'ativo'
-              AND rn.escolas_responsaveis IS NOT NULL 
-              AND rn.escolas_responsaveis != ''
-              AND CHAR_LENGTH(rn.escolas_responsaveis) - CHAR_LENGTH(REPLACE(rn.escolas_responsaveis, ',', '')) >= numbers.n - 1
-              AND TRIM(SUBSTRING_INDEX(SUBSTRING_INDEX(rn.escolas_responsaveis, ',', numbers.n), ',', -1)) != ''
           )
         `);
         params.push(req.user.id);
@@ -128,18 +119,25 @@ class UnidadesEscolaresSearchController {
         SELECT 
           ue.id, ue.codigo_teknisa, ue.nome_escola, ue.cidade, ue.estado, 
           ue.endereco, ue.numero, ue.bairro, ue.cep,
-          ue.centro_distribuicao, ue.rota_id, ue.ordem_entrega, ue.status,
+          ue.centro_distribuicao, 
+          GROUP_CONCAT(DISTINCT uer.rota_id ORDER BY uer.rota_id SEPARATOR ',') as rota_id,
+          ue.ordem_entrega, ue.status,
           ue.filial_id,
-          (SELECT nome FROM rotas WHERE id = ?) as rota_nome,
+          r.nome as rota_nome,
           f.filial as filial_nome,
           f.codigo_filial as filial_codigo
         FROM unidades_escolares ue
+        INNER JOIN unidades_escolares_rotas uer ON ue.id = uer.unidade_escolar_id
+        INNER JOIN rotas r ON uer.rota_id = r.id
         LEFT JOIN filiais f ON ue.filial_id = f.id
-        WHERE ue.rota_id IS NOT NULL AND ue.rota_id != "" AND FIND_IN_SET(?, ue.rota_id) > 0 AND ue.status = 'ativo'
+        WHERE uer.rota_id = ? AND ue.status = 'ativo'
+        GROUP BY ue.id, ue.codigo_teknisa, ue.nome_escola, ue.cidade, ue.estado, 
+          ue.endereco, ue.numero, ue.bairro, ue.cep, ue.centro_distribuicao, 
+          ue.ordem_entrega, ue.status, ue.filial_id, r.nome, f.filial, f.codigo_filial
         ORDER BY ue.ordem_entrega ASC, ue.nome_escola ASC
       `;
 
-      const unidades = await executeQuery(query, [rotaId, rotaId]);
+      const unidades = await executeQuery(query, [rotaId]);
 
       res.json({
         success: true,
@@ -293,20 +291,11 @@ class UnidadesEscolaresSearchController {
         // Filtro 2: Apenas unidades escolares vinculadas ao nutricionista nas rotas nutricionistas
         whereConditions.push(`
           ue.id IN (
-            SELECT DISTINCT CAST(TRIM(SUBSTRING_INDEX(SUBSTRING_INDEX(rn.escolas_responsaveis, ',', numbers.n), ',', -1)) AS UNSIGNED) as escola_id
-            FROM rotas_nutricionistas rn
-            CROSS JOIN (
-              SELECT 1 n UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION 
-              SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9 UNION SELECT 10 UNION
-              SELECT 11 UNION SELECT 12 UNION SELECT 13 UNION SELECT 14 UNION SELECT 15 UNION
-              SELECT 16 UNION SELECT 17 UNION SELECT 18 UNION SELECT 19 UNION SELECT 20
-            ) numbers
+            SELECT rne.unidade_escolar_id
+            FROM rotas_nutricionistas_escolas rne
+            INNER JOIN rotas_nutricionistas rn ON rne.rota_nutricionista_id = rn.id
             WHERE rn.usuario_id = ? 
               AND rn.status = 'ativo'
-              AND rn.escolas_responsaveis IS NOT NULL 
-              AND rn.escolas_responsaveis != ''
-              AND CHAR_LENGTH(rn.escolas_responsaveis) - CHAR_LENGTH(REPLACE(rn.escolas_responsaveis, ',', '')) >= numbers.n - 1
-              AND TRIM(SUBSTRING_INDEX(SUBSTRING_INDEX(rn.escolas_responsaveis, ',', numbers.n), ',', -1)) != ''
           )
         `);
         params.push(req.user.id);
@@ -392,20 +381,11 @@ class UnidadesEscolaresSearchController {
         // Filtro 2: Apenas unidades escolares vinculadas ao nutricionista nas rotas nutricionistas
         whereConditions.push(`
           ue.id IN (
-            SELECT DISTINCT CAST(TRIM(SUBSTRING_INDEX(SUBSTRING_INDEX(rn.escolas_responsaveis, ',', numbers.n), ',', -1)) AS UNSIGNED) as escola_id
-            FROM rotas_nutricionistas rn
-            CROSS JOIN (
-              SELECT 1 n UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION 
-              SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9 UNION SELECT 10 UNION
-              SELECT 11 UNION SELECT 12 UNION SELECT 13 UNION SELECT 14 UNION SELECT 15 UNION
-              SELECT 16 UNION SELECT 17 UNION SELECT 18 UNION SELECT 19 UNION SELECT 20
-            ) numbers
+            SELECT rne.unidade_escolar_id
+            FROM rotas_nutricionistas_escolas rne
+            INNER JOIN rotas_nutricionistas rn ON rne.rota_nutricionista_id = rn.id
             WHERE rn.usuario_id = ? 
               AND rn.status = 'ativo'
-              AND rn.escolas_responsaveis IS NOT NULL 
-              AND rn.escolas_responsaveis != ''
-              AND CHAR_LENGTH(rn.escolas_responsaveis) - CHAR_LENGTH(REPLACE(rn.escolas_responsaveis, ',', '')) >= numbers.n - 1
-              AND TRIM(SUBSTRING_INDEX(SUBSTRING_INDEX(rn.escolas_responsaveis, ',', numbers.n), ',', -1)) != ''
           )
         `);
         params.push(req.user.id);

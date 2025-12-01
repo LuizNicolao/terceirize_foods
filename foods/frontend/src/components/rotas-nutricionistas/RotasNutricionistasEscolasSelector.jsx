@@ -2,13 +2,15 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { FaSchool, FaSearch, FaCheck, FaTimes } from 'react-icons/fa';
 import { Button } from '../ui';
 import UnidadesEscolaresService from '../../services/unidadesEscolares';
+import RotasNutricionistasService from '../../services/rotasNutricionistas';
 
 const RotasNutricionistasEscolasSelector = ({ 
   escolasSelecionadas, 
   onEscolasChange, 
   isViewMode = false,
   unidadesEscolaresFiltradas = [],
-  watchedUsuarioId
+  watchedUsuarioId,
+  rotaId = null // ID da rota atual (para edição)
 }) => {
   // Estados para interface de escolas
   const [searchEscolas, setSearchEscolas] = useState('');
@@ -16,6 +18,8 @@ const RotasNutricionistasEscolasSelector = ({
   const [todasEscolas, setTodasEscolas] = useState([]);
 
   // Carregar escolas disponíveis - APENAS quando nutricionista for selecionada
+  // Usa apenas escolas das filiais da nutricionista e exclui escolas já vinculadas a outras rotas
+  // No modo de edição, também carrega as escolas já vinculadas à rota atual
   const carregarEscolasDisponiveis = useCallback(async () => {
     if (!watchedUsuarioId) {
       setTodasEscolas([]);
@@ -24,33 +28,115 @@ const RotasNutricionistasEscolasSelector = ({
 
     try {
       setEscolasLoading(true);
-      const params = {
-        page: 1,
-        limit: 1000, // Carregar muitas escolas de uma vez
-        search: searchEscolas || undefined,
-        status: 'ativo' // Apenas escolas ativas
-      };
       
-      const result = await UnidadesEscolaresService.listar(params);
-      
-      if (result.success) {
-        setTodasEscolas(result.data || []);
+      let todasEscolasUnicas = [];
+
+      // Se estiver editando (tem rotaId), primeiro carregar as escolas já vinculadas à rota
+      if (rotaId) {
+        try {
+          // Buscar a rota para obter as escolas vinculadas
+          const rotaResult = await RotasNutricionistasService.buscarPorId(rotaId);
+          if (rotaResult.success && rotaResult.data && rotaResult.data.escolas_responsaveis) {
+            const escolasIds = rotaResult.data.escolas_responsaveis
+              .split(',')
+              .map(id => parseInt(id.trim()))
+              .filter(id => !isNaN(id) && id > 0);
+            
+            if (escolasIds.length > 0) {
+              const escolasVinculadasResult = await UnidadesEscolaresService.buscarPorIds(escolasIds);
+              if (escolasVinculadasResult.success && escolasVinculadasResult.data) {
+                todasEscolasUnicas = escolasVinculadasResult.data;
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Erro ao carregar escolas vinculadas:', error);
+        }
       }
+
+      // Buscar filiais da nutricionista e escolas disponíveis
+      const filiaisResult = await RotasNutricionistasService.buscarFiliaisUsuario(watchedUsuarioId);
+      
+      if (filiaisResult.success && filiaisResult.data && filiaisResult.data.length > 0) {
+        // Buscar escolas disponíveis de cada filial (excluindo já vinculadas a outras rotas)
+        const escolasPromises = filiaisResult.data.map(async (filial) => {
+          const result = await RotasNutricionistasService.buscarEscolasDisponiveis(filial.id, rotaId);
+          return result.success ? result.data : [];
+        });
+
+        const escolasPorFilial = await Promise.all(escolasPromises);
+        const escolasDisponiveis = [...new Map(
+          escolasPorFilial.flat().map(escola => [escola.id, escola])
+        ).values()];
+
+        // Combinar escolas vinculadas com escolas disponíveis (evitando duplicatas)
+        const escolasMap = new Map(todasEscolasUnicas.map(e => [e.id, e]));
+        escolasDisponiveis.forEach(escola => {
+          if (!escolasMap.has(escola.id)) {
+            escolasMap.set(escola.id, escola);
+          }
+        });
+        todasEscolasUnicas = Array.from(escolasMap.values());
+      }
+
+      // Aplicar filtro de busca se houver
+      let escolasFiltradas = todasEscolasUnicas;
+      if (searchEscolas && searchEscolas.trim()) {
+        const termoBusca = searchEscolas.toLowerCase().trim();
+        escolasFiltradas = todasEscolasUnicas.filter(escola =>
+          escola.nome_escola?.toLowerCase().includes(termoBusca) ||
+          escola.codigo_teknisa?.toLowerCase().includes(termoBusca) ||
+          escola.cidade?.toLowerCase().includes(termoBusca) ||
+          escola.estado?.toLowerCase().includes(termoBusca)
+        );
+      }
+
+      setTodasEscolas(escolasFiltradas);
     } catch (error) {
       console.error('Erro ao carregar escolas:', error);
+      setTodasEscolas([]);
     } finally {
       setEscolasLoading(false);
     }
-  }, [watchedUsuarioId, searchEscolas]);
+  }, [watchedUsuarioId, searchEscolas, rotaId]);
 
-  // Carregar escolas quando nutricionista for selecionada
+  // Carregar escolas quando nutricionista for selecionada ou quando escolas selecionadas mudarem (modo edição)
   useEffect(() => {
     if (watchedUsuarioId && !isViewMode) {
       carregarEscolasDisponiveis();
     } else if (!watchedUsuarioId) {
       setTodasEscolas([]);
     }
-  }, [watchedUsuarioId, carregarEscolasDisponiveis, isViewMode]);
+  }, [watchedUsuarioId, carregarEscolasDisponiveis, isViewMode, rotaId]);
+
+  // No modo de visualização, carregar as escolas selecionadas
+  useEffect(() => {
+    const carregarEscolasSelecionadas = async () => {
+      if (isViewMode && escolasSelecionadas.length > 0 && watchedUsuarioId) {
+        try {
+          setEscolasLoading(true);
+          // Buscar as escolas específicas pelos IDs usando o método otimizado
+          const result = await UnidadesEscolaresService.buscarPorIds(escolasSelecionadas);
+          
+          if (result.success) {
+            setTodasEscolas(result.data || []);
+          } else {
+            console.error('Erro ao buscar escolas:', result.error);
+            setTodasEscolas([]);
+          }
+        } catch (error) {
+          console.error('Erro ao carregar escolas selecionadas:', error);
+          setTodasEscolas([]);
+        } finally {
+          setEscolasLoading(false);
+        }
+      } else if (isViewMode && escolasSelecionadas.length === 0) {
+        setTodasEscolas([]);
+      }
+    };
+
+    carregarEscolasSelecionadas();
+  }, [isViewMode, escolasSelecionadas, watchedUsuarioId]);
 
   // Gerenciar seleção de escolas
   const handleSelecionarEscola = (escola, checked) => {
@@ -256,3 +342,4 @@ const RotasNutricionistasEscolasSelector = ({
 };
 
 export default RotasNutricionistasEscolasSelector;
+

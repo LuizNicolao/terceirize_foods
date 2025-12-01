@@ -25,27 +25,32 @@ const DadosParaEntrega = ({
       }
 
       setCarregandoAlmoxarifados(true);
+      
+      const params = { 
+        filial_id: filialParaBuscar, 
+        status: 1,
+        tipo_vinculo: 'filial' // Filtrar apenas almoxarifados do tipo "filial"
+      };
+      
       try {
         // Buscar apenas almoxarifados do tipo "filial" vinculados à filial
-        const response = await almoxarifadoService.listar({ 
-          filial_id: filialParaBuscar, 
-          status: 1 
-        });
+        const response = await almoxarifadoService.listar(params);
         
         if (response.success) {
           const dados = response.data?.data || response.data || [];
-          // Filtrar apenas os do tipo "filial"
-          let almoxarifadosFiliais = dados.filter(
-            almox => almox.tipo_vinculo === 'filial' || (!almox.tipo_vinculo && !almox.unidade_escolar_id)
-          );
+          
+          // O filtro já foi feito no backend, então apenas usar os dados retornados
+          let almoxarifadosFiliais = dados;
           
           // Se houver um almoxarifado_id selecionado mas ele não estiver na lista, buscar separadamente
           if (formData.almoxarifado_id && !almoxarifadosFiliais.find(a => String(a.id) === String(formData.almoxarifado_id))) {
             try {
               const almoxarifadoResponse = await almoxarifadoService.buscarPorId(formData.almoxarifado_id);
               if (almoxarifadoResponse.success && almoxarifadoResponse.data) {
-                // Adicionar o almoxarifado selecionado no início da lista
+                // Adicionar o almoxarifado selecionado no início da lista apenas se for do tipo "filial"
+                if (almoxarifadoResponse.data.tipo_vinculo === 'filial' || (!almoxarifadoResponse.data.tipo_vinculo && !almoxarifadoResponse.data.unidade_escolar_id)) {
                 almoxarifadosFiliais = [almoxarifadoResponse.data, ...almoxarifadosFiliais];
+                }
               }
             } catch (error) {
               console.error('Erro ao buscar almoxarifado selecionado:', error);
