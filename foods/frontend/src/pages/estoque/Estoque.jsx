@@ -37,6 +37,7 @@ const Estoque = () => {
     handleItemsPerPageChange,
     setSearchTerm,
     handleKeyPress,
+    handleApplyFilters,
     filialFilter,
     setFilialFilter,
     filiais,
@@ -132,6 +133,8 @@ const Estoque = () => {
         onSearchChange={setSearchTerm}
         onKeyPress={handleKeyPress}
         onClear={handleClearFilters}
+        onApplyFilters={handleApplyFilters}
+        showApplyButton={true}
         placeholder="Buscar por produto, almoxarifado ou lote..."
         useSearchableSelect={true}
         additionalFilters={[
@@ -259,4 +262,6 @@ const Estoque = () => {
 };
 
 export default Estoque;
+
+
 

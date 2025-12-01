@@ -1,8 +1,38 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { Modal, Input, Button, SearchableSelect } from '../ui';
+import SortableTableHeader from '../ui/SortableTableHeader';
+import ExportButtons from '../shared/ExportButtons';
+import { exportarVariacoesXLSX, exportarVariacoesPDF } from '../../utils/exportEstoqueVariacoes';
 import almoxarifadoService from '../../services/almoxarifadoService';
 import produtoGenericoService from '../../services/produtoGenerico';
 import api from '../../services/api';
+
+// Funções de formatação
+const formatCurrency = (value) => {
+  if (value === null || value === undefined || value === '') return '-';
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL'
+  }).format(value);
+};
+
+const formatNumber = (value, decimals = 3) => {
+  if (value === null || value === undefined) return '-';
+  return new Intl.NumberFormat('pt-BR', {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals
+  }).format(value);
+};
+
+const formatDate = (dateString) => {
+  if (!dateString) return '-';
+  try {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('pt-BR');
+  } catch {
+    return dateString;
+  }
+};
 
 const EstoqueModal = ({ 
   isOpen, 
@@ -18,6 +48,8 @@ const EstoqueModal = ({
   const [carregandoProdutosGenericos, setCarregandoProdutosGenericos] = useState(false);
   const [almoxarifadoSelecionado, setAlmoxarifadoSelecionado] = useState('');
   const [produtoGenericoSelecionado, setProdutoGenericoSelecionado] = useState('');
+  const [sortField, setSortField] = useState(null);
+  const [sortDirection, setSortDirection] = useState('asc');
 
   // Carregar almoxarifados ativos
   useEffect(() => {
@@ -85,14 +117,247 @@ const EstoqueModal = ({
     }
   }, [isOpen]);
 
+  // Função de ordenação
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  // Ordenar variações (usando useMemo para otimização)
+  const variacoesOrdenadas = useMemo(() => {
+    if (!isViewMode || !estoque || !estoque.variacoes || !Array.isArray(estoque.variacoes) || !sortField) {
+      return [];
+    }
+
+    const sorted = [...estoque.variacoes].sort((a, b) => {
+      let aValue = a[sortField];
+      let bValue = b[sortField];
+
+      // Tratamento especial para campos numéricos
+      if (sortField === 'quantidade_atual' || sortField === 'valor_unitario_medio' || sortField === 'valor_total') {
+        aValue = parseFloat(aValue) || 0;
+        bValue = parseFloat(bValue) || 0;
+        return aValue - bValue;
+      }
+
+      // Tratamento especial para datas
+      if (sortField === 'data_validade') {
+        aValue = aValue ? new Date(aValue) : new Date(0);
+        bValue = bValue ? new Date(bValue) : new Date(0);
+        return aValue - bValue;
+      }
+
+      // Tratamento para strings
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        return aValue.localeCompare(bValue, 'pt-BR', { sensitivity: 'base' });
+      }
+
+      // Fallback
+      aValue = aValue ?? '';
+      bValue = bValue ?? '';
+      return String(aValue).localeCompare(String(bValue), 'pt-BR', { sensitivity: 'base' });
+    });
+
+    return sortDirection === 'desc' ? sorted.reverse() : sorted;
+  }, [isViewMode, estoque, sortField, sortDirection]);
+
+  // Se estiver em modo de visualização e tiver variações, mostrar tabela de variações
+  if (isViewMode && estoque && estoque.variacoes && Array.isArray(estoque.variacoes)) {
+    // Usar variações ordenadas se houver ordenação, senão usar as originais
+    const variacoesParaExibir = sortField ? variacoesOrdenadas : estoque.variacoes;
+
+    // Calcular totais das variações
+    const quantidadeTotal = estoque.variacoes.reduce((sum, variacao) => {
+      return sum + (parseFloat(variacao.quantidade_atual) || 0);
+    }, 0);
+    
+    const valorTotal = estoque.variacoes.reduce((sum, variacao) => {
+      return sum + (parseFloat(variacao.valor_total) || 0);
+    }, 0);
+
+    return (
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        title={`Visualizar Estoque - ${estoque.produto_generico_nome || ''}`}
+        size="full"
+        hideCloseButton={true}
+      >
+        <div className="space-y-4">
+          {/* Botões de Exportação */}
+          <div className="flex justify-end">
+            <ExportButtons
+              onExportXLSX={() => exportarVariacoesXLSX(variacoesParaExibir, {
+                produto_generico_codigo: estoque.produto_generico_codigo,
+                produto_generico_nome: estoque.produto_generico_nome,
+                unidade_medida_sigla: estoque.unidade_medida_sigla,
+                unidade_medida_nome: estoque.unidade_medida_nome
+              })}
+              onExportPDF={() => exportarVariacoesPDF(variacoesParaExibir, {
+                produto_generico_id: estoque.produto_generico_id,
+                produto_generico_codigo: estoque.produto_generico_codigo,
+                produto_generico_nome: estoque.produto_generico_nome,
+                unidade_medida_sigla: estoque.unidade_medida_sigla,
+                unidade_medida_nome: estoque.unidade_medida_nome
+              })}
+              size="md"
+              variant="outline"
+            />
+          </div>
+
+          {/* Informações do Produto */}
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">
+              Informações do Produto
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">Código Produto</label>
+                <p className="text-sm font-medium text-gray-900">{estoque.produto_generico_codigo || '-'}</p>
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">Nome Produto</label>
+                <p className="text-sm font-medium text-gray-900">{estoque.produto_generico_nome || '-'}</p>
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">Unidade de Medida</label>
+                <p className="text-sm font-medium text-gray-900">
+                  {estoque.unidade_medida_sigla || estoque.unidade_medida_nome || '-'}
+                </p>
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">Quantidade Total</label>
+                <p className="text-sm font-semibold text-gray-900">{formatNumber(quantidadeTotal)}</p>
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">Valor Total do Estoque</label>
+                <p className="text-sm font-semibold text-gray-900">{formatCurrency(valorTotal)}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Tabela de Variações */}
+          <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <SortableTableHeader
+                      label="Código Produto"
+                      field="produto_generico_codigo"
+                      currentSort={sortField}
+                      currentDirection={sortDirection}
+                      onSort={handleSort}
+                      className="whitespace-nowrap"
+                    />
+                    <SortableTableHeader
+                      label="Nome Produto"
+                      field="produto_generico_nome"
+                      currentSort={sortField}
+                      currentDirection={sortDirection}
+                      onSort={handleSort}
+                      className="whitespace-nowrap"
+                    />
+                    <SortableTableHeader
+                      label="Unidade de Medida"
+                      field="unidade_medida_sigla"
+                      currentSort={sortField}
+                      currentDirection={sortDirection}
+                      onSort={handleSort}
+                      className="whitespace-nowrap"
+                    />
+                    <SortableTableHeader
+                      label="Lote"
+                      field="lote"
+                      currentSort={sortField}
+                      currentDirection={sortDirection}
+                      onSort={handleSort}
+                      className="whitespace-nowrap"
+                    />
+                    <SortableTableHeader
+                      label="Validade"
+                      field="data_validade"
+                      currentSort={sortField}
+                      currentDirection={sortDirection}
+                      onSort={handleSort}
+                      className="whitespace-nowrap"
+                    />
+                    <SortableTableHeader
+                      label="Quantidade em Estoque"
+                      field="quantidade_atual"
+                      currentSort={sortField}
+                      currentDirection={sortDirection}
+                      onSort={handleSort}
+                      className="whitespace-nowrap"
+                    />
+                    <SortableTableHeader
+                      label="Valor Unitário"
+                      field="valor_unitario_medio"
+                      currentSort={sortField}
+                      currentDirection={sortDirection}
+                      onSort={handleSort}
+                      className="whitespace-nowrap"
+                    />
+                    <SortableTableHeader
+                      label="Valor Total"
+                      field="valor_total"
+                      currentSort={sortField}
+                      currentDirection={sortDirection}
+                      onSort={handleSort}
+                      className="whitespace-nowrap"
+                    />
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {variacoesParaExibir.map((variacao, index) => (
+                    <tr key={variacao.id || index} className="hover:bg-gray-50">
+                      <td className="px-4 py-2 text-sm text-gray-900">
+                        {variacao.produto_generico_codigo || '-'}
+                      </td>
+                      <td className="px-4 py-2 text-sm text-gray-900">
+                        {variacao.produto_generico_nome || '-'}
+                      </td>
+                      <td className="px-4 py-2 text-sm text-gray-900">
+                        {variacao.unidade_medida_sigla || variacao.unidade_medida_nome || '-'}
+                      </td>
+                      <td className="px-4 py-2 text-sm text-gray-900">
+                        {variacao.lote || '-'}
+                      </td>
+                      <td className="px-4 py-2 text-sm text-gray-900">
+                        {formatDate(variacao.data_validade)}
+                      </td>
+                      <td className="px-4 py-2 text-sm text-gray-900">
+                        {formatNumber(variacao.quantidade_atual)}
+                      </td>
+                      <td className="px-4 py-2 text-sm text-gray-900">
+                        {formatCurrency(variacao.valor_unitario_medio)}
+                      </td>
+                      <td className="px-4 py-2 text-sm font-medium text-gray-900">
+                        {formatCurrency(variacao.valor_total)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </Modal>
+    );
+  }
+
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
       title={isViewMode ? 'Visualizar Estoque' : 'Editar Estoque'}
-      size="xl"
+      size="7xl"
     >
-      <form         onSubmit={(e) => {
+      <form onSubmit={(e) => {
         e.preventDefault();
         const formData = new FormData(e.target);
         const data = {

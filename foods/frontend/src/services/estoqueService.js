@@ -12,18 +12,18 @@ class EstoqueService {
       // Estrutura padrão do successResponse: { success, data, meta: { pagination, statistics, links } }
       if (response.data) {
         // Dados podem estar em response.data ou response.data.data
-        if (response.data.data) {
+      if (response.data.data) {
           if (Array.isArray(response.data.data)) {
             estoques = response.data.data;
           } else if (response.data.data.items) {
-            estoques = response.data.data.items;
-          } else {
-            estoques = response.data.data;
-          }
-        } else if (Array.isArray(response.data)) {
-          estoques = response.data;
+          estoques = response.data.data.items;
+        } else {
+          estoques = response.data.data;
         }
-        
+      } else if (Array.isArray(response.data)) {
+        estoques = response.data;
+      }
+      
         // Meta pode estar em response.data.meta ou response.data._meta
         const meta = response.data.meta || response.data._meta;
         if (meta) {
@@ -32,10 +32,10 @@ class EstoqueService {
         }
         
         // Fallback: procurar pagination e statistics diretamente em response.data
-        if (!pagination) {
+      if (!pagination) {
           pagination = response.data.pagination;
-        }
-        if (!statistics) {
+      }
+      if (!statistics) {
           statistics = response.data.statistics;
         }
       }
@@ -155,6 +155,33 @@ class EstoqueService {
       return {
         success: false,
         message: error.response?.data?.message || 'Erro ao excluir estoque'
+      };
+    }
+  }
+
+  /**
+   * Buscar variações (lotes e validades) de um produto genérico
+   */
+  async buscarVariacoes(produtoGenericoId, params = {}) {
+    try {
+      const response = await api.get(`/almoxarifado-estoque/produto/${produtoGenericoId}/variacoes`, { params });
+      
+      let variacoes = [];
+      
+      if (response.data.data) {
+        variacoes = Array.isArray(response.data.data) ? response.data.data : [response.data.data];
+      } else if (Array.isArray(response.data)) {
+        variacoes = response.data;
+      }
+      
+      return {
+        success: true,
+        data: variacoes
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Erro ao buscar variações do produto'
       };
     }
   }

@@ -7,7 +7,8 @@ const Modal = ({
   title, 
   children, 
   size = 'md',
-  className = '' 
+  className = '',
+  hideCloseButton = false
 }) => {
   if (!isOpen) return null;
 
@@ -38,12 +39,14 @@ const Modal = ({
               <h2 className="text-xl font-semibold text-gray-900">
                 {title}
               </h2>
+              {!hideCloseButton && (
               <button
                 onClick={onClose}
                 className="text-gray-400 hover:text-gray-600 transition-colors duration-200"
               >
                 <FaTimes size={20} />
               </button>
+              )}
             </div>
           )}
           

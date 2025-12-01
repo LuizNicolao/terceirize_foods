@@ -32,6 +32,30 @@ router.get('/estatisticas',
   AlmoxarifadoEstoqueController.buscarEstatisticas
 );
 
+// GET /api/almoxarifado-estoque/export/xlsx - Exportar estoques para XLSX
+router.get('/export/xlsx',
+  checkPermission('visualizar'),
+  AlmoxarifadoEstoqueController.exportarXLSX
+);
+
+// GET /api/almoxarifado-estoque/export/pdf - Exportar estoques para PDF
+router.get('/export/pdf',
+  checkPermission('visualizar'),
+  AlmoxarifadoEstoqueController.exportarPDF
+);
+
+// GET /api/almoxarifado-estoque/produto/:produto_generico_id/variacoes - Buscar variações de um produto
+router.get('/produto/:produto_generico_id/variacoes',
+  checkPermission('visualizar'),
+  AlmoxarifadoEstoqueController.buscarVariacoesProduto
+);
+
+// GET /api/almoxarifado-estoque/produto/:produto_generico_id/export/pdf - Exportar variações para PDF
+router.get('/produto/:produto_generico_id/export/pdf',
+  checkPermission('visualizar'),
+  AlmoxarifadoEstoqueController.exportarVariacoesPDF
+);
+
 // GET /api/almoxarifado-estoque/:id - Buscar estoque por ID
 router.get('/:id', 
   checkPermission('visualizar'),
