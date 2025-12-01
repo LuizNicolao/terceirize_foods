@@ -334,6 +334,49 @@ export const useEstoque = () => {
     baseEntity.itemsPerPage
   ]);
 
+  // Calcular estatísticas localmente se não vierem do backend
+  const estatisticasCalculadas = useMemo(() => {
+    const statsFromBackend = baseEntity.statistics;
+    
+    // Se já temos estatísticas do backend, usar elas
+    if (statsFromBackend && (statsFromBackend.total > 0 || statsFromBackend.ativos > 0 || statsFromBackend.bloqueados > 0 || statsFromBackend.inativos > 0)) {
+      return statsFromBackend;
+    }
+    
+    // Caso contrário, calcular localmente baseado nos itens carregados
+    const estoquesList = isSortingLocally ? estoquesOrdenados : baseEntity.items;
+    if (!Array.isArray(estoquesList) || estoquesList.length === 0) {
+      return statsFromBackend || {};
+    }
+    
+    const total = estoquesList.length;
+    const ativos = estoquesList.filter(e => e.status === 'ATIVO' || e.status === 'ativo' || e.status === 1).length;
+    const bloqueados = estoquesList.filter(e => e.status === 'BLOQUEADO' || e.status === 'bloqueado').length;
+    const inativos = estoquesList.filter(e => e.status === 'INATIVO' || e.status === 'inativo' || e.status === 0).length;
+    
+    // Calcular valor total e produtos abaixo do mínimo se possível
+    const valorTotal = estoquesList
+      .filter(e => e.status === 'ATIVO' || e.status === 'ativo' || e.status === 1)
+      .reduce((sum, e) => sum + (parseFloat(e.valor_total) || 0), 0);
+    
+    const produtosAbaixoMinimo = estoquesList.filter(e => {
+      const statusOk = e.status === 'ATIVO' || e.status === 'ativo' || e.status === 1;
+      const qtdAtual = parseFloat(e.quantidade_atual) || 0;
+      const estoqueMinimo = parseFloat(e.estoque_minimo) || 0;
+      return statusOk && qtdAtual < estoqueMinimo;
+    }).length;
+    
+    return {
+      total: statsFromBackend?.total || total,
+      ativos: statsFromBackend?.ativos || ativos,
+      bloqueados: statsFromBackend?.bloqueados || bloqueados,
+      inativos: statsFromBackend?.inativos || inativos,
+      valor_total_estoque: statsFromBackend?.valor_total_estoque || valorTotal,
+      produtos_abaixo_minimo: statsFromBackend?.produtos_abaixo_minimo || produtosAbaixoMinimo,
+      ...statsFromBackend // Preservar outros campos do backend
+    };
+  }, [baseEntity.statistics, baseEntity.items, estoquesOrdenados, isSortingLocally]);
+
   return {
     // Estados principais (do hook base)
     estoques: isSortingLocally ? estoquesOrdenados : baseEntity.items,
@@ -372,8 +415,8 @@ export const useEstoque = () => {
     subgrupoFilter: customFilters.filters.subgrupoFilter,
     subgrupos,
     
-    // Estatísticas
-    estatisticas: baseEntity.statistics,
+    // Estatísticas (com fallback para cálculo local)
+    estatisticas: estatisticasCalculadas,
     
     // Estados de exclusão
     showDeleteConfirmModal: baseEntity.showDeleteConfirmModal,

@@ -3,10 +3,12 @@ import { FaBoxes, FaCheckCircle, FaBan, FaTimesCircle, FaDollarSign, FaExclamati
 import { StatCard } from '../ui';
 
 const EstoqueStats = ({ estatisticas = {} }) => {
-  // Ajustar para trabalhar com dados diretos ou dentro de 'geral'
+  // O backend retorna: { total, ativos, bloqueados, inativos, valor_total_estoque, produtos_abaixo_minimo }
+  // Pode estar em estatisticas.geral ou diretamente em estatisticas
   const stats = estatisticas.geral || estatisticas || {};
 
   // Card principais (sempre visíveis)
+  // O backend retorna: total, ativos, bloqueados, inativos
   const mainCards = [
     {
       title: 'Total de Estoques',

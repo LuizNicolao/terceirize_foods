@@ -58,11 +58,16 @@ const GrupoModal = ({
       <form onSubmit={(e) => {
         e.preventDefault();
         const formData = new FormData(e.target);
+        const tipoValue = formData.get('tipo');
+        // Converter para primeira letra maiúscula (Compra/Venda) conforme esperado pelo backend
+        const tipoFormatado = tipoValue 
+          ? tipoValue.charAt(0).toUpperCase() + tipoValue.slice(1).toLowerCase()
+          : tipoValue;
         const data = {
           nome: formData.get('nome'),
           codigo: formData.get('codigo'),
           descricao: formData.get('descricao'),
-          tipo: formData.get('tipo'),
+          tipo: tipoFormatado,
           status: formData.get('status')
         };
         onSubmit(data);

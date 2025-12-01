@@ -121,6 +121,8 @@ const RotasNutricionistas = () => {
       <RotasNutricionistasStats
         rotasNutricionistas={rotas}
         unidadesEscolares={unidadesEscolares}
+        totalItems={totalItems}
+        estatisticas={estatisticas}
       />
 
       {/* Filtros */}

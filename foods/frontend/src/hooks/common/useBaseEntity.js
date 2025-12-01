@@ -105,19 +105,22 @@ export const useBaseEntity = (entityName, service, options = {}) => {
               total: response.statistics.total || 0,
               ativos: response.statistics.ativos || 0,
               inativos: response.statistics.inativos || 0,
+              bloqueados: response.statistics.bloqueados || 0,
               // Preservar campos adicionais do statistics (para páginas específicas)
               ...response.statistics
             });
           } else if (response.data && Array.isArray(response.data)) {
             // Fallback: usar totalItems da paginação para total, calcular ativos/inativos localmente
             const total = response.pagination?.totalItems || response.data.length;
-            const ativos = response.data.filter(item => item.status === 1 || item.status === 'ativo').length;
-            const inativos = response.data.filter(item => item.status === 0 || item.status === 'inativo').length;
+            const ativos = response.data.filter(item => item.status === 1 || item.status === 'ativo' || item.status === 'ATIVO').length;
+            const inativos = response.data.filter(item => item.status === 0 || item.status === 'inativo' || item.status === 'INATIVO').length;
+            const bloqueados = response.data.filter(item => item.status === 'BLOQUEADO' || item.status === 'bloqueado').length;
             
             setEstatisticas({
               total,
               ativos,
-              inativos
+              inativos,
+              bloqueados
             });
           }
         }

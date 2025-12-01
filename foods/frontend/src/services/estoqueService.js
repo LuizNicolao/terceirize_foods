@@ -9,30 +9,42 @@ class EstoqueService {
       let pagination = null;
       let statistics = null;
       
-      if (response.data.data) {
-        if (response.data.data.items) {
-          estoques = response.data.data.items;
-          pagination = response.data.data._meta?.pagination;
-          statistics = response.data.data._meta?.statistics;
-        } else {
-          estoques = response.data.data;
+      // Estrutura padrão do successResponse: { success, data, meta: { pagination, statistics, links } }
+      if (response.data) {
+        // Dados podem estar em response.data ou response.data.data
+        if (response.data.data) {
+          if (Array.isArray(response.data.data)) {
+            estoques = response.data.data;
+          } else if (response.data.data.items) {
+            estoques = response.data.data.items;
+          } else {
+            estoques = response.data.data;
+          }
+        } else if (Array.isArray(response.data)) {
+          estoques = response.data;
         }
-      } else if (Array.isArray(response.data)) {
-        estoques = response.data;
-      }
-      
-      if (!pagination) {
-        pagination = response.data.pagination || response.data.meta?.pagination;
-      }
-      if (!statistics) {
-        statistics = response.data.statistics || response.data.meta?.statistics;
+        
+        // Meta pode estar em response.data.meta ou response.data._meta
+        const meta = response.data.meta || response.data._meta;
+        if (meta) {
+          pagination = meta.pagination;
+          statistics = meta.statistics;
+        }
+        
+        // Fallback: procurar pagination e statistics diretamente em response.data
+        if (!pagination) {
+          pagination = response.data.pagination;
+        }
+        if (!statistics) {
+          statistics = response.data.statistics;
+        }
       }
       
       return {
         success: true,
         data: estoques,
-        pagination: pagination || response.data.pagination || response.data.meta?.pagination,
-        statistics: statistics || response.data.statistics || response.data.meta?.statistics
+        pagination: pagination,
+        statistics: statistics
       };
     } catch (error) {
       return {

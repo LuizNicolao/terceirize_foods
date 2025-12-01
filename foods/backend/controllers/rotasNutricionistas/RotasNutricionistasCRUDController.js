@@ -151,6 +151,47 @@ class RotasNutricionistasCRUDController {
       const countResult = await executeQuery(countQuery, countParams);
       const totalItems = parseInt(countResult[0]?.total) || 0;
 
+      // Calcular estatísticas (ativos/inativos) com os mesmos filtros
+      let statsQuery = `
+        SELECT 
+          COUNT(*) as total,
+          COUNT(CASE WHEN rn.status = 'ativo' THEN 1 END) as rotas_ativas,
+          COUNT(CASE WHEN rn.status = 'inativo' THEN 1 END) as rotas_inativas
+        FROM rotas_nutricionistas rn
+        LEFT JOIN usuarios u ON rn.usuario_id = u.id
+        WHERE 1=1
+      `;
+      
+      // Aplicar os mesmos filtros na query de estatísticas
+      if (search) {
+        statsQuery += ` AND (rn.codigo LIKE ? OR rn.observacoes LIKE ?)`;
+      }
+      if (status) {
+        statsQuery += ` AND rn.status = ?`;
+      }
+      if (usuario_id) {
+        statsQuery += ` AND rn.usuario_id = ?`;
+      }
+      if (supervisor_id) {
+        statsQuery += ` AND rn.supervisor_id = ?`;
+      }
+      if (coordenador_id) {
+        statsQuery += ` AND rn.coordenador_id = ?`;
+      }
+      if (email) {
+        statsQuery += ` AND u.email = ?`;
+      }
+      if (filial_id) {
+        statsQuery += ` AND rn.usuario_id IN (SELECT uf.usuario_id FROM usuarios_filiais uf WHERE uf.filial_id = ?)`;
+      }
+      
+      const statsResult = await executeQuery(statsQuery, countParams);
+      const statistics = statsResult[0] || {
+        total: totalItems,
+        rotas_ativas: 0,
+        rotas_inativas: 0
+      };
+
       // Aplicar ordenação
       query += ` ORDER BY ${orderBy}`;
         
@@ -192,6 +233,11 @@ class RotasNutricionistasCRUDController {
             totalPages,
             totalItems,
             itemsPerPage: pagination.limit
+          },
+          statistics: {
+            total: parseInt(statistics.total) || 0,
+            rotas_ativas: parseInt(statistics.rotas_ativas) || 0,
+            rotas_inativas: parseInt(statistics.rotas_inativas) || 0
           }
         }
       };

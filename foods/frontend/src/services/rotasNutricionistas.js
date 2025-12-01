@@ -12,7 +12,7 @@ const RotasNutricionistasService = {
       // A API retorna { success: true, data: { rotas: [], pagination: {} } }
       const responseData = response.data.data || response.data;
       
-      // Se a resposta tem estrutura { rotas: [], pagination: {} }
+      // Se a resposta tem estrutura { rotas: [], pagination: {}, statistics: {} }
       if (responseData && responseData.rotas && Array.isArray(responseData.rotas)) {
         return {
           success: true,
@@ -21,7 +21,7 @@ const RotasNutricionistasService = {
             rotas: responseData.rotas // Fallback para compatibilidade
           },
           pagination: responseData.pagination || response.data.pagination,
-          statistics: responseData.statistics || response.data.statistics
+          statistics: responseData.statistics || response.data.data?.statistics || response.data.statistics
         };
       }
       

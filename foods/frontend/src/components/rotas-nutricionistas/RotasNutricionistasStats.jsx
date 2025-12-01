@@ -1,10 +1,26 @@
 import React from 'react';
 import { FaBuilding, FaSchool } from 'react-icons/fa';
 
-const RotasNutricionistasStats = ({ rotasNutricionistas = [], unidadesEscolares = [] }) => {
-  const totalRotas = rotasNutricionistas?.length || 0;
-  const rotasAtivas = rotasNutricionistas?.filter(rota => rota.status === 'ativo')?.length || 0;
-  const rotasInativas = rotasNutricionistas?.filter(rota => rota.status === 'inativo')?.length || 0;
+const RotasNutricionistasStats = ({ 
+  rotasNutricionistas = [], 
+  unidadesEscolares = [],
+  totalItems = null,
+  estatisticas = null
+}) => {
+  // Usar estatísticas do backend se disponíveis, senão calcular localmente
+  // Mas para total, usar totalItems (total real) em vez do tamanho do array (apenas página atual)
+  const totalRotas = totalItems !== null ? totalItems : (rotasNutricionistas?.length || 0);
+  
+  // Para ativos/inativos, usar estatísticas do backend se disponíveis
+  // Caso contrário, calcular localmente (mas isso só conta a página atual)
+  const rotasAtivas = estatisticas?.rotas_ativas !== undefined 
+    ? estatisticas.rotas_ativas 
+    : (rotasNutricionistas?.filter(rota => rota.status === 'ativo')?.length || 0);
+  
+  const rotasInativas = estatisticas?.rotas_inativas !== undefined 
+    ? estatisticas.rotas_inativas 
+    : (rotasNutricionistas?.filter(rota => rota.status === 'inativo')?.length || 0);
+  
   const totalUnidadesEscolares = unidadesEscolares?.length || 0;
 
   const stats = [

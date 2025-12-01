@@ -91,10 +91,10 @@ const NotaFiscalTable = ({
                   currentDirection={sortDirection}
                   onSort={onSort}
                 />
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Fornecedor
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Filial
                 </th>
                 <SortableTableHeader
@@ -111,10 +111,10 @@ const NotaFiscalTable = ({
                   currentDirection={sortDirection}
                   onSort={onSort}
                 />
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Ações
                 </th>
               </tr>
@@ -122,34 +122,34 @@ const NotaFiscalTable = ({
             <tbody className="bg-white divide-y divide-gray-200">
               {notasFiscaisArray.map((nota) => (
                 <tr key={nota.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-2 whitespace-nowrap text-sm text-gray-500">
                     {formatDate(nota.data_lancamento)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  <td className="px-6 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
                     {nota.id}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  <td className="px-6 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
                     {nota.numero_nota}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-2 whitespace-nowrap text-sm text-gray-500">
                     {nota.serie || '-'}
                   </td>
-                  <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-2 whitespace-nowrap text-sm text-gray-900">
                     {getFornecedorName(nota.fornecedor_id) || nota.fornecedor_nome || '-'}
                   </td>
-                  <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-2 whitespace-nowrap text-sm text-gray-500">
                     {getFilialName(nota.filial_id) || nota.filial_nome || '-'}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-2 whitespace-nowrap text-sm text-gray-500">
                     {formatDate(nota.data_emissao)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  <td className="px-6 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
                     {formatCurrency(nota.valor_total)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-2 whitespace-nowrap">
                     {getStatusBadge(nota.status)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <td className="px-6 py-2 whitespace-nowrap text-sm font-medium">
                     <div className="flex items-center gap-2">
                       <ActionButtons
                         canView={!!onView}
