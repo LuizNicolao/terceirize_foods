@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useInputMask } from './useInputMask';
 
-export const useMaskedField = (maskType, register, fieldName, setValue) => {
+export const useMaskedField = (maskType, register, fieldName, setValue, watchValue) => {
   const maskProps = useInputMask(maskType);
   const [isInitialized, setIsInitialized] = useState(false);
 
@@ -35,14 +35,33 @@ export const useMaskedField = (maskType, register, fieldName, setValue) => {
     maskProps.onKeyPress(e);
   }, [maskProps]);
 
-  // Sincroniza com o valor inicial do react-hook-form
+  // Sincroniza com o valor do react-hook-form (inicial e mudanças)
   useEffect(() => {
-    if (registerProps.value && !isInitialized) {
-      const event = { target: { value: registerProps.value } };
+    // Usar watchValue se disponível (passado como prop), senão usar registerProps.value
+    const currentFormValue = watchValue !== undefined ? watchValue : registerProps.value;
+    
+    // Sempre sincronizar quando o valor do react-hook-form mudar
+    if (currentFormValue !== undefined && currentFormValue !== null) {
+      const currentValue = currentFormValue || '';
+      const maskValue = maskProps.value || '';
+      
+      // Comparar valores sem considerar a máscara (remover hífen para comparação)
+      const currentValueClean = String(currentValue).replace(/-/g, '').trim();
+      const maskValueClean = String(maskValue).replace(/-/g, '').trim();
+      
+      if (currentValueClean !== maskValueClean && currentValueClean !== '') {
+        // Valor mudou, atualizar
+        const event = { target: { value: currentValue } };
+        maskProps.onChange(event);
+        setIsInitialized(true);
+      }
+    } else if ((currentFormValue === '' || currentFormValue === null) && maskProps.value !== '') {
+      // Se o valor foi limpo, resetar também
+      const event = { target: { value: '' } };
       maskProps.onChange(event);
-      setIsInitialized(true);
+      setIsInitialized(false);
     }
-  }, [registerProps.value, isInitialized, maskProps]);
+  }, [watchValue, registerProps.value, fieldName, maskProps]);
 
   return {
     value: maskProps.value,

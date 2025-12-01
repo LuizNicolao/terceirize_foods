@@ -154,6 +154,17 @@ class UnidadesEscolaresCRUDController {
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `;
 
+      // Normalizar CEP: remover hífen e espaços, converter string vazia para null
+      let cepNormalizado = null;
+      if (cep && typeof cep === 'string') {
+        cepNormalizado = cep.trim().replace(/-/g, '');
+        if (cepNormalizado === '') {
+          cepNormalizado = null;
+        }
+      } else if (cep) {
+        cepNormalizado = cep;
+      }
+
       const insertParams = [
         codigo_teknisa ? codigo_teknisa.trim() : null,
         nome_escola.trim(),
@@ -163,7 +174,7 @@ class UnidadesEscolaresCRUDController {
         endereco.trim(),
         numero || null,
         bairro || null,
-        cep || null,
+        cepNormalizado,
         centro_distribuicao || null,
         rota_id || null,
         regional || null,
@@ -226,10 +237,20 @@ class UnidadesEscolaresCRUDController {
         [newId]
       );
 
+      // Formatar CEP com hífen se existir (formato: 00000-000)
+      // Aceita CEP com ou sem hífen do banco
+      const unidadeFormatada = { ...newUnidade[0] };
+      if (unidadeFormatada.cep) {
+        const cepLimpo = String(unidadeFormatada.cep).replace(/-/g, '').trim();
+        if (cepLimpo.length === 8) {
+          unidadeFormatada.cep = `${cepLimpo.substring(0, 5)}-${cepLimpo.substring(5)}`;
+        }
+      }
+
       res.status(201).json({
         success: true,
         message: 'Unidade escolar criada com sucesso',
-        data: newUnidade[0]
+        data: unidadeFormatada
       });
 
     } catch (error) {
@@ -392,7 +413,20 @@ class UnidadesEscolaresCRUDController {
       }
       if (cep !== undefined) {
         updateFields.push('cep = ?');
-        updateParams.push(cep);
+        // Tratar string vazia como null, aplicar trim e remover hífen
+        let cepValue = null;
+        if (cep !== '' && cep !== null) {
+          if (typeof cep === 'string') {
+            cepValue = cep.trim().replace(/-/g, ''); // Remove hífen e espaços
+            // Se após limpar ficar vazio, converter para null
+            if (cepValue === '') {
+              cepValue = null;
+            }
+          } else {
+            cepValue = cep;
+          }
+        }
+        updateParams.push(cepValue);
       }
       if (centro_distribuicao !== undefined) {
         updateFields.push('centro_distribuicao = ?');
@@ -532,10 +566,20 @@ class UnidadesEscolaresCRUDController {
         [id]
       );
 
+      // Formatar CEP com hífen se existir (formato: 00000-000)
+      // Aceita CEP com ou sem hífen do banco
+      const unidadeFormatada = { ...updatedUnidade[0] };
+      if (unidadeFormatada.cep) {
+        const cepLimpo = String(unidadeFormatada.cep).replace(/-/g, '').trim();
+        if (cepLimpo.length === 8) {
+          unidadeFormatada.cep = `${cepLimpo.substring(0, 5)}-${cepLimpo.substring(5)}`;
+        }
+      }
+
       res.json({
         success: true,
         message: 'Unidade escolar atualizada com sucesso',
-        data: updatedUnidade[0]
+        data: unidadeFormatada
       });
 
     } catch (error) {

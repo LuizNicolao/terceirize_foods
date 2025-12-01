@@ -13,6 +13,7 @@ const SubgrupoModal = ({
 }) => {
   const [codigoGerado, setCodigoGerado] = useState('');
   const [carregandoCodigo, setCarregandoCodigo] = useState(false);
+  const [grupoSelecionado, setGrupoSelecionado] = useState('');
 
   useEffect(() => {
     const carregarProximoCodigo = async () => {
@@ -39,6 +40,23 @@ const SubgrupoModal = ({
 
     carregarProximoCodigo();
   }, [subgrupo, isOpen]);
+
+  // Atualizar grupo selecionado quando subgrupo mudar
+  useEffect(() => {
+    if (subgrupo?.grupo_id) {
+      setGrupoSelecionado(subgrupo.grupo_id.toString());
+    } else {
+      setGrupoSelecionado('');
+    }
+  }, [subgrupo]);
+
+  // Limpar estado quando modal fechar
+  useEffect(() => {
+    if (!isOpen) {
+      setGrupoSelecionado('');
+      setCodigoGerado('');
+    }
+  }, [isOpen]);
 
   return (
     <Modal
@@ -80,9 +98,10 @@ const SubgrupoModal = ({
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div>
             <SearchableSelect
-              label="Grupo *"
-              value={subgrupo?.grupo_id?.toString() || ''}
+              label="Grupo"
+              value={grupoSelecionado}
               onChange={(value) => {
+                setGrupoSelecionado(value);
                 // Atualizar o valor no formulário
                 const form = document.querySelector('form');
                 if (form) {
@@ -102,6 +121,7 @@ const SubgrupoModal = ({
               ]}
               placeholder="Digite para buscar um grupo..."
               disabled={isViewMode}
+              required={true}
               filterBy={(option, searchTerm) => {
                 const label = option.label.toLowerCase();
                 const description = option.description?.toLowerCase() || '';
@@ -118,7 +138,7 @@ const SubgrupoModal = ({
               )}
             />
             {/* Campo hidden para o formulário */}
-            <input type="hidden" name="grupo_id" value={subgrupo?.grupo_id?.toString() || ''} />
+            <input type="hidden" name="grupo_id" value={grupoSelecionado} />
           </div>
           <Input
             label="Status"

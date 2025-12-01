@@ -23,6 +23,9 @@ const UnidadeEscolarModal = ({
   loadingFiliais = false
 }) => {
   const { register, handleSubmit, reset, setValue, watch } = useForm();
+  
+  // Watch do CEP para garantir sincronização
+  const cepValue = watch('cep');
   const [activeTab, setActiveTab] = useState('info'); // 'info', 'efetivos', 'patrimonios', 'tipos-cardapio', 'periodos-refeicao' ou 'periodicidade'
   const { canView, canEdit, canDelete, canMovimentar } = usePermissions();
   const [centrosCusto, setCentrosCusto] = useState([]);
@@ -424,6 +427,8 @@ const UnidadeEscolarModal = ({
                 maskType="cep"
                 register={register}
                 fieldName="cep"
+                setValue={setValue}
+                watchValue={cepValue}
                 disabled={isViewMode}
               />
               <Input

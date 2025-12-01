@@ -10,9 +10,11 @@ export const MaskedFormInput = ({
   size = 'md',
   className = '',
   setValue,
+  watchValue,
   ...props
 }) => {
-  const maskProps = useMaskedField(maskType, register, fieldName, setValue);
+  // Passar setValue e watchValue para o hook para garantir sincronização
+  const maskProps = useMaskedField(maskType, register, fieldName, setValue, watchValue);
 
   const baseClasses = 'w-full border border-gray-300 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent';
   

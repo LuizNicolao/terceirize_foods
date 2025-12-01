@@ -227,6 +227,33 @@ class EstoqueService {
       };
     }
   }
+
+  /**
+   * Obter opções de filtros disponíveis baseadas nos dados reais do banco
+   */
+  async obterOpcoesFiltros(params = {}) {
+    try {
+      const response = await api.get('/almoxarifado-estoque/filtros/opcoes', { params });
+      
+      let opcoes = null;
+      
+      if (response.data.data) {
+        opcoes = response.data.data;
+      } else {
+        opcoes = response.data;
+      }
+      
+      return {
+        success: true,
+        data: opcoes
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Erro ao obter opções de filtros'
+      };
+    }
+  }
 }
 
 export default new EstoqueService();

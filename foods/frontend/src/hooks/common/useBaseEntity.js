@@ -3,7 +3,7 @@
  * Combina paginação, modais, filtros e validação em um hook reutilizável
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import toast from 'react-hot-toast';
 import { useValidation } from './useValidation';
 import { usePagination } from './usePagination';
@@ -17,7 +17,8 @@ export const useBaseEntity = (entityName, service, options = {}) => {
     initialFilters = {},
     enableStats = true,
     enableDelete = true,
-    enableDebouncedSearch = true
+    enableDebouncedSearch = true,
+    autoLoad = true
   } = options;
 
   // Hooks base
@@ -214,13 +215,26 @@ export const useBaseEntity = (entityName, service, options = {}) => {
     setItemToDelete(null);
   }, []);
 
+  // Usar useRef para manter referência estável de loadData
+  const loadDataRef = useRef(loadData);
+  loadDataRef.current = loadData;
+
+  // Serializar filters.filters para comparação estável usando useMemo
+  const filtersString = useMemo(() => JSON.stringify(filters.filters), [filters.filters]);
+  
+  // Memoizar o termo de busca para evitar re-renders desnecessários
+  const searchTerm = useMemo(() => debouncedSearch?.debouncedSearchTerm || filters.searchTerm, [debouncedSearch?.debouncedSearchTerm, filters.searchTerm]);
+
   /**
    * Carrega dados quando filtros ou paginação mudam
    * Monitora também filters.filters para capturar filtros customizados
+   * Pode ser desabilitado com autoLoad = false
    */
   useEffect(() => {
-    loadData();
-  }, [pagination.currentPage, pagination.itemsPerPage, debouncedSearch?.debouncedSearchTerm || filters.searchTerm, filters.statusFilter, filters.filters]);
+    if (autoLoad) {
+      loadDataRef.current();
+    }
+  }, [pagination.currentPage, pagination.itemsPerPage, searchTerm, filters.statusFilter, filtersString, autoLoad]);
 
   return {
     // Estados principais

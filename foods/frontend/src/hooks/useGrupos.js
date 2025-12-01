@@ -1,8 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback } from 'react';
 import toast from 'react-hot-toast';
 import GruposService from '../services/grupos';
 import { useBaseEntity } from './common/useBaseEntity';
-import { useFilters } from './common/useFilters';
 import useTableSort from './common/useTableSort';
 
 export const useGrupos = () => {
@@ -14,14 +13,11 @@ export const useGrupos = () => {
     enableDelete: true
   });
 
-  // Hook de filtros customizados para grupos
-  const customFilters = useFilters({});
-
   // Hook de ordenação híbrida
   const {
     sortedData: gruposOrdenados,
-    sortField,
-    sortDirection,
+    sortField: localSortField,
+    sortDirection: localSortDirection,
     handleSort,
     isSortingLocally
   } = useTableSort({
@@ -30,23 +26,11 @@ export const useGrupos = () => {
     totalItems: baseEntity.totalItems
   });
 
-  // Hook de busca com debounce
+  // Usar ordenação do baseEntity quando disponível, senão usar local
+  const sortField = baseEntity.sortField || localSortField;
+  const sortDirection = baseEntity.sortDirection || localSortDirection;
 
   // Estatísticas vêm do baseEntity (padrão)
-
-  /**
-   * Carrega dados com filtros customizados
-   */
-  const loadDataWithFilters = useCallback(async () => {
-    const params = {
-      ...baseEntity.getPaginationParams(),
-      ...customFilters.getFilterParams(),
-      search: customFilters.searchTerm || undefined,
-      status: customFilters.statusFilter === 'ativo' ? 1 : customFilters.statusFilter === 'inativo' ? 0 : undefined
-    };
-
-    await baseEntity.loadData(params);
-  }, [baseEntity, customFilters]);
 
   /**
    * Submissão customizada
@@ -68,10 +52,10 @@ export const useGrupos = () => {
    * Funções auxiliares
    */
   const handleClearFilters = useCallback(() => {
-    customFilters.setSearchTerm('');
-    customFilters.setStatusFilter('todos');
+    baseEntity.clearSearch();
+    baseEntity.setStatusFilter('todos');
     baseEntity.handlePageChange(1);
-  }, [customFilters, baseEntity]);
+  }, [baseEntity]);
 
   const getStatusLabel = useCallback((status) => {
     return status === 'ativo' ? 'Ativo' : 'Inativo';
@@ -82,15 +66,7 @@ export const useGrupos = () => {
     return new Date(dateString).toLocaleString('pt-BR');
   }, []);
 
-  // Carregar dados quando filtros mudam
-  useEffect(() => {
-    loadDataWithFilters();
-  }, [customFilters.searchTerm, customFilters.statusFilter, customFilters.filters]);
-
-  // Carregar dados quando paginação muda
-  useEffect(() => {
-    loadDataWithFilters();
-  }, [baseEntity.currentPage, baseEntity.itemsPerPage]);
+  // useEffect removidos - useBaseEntity já gerencia filtros e paginação automaticamente
 
   // Estatísticas são gerenciadas automaticamente pelo baseEntity
 
@@ -176,7 +152,7 @@ export const useGrupos = () => {
     
     // Estados de filtros
     searchTerm: baseEntity.searchTerm,
-    statusFilter: customFilters.statusFilter,
+    statusFilter: baseEntity.statusFilter,
     
     // Estados de validação (do hook base)
     validationErrors: baseEntity.validationErrors,
@@ -195,7 +171,8 @@ export const useGrupos = () => {
     // Ações de filtros
     setSearchTerm: baseEntity.setSearchTerm,
     clearSearch: baseEntity.clearSearch,
-    setStatusFilter: customFilters.setStatusFilter,
+    handleKeyPress: baseEntity.handleKeyPress,
+    setStatusFilter: baseEntity.setStatusFilter,
     setItemsPerPage: baseEntity.handleItemsPerPageChange, // Alias para compatibilidade
     handleClearFilters,
     

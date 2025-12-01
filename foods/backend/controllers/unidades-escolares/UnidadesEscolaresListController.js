@@ -5,6 +5,29 @@
 
 const { executeQuery } = require('../../config/database');
 
+/**
+ * Formata CEP para exibição (00000-000)
+ * Aceita CEP com ou sem hífen e retorna formatado
+ */
+const formatarCEP = (cep) => {
+  if (!cep) return null;
+  const cepLimpo = String(cep).replace(/-/g, '').trim();
+  if (cepLimpo.length === 8) {
+    return `${cepLimpo.substring(0, 5)}-${cepLimpo.substring(5)}`;
+  }
+  return cep; // Retorna como está se não tiver 8 dígitos
+};
+
+/**
+ * Formata CEP em um array de unidades escolares
+ */
+const formatarCEPs = (unidades) => {
+  return unidades.map(unidade => ({
+    ...unidade,
+    cep: formatarCEP(unidade.cep)
+  }));
+};
+
 class UnidadesEscolaresListController {
   // Listar unidades escolares com paginação, busca e filtros
   static async listarUnidadesEscolares(req, res) {
@@ -187,6 +210,9 @@ class UnidadesEscolaresListController {
 
       const unidades = await executeQuery(query, params);
 
+      // Formatar CEPs para exibição
+      const unidadesFormatadas = formatarCEPs(unidades);
+
       // Calcular metadados de paginação
       const totalPages = Math.ceil(total / limitNum);
       const hasNextPage = pageNum < totalPages;
@@ -194,7 +220,7 @@ class UnidadesEscolaresListController {
 
       res.json({
         success: true,
-        data: unidades,
+        data: unidadesFormatadas,
         pagination: {
           page: pageNum,
           limit: limitNum,
@@ -315,9 +341,15 @@ class UnidadesEscolaresListController {
         });
       }
 
+      // Formatar CEP para exibição
+      const unidadeFormatada = {
+        ...unidades[0],
+        cep: formatarCEP(unidades[0].cep)
+      };
+
       res.json({
         success: true,
-        data: unidades[0]
+        data: unidadeFormatada
       });
 
     } catch (error) {

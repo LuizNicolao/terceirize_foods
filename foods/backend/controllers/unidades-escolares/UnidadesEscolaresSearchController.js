@@ -5,6 +5,29 @@
 
 const { executeQuery } = require('../../config/database');
 
+/**
+ * Formata CEP para exibição (00000-000)
+ * Aceita CEP com ou sem hífen e retorna formatado
+ */
+const formatarCEP = (cep) => {
+  if (!cep) return null;
+  const cepLimpo = String(cep).replace(/-/g, '').trim();
+  if (cepLimpo.length === 8) {
+    return `${cepLimpo.substring(0, 5)}-${cepLimpo.substring(5)}`;
+  }
+  return cep; // Retorna como está se não tiver 8 dígitos
+};
+
+/**
+ * Formata CEP em um array de unidades escolares
+ */
+const formatarCEPs = (unidades) => {
+  return unidades.map(unidade => ({
+    ...unidade,
+    cep: formatarCEP(unidade.cep)
+  }));
+};
+
 class UnidadesEscolaresSearchController {
   // Buscar unidades escolares ativas
   static async buscarUnidadesEscolaresAtivas(req, res) {
@@ -57,9 +80,12 @@ class UnidadesEscolaresSearchController {
 
       const unidades = await executeQuery(query, params);
 
+      // Formatar CEPs para exibição
+      const unidadesFormatadas = formatarCEPs(unidades);
+
       res.json({
         success: true,
-        data: unidades
+        data: unidadesFormatadas
       });
 
     } catch (error) {
@@ -199,9 +225,12 @@ class UnidadesEscolaresSearchController {
 
       const unidades = await executeQuery(query, params);
 
+      // Formatar CEPs para exibição
+      const unidadesFormatadas = formatarCEPs(unidades);
+
       res.json({
         success: true,
-        data: unidades
+        data: unidadesFormatadas
       });
     } catch (error) {
       console.error('Erro ao buscar unidades escolares disponíveis por filial:', error);
@@ -319,9 +348,12 @@ class UnidadesEscolaresSearchController {
 
       const unidades = await executeQuery(query, params);
 
+      // Formatar CEPs para exibição
+      const unidadesFormatadas = formatarCEPs(unidades);
+
       res.json({
         success: true,
-        data: unidades
+        data: unidadesFormatadas
       });
 
     } catch (error) {
@@ -409,9 +441,12 @@ class UnidadesEscolaresSearchController {
 
       const unidades = await executeQuery(query, params);
 
+      // Formatar CEPs para exibição
+      const unidadesFormatadas = formatarCEPs(unidades);
+
       res.json({
         success: true,
-        data: unidades
+        data: unidadesFormatadas
       });
 
     } catch (error) {
