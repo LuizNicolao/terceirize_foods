@@ -7,6 +7,7 @@ module.exports = {
   listarEstoques: AlmoxarifadoEstoqueListController.listarEstoques,
   buscarEstoquePorId: AlmoxarifadoEstoqueListController.buscarEstoquePorId,
   buscarVariacoesProduto: AlmoxarifadoEstoqueListController.buscarVariacoesProduto,
+  obterOpcoesFiltros: AlmoxarifadoEstoqueListController.obterOpcoesFiltros,
   criarEstoque: AlmoxarifadoEstoqueCRUDController.criarEstoque,
   atualizarEstoque: AlmoxarifadoEstoqueCRUDController.atualizarEstoque,
   excluirEstoque: AlmoxarifadoEstoqueCRUDController.excluirEstoque,

@@ -94,7 +94,7 @@ class AlmoxarifadoEstoqueListController {
       const gruposIds = grupo_id.toString().split(',').map(id => id.trim()).filter(id => id);
       if (gruposIds.length > 0) {
         if (gruposIds.length === 1) {
-          baseQuery += ' AND COALESCE(ae.grupo_id, pg.grupo_id) = ?';
+      baseQuery += ' AND COALESCE(ae.grupo_id, pg.grupo_id) = ?';
           params.push(gruposIds[0]);
         } else {
           baseQuery += ` AND COALESCE(ae.grupo_id, pg.grupo_id) IN (${gruposIds.map(() => '?').join(',')})`;
@@ -168,7 +168,7 @@ class AlmoxarifadoEstoqueListController {
       const gruposIds = grupo_id.toString().split(',').map(id => id.trim()).filter(id => id);
       if (gruposIds.length > 0) {
         if (gruposIds.length === 1) {
-          countQuery += ' AND COALESCE(ae.grupo_id, (SELECT grupo_id FROM produto_generico WHERE id = ae.produto_generico_id)) = ?';
+      countQuery += ' AND COALESCE(ae.grupo_id, (SELECT grupo_id FROM produto_generico WHERE id = ae.produto_generico_id)) = ?';
           countParams.push(gruposIds[0]);
         } else {
           countQuery += ` AND COALESCE(ae.grupo_id, (SELECT grupo_id FROM produto_generico WHERE id = ae.produto_generico_id)) IN (${gruposIds.map(() => '?').join(',')})`;
@@ -241,7 +241,7 @@ class AlmoxarifadoEstoqueListController {
       const gruposIds = grupo_id.toString().split(',').map(id => id.trim()).filter(id => id);
       if (gruposIds.length > 0) {
         if (gruposIds.length === 1) {
-          statsQuery += ' AND COALESCE(ae.grupo_id, (SELECT grupo_id FROM produto_generico WHERE id = ae.produto_generico_id)) = ?';
+      statsQuery += ' AND COALESCE(ae.grupo_id, (SELECT grupo_id FROM produto_generico WHERE id = ae.produto_generico_id)) = ?';
           statsParams.push(gruposIds[0]);
         } else {
           statsQuery += ` AND COALESCE(ae.grupo_id, (SELECT grupo_id FROM produto_generico WHERE id = ae.produto_generico_id)) IN (${gruposIds.map(() => '?').join(',')})`;
