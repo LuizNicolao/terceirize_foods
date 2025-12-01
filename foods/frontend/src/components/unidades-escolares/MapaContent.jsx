@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { FaMapMarkerAlt } from 'react-icons/fa';
 import UnidadesEscolaresService from '../../services/unidadesEscolares';
+import { MapControls, RoutePolyline, RouteMarkers, RouteInfo, calculateRouteDistance } from './mapa';
 import toast from 'react-hot-toast';
 
 // Importar CSS do Leaflet
@@ -16,33 +17,97 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
 });
 
-// Ícone customizado para a escola atual (verde)
-const createCustomIcon = (isCurrent) => {
+// Cores para diferentes filiais (paleta de cores)
+const filialColors = [
+  '#3b82f6', // Azul
+  '#10b981', // Verde
+  '#f59e0b', // Laranja
+  '#ef4444', // Vermelho
+  '#8b5cf6', // Roxo
+  '#ec4899', // Rosa
+  '#06b6d4', // Ciano
+  '#84cc16', // Lima
+  '#f97316', // Laranja escuro
+  '#6366f1', // Índigo
+];
+
+// Função para obter cor da filial baseada no ID
+const getFilialColor = (filialId, filiaisMap) => {
+  if (!filialId || !filiaisMap) return '#3b82f6'; // Cor padrão azul
+  
+  const filialIndex = filiaisMap.get(filialId) || 0;
+  return filialColors[filialIndex % filialColors.length];
+};
+
+// Ícone customizado com cores por status e filial
+const createCustomIcon = (isCurrent, status, filialColor, ordemEntrega) => {
+  // Determinar cor base
+  let backgroundColor;
+  let borderColor = '#ffffff';
+  let borderWidth = '3px';
+  
+  if (isCurrent) {
+    // Unidade atual sempre em verde com destaque
+    backgroundColor = '#10b981';
+    borderColor = '#059669';
+    borderWidth = '4px';
+  } else if (status === 'ativo' || status === 1) {
+    // Unidade ativa usa cor da filial
+    backgroundColor = filialColor;
+  } else {
+    // Unidade inativa em cinza
+    backgroundColor = '#9ca3af';
+  }
+  
+  // Tamanho do marcador (maior se for unidade atual)
+  const markerSize = isCurrent ? 36 : 32;
+  const iconSize = isCurrent ? 36 : 32;
+  
   return L.divIcon({
     className: 'custom-marker',
     html: `<div style="
-      background-color: ${isCurrent ? '#10b981' : '#3b82f6'};
-      width: 30px;
-      height: 30px;
+      background-color: ${backgroundColor};
+      width: ${markerSize}px;
+      height: ${markerSize}px;
       border-radius: 50% 50% 50% 0;
       transform: rotate(-45deg);
-      border: 3px solid white;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      border: ${borderWidth} solid ${borderColor};
+      box-shadow: 0 3px 6px rgba(0,0,0,0.4);
       display: flex;
       align-items: center;
       justify-content: center;
+      position: relative;
     ">
       <div style="
         transform: rotate(45deg);
-        width: 12px;
-        height: 12px;
+        width: ${isCurrent ? '14px' : '12px'};
+        height: ${isCurrent ? '14px' : '12px'};
         background-color: white;
         border-radius: 2px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: ${isCurrent ? '10px' : '9px'};
+        color: ${backgroundColor};
+      ">${ordemEntrega > 0 ? ordemEntrega : ''}</div>
+      ${isCurrent ? `
+      <div style="
+        position: absolute;
+        top: -2px;
+        right: -2px;
+        width: 12px;
+        height: 12px;
+        background-color: #fbbf24;
+        border-radius: 50%;
+        border: 2px solid white;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
       "></div>
+      ` : ''}
     </div>`,
-    iconSize: [30, 30],
-    iconAnchor: [15, 30],
-    popupAnchor: [0, -30],
+    iconSize: [iconSize, iconSize],
+    iconAnchor: [iconSize / 2, iconSize],
+    popupAnchor: [0, -iconSize],
   });
 };
 
@@ -91,6 +156,9 @@ const MapaContent = ({ unidadeAtual = null, filialId = null, rotaId = null, sear
   const [loading, setLoading] = useState(true);
   const [mapCenter, setMapCenter] = useState([-14.235, -51.9253]); // Centro do Brasil
   const [mapZoom, setMapZoom] = useState(5);
+  const [filiaisMap, setFiliaisMap] = useState(new Map()); // Mapa de filiais para cores
+  const initialCenterRef = useRef([-14.235, -51.9253]);
+  const initialZoomRef = useRef(5);
 
   useEffect(() => {
     const carregarUnidadesEscolares = async () => {
@@ -128,7 +196,36 @@ const MapaContent = ({ unidadeAtual = null, filialId = null, rotaId = null, sear
                 unidade.long !== 0
             );
           
-          setUnidadesEscolares(unidadesComCoordenadas);
+          // Se houver rota selecionada, ordenar por ordem_entrega
+          let unidadesOrdenadas = unidadesComCoordenadas;
+          if (rotaId && unidadesComCoordenadas.length > 0) {
+            unidadesOrdenadas = [...unidadesComCoordenadas].sort((a, b) => {
+              const ordemA = a.ordem_entrega || 0;
+              const ordemB = b.ordem_entrega || 0;
+              // Ordenar por ordem_entrega, e se for igual, por nome
+              if (ordemA !== ordemB) {
+                return ordemA - ordemB;
+              }
+              return (a.nome_escola || '').localeCompare(b.nome_escola || '');
+            });
+          }
+          
+          // Criar mapa de filiais para cores
+          const filiaisSet = new Set();
+          unidadesOrdenadas.forEach(unidade => {
+            if (unidade.filial_id) {
+              filiaisSet.add(unidade.filial_id);
+            }
+          });
+          
+          const filiaisArray = Array.from(filiaisSet);
+          const newFiliaisMap = new Map();
+          filiaisArray.forEach((filialId, index) => {
+            newFiliaisMap.set(filialId, index);
+          });
+          setFiliaisMap(newFiliaisMap);
+          
+          setUnidadesEscolares(unidadesOrdenadas);
 
           // Se houver unidade atual, centralizar o mapa nela
           if (unidadeAtual?.lat && unidadeAtual?.long) {
@@ -147,8 +244,13 @@ const MapaContent = ({ unidadeAtual = null, filialId = null, rotaId = null, sear
             // Calcular centro médio de todas as unidades
             const latMedia = unidadesComCoordenadas.reduce((sum, u) => sum + u.lat, 0) / unidadesComCoordenadas.length;
             const longMedia = unidadesComCoordenadas.reduce((sum, u) => sum + u.long, 0) / unidadesComCoordenadas.length;
-            setMapCenter([latMedia, longMedia]);
-            setMapZoom(unidadesComCoordenadas.length === 1 ? 13 : 8);
+            const newCenter = [latMedia, longMedia];
+            const newZoom = unidadesComCoordenadas.length === 1 ? 13 : 8;
+            setMapCenter(newCenter);
+            setMapZoom(newZoom);
+            // Salvar como centro inicial
+            initialCenterRef.current = newCenter;
+            initialZoomRef.current = newZoom;
           }
         } else {
           toast.error('Erro ao carregar unidades escolares para o mapa');
@@ -163,6 +265,35 @@ const MapaContent = ({ unidadeAtual = null, filialId = null, rotaId = null, sear
 
     carregarUnidadesEscolares();
   }, [unidadeAtual?.id, filialId, rotaId, searchTerm]);
+
+  // Calcular coordenadas da rota quando houver rotaId e unidades ordenadas
+  // IMPORTANTE: Este hook deve estar ANTES de qualquer retorno condicional
+  const { rotaCoordenadas, unidadesComOrdem, distanciaTotal } = useMemo(() => {
+    if (!rotaId || unidadesEscolares.length < 2) {
+      return { rotaCoordenadas: [], unidadesComOrdem: [], distanciaTotal: 0 };
+    }
+    
+    // Filtrar apenas unidades com ordem_entrega válida e ordenar
+    const unidadesComOrdem = unidadesEscolares
+      .filter(u => u.ordem_entrega && u.ordem_entrega > 0)
+      .sort((a, b) => a.ordem_entrega - b.ordem_entrega);
+    
+    if (unidadesComOrdem.length < 2) {
+      return { rotaCoordenadas: [], unidadesComOrdem: [], distanciaTotal: 0 };
+    }
+    
+    // Criar array de coordenadas [lat, long] na ordem de entrega
+    const coordenadas = unidadesComOrdem.map(u => [u.lat, u.long]);
+    
+    // Calcular distância total
+    const distancia = calculateRouteDistance(coordenadas);
+    
+    return {
+      rotaCoordenadas: coordenadas,
+      unidadesComOrdem,
+      distanciaTotal: distancia
+    };
+  }, [rotaId, unidadesEscolares]);
 
   if (loading) {
     return (
@@ -199,6 +330,7 @@ const MapaContent = ({ unidadeAtual = null, filialId = null, rotaId = null, sear
         style={{ height: '100%', width: '100%', zIndex: 0 }}
         scrollWheelZoom={true}
       >
+        {/* TileLayer padrão - será substituído pelo LayersControl se ativo */}
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -206,10 +338,59 @@ const MapaContent = ({ unidadeAtual = null, filialId = null, rotaId = null, sear
         
         <MapController center={mapCenter} zoom={mapZoom} />
         
+        {/* Controles do mapa */}
+        <MapControls
+          initialCenter={initialCenterRef.current}
+          initialZoom={initialZoomRef.current}
+          unidadesEscolares={unidadesEscolares}
+          onReset={() => {
+            if (unidadesEscolares.length > 0) {
+              const latMedia = unidadesEscolares.reduce((sum, u) => sum + u.lat, 0) / unidadesEscolares.length;
+              const longMedia = unidadesEscolares.reduce((sum, u) => sum + u.long, 0) / unidadesEscolares.length;
+              setMapCenter([latMedia, longMedia]);
+              setMapZoom(unidadesEscolares.length === 1 ? 13 : 8);
+            } else {
+              setMapCenter(initialCenterRef.current);
+              setMapZoom(initialZoomRef.current);
+            }
+          }}
+          onLayerChange={(layerName) => {
+            console.log('Camada alterada para:', layerName);
+          }}
+        />
+        
+        {/* Linha da rota melhorada - apenas quando houver rotaId e coordenadas válidas */}
+        {rotaId && rotaCoordenadas.length >= 2 && (
+          <>
+            <RoutePolyline 
+              positions={rotaCoordenadas}
+              color="#ef4444"
+              weight={5}
+              opacity={0.8}
+            />
+            <RouteMarkers 
+              unidadesComOrdem={unidadesComOrdem}
+              isCurrent={unidadeAtual}
+            />
+          </>
+        )}
+        
+        {/* Marcadores normais - apenas se não for rota ou para unidades sem ordem */}
         {unidadesEscolares.map((unidade) => {
+          // Se for rota e a unidade estiver na rota, não renderizar aqui (já renderizado em RouteMarkers)
+          if (rotaId && unidadesComOrdem.some(u => u.id === unidade.id)) {
+            // Verificar se é a unidade atual (deve ser renderizada mesmo na rota)
+            const isCurrentUnit = unidadeAtual && unidade.id === unidadeAtual.id;
+            if (!isCurrentUnit) {
+              return null;
+            }
+          }
           const lat = unidade.lat; // Já convertido no processamento anterior
           const long = unidade.long; // Já convertido no processamento anterior
           const isCurrent = unidadeAtual && unidade.id === unidadeAtual.id;
+          const filialColor = getFilialColor(unidade.filial_id, filiaisMap);
+          const status = unidade.status || 'ativo';
+          const ordemEntrega = unidade.ordem_entrega || 0;
           
           if (lat === null || long === null || lat === 0 || long === 0) {
             return null;
@@ -219,7 +400,7 @@ const MapaContent = ({ unidadeAtual = null, filialId = null, rotaId = null, sear
             <Marker
               key={unidade.id}
               position={[lat, long]}
-              icon={createCustomIcon(isCurrent)}
+              icon={createCustomIcon(isCurrent, status, filialColor, ordemEntrega)}
             >
               <Popup>
                 <div className="p-2">
@@ -242,9 +423,35 @@ const MapaContent = ({ unidadeAtual = null, filialId = null, rotaId = null, sear
                       {unidade.numero && `, ${unidade.numero}`}
                     </p>
                   )}
+                  {unidade.filial_nome && (
+                    <p className="text-sm text-gray-600 mb-1">
+                      <span className="font-medium">Filial:</span> {unidade.filial_nome}
+                    </p>
+                  )}
+                  {unidade.status && (
+                    <p className="text-sm mb-1">
+                      <span className="font-medium">Status:</span>{' '}
+                      <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
+                        unidade.status === 'ativo' || unidade.status === 1 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                        {unidade.status === 'ativo' || unidade.status === 1 ? 'Ativo' : 'Inativo'}
+                      </span>
+                    </p>
+                  )}
+                  {ordemEntrega > 0 && (
+                    <p className="text-sm text-gray-600 mb-1">
+                      <span className="font-medium">Ordem de Entrega:</span>{' '}
+                      <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-800 font-semibold text-xs">
+                        {ordemEntrega}
+                      </span>
+                    </p>
+                  )}
                   {isCurrent && (
-                    <p className="text-xs text-green-600 font-medium mt-2">
-                      ✓ Unidade atual
+                    <p className="text-xs text-green-600 font-medium mt-2 flex items-center gap-1">
+                      <span className="w-2 h-2 bg-yellow-400 rounded-full"></span>
+                      Unidade atual
                     </p>
                   )}
                 </div>
@@ -254,22 +461,65 @@ const MapaContent = ({ unidadeAtual = null, filialId = null, rotaId = null, sear
         })}
       </MapContainer>
       
+      {/* Informações da Rota */}
+      {rotaId && unidadesComOrdem.length >= 2 && (
+        <RouteInfo 
+          unidadesComOrdem={unidadesComOrdem}
+          distanciaTotal={distanciaTotal}
+        />
+      )}
+      
       {/* Legenda */}
-      <div className="absolute bottom-4 left-4 bg-white rounded-lg shadow-lg p-3 z-[1000] border border-gray-200">
+      <div className="absolute bottom-4 left-4 bg-white rounded-lg shadow-lg p-3 z-[1000] border border-gray-200 max-w-xs">
         <h4 className="text-sm font-semibold text-gray-700 mb-2">Legenda</h4>
-        <div className="space-y-1">
+        <div className="space-y-1.5">
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full bg-green-500 border-2 border-white"></div>
+            <div className="relative">
+              <div className="w-4 h-4 rounded-full bg-green-500 border-2 border-green-600"></div>
+              <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-yellow-400 rounded-full border border-white"></div>
+            </div>
             <span className="text-xs text-gray-600">Unidade atual</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded-full bg-blue-500 border-2 border-white"></div>
-            <span className="text-xs text-gray-600">Outras unidades</span>
+            <span className="text-xs text-gray-600">Unidade ativa (por filial)</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded-full bg-gray-400 border-2 border-white"></div>
+            <span className="text-xs text-gray-600">Unidade inativa</span>
+          </div>
+          {rotaId && rotaCoordenadas.length >= 2 && (
+            <>
+              <div className="flex items-center gap-2 pt-1 border-t border-gray-200 mt-1">
+                <div className="w-4 h-0.5 bg-red-500"></div>
+                <span className="text-xs text-gray-600">Rota de entrega</span>
+              </div>
+              <div className="flex items-center gap-2 mt-1">
+                <div className="w-4 h-4 rounded-full bg-green-500 border-2 border-green-600 relative">
+                  <div className="absolute -top-0.5 -left-0.5 w-3 h-3 bg-green-500 rounded-full border border-white text-[6px] text-white flex items-center justify-center font-bold">S</div>
+                </div>
+                <span className="text-xs text-gray-600">Início</span>
+              </div>
+              <div className="flex items-center gap-2 mt-1">
+                <div className="w-4 h-4 rounded-full bg-orange-500 border-2 border-orange-600 relative">
+                  <div className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-orange-500 rounded-full border border-white text-[6px] text-white flex items-center justify-center font-bold">F</div>
+                </div>
+                <span className="text-xs text-gray-600">Fim</span>
+              </div>
+            </>
+          )}
+          <div className="pt-1 border-t border-gray-200 mt-1">
+            <p className="text-xs text-gray-500">
+              <span className="font-medium">Total:</span> {unidadesEscolares.length} unidade{unidadesEscolares.length !== 1 ? 's' : ''}
+            </p>
+            <p className="text-xs text-gray-500 mt-0.5">
+              <span className="font-medium">Ativas:</span> {unidadesEscolares.filter(u => u.status === 'ativo' || u.status === 1).length}
+            </p>
+            <p className="text-xs text-gray-500 mt-0.5">
+              <span className="font-medium">Inativas:</span> {unidadesEscolares.filter(u => u.status !== 'ativo' && u.status !== 1).length}
+            </p>
           </div>
         </div>
-        <p className="text-xs text-gray-500 mt-2">
-          Total: {unidadesEscolares.length} unidade{unidadesEscolares.length !== 1 ? 's' : ''}
-        </p>
       </div>
     </div>
   );
