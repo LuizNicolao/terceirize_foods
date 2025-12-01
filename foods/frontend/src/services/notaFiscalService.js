@@ -202,6 +202,50 @@ class NotaFiscalService {
   }
 
   /**
+   * Baixar modelo de planilha para importação
+   */
+  async baixarModelo() {
+    try {
+      const response = await api.get('/notas-fiscais/modelo', {
+        responseType: 'blob'
+      });
+      return {
+        success: true,
+        data: response.data
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao baixar modelo'
+      };
+    }
+  }
+
+  /**
+   * Importar notas fiscais via Excel
+   */
+  async importar(formData) {
+    try {
+      const response = await api.post('/notas-fiscais/importar', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      return {
+        success: true,
+        data: response.data.data || null,
+        message: response.data.message || 'Importação realizada com sucesso'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro na importação',
+        data: error.response?.data?.data || null
+      };
+    }
+  }
+
+  /**
    * Download do arquivo da nota fiscal
    * @param {number} id - ID da nota fiscal
    * @param {string} xmlPath - Caminho do arquivo (opcional, se não fornecido, busca da API)

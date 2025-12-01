@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaPlus, FaQuestionCircle } from 'react-icons/fa';
+import { FaPlus, FaQuestionCircle, FaUpload } from 'react-icons/fa';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { useNotaFiscal } from '../../hooks/useNotaFiscal';
 import { useAuditoria } from '../../hooks/common/useAuditoria';
@@ -9,6 +9,7 @@ import { CadastroFilterBar } from '../../components/ui';
 import NotaFiscalModal from '../../components/notas-fiscais/NotaFiscalModal';
 import NotaFiscalTable from '../../components/notas-fiscais/NotaFiscalTable';
 import NotasFiscaisStats from '../../components/notas-fiscais/NotasFiscaisStats';
+import ImportNotasFiscaisModal from '../../components/notas-fiscais/ImportNotasFiscaisModal';
 import { AuditModal, ExportButtons } from '../../components/shared';
 import notaFiscalService from '../../services/notaFiscalService';
 import FornecedoresService from '../../services/fornecedores';
@@ -87,6 +88,7 @@ const NotasFiscais = () => {
   const [validationErrors, setValidationErrors] = useState(null);
   const [fornecedores, setFornecedores] = useState([]);
   const [filiais, setFiliais] = useState([]);
+  const [showImportModal, setShowImportModal] = useState(false);
 
   // Carregar dados auxiliares
   useEffect(() => {
@@ -284,11 +286,22 @@ const NotasFiscais = () => {
             <span className="hidden sm:inline">Auditoria</span>
           </Button>
           {canCreate('notas_fiscais') && (
-            <Button onClick={handleAddNotaFiscal} size="sm">
-              <FaPlus className="mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">Nova Nota Fiscal</span>
-              <span className="sm:hidden">Nova</span>
-            </Button>
+            <>
+              <Button 
+                onClick={() => setShowImportModal(true)} 
+                variant="outline"
+                size="sm"
+              >
+                <FaUpload className="mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Importar</span>
+                <span className="sm:hidden">Importar</span>
+              </Button>
+              <Button onClick={handleAddNotaFiscal} size="sm">
+                <FaPlus className="mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Nova Nota Fiscal</span>
+                <span className="sm:hidden">Nova</span>
+              </Button>
+            </>
           )}
         </div>
       </div>
@@ -405,6 +418,16 @@ const NotasFiscais = () => {
         confirmText="Excluir"
         cancelText="Cancelar"
         type="danger"
+      />
+
+      {/* Modal de Importação */}
+      <ImportNotasFiscaisModal
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        onImportSuccess={(data) => {
+          toast.success(`Importação concluída! ${data?.importados || 0} importadas, ${data?.atualizados || 0} atualizadas.`);
+          carregarNotasFiscais();
+        }}
       />
     </div>
   );

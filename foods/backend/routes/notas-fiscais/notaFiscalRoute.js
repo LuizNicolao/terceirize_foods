@@ -12,6 +12,7 @@ const { auditMiddleware, AUDIT_ACTIONS } = require('../../utils/audit');
 const NotasFiscaisController = require('../../controllers/notas-fiscais');
 const { uploadNotaFiscal, handleUploadError } = require('../../middleware/uploadNotaFiscal');
 const parseFormData = require('../../middleware/parseFormData');
+const { NotaFiscalImportController, upload } = require('../../controllers/notas-fiscais/NotaFiscalImportController');
 
 const router = express.Router();
 
@@ -28,6 +29,19 @@ router.get('/',
   NotasFiscaisController.listarNotasFiscais
 );
 
+// ===== ROTAS ESPECÍFICAS (DEVEM VIR ANTES DE /:id) =====
+
+// GET /api/notas-fiscais/modelo - Baixar modelo de planilha para importação
+router.get('/modelo',
+  checkScreenPermission('notas-fiscais', 'criar'),
+  NotaFiscalImportController.baixarModelo
+);
+
+// Buscar quantidades já lançadas para um pedido de compra
+router.get('/quantidades-lancadas/:pedido_compra_id',
+  NotasFiscaisController.buscarQuantidadesLancadas
+);
+
 // Download do arquivo da nota fiscal (deve vir antes de /:id para não conflitar)
 const NotaFiscalDownloadController = require('../../controllers/notas-fiscais/NotaFiscalDownloadController');
 router.get('/:id/download',
@@ -35,7 +49,7 @@ router.get('/:id/download',
   NotaFiscalDownloadController.downloadArquivo
 );
 
-// Buscar nota fiscal por ID
+// Buscar nota fiscal por ID (deve vir por último, pois captura qualquer string)
 router.get('/:id', 
   commonValidations.id,
   NotasFiscaisController.buscarNotaFiscalPorId
@@ -69,11 +83,13 @@ router.delete('/:id',
   NotasFiscaisController.excluirNotaFiscal
 );
 
-// ===== ROTAS ESPECÍFICAS =====
+// ===== ROTAS DE IMPORTAÇÃO =====
 
-// Buscar quantidades já lançadas para um pedido de compra
-router.get('/quantidades-lancadas/:pedido_compra_id',
-  NotasFiscaisController.buscarQuantidadesLancadas
+// POST /api/notas-fiscais/importar - Importar notas fiscais via Excel
+router.post('/importar',
+  checkScreenPermission('notas-fiscais', 'criar'),
+  upload.single('file'),
+  NotaFiscalImportController.importar
 );
 
 module.exports = router;
