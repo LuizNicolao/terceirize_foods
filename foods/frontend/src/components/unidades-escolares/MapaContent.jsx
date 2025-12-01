@@ -148,8 +148,8 @@ const parseCoordinate = (value, type = 'lat') => {
   } else if (type === 'lon') {
     // Longitude: -180 a 180 graus
     if (parsed < -180 || parsed > 180) {
-      return null;
-    }
+    return null;
+  }
   }
   
   // Rejeitar coordenadas muito próximas de zero (provavelmente erro de cadastro)
@@ -392,6 +392,7 @@ const MapaContent = ({ unidadeAtual = null, filialId = null, rotaId = null, sear
               color="#ef4444"
               weight={5}
               opacity={0.8}
+              useRealRoute={true}
             />
             <RouteMarkers 
               unidadesComOrdem={unidadesComOrdem}
@@ -472,8 +473,8 @@ const MapaContent = ({ unidadeAtual = null, filialId = null, rotaId = null, sear
                         <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-800 font-semibold text-xs">
                           {ordemEntrega}
                         </span>
-                      </p>
-                    )}
+                    </p>
+                  )}
                   {isCurrent && (
                       <p className="text-xs text-green-600 font-medium mt-2 flex items-center gap-1">
                         <span className="w-2 h-2 bg-yellow-400 rounded-full"></span>

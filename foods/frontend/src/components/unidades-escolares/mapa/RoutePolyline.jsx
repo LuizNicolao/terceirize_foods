@@ -1,6 +1,73 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useMap } from 'react-leaflet';
 import L from 'leaflet';
+
+/**
+ * Busca rota real usando OSRM (Open Source Routing Machine)
+ * Retorna os pontos da rota que seguem as ruas
+ */
+const fetchRouteFromOSRM = async (start, end) => {
+  try {
+    // Formato: longitude,latitude (OSRM usa lon,lat)
+    const startCoords = `${start[1]},${start[0]}`;
+    const endCoords = `${end[1]},${end[0]}`;
+    
+    // Usar servidor público do OSRM (pode ser substituído por servidor próprio)
+    const url = `https://router.project-osrm.org/route/v1/driving/${startCoords};${endCoords}?overview=full&geometries=geojson`;
+    
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error('Erro ao buscar rota do OSRM');
+    }
+    
+    const data = await response.json();
+    
+    if (data.code === 'Ok' && data.routes && data.routes.length > 0) {
+      // Converter GeoJSON coordinates [lon, lat] para [lat, lon]
+      const coordinates = data.routes[0].geometry.coordinates.map(coord => [coord[1], coord[0]]);
+      return coordinates;
+    }
+    
+    // Se falhar, retornar linha reta como fallback
+    return [start, end];
+  } catch (error) {
+    console.warn('Erro ao buscar rota do OSRM, usando linha reta:', error);
+    // Fallback: retornar linha reta
+    return [start, end];
+  }
+};
+
+/**
+ * Busca rota completa conectando todos os pontos
+ */
+const fetchCompleteRoute = async (positions) => {
+  if (positions.length < 2) return positions;
+  
+  const routePoints = [positions[0]]; // Começar com o primeiro ponto
+  
+  // Buscar rota entre cada par de pontos consecutivos
+  for (let i = 0; i < positions.length - 1; i++) {
+    const start = positions[i];
+    const end = positions[i + 1];
+    
+    try {
+      const segmentRoute = await fetchRouteFromOSRM(start, end);
+      
+      // Adicionar pontos do segmento (pulando o primeiro para evitar duplicação)
+      if (segmentRoute.length > 1) {
+        routePoints.push(...segmentRoute.slice(1));
+      } else {
+        routePoints.push(end);
+      }
+    } catch (error) {
+      console.warn(`Erro ao buscar rota entre pontos ${i} e ${i + 1}:`, error);
+      // Fallback: adicionar ponto final diretamente
+      routePoints.push(end);
+    }
+  }
+  
+  return routePoints;
+};
 
 /**
  * Componente para desenhar a linha da rota com setas de direção
@@ -59,13 +126,42 @@ const addDirectionArrows = (positions, map, color, arrowsRef) => {
     arrowsRef.current = arrowMarkers;
 };
 
-const RoutePolyline = ({ positions, color = '#ef4444', weight = 5, opacity = 0.8 }) => {
+const RoutePolyline = ({ positions, color = '#ef4444', weight = 5, opacity = 0.8, useRealRoute = true }) => {
   const map = useMap();
   const polylineRef = useRef(null);
   const arrowsRef = useRef([]);
+  const [routePoints, setRoutePoints] = useState(null);
+  const [loading, setLoading] = useState(false);
 
+  // Buscar rota real quando positions mudar
   useEffect(() => {
-    if (!positions || positions.length < 2) return;
+    if (!positions || positions.length < 2) {
+      setRoutePoints(null);
+      return;
+    }
+
+    if (useRealRoute) {
+      setLoading(true);
+      fetchCompleteRoute(positions)
+        .then(points => {
+          setRoutePoints(points);
+          setLoading(false);
+        })
+        .catch(error => {
+          console.error('Erro ao buscar rota completa:', error);
+          // Fallback: usar posições originais (linha reta)
+          setRoutePoints(positions);
+          setLoading(false);
+        });
+    } else {
+      // Se não usar rota real, usar posições originais
+      setRoutePoints(positions);
+    }
+  }, [positions, useRealRoute]);
+
+  // Desenhar polyline quando routePoints estiver pronto
+  useEffect(() => {
+    if (!routePoints || routePoints.length < 2) return;
 
     // Remover polyline anterior se existir
     if (polylineRef.current) {
@@ -80,8 +176,8 @@ const RoutePolyline = ({ positions, color = '#ef4444', weight = 5, opacity = 0.8
     });
     arrowsRef.current = [];
 
-    // Criar polyline principal
-    const polyline = L.polyline(positions, {
+    // Criar polyline principal com os pontos da rota real
+    const polyline = L.polyline(routePoints, {
       color,
       weight,
       opacity,
@@ -93,7 +189,7 @@ const RoutePolyline = ({ positions, color = '#ef4444', weight = 5, opacity = 0.8
     polylineRef.current = polyline;
 
     // Adicionar setas de direção ao longo da rota
-    addDirectionArrows(positions, map, color, arrowsRef);
+    addDirectionArrows(routePoints, map, color, arrowsRef);
 
     return () => {
       if (polylineRef.current) {
@@ -106,7 +202,7 @@ const RoutePolyline = ({ positions, color = '#ef4444', weight = 5, opacity = 0.8
       });
       arrowsRef.current = [];
     };
-  }, [map, positions, color, weight, opacity]);
+  }, [map, routePoints, color, weight, opacity]);
 
   return null;
 };

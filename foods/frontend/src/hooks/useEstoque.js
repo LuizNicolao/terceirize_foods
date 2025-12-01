@@ -173,7 +173,7 @@ export const useEstoque = () => {
           sg.grupo_id.toString() === grupoId.toString()
         )
       );
-    }
+          }
   }, [subgrupos, tempFilters.grupoFilter]);
 
   // Filtrar classes quando um subgrupo está selecionado
@@ -185,7 +185,7 @@ export const useEstoque = () => {
       return classes.filter(c => 
         c.subgrupo_id && c.subgrupo_id.toString() === subgrupoFilterId.toString()
       );
-    }
+          }
   }, [classes, tempFilters.subgrupoFilter]);
 
   /**

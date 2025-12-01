@@ -79,10 +79,10 @@ export const useFilters = (initialFilters = {}) => {
           if (Array.isArray(value) && value.length > 0) {
             params[apiKey] = value.join(',');
           } else {
-            // Garantir que seja convertido para número, mesmo se já for número
-            const numValue = typeof value === 'string' ? parseInt(value, 10) : Number(value);
-            if (!isNaN(numValue) && numValue > 0) {
-              params[apiKey] = numValue;
+          // Garantir que seja convertido para número, mesmo se já for número
+          const numValue = typeof value === 'string' ? parseInt(value, 10) : Number(value);
+          if (!isNaN(numValue) && numValue > 0) {
+            params[apiKey] = numValue;
             }
           }
         } else {
