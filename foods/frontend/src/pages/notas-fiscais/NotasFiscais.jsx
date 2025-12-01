@@ -296,11 +296,11 @@ const NotasFiscais = () => {
                 <span className="hidden sm:inline">Importar</span>
                 <span className="sm:hidden">Importar</span>
               </Button>
-              <Button onClick={handleAddNotaFiscal} size="sm">
-                <FaPlus className="mr-1 sm:mr-2" />
-                <span className="hidden sm:inline">Nova Nota Fiscal</span>
-                <span className="sm:hidden">Nova</span>
-              </Button>
+            <Button onClick={handleAddNotaFiscal} size="sm">
+              <FaPlus className="mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Nova Nota Fiscal</span>
+              <span className="sm:hidden">Nova</span>
+            </Button>
             </>
           )}
         </div>

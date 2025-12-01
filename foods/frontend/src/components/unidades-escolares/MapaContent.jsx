@@ -3,7 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { FaMapMarkerAlt } from 'react-icons/fa';
 import UnidadesEscolaresService from '../../services/unidadesEscolares';
-import { MapControls, RoutePolyline, RouteMarkers, RouteInfo, calculateRouteDistance } from './mapa';
+import { MapControls, RoutePolyline, RouteMarkers, RouteInfo, MarkerClusterGroup, calculateRouteDistance } from './mapa';
 import toast from 'react-hot-toast';
 
 // Importar CSS do Leaflet
@@ -111,8 +111,15 @@ const createCustomIcon = (isCurrent, status, filialColor, ordemEntrega) => {
   });
 };
 
-// Função auxiliar para converter coordenadas com vírgula para ponto
-const parseCoordinate = (value) => {
+/**
+ * Função auxiliar para converter e validar coordenadas
+ * Suporta formato brasileiro (vírgula) e internacional (ponto)
+ * 
+ * @param {any} value - Valor da coordenada (string, number, null)
+ * @param {string} type - Tipo: 'lat' (latitude) ou 'lon' (longitude)
+ * @returns {number|null} - Coordenada validada ou null se inválida
+ */
+const parseCoordinate = (value, type = 'lat') => {
   if (value === null || value === undefined || value === '') return null;
   
   // Converter para string e remover espaços
@@ -125,17 +132,33 @@ const parseCoordinate = (value) => {
   const normalized = strValue.replace(',', '.');
   const parsed = parseFloat(normalized);
   
-  // Validar se é um número válido e está dentro de limites razoáveis
+  // Validar se é um número válido
   if (isNaN(parsed)) {
     return null;
   }
   
-  // Validar limites geográficos (latitude: -90 a 90, longitude: -180 a 180)
-  if (Math.abs(parsed) > 180) {
-    return null;
+  // Validar limites específicos por tipo
+  if (type === 'lat') {
+    // Latitude: -90 a 90 graus
+    if (parsed < -90 || parsed > 90) {
+      return null;
+    }
+    // Rejeitar coordenadas exatamente em 0,0 (Golfo da Guiné - provavelmente erro)
+    // Mas permitir se for longitude válida
+  } else if (type === 'lon') {
+    // Longitude: -180 a 180 graus
+    if (parsed < -180 || parsed > 180) {
+      return null;
+    }
   }
   
-  return parsed;
+  // Rejeitar coordenadas muito próximas de zero (provavelmente erro de cadastro)
+  // Latitude 0 é válida (Equador), mas longitude 0 também (Meridiano de Greenwich)
+  // Vamos apenas validar se ambas são exatamente 0,0 (isso será feito no componente)
+  
+  // Arredondar para 8 casas decimais (precisão do banco)
+  // Isso garante que não haja problemas de precisão de ponto flutuante
+  return Math.round(parsed * 100000000) / 100000000;
 };
 
 // Componente para ajustar o zoom quando a unidade atual mudar
@@ -180,8 +203,8 @@ const MapaContent = ({ unidadeAtual = null, filialId = null, rotaId = null, sear
           // Filtrar apenas unidades com coordenadas válidas e converter coordenadas
           const unidadesComCoordenadas = (response.data || [])
             .map(unidade => {
-              const lat = parseCoordinate(unidade.lat);
-              const long = parseCoordinate(unidade.long);
+              const lat = parseCoordinate(unidade.lat, 'lat');
+              const long = parseCoordinate(unidade.long, 'lon');
               return {
                 ...unidade,
                 lat,
@@ -192,8 +215,10 @@ const MapaContent = ({ unidadeAtual = null, filialId = null, rotaId = null, sear
               unidade => 
                 unidade.lat !== null && 
                 unidade.long !== null &&
-                unidade.lat !== 0 &&
-                unidade.long !== 0
+                // Rejeitar coordenadas exatamente em 0,0 (Golfo da Guiné - provavelmente erro de cadastro)
+                !(unidade.lat === 0 && unidade.long === 0) &&
+                // Rejeitar coordenadas muito próximas de zero (erro comum)
+                (Math.abs(unidade.lat) > 0.0001 || Math.abs(unidade.long) > 0.0001)
             );
           
           // Se houver rota selecionada, ordenar por ordem_entrega
@@ -229,9 +254,9 @@ const MapaContent = ({ unidadeAtual = null, filialId = null, rotaId = null, sear
 
           // Se houver unidade atual, centralizar o mapa nela
           if (unidadeAtual?.lat && unidadeAtual?.long) {
-            const lat = parseCoordinate(unidadeAtual.lat);
-            const long = parseCoordinate(unidadeAtual.long);
-            if (lat !== null && long !== null && lat !== 0 && long !== 0) {
+            const lat = parseCoordinate(unidadeAtual.lat, 'lat');
+            const long = parseCoordinate(unidadeAtual.long, 'lon');
+            if (lat !== null && long !== null && !(lat === 0 && long === 0)) {
               setMapCenter([lat, long]);
               setMapZoom(13);
             } else if (unidadesComCoordenadas.length > 0) {
@@ -297,7 +322,7 @@ const MapaContent = ({ unidadeAtual = null, filialId = null, rotaId = null, sear
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-[calc(100vh-400px)] min-h-[600px]">
+      <div className="flex items-center justify-center h-[calc(100vh-250px)] min-h-[700px]">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Carregando mapa...</p>
@@ -308,7 +333,7 @@ const MapaContent = ({ unidadeAtual = null, filialId = null, rotaId = null, sear
 
   if (unidadesEscolares.length === 0) {
     return (
-      <div className="flex items-center justify-center h-[calc(100vh-400px)] min-h-[600px]">
+      <div className="flex items-center justify-center h-[calc(100vh-250px)] min-h-[700px]">
         <div className="text-center">
           <FaMapMarkerAlt className="text-6xl text-gray-400 mx-auto mb-4" />
           <p className="text-gray-600 text-lg font-medium mb-2">Nenhuma unidade escolar com coordenadas encontrada</p>
@@ -323,7 +348,7 @@ const MapaContent = ({ unidadeAtual = null, filialId = null, rotaId = null, sear
   }
 
   return (
-    <div className="w-full h-[calc(100vh-400px)] min-h-[600px] relative">
+    <div className="w-full h-[calc(100vh-250px)] min-h-[700px] relative">
       <MapContainer
         center={mapCenter}
         zoom={mapZoom}
@@ -375,22 +400,23 @@ const MapaContent = ({ unidadeAtual = null, filialId = null, rotaId = null, sear
           </>
         )}
         
-        {/* Marcadores normais - apenas se não for rota ou para unidades sem ordem */}
+        {/* Marcadores normais com clustering - apenas se não for rota ou para unidades sem ordem */}
+        <MarkerClusterGroup>
         {unidadesEscolares.map((unidade) => {
-          // Se for rota e a unidade estiver na rota, não renderizar aqui (já renderizado em RouteMarkers)
-          if (rotaId && unidadesComOrdem.some(u => u.id === unidade.id)) {
-            // Verificar se é a unidade atual (deve ser renderizada mesmo na rota)
-            const isCurrentUnit = unidadeAtual && unidade.id === unidadeAtual.id;
-            if (!isCurrentUnit) {
-              return null;
+            // Se for rota e a unidade estiver na rota, não renderizar aqui (já renderizado em RouteMarkers)
+            if (rotaId && unidadesComOrdem.some(u => u.id === unidade.id)) {
+              // Verificar se é a unidade atual (deve ser renderizada mesmo na rota)
+              const isCurrentUnit = unidadeAtual && unidade.id === unidadeAtual.id;
+              if (!isCurrentUnit) {
+                return null;
+              }
             }
-          }
           const lat = unidade.lat; // Já convertido no processamento anterior
           const long = unidade.long; // Já convertido no processamento anterior
           const isCurrent = unidadeAtual && unidade.id === unidadeAtual.id;
-          const filialColor = getFilialColor(unidade.filial_id, filiaisMap);
-          const status = unidade.status || 'ativo';
-          const ordemEntrega = unidade.ordem_entrega || 0;
+            const filialColor = getFilialColor(unidade.filial_id, filiaisMap);
+            const status = unidade.status || 'ativo';
+            const ordemEntrega = unidade.ordem_entrega || 0;
           
           if (lat === null || long === null || lat === 0 || long === 0) {
             return null;
@@ -400,7 +426,7 @@ const MapaContent = ({ unidadeAtual = null, filialId = null, rotaId = null, sear
             <Marker
               key={unidade.id}
               position={[lat, long]}
-              icon={createCustomIcon(isCurrent, status, filialColor, ordemEntrega)}
+                icon={createCustomIcon(isCurrent, status, filialColor, ordemEntrega)}
             >
               <Popup>
                 <div className="p-2">
@@ -423,35 +449,35 @@ const MapaContent = ({ unidadeAtual = null, filialId = null, rotaId = null, sear
                       {unidade.numero && `, ${unidade.numero}`}
                     </p>
                   )}
-                  {unidade.filial_nome && (
-                    <p className="text-sm text-gray-600 mb-1">
-                      <span className="font-medium">Filial:</span> {unidade.filial_nome}
-                    </p>
-                  )}
-                  {unidade.status && (
-                    <p className="text-sm mb-1">
-                      <span className="font-medium">Status:</span>{' '}
-                      <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
-                        unidade.status === 'ativo' || unidade.status === 1 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-red-100 text-red-800'
-                      }`}>
-                        {unidade.status === 'ativo' || unidade.status === 1 ? 'Ativo' : 'Inativo'}
-                      </span>
-                    </p>
-                  )}
-                  {ordemEntrega > 0 && (
-                    <p className="text-sm text-gray-600 mb-1">
-                      <span className="font-medium">Ordem de Entrega:</span>{' '}
-                      <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-800 font-semibold text-xs">
-                        {ordemEntrega}
-                      </span>
-                    </p>
-                  )}
+                    {unidade.filial_nome && (
+                      <p className="text-sm text-gray-600 mb-1">
+                        <span className="font-medium">Filial:</span> {unidade.filial_nome}
+                      </p>
+                    )}
+                    {unidade.status && (
+                      <p className="text-sm mb-1">
+                        <span className="font-medium">Status:</span>{' '}
+                        <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
+                          unidade.status === 'ativo' || unidade.status === 1 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-red-100 text-red-800'
+                        }`}>
+                          {unidade.status === 'ativo' || unidade.status === 1 ? 'Ativo' : 'Inativo'}
+                        </span>
+                      </p>
+                    )}
+                    {ordemEntrega > 0 && (
+                      <p className="text-sm text-gray-600 mb-1">
+                        <span className="font-medium">Ordem de Entrega:</span>{' '}
+                        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-800 font-semibold text-xs">
+                          {ordemEntrega}
+                        </span>
+                      </p>
+                    )}
                   {isCurrent && (
-                    <p className="text-xs text-green-600 font-medium mt-2 flex items-center gap-1">
-                      <span className="w-2 h-2 bg-yellow-400 rounded-full"></span>
-                      Unidade atual
+                      <p className="text-xs text-green-600 font-medium mt-2 flex items-center gap-1">
+                        <span className="w-2 h-2 bg-yellow-400 rounded-full"></span>
+                        Unidade atual
                     </p>
                   )}
                 </div>
@@ -459,6 +485,7 @@ const MapaContent = ({ unidadeAtual = null, filialId = null, rotaId = null, sear
             </Marker>
           );
         })}
+        </MarkerClusterGroup>
       </MapContainer>
       
       {/* Informações da Rota */}

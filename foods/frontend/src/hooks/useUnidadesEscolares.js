@@ -249,7 +249,9 @@ export const useUnidadesEscolares = () => {
 
   // Carregar dados iniciais
   useEffect(() => {
-    loadRotas();
+    // Carregar rotas baseado no filtro de filial atual
+    const filialAtual = baseEntity.filters.filialFilter;
+    loadRotas(filialAtual && filialAtual !== 'todos' ? filialAtual : null);
     loadFiliais();
     loadEstatisticasUnidades();
   }, [loadRotas, loadFiliais, loadEstatisticasUnidades]);
@@ -324,8 +326,10 @@ export const useUnidadesEscolares = () => {
     setFilialFilter: (value) => {
       baseEntity.updateFilter('filialFilter', value);
       // Quando a filial muda, recarregar rotas filtradas por essa filial
-      loadRotas(value);
-      // Resetar filtro de rota para 'todos' quando mudar a filial
+      // Se for 'todos', passar null para carregar todas as rotas
+      const filialId = value && value !== 'todos' ? value : null;
+      loadRotas(filialId);
+      // Resetar filtro de rota para vazio quando mudar a filial
       baseEntity.updateFilter('rotaFilter', '');
     },
     

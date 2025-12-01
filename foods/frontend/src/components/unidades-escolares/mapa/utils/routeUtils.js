@@ -59,6 +59,79 @@ export const calculateSegmentDistances = (positions) => {
 };
 
 /**
+ * Calcula tempo estimado de viagem baseado na distância
+ * Considera velocidade média urbana (40 km/h) e tempo de parada (5 min por parada)
+ * @param {number} distanciaKm - Distância total em quilômetros
+ * @param {number} numParadas - Número de paradas
+ * @param {number} velocidadeMedia - Velocidade média em km/h (padrão: 40)
+ * @param {number} tempoParadaMin - Tempo médio de parada em minutos (padrão: 5)
+ * @returns {Object} { tempoTotalMin, tempoViagemMin, tempoParadasMin, horas, minutos }
+ */
+export const calculateEstimatedTime = (
+  distanciaKm, 
+  numParadas, 
+  velocidadeMedia = 40, 
+  tempoParadaMin = 5
+) => {
+  // Tempo de viagem (distância / velocidade)
+  const tempoViagemHoras = distanciaKm / velocidadeMedia;
+  const tempoViagemMin = tempoViagemHoras * 60;
+  
+  // Tempo de paradas (número de paradas * tempo médio por parada)
+  const tempoParadasMin = numParadas * tempoParadaMin;
+  
+  // Tempo total
+  const tempoTotalMin = tempoViagemMin + tempoParadasMin;
+  
+  const horas = Math.floor(tempoTotalMin / 60);
+  const minutos = Math.round(tempoTotalMin % 60);
+  
+  return {
+    tempoTotalMin,
+    tempoViagemMin,
+    tempoParadasMin,
+    horas,
+    minutos,
+    tempoTotalFormatado: horas > 0 
+      ? `${horas}h ${minutos}min` 
+      : `${minutos}min`
+  };
+};
+
+/**
+ * Calcula velocidade média estimada
+ * @param {number} distanciaKm - Distância em km
+ * @param {number} tempoHoras - Tempo em horas
+ * @returns {number} Velocidade média em km/h
+ */
+export const calculateAverageSpeed = (distanciaKm, tempoHoras) => {
+  if (tempoHoras === 0) return 0;
+  return distanciaKm / tempoHoras;
+};
+
+/**
+ * Calcula distância média entre paradas
+ * @param {number} distanciaTotal - Distância total em km
+ * @param {number} numSegmentos - Número de segmentos (paradas - 1)
+ * @returns {number} Distância média em km
+ */
+export const calculateAverageDistanceBetweenStops = (distanciaTotal, numSegmentos) => {
+  if (numSegmentos === 0) return 0;
+  return distanciaTotal / numSegmentos;
+};
+
+/**
+ * Calcula tempo médio por segmento
+ * @param {number} tempoTotalMin - Tempo total em minutos
+ * @param {number} numSegmentos - Número de segmentos
+ * @returns {number} Tempo médio por segmento em minutos
+ */
+export const calculateAverageTimePerSegment = (tempoTotalMin, numSegmentos) => {
+  if (numSegmentos === 0) return 0;
+  return tempoTotalMin / numSegmentos;
+};
+
+/**
  * Cria marcadores especiais para início e fim da rota
  * @param {boolean} isStart - Se é o ponto de início
  * @param {boolean} isEnd - Se é o ponto de fim
