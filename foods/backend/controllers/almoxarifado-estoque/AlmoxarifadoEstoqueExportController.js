@@ -54,7 +54,11 @@ class AlmoxarifadoEstoqueExportController {
           SUM(ae.quantidade_atual) as quantidade_atual,
           SUM(ae.quantidade_reservada) as quantidade_reservada,
           SUM(ae.quantidade_disponivel) as quantidade_disponivel,
-          AVG(ae.valor_unitario_medio) as valor_unitario_medio,
+          CASE 
+            WHEN SUM(ae.quantidade_atual) > 0 
+            THEN SUM(ae.valor_total) / SUM(ae.quantidade_atual)
+            ELSE 0
+          END as valor_unitario_medio,
           SUM(ae.valor_total) as valor_total,
           MIN(ae.estoque_minimo) as estoque_minimo,
           MAX(ae.estoque_maximo) as estoque_maximo
@@ -97,8 +101,17 @@ class AlmoxarifadoEstoqueExportController {
       }
 
       if (grupo_id) {
-        baseQuery += ' AND COALESCE(ae.grupo_id, pg.grupo_id) = ?';
-        params.push(grupo_id);
+        // Suportar múltiplos grupos (separados por vírgula) ou um único grupo
+        const gruposIds = grupo_id.toString().split(',').map(id => id.trim()).filter(id => id);
+        if (gruposIds.length > 0) {
+          if (gruposIds.length === 1) {
+            baseQuery += ' AND COALESCE(ae.grupo_id, pg.grupo_id) = ?';
+            params.push(gruposIds[0]);
+          } else {
+            baseQuery += ` AND COALESCE(ae.grupo_id, pg.grupo_id) IN (${gruposIds.map(() => '?').join(',')})`;
+            params.push(...gruposIds);
+          }
+        }
       }
 
       if (subgrupo_id) {
@@ -107,7 +120,7 @@ class AlmoxarifadoEstoqueExportController {
       }
 
       baseQuery += ' GROUP BY pg.id, pg.nome, pg.codigo, COALESCE(ae.grupo_id, pg.grupo_id), COALESCE(ae.grupo_nome, g.nome), pg.subgrupo_id, sg.nome, um.sigla, um.nome';
-      baseQuery += ' ORDER BY pg.nome ASC';
+      baseQuery += ' ORDER BY COALESCE(ae.grupo_nome, g.nome) ASC, pg.nome ASC';
       baseQuery += ` LIMIT ${parseInt(limit)}`;
 
       const estoques = await executeQuery(baseQuery, params);
@@ -184,7 +197,11 @@ class AlmoxarifadoEstoqueExportController {
           SUM(ae.quantidade_atual) as quantidade_atual,
           SUM(ae.quantidade_reservada) as quantidade_reservada,
           SUM(ae.quantidade_disponivel) as quantidade_disponivel,
-          AVG(ae.valor_unitario_medio) as valor_unitario_medio,
+          CASE 
+            WHEN SUM(ae.quantidade_atual) > 0 
+            THEN SUM(ae.valor_total) / SUM(ae.quantidade_atual)
+            ELSE 0
+          END as valor_unitario_medio,
           SUM(ae.valor_total) as valor_total,
           MIN(ae.estoque_minimo) as estoque_minimo,
           MAX(ae.estoque_maximo) as estoque_maximo
@@ -227,8 +244,17 @@ class AlmoxarifadoEstoqueExportController {
       }
 
       if (grupo_id) {
-        baseQuery += ' AND COALESCE(ae.grupo_id, pg.grupo_id) = ?';
-        params.push(grupo_id);
+        // Suportar múltiplos grupos (separados por vírgula) ou um único grupo
+        const gruposIds = grupo_id.toString().split(',').map(id => id.trim()).filter(id => id);
+        if (gruposIds.length > 0) {
+          if (gruposIds.length === 1) {
+            baseQuery += ' AND COALESCE(ae.grupo_id, pg.grupo_id) = ?';
+            params.push(gruposIds[0]);
+          } else {
+            baseQuery += ` AND COALESCE(ae.grupo_id, pg.grupo_id) IN (${gruposIds.map(() => '?').join(',')})`;
+            params.push(...gruposIds);
+          }
+        }
       }
 
       if (subgrupo_id) {
@@ -237,7 +263,7 @@ class AlmoxarifadoEstoqueExportController {
       }
 
       baseQuery += ' GROUP BY pg.id, pg.nome, pg.codigo, COALESCE(ae.grupo_id, pg.grupo_id), COALESCE(ae.grupo_nome, g.nome), pg.subgrupo_id, sg.nome, um.sigla, um.nome';
-      baseQuery += ' ORDER BY pg.nome ASC';
+      baseQuery += ' ORDER BY COALESCE(ae.grupo_nome, g.nome) ASC, pg.nome ASC';
       baseQuery += ` LIMIT ${parseInt(limit)}`;
 
       const estoques = await executeQuery(baseQuery, params);

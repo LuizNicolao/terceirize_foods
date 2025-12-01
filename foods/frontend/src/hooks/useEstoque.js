@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import toast from 'react-hot-toast';
 import api from '../services/api';
 import EstoqueService from '../services/estoqueService';
@@ -12,26 +12,61 @@ export const useEstoque = () => {
     initialItemsPerPage: 20,
     initialFilters: { almoxarifadoFilter: 'todos' },
     enableStats: true,
-    enableDelete: true
+    enableDelete: true,
+    autoLoad: false // Desabilitar carregamento automático - só carregar quando aplicar filtros
   });
 
   // Hook de filtros customizados
   const customFilters = useFilters({ 
-    almoxarifadoFilter: 'todos', 
     filialFilter: 'todos',
+    centroCustoFilter: 'todos',
+    almoxarifadoFilter: 'todos', 
     grupoFilter: 'todos',
-    subgrupoFilter: 'todos'
+    subgrupoFilter: 'todos',
+    classeFilter: 'todos'
   });
 
   // Estados para dados auxiliares (para os filtros)
   const [filiais, setFiliais] = useState([]);
-  const [loadingFiliais, setLoadingFiliais] = useState(false);
+  const [centrosCusto, setCentrosCusto] = useState([]);
+  const [almoxarifados, setAlmoxarifados] = useState([]);
+  const [grupos, setGrupos] = useState([]);
+  const [subgrupos, setSubgrupos] = useState([]);
+  const [classes, setClasses] = useState([]);
+  const [loadingFiltros, setLoadingFiltros] = useState(false);
 
   // Estado para termo de busca visual (o que o usuário digita)
   const [searchTermVisual, setSearchTermVisual] = useState('');
   
   // Estado para termo de busca aplicado (usado na busca real)
-  const [searchTermApplied, setSearchTermApplied] = useState('');
+  // Inicializar como null para indicar que ainda não foi aplicado nenhum filtro
+  const [searchTermApplied, setSearchTermApplied] = useState(null);
+  
+  // Flag para indicar se os filtros já foram aplicados pela primeira vez
+  const [filtersApplied, setFiltersApplied] = useState(false);
+
+  // Ajustar loading inicial para false quando autoLoad está desabilitado
+  useEffect(() => {
+    if (!filtersApplied && searchTermApplied === null) {
+      baseEntity.setLoading(false);
+    }
+  }, [baseEntity, filtersApplied, searchTermApplied]);
+
+  // Estados temporários para filtros (antes de aplicar)
+  // Filial e Centro de Custo são obrigatórios (não podem ser 'todos' ou vazios)
+  // grupoFilter agora é um array para permitir seleção múltipla
+  const [tempFilters, setTempFilters] = useState({
+    filialFilter: customFilters.filters.filialFilter || '',
+    centroCustoFilter: customFilters.filters.centroCustoFilter || '',
+    almoxarifadoFilter: customFilters.filters.almoxarifadoFilter || 'todos',
+    grupoFilter: Array.isArray(customFilters.filters.grupoFilter) 
+      ? customFilters.filters.grupoFilter 
+      : (customFilters.filters.grupoFilter && customFilters.filters.grupoFilter !== 'todos' 
+          ? [customFilters.filters.grupoFilter] 
+          : []),
+    subgrupoFilter: customFilters.filters.subgrupoFilter || 'todos',
+    classeFilter: customFilters.filters.classeFilter || 'todos'
+  });
 
   // Hook de ordenação híbrida
   const {
@@ -46,161 +81,138 @@ export const useEstoque = () => {
     totalItems: baseEntity.totalItems
   });
 
-  // Extrair almoxarifados únicos dos estoques
-  const almoxarifados = useMemo(() => {
-    const estoquesList = isSortingLocally ? estoquesOrdenados : baseEntity.items;
-    if (!Array.isArray(estoquesList) || estoquesList.length === 0) {
-      return [];
-    }
-    
-    const almoxarifadosMap = new Map();
-    estoquesList.forEach(estoque => {
-      if (estoque.almoxarifado_id && estoque.almoxarifado_nome) {
-        if (!almoxarifadosMap.has(estoque.almoxarifado_id)) {
-          almoxarifadosMap.set(estoque.almoxarifado_id, {
-            id: estoque.almoxarifado_id,
-            nome: estoque.almoxarifado_nome,
-            codigo: estoque.almoxarifado_codigo
-          });
-        }
-      }
-    });
-    
-    return Array.from(almoxarifadosMap.values()).sort((a, b) => 
-      (a.nome || '').localeCompare(b.nome || '')
-    );
-  }, [baseEntity.items, estoquesOrdenados, isSortingLocally]);
-
-  // Extrair grupos únicos dos estoques
-  const grupos = useMemo(() => {
-    const estoquesList = isSortingLocally ? estoquesOrdenados : baseEntity.items;
-    if (!Array.isArray(estoquesList) || estoquesList.length === 0) {
-      return [];
-    }
-    
-    const gruposMap = new Map();
-    estoquesList.forEach(estoque => {
-      if (estoque.grupo_id && estoque.grupo_nome) {
-        if (!gruposMap.has(estoque.grupo_id)) {
-          gruposMap.set(estoque.grupo_id, {
-            id: estoque.grupo_id,
-            nome: estoque.grupo_nome
-          });
-        }
-      }
-    });
-    
-    return Array.from(gruposMap.values()).sort((a, b) => 
-      (a.nome || '').localeCompare(b.nome || '')
-    );
-  }, [baseEntity.items, estoquesOrdenados, isSortingLocally]);
 
   /**
-   * Carrega dados com filtros customizados
+   * Carrega opções de filtros do backend (apenas as que existem no banco)
+   * Respeitando a hierarquia: Filial -> Centro de Custo -> Almoxarifado
+   * E: Grupo -> Subgrupo -> Classes
    */
-  // Função auxiliar para processar dados da API
-  const processData = useCallback((response) => {
-    // Tentar diferentes estruturas de resposta
-    if (response?.data?.data?.items && Array.isArray(response.data.data.items)) {
-      return response.data.data.items;
+  const loadOpcoesFiltros = useCallback(async (filters = {}) => {
+    try {
+      setLoadingFiltros(true);
+      const params = {};
+      if (filters.filial_id) params.filial_id = filters.filial_id;
+      if (filters.centro_custo_id) params.centro_custo_id = filters.centro_custo_id;
+      if (filters.grupo_id) params.grupo_id = filters.grupo_id;
+      if (filters.subgrupo_id) params.subgrupo_id = filters.subgrupo_id;
+      
+      const response = await EstoqueService.obterOpcoesFiltros(params);
+      
+      if (response.success && response.data) {
+        setFiliais(response.data.filiais || []);
+        setCentrosCusto(response.data.centrosCusto || []);
+        setAlmoxarifados(response.data.almoxarifados || []);
+        setGrupos(response.data.grupos || []);
+        setSubgrupos(response.data.subgrupos || []);
+        setClasses(response.data.classes || []);
+      } else {
+        toast.error(response.message || 'Erro ao carregar opções de filtros');
+        setFiliais([]);
+        setCentrosCusto([]);
+        setAlmoxarifados([]);
+        setGrupos([]);
+        setSubgrupos([]);
+        setClasses([]);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar opções de filtros:', error);
+      toast.error('Erro ao carregar opções de filtros');
+      setFiliais([]);
+      setCentrosCusto([]);
+      setAlmoxarifados([]);
+      setGrupos([]);
+      setSubgrupos([]);
+      setClasses([]);
+    } finally {
+      setLoadingFiltros(false);
     }
-    if (response?.data?.data && Array.isArray(response.data.data)) {
-      return response.data.data;
-    }
-    if (response?.data && Array.isArray(response.data)) {
-      return response.data;
-    }
-    if (Array.isArray(response)) {
-      return response;
-    }
-    // Se não é array, retornar array vazio
-    console.warn('Resposta da API não é um array:', response);
-    return [];
   }, []);
 
-  /**
-   * Carrega filiais para o filtro
-   */
-  const loadFiliais = useCallback(async () => {
-    try {
-      setLoadingFiliais(true);
-      const response = await api.get('/filiais?limit=1000&status=1');
-      setFiliais(processData(response));
-    } catch (error) {
-      console.error('Erro ao carregar filiais:', error);
-      toast.error('Erro ao carregar filiais');
-      setFiliais([]);
-    } finally {
-      setLoadingFiliais(false);
-    }
-  }, [processData]);
-
-  // Filtrar subgrupos do estoque quando um grupo está selecionado
-  const subgrupos = useMemo(() => {
-    const estoquesList = isSortingLocally ? estoquesOrdenados : baseEntity.items;
-    if (!Array.isArray(estoquesList) || estoquesList.length === 0) {
+  // Filtrar centros de custo quando uma filial está selecionada
+  const centrosCustoFiltrados = useMemo(() => {
+    const filialFilterId = tempFilters.filialFilter;
+    if (!filialFilterId || filialFilterId === '' || filialFilterId === 'todos') {
       return [];
+    } else {
+      return centrosCusto.filter(cc => 
+        cc.filial_id && cc.filial_id.toString() === filialFilterId.toString()
+      );
+    }
+  }, [centrosCusto, tempFilters.filialFilter]);
+
+  // Filtrar almoxarifados quando filial ou centro de custo está selecionado
+  const almoxarifadosFiltrados = useMemo(() => {
+    const filialFilterId = tempFilters.filialFilter;
+    const centroCustoFilterId = tempFilters.centroCustoFilter;
+    
+    let filtrados = almoxarifados;
+    
+    if (filialFilterId && filialFilterId !== 'todos') {
+      filtrados = filtrados.filter(a => 
+        a.filial_id && a.filial_id.toString() === filialFilterId.toString()
+      );
     }
     
-    const grupoFilterId = customFilters.filters.grupoFilter;
-    if (!grupoFilterId || grupoFilterId === 'todos') {
-      // Se nenhum grupo está selecionado, retornar todos os subgrupos do estoque
-      const subgruposMap = new Map();
-      estoquesList.forEach(estoque => {
-        if (estoque.subgrupo_id && estoque.subgrupo_nome) {
-          if (!subgruposMap.has(estoque.subgrupo_id)) {
-            subgruposMap.set(estoque.subgrupo_id, {
-              id: estoque.subgrupo_id,
-              nome: estoque.subgrupo_nome,
-              grupo_id: estoque.grupo_id
-            });
-          }
-        }
-      });
-      return Array.from(subgruposMap.values()).sort((a, b) => 
-        (a.nome || '').localeCompare(b.nome || '')
-      );
-    } else {
-      // Se um grupo está selecionado, retornar apenas subgrupos desse grupo no estoque
-      const subgruposMap = new Map();
-      estoquesList.forEach(estoque => {
-        if (
-          estoque.subgrupo_id && 
-          estoque.subgrupo_nome && 
-          estoque.grupo_id && 
-          estoque.grupo_id.toString() === grupoFilterId.toString()
-        ) {
-          if (!subgruposMap.has(estoque.subgrupo_id)) {
-            subgruposMap.set(estoque.subgrupo_id, {
-              id: estoque.subgrupo_id,
-              nome: estoque.subgrupo_nome,
-              grupo_id: estoque.grupo_id
-            });
-          }
-        }
-      });
-      return Array.from(subgruposMap.values()).sort((a, b) => 
-        (a.nome || '').localeCompare(b.nome || '')
+    if (centroCustoFilterId && centroCustoFilterId !== 'todos') {
+      filtrados = filtrados.filter(a => 
+        a.centro_custo_id && a.centro_custo_id.toString() === centroCustoFilterId.toString()
       );
     }
-  }, [baseEntity.items, estoquesOrdenados, isSortingLocally, customFilters.filters.grupoFilter]);
+    
+    return filtrados;
+  }, [almoxarifados, tempFilters.filialFilter, tempFilters.centroCustoFilter]);
+
+  // Filtrar subgrupos quando grupos estão selecionados (agora suporta múltiplos grupos)
+  const subgruposFiltrados = useMemo(() => {
+    const gruposSelecionados = Array.isArray(tempFilters.grupoFilter) ? tempFilters.grupoFilter : [];
+    if (gruposSelecionados.length === 0) {
+      return subgrupos;
+    } else {
+      return subgrupos.filter(sg => 
+        sg.grupo_id && gruposSelecionados.some(grupoId => 
+          sg.grupo_id.toString() === grupoId.toString()
+        )
+      );
+    }
+  }, [subgrupos, tempFilters.grupoFilter]);
+
+  // Filtrar classes quando um subgrupo está selecionado
+  const classesFiltradas = useMemo(() => {
+    const subgrupoFilterId = tempFilters.subgrupoFilter;
+    if (!subgrupoFilterId || subgrupoFilterId === 'todos') {
+      return classes;
+    } else {
+      return classes.filter(c => 
+        c.subgrupo_id && c.subgrupo_id.toString() === subgrupoFilterId.toString()
+      );
+    }
+  }, [classes, tempFilters.subgrupoFilter]);
 
   /**
    * Carrega dados com filtros customizados
    */
   const loadDataWithFilters = useCallback(async () => {
+    // Se os filtros ainda não foram aplicados, não carregar dados
+    if (!filtersApplied && searchTermApplied === null) {
+      return;
+    }
+    
     const params = {
       ...baseEntity.getPaginationParams(),
       ...customFilters.getFilterParams(),
-      search: searchTermApplied || undefined,
+      search: searchTermApplied !== null ? (searchTermApplied || undefined) : undefined,
+      filial_id: customFilters.filters.filialFilter && customFilters.filters.filialFilter !== '' && customFilters.filters.filialFilter !== 'todos' ? customFilters.filters.filialFilter : undefined,
+      centro_custo_id: customFilters.filters.centroCustoFilter && customFilters.filters.centroCustoFilter !== '' && customFilters.filters.centroCustoFilter !== 'todos' ? customFilters.filters.centroCustoFilter : undefined,
       almoxarifado_id: customFilters.filters.almoxarifadoFilter !== 'todos' ? customFilters.filters.almoxarifadoFilter : undefined,
-      filial_id: customFilters.filters.filialFilter !== 'todos' ? customFilters.filters.filialFilter : undefined,
-      grupo_id: customFilters.filters.grupoFilter !== 'todos' ? customFilters.filters.grupoFilter : undefined,
-      subgrupo_id: customFilters.filters.subgrupoFilter !== 'todos' ? customFilters.filters.subgrupoFilter : undefined
+      grupo_id: Array.isArray(customFilters.filters.grupoFilter) && customFilters.filters.grupoFilter.length > 0 
+        ? customFilters.filters.grupoFilter.join(',') 
+        : (customFilters.filters.grupoFilter && customFilters.filters.grupoFilter !== 'todos' ? customFilters.filters.grupoFilter : undefined),
+      subgrupo_id: customFilters.filters.subgrupoFilter !== 'todos' ? customFilters.filters.subgrupoFilter : undefined,
+      classe_id: customFilters.filters.classeFilter !== 'todos' ? customFilters.filters.classeFilter : undefined
     };
 
     await baseEntity.loadData(params);
-  }, [baseEntity, customFilters, searchTermApplied]);
+  }, [baseEntity, customFilters, searchTermApplied, filtersApplied]);
 
   /**
    * Submissão customizada
@@ -217,18 +229,109 @@ export const useEstoque = () => {
   }, [baseEntity]);
 
   /**
+   * Aplicar filtros (copiar filtros temporários para aplicados)
+   * Valida se Filial e Centro de Custo estão preenchidos (obrigatórios)
+   */
+  const handleApplyFilters = useCallback(() => {
+    // Validar se Filial está preenchida (obrigatório)
+    if (!tempFilters.filialFilter || tempFilters.filialFilter === '' || tempFilters.filialFilter === 'todos') {
+      toast.error('Por favor, selecione uma Filial');
+      return;
+    }
+    
+    // Validar se Centro de Custo está preenchido (obrigatório)
+    if (!tempFilters.centroCustoFilter || tempFilters.centroCustoFilter === '' || tempFilters.centroCustoFilter === 'todos') {
+      toast.error('Por favor, selecione um Centro de Custo');
+      return;
+    }
+    
+    setSearchTermApplied(searchTermVisual || '');
+    customFilters.updateFilter('filialFilter', tempFilters.filialFilter);
+    customFilters.updateFilter('centroCustoFilter', tempFilters.centroCustoFilter);
+    customFilters.updateFilter('almoxarifadoFilter', tempFilters.almoxarifadoFilter);
+    customFilters.updateFilter('grupoFilter', tempFilters.grupoFilter);
+    customFilters.updateFilter('subgrupoFilter', tempFilters.subgrupoFilter);
+    customFilters.updateFilter('classeFilter', tempFilters.classeFilter);
+    setFiltersApplied(true);
+    baseEntity.handlePageChange(1);
+  }, [searchTermVisual, tempFilters, customFilters, baseEntity]);
+
+  /**
    * Funções auxiliares
    */
   const handleClearFilters = useCallback(() => {
     setSearchTermVisual('');
-    setSearchTermApplied('');
+    setSearchTermApplied(null);
+    setTempFilters({
+      filialFilter: '',
+      centroCustoFilter: '',
+      almoxarifadoFilter: 'todos',
+      grupoFilter: [], // Array vazio para seleção múltipla
+      subgrupoFilter: 'todos',
+      classeFilter: 'todos'
+    });
+    customFilters.updateFilter('filialFilter', '');
+    customFilters.updateFilter('centroCustoFilter', '');
     customFilters.updateFilter('almoxarifadoFilter', 'todos');
-    customFilters.updateFilter('filialFilter', 'todos');
-    customFilters.updateFilter('grupoFilter', 'todos');
+    customFilters.updateFilter('grupoFilter', []); // Array vazio para seleção múltipla
     customFilters.updateFilter('subgrupoFilter', 'todos');
+    customFilters.updateFilter('classeFilter', 'todos');
+    setFiltersApplied(false);
     baseEntity.handlePageChange(1);
-    // A busca será executada automaticamente pelo useEffect quando searchTermApplied mudar
+    // Limpar os dados da tela
+    baseEntity.setItems([]);
+    baseEntity.setEstatisticas({});
   }, [customFilters, baseEntity]);
+
+  // Funções para atualizar filtros temporários (com reset de dependentes)
+  const setTempFilialFilter = useCallback((value) => {
+    setTempFilters(prev => ({ 
+      ...prev, 
+      filialFilter: value,
+      centroCustoFilter: '', // Resetar centro de custo quando filial mudar (obrigatório)
+      almoxarifadoFilter: 'todos' // Resetar almoxarifado quando filial mudar
+    }));
+  }, []);
+
+  const setTempCentroCustoFilter = useCallback((value) => {
+    setTempFilters(prev => ({ 
+      ...prev, 
+      centroCustoFilter: value,
+      almoxarifadoFilter: 'todos' // Resetar almoxarifado quando centro de custo mudar
+    }));
+  }, []);
+
+  const setTempAlmoxarifadoFilter = useCallback((value) => {
+    setTempFilters(prev => ({ 
+      ...prev, 
+      almoxarifadoFilter: value,
+      grupoFilter: [], // Resetar grupos quando almoxarifado mudar (array vazio)
+      subgrupoFilter: 'todos', // Resetar subgrupo quando almoxarifado mudar
+      classeFilter: 'todos' // Resetar classe quando almoxarifado mudar
+    }));
+  }, []);
+
+  const setTempGrupoFilter = useCallback((value) => {
+    // value agora é um array de IDs de grupos selecionados
+    setTempFilters(prev => ({ 
+      ...prev, 
+      grupoFilter: Array.isArray(value) ? value : [],
+      subgrupoFilter: 'todos', // Resetar subgrupo quando grupos mudarem
+      classeFilter: 'todos' // Resetar classe quando grupos mudarem
+    }));
+  }, []);
+
+  const setTempSubgrupoFilter = useCallback((value) => {
+    setTempFilters(prev => ({ 
+      ...prev, 
+      subgrupoFilter: value,
+      classeFilter: 'todos' // Resetar classe quando subgrupo mudar
+    }));
+  }, []);
+
+  const setTempClasseFilter = useCallback((value) => {
+    setTempFilters(prev => ({ ...prev, classeFilter: value }));
+  }, []);
 
   const getStatusLabel = useCallback((status) => {
     const statusMap = {
@@ -261,25 +364,41 @@ export const useEstoque = () => {
   }, []);
 
   /**
-   * Visualizar estoque (busca dados completos)
+   * Visualizar estoque (busca variações do produto genérico)
+   * O id passado é o produto_generico_id
    */
-  const handleViewEstoque = useCallback(async (id) => {
+  const handleViewEstoque = useCallback(async (produtoGenericoId) => {
     try {
       baseEntity.setLoading(true);
-      const response = await EstoqueService.buscarPorId(id);
+      // Buscar todas as variações do produto genérico
+      const response = await EstoqueService.buscarVariacoes(produtoGenericoId, {
+        almoxarifado_id: customFilters.filters.almoxarifadoFilter !== 'todos' ? customFilters.filters.almoxarifadoFilter : undefined,
+        filial_id: customFilters.filters.filialFilter !== 'todos' ? customFilters.filters.filialFilter : undefined
+      });
       
-      if (response.success && response.data) {
-        baseEntity.handleView(response.data);
+      if (response.success && response.data && response.data.length > 0) {
+        // Usar o primeiro item para informações gerais do produto
+        const produtoInfo = response.data[0];
+        // Criar objeto com informações do produto e todas as variações
+        const estoqueCompleto = {
+          produto_generico_id: produtoGenericoId,
+          produto_generico_codigo: produtoInfo.produto_generico_codigo,
+          produto_generico_nome: produtoInfo.produto_generico_nome,
+          unidade_medida_sigla: produtoInfo.unidade_medida_sigla,
+          unidade_medida_nome: produtoInfo.unidade_medida_nome,
+          variacoes: response.data // Todas as variações (lotes e validades)
+        };
+        baseEntity.handleView(estoqueCompleto);
       } else {
-        toast.error(response.message || 'Erro ao buscar estoque');
+        toast.error(response.message || 'Nenhuma variação encontrada para este produto');
       }
     } catch (error) {
-      console.error('Erro ao buscar estoque:', error);
+      console.error('Erro ao buscar variações do estoque:', error);
       toast.error('Erro ao carregar dados do estoque');
     } finally {
       baseEntity.setLoading(false);
     }
-  }, [baseEntity]);
+  }, [baseEntity, customFilters]);
 
   /**
    * Editar estoque (busca dados completos)
@@ -316,22 +435,96 @@ export const useEstoque = () => {
     setSearchTermVisual(value);
   }, []);
 
-  // Carregar filiais na inicialização
+  // Carregar opções de filtros na inicialização
   useEffect(() => {
-    loadFiliais();
-  }, [loadFiliais]);
+    loadOpcoesFiltros();
+  }, [loadOpcoesFiltros]);
 
-  // Carregar dados quando filtros ou paginação mudam
+  // Recarregar opções quando filtros hierárquicos mudarem
   useEffect(() => {
-    loadDataWithFilters();
+    if (tempFilters.filialFilter && tempFilters.filialFilter !== '' && tempFilters.filialFilter !== 'todos') {
+      loadOpcoesFiltros({ filial_id: tempFilters.filialFilter });
+    } else {
+      // Se filial não está selecionada, carregar apenas filiais
+      loadOpcoesFiltros();
+    }
+  }, [tempFilters.filialFilter, loadOpcoesFiltros]);
+
+  useEffect(() => {
+    if (tempFilters.centroCustoFilter && tempFilters.centroCustoFilter !== '' && tempFilters.centroCustoFilter !== 'todos') {
+      loadOpcoesFiltros({ 
+        filial_id: tempFilters.filialFilter && tempFilters.filialFilter !== '' && tempFilters.filialFilter !== 'todos' ? tempFilters.filialFilter : undefined,
+        centro_custo_id: tempFilters.centroCustoFilter 
+      });
+    } else if (tempFilters.filialFilter && tempFilters.filialFilter !== '' && tempFilters.filialFilter !== 'todos') {
+      loadOpcoesFiltros({ filial_id: tempFilters.filialFilter });
+    }
+  }, [tempFilters.centroCustoFilter, tempFilters.filialFilter, loadOpcoesFiltros]);
+
+  useEffect(() => {
+    if (tempFilters.almoxarifadoFilter && tempFilters.almoxarifadoFilter !== 'todos') {
+      // Recarregar opções quando almoxarifado mudar para atualizar grupos
+      const params = {};
+      if (tempFilters.filialFilter && tempFilters.filialFilter !== '' && tempFilters.filialFilter !== 'todos') {
+        params.filial_id = tempFilters.filialFilter;
+      }
+      if (tempFilters.centroCustoFilter && tempFilters.centroCustoFilter !== '' && tempFilters.centroCustoFilter !== 'todos') {
+        params.centro_custo_id = tempFilters.centroCustoFilter;
+      }
+      loadOpcoesFiltros(params);
+    }
+  }, [tempFilters.almoxarifadoFilter, tempFilters.filialFilter, tempFilters.centroCustoFilter, loadOpcoesFiltros]);
+
+  useEffect(() => {
+    const gruposSelecionados = Array.isArray(tempFilters.grupoFilter) ? tempFilters.grupoFilter : [];
+    if (gruposSelecionados.length > 0) {
+      // Se há grupos selecionados, usar o primeiro para carregar subgrupos
+      loadOpcoesFiltros({ grupo_id: gruposSelecionados[0] });
+    } else if (tempFilters.almoxarifadoFilter && tempFilters.almoxarifadoFilter !== 'todos') {
+      // Se grupos foram resetados mas almoxarifado está selecionado, recarregar opções
+      const params = {};
+      if (tempFilters.filialFilter && tempFilters.filialFilter !== '' && tempFilters.filialFilter !== 'todos') {
+        params.filial_id = tempFilters.filialFilter;
+      }
+      if (tempFilters.centroCustoFilter && tempFilters.centroCustoFilter !== '' && tempFilters.centroCustoFilter !== 'todos') {
+        params.centro_custo_id = tempFilters.centroCustoFilter;
+      }
+      loadOpcoesFiltros(params);
+    }
+  }, [tempFilters.grupoFilter, tempFilters.almoxarifadoFilter, tempFilters.filialFilter, tempFilters.centroCustoFilter, loadOpcoesFiltros]);
+
+  useEffect(() => {
+    if (tempFilters.subgrupoFilter && tempFilters.subgrupoFilter !== 'todos') {
+      loadOpcoesFiltros({ 
+        grupo_id: tempFilters.grupoFilter !== 'todos' ? tempFilters.grupoFilter : undefined,
+        subgrupo_id: tempFilters.subgrupoFilter 
+      });
+    } else if (tempFilters.grupoFilter && tempFilters.grupoFilter !== 'todos') {
+      loadOpcoesFiltros({ grupo_id: tempFilters.grupoFilter });
+    }
+  }, [tempFilters.subgrupoFilter, tempFilters.grupoFilter, loadOpcoesFiltros]);
+
+  // Usar ref para armazenar a função e evitar loop
+  const loadDataWithFiltersRef = useRef(loadDataWithFilters);
+  loadDataWithFiltersRef.current = loadDataWithFilters;
+
+  // Carregar dados quando filtros ou paginação mudam (apenas se filtros já foram aplicados)
+  useEffect(() => {
+    // Só carregar se os filtros já foram aplicados pelo menos uma vez
+    if (filtersApplied) {
+      loadDataWithFiltersRef.current();
+    }
   }, [
     searchTermApplied,
-    customFilters.filters.almoxarifadoFilter,
     customFilters.filters.filialFilter,
+    customFilters.filters.centroCustoFilter,
+    customFilters.filters.almoxarifadoFilter,
     customFilters.filters.grupoFilter,
     customFilters.filters.subgrupoFilter,
+    customFilters.filters.classeFilter,
     baseEntity.currentPage,
-    baseEntity.itemsPerPage
+    baseEntity.itemsPerPage,
+    filtersApplied
   ]);
 
   // Calcular estatísticas localmente se não vierem do backend
@@ -403,17 +596,21 @@ export const useEstoque = () => {
     totalItems: baseEntity.totalItems,
     itemsPerPage: baseEntity.itemsPerPage,
     
-    // Estados de filtros
+    // Estados de filtros (temporários - o que o usuário seleciona)
     searchTerm: searchTermVisual,
-    filialFilter: customFilters.filters.filialFilter,
+    filialFilter: tempFilters.filialFilter,
     filiais,
-    loadingFiliais,
-    almoxarifadoFilter: customFilters.filters.almoxarifadoFilter,
-    almoxarifados,
-    grupoFilter: customFilters.filters.grupoFilter,
+    centroCustoFilter: tempFilters.centroCustoFilter,
+    centrosCusto: centrosCustoFiltrados,
+    almoxarifadoFilter: tempFilters.almoxarifadoFilter,
+    almoxarifados: almoxarifadosFiltrados,
+    grupoFilter: tempFilters.grupoFilter,
     grupos,
-    subgrupoFilter: customFilters.filters.subgrupoFilter,
-    subgrupos,
+    subgrupoFilter: tempFilters.subgrupoFilter,
+    subgrupos: subgruposFiltrados,
+    classeFilter: tempFilters.classeFilter,
+    classes: classesFiltradas,
+    loadingFiltros,
     
     // Estatísticas (com fallback para cálculo local)
     estatisticas: estatisticasCalculadas,
@@ -435,16 +632,13 @@ export const useEstoque = () => {
     handleItemsPerPageChange: baseEntity.handleItemsPerPageChange,
     setSearchTerm: handleSearchTermChange,
     handleKeyPress,
-    setFilialFilter: (value) => customFilters.updateFilter('filialFilter', value),
-    setAlmoxarifadoFilter: (value) => customFilters.updateFilter('almoxarifadoFilter', value),
-    setGrupoFilter: (value) => {
-      customFilters.updateFilter('grupoFilter', value);
-      // Limpar subgrupo quando grupo mudar
-      if (value === 'todos' || !value) {
-        customFilters.updateFilter('subgrupoFilter', 'todos');
-      }
-    },
-    setSubgrupoFilter: (value) => customFilters.updateFilter('subgrupoFilter', value),
+    handleApplyFilters,
+    setFilialFilter: setTempFilialFilter,
+    setCentroCustoFilter: setTempCentroCustoFilter,
+    setAlmoxarifadoFilter: setTempAlmoxarifadoFilter,
+    setGrupoFilter: setTempGrupoFilter,
+    setSubgrupoFilter: setTempSubgrupoFilter,
+    setClasseFilter: setTempClasseFilter,
     handleClearFilters,
     formatDate,
     formatCurrency,

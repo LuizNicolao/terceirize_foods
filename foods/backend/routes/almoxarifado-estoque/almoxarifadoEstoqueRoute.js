@@ -32,6 +32,12 @@ router.get('/estatisticas',
   AlmoxarifadoEstoqueController.buscarEstatisticas
 );
 
+// GET /api/almoxarifado-estoque/filtros/opcoes - Obter opções de filtros disponíveis
+router.get('/filtros/opcoes',
+  checkPermission('visualizar'),
+  AlmoxarifadoEstoqueController.obterOpcoesFiltros
+);
+
 // GET /api/almoxarifado-estoque/export/xlsx - Exportar estoques para XLSX
 router.get('/export/xlsx',
   checkPermission('visualizar'),

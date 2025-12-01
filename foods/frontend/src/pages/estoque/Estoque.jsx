@@ -41,6 +41,9 @@ const Estoque = () => {
     filialFilter,
     setFilialFilter,
     filiais,
+    centroCustoFilter,
+    setCentroCustoFilter,
+    centrosCusto,
     almoxarifadoFilter,
     setAlmoxarifadoFilter,
     almoxarifados,
@@ -50,6 +53,10 @@ const Estoque = () => {
     subgrupoFilter,
     setSubgrupoFilter,
     subgrupos,
+    classeFilter,
+    setClasseFilter,
+    classes,
+    loadingFiltros,
     handleClearFilters,
     formatDate,
     formatCurrency,
@@ -139,35 +146,52 @@ const Estoque = () => {
         useSearchableSelect={true}
         additionalFilters={[
           {
-            label: 'Filial',
-            value: filialFilter || 'todos',
+            label: 'Filial *',
+            value: filialFilter || '',
             onChange: setFilialFilter,
+            required: true,
             options: [
-              { value: 'todos', label: 'Todas as filiais' },
+              { value: '', label: 'Selecione uma filial' },
               ...(filiais || []).map(filial => ({
                 value: filial.id.toString(),
-                label: filial.filial || filial.nome || `Filial ${filial.id}`
+                label: filial.nome || `Filial ${filial.id}`
               }))
+            ]
+          },
+          {
+            label: 'Centro de Custo *',
+            value: centroCustoFilter || '',
+            onChange: setCentroCustoFilter,
+            required: true,
+            disabled: !filialFilter || filialFilter === '',
+            options: [
+              { value: '', label: 'Selecione um centro de custo' },
+              ...(Array.isArray(centrosCusto) ? centrosCusto.map(centroCusto => ({
+                value: centroCusto?.id?.toString() || '',
+                label: centroCusto?.nome || `Centro de Custo ${centroCusto?.id || ''}`
+              })).filter(opt => opt.value) : [])
             ]
           },
           {
             label: 'Almoxarifado',
             value: almoxarifadoFilter || 'todos',
             onChange: setAlmoxarifadoFilter,
+            disabled: !centroCustoFilter || centroCustoFilter === '',
             options: [
               { value: 'todos', label: 'Todos os almoxarifados' },
               ...(Array.isArray(almoxarifados) ? almoxarifados.map(almoxarifado => ({
                 value: almoxarifado?.id?.toString() || '',
-                label: almoxarifado?.nome || almoxarifado?.nome || `Almoxarifado ${almoxarifado?.id || ''}`
+                label: almoxarifado?.nome || `Almoxarifado ${almoxarifado?.id || ''}`
               })).filter(opt => opt.value) : [])
             ]
           },
           {
             label: 'Grupo',
-            value: grupoFilter || 'todos',
+            value: Array.isArray(grupoFilter) ? grupoFilter : (grupoFilter && grupoFilter !== 'todos' ? [grupoFilter] : []),
             onChange: setGrupoFilter,
+            multiple: true, // Habilitar seleção múltipla
+            disabled: almoxarifadoFilter === 'todos' || !almoxarifadoFilter,
             options: [
-              { value: 'todos', label: 'Todos os grupos' },
               ...(Array.isArray(grupos) ? grupos.map(grupo => ({
                 value: grupo?.id?.toString() || '',
                 label: grupo?.nome || `Grupo ${grupo?.id || ''}`
@@ -178,13 +202,26 @@ const Estoque = () => {
             label: 'Subgrupo',
             value: subgrupoFilter || 'todos',
             onChange: setSubgrupoFilter,
-            disabled: grupoFilter === 'todos' || !grupoFilter,
+            disabled: !Array.isArray(grupoFilter) || grupoFilter.length === 0,
             options: [
               { value: 'todos', label: 'Todos os subgrupos' },
               ...(subgrupos || []).map(subgrupo => ({
                 value: subgrupo.id.toString(),
                 label: subgrupo.nome || `Subgrupo ${subgrupo.id}`
               }))
+            ]
+          },
+          {
+            label: 'Classes',
+            value: classeFilter || 'todos',
+            onChange: setClasseFilter,
+            disabled: subgrupoFilter === 'todos' || !subgrupoFilter,
+            options: [
+              { value: 'todos', label: 'Todas as classes' },
+              ...(Array.isArray(classes) ? classes.map(classe => ({
+                value: classe?.id?.toString() || '',
+                label: classe?.nome || `Classe ${classe?.id || ''}`
+              })).filter(opt => opt.value) : [])
             ]
           }
         ]}
