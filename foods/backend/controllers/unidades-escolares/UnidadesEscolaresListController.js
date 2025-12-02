@@ -118,10 +118,10 @@ class UnidadesEscolaresListController {
         if (!isNaN(rotaIdNum)) {
           whereConditions.push(`
             (
-              ue.id IN (
-                SELECT uer.unidade_escolar_id
-                FROM unidades_escolares_rotas uer
-                WHERE uer.rota_id = ?
+            ue.id IN (
+              SELECT uer.unidade_escolar_id
+              FROM unidades_escolares_rotas uer
+              WHERE uer.rota_id = ?
               )
               OR ue.rota_id = ?
             )

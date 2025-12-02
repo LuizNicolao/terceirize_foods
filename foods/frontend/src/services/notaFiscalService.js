@@ -237,10 +237,13 @@ class NotaFiscalService {
         message: response.data.message || 'Importação realizada com sucesso'
       };
     } catch (error) {
+      console.error('Erro na importação:', error);
+      console.error('Response data:', error.response?.data);
       return {
         success: false,
         error: error.response?.data?.message || 'Erro na importação',
-        data: error.response?.data?.data || null
+        data: error.response?.data?.data || null,
+        erros: error.response?.data?.data?.erros || []
       };
     }
   }

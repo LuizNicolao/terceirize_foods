@@ -122,8 +122,8 @@ const ImportNotasFiscaisModal = ({ isOpen, onClose, onImportSuccess }) => {
             <li>Preencha os dados conforme o exemplo fornecido</li>
             <li>Use o <strong>nome exato do fornecedor</strong> (razão social) conforme cadastrado no sistema</li>
             <li>Use o <strong>nome exato da filial</strong> conforme cadastrado no sistema</li>
-            <li>Use o <strong>código do almoxarifado</strong> conforme cadastrado no sistema</li>
-            <li>As <strong>datas</strong> devem estar no formato YYYY-MM-DD (ex: 2025-01-15)</li>
+            <li>Use o <strong>nome do almoxarifado</strong> conforme cadastrado no sistema</li>
+            <li>As <strong>datas</strong> devem estar no formato DD/MM/YYYY (ex: 15/01/2025)</li>
             <li>Os <strong>valores</strong> devem ser números (ex: 1000.50)</li>
             <li>Na aba <strong>"Itens"</strong>, relacione os itens às notas fiscais usando número e série</li>
             <li>Notas fiscais duplicadas (mesmo número, série e fornecedor) serão atualizadas</li>

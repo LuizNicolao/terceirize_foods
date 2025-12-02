@@ -168,8 +168,8 @@ const parseCoordinate = (value, type = 'lat') => {
   } else if (type === 'lon') {
     // Longitude: -180 a 180 graus
     if (parsed < -180 || parsed > 180) {
-      return null;
-    }
+    return null;
+  }
   }
   
   // Retornar o valor parseado diretamente (sem arredondar)
@@ -258,10 +258,10 @@ const MapaContent = ({ unidadeAtual = null, filialId = null, rotaId = null, sear
             .filter(
               unidade => {
                 const isValid = unidade.lat !== null && 
-                  unidade.long !== null &&
+                unidade.long !== null &&
                   !isNaN(unidade.lat) &&
                   !isNaN(unidade.long) &&
-                  // Rejeitar coordenadas exatamente em 0,0 (Golfo da Guiné - provavelmente erro de cadastro)
+                // Rejeitar coordenadas exatamente em 0,0 (Golfo da Guiné - provavelmente erro de cadastro)
                   !(unidade.lat === 0 && unidade.long === 0);
                 
                 return isValid;
