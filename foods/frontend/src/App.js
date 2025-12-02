@@ -25,6 +25,7 @@ import Ajudantes from './pages/ajudantes/Ajudantes';
 import ProdutoOrigem from './pages/produto-origem/ProdutoOrigem';
 import ProdutoComercial from './pages/produto-comercial/ProdutoComercial';
 import ProdutoGenerico from './pages/produto-generico/ProdutoGenerico';
+import FichaHomologacao from './pages/ficha-homologacao/FichaHomologacao';
 import Intolerancias from './pages/intolerancias/Intolerancias';
 import Patrimonios from './pages/patrimonios/Patrimonios';
 import RotasNutricionistas from './pages/rotas-nutricionistas/RotasNutricionistas';
@@ -352,6 +353,17 @@ const App = () => {
           <AuthenticatedRoute>
             <ProtectedRoute screen="produto_generico">
               <ProdutoGenerico />
+            </ProtectedRoute>
+          </AuthenticatedRoute>
+        } 
+      />
+
+      <Route 
+        path="/foods/ficha-homologacao" 
+        element={
+          <AuthenticatedRoute>
+            <ProtectedRoute screen="ficha_homologacao">
+              <FichaHomologacao />
             </ProtectedRoute>
           </AuthenticatedRoute>
         } 

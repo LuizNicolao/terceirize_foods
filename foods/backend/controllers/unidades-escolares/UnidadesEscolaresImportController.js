@@ -195,12 +195,22 @@ class UnidadesEscolaresImportController {
         'centro de distribuição': 'centro_distribuicao',
         'rota': 'rota_id',
         'rota_id': 'rota_id',
+        'rota nome': 'rota_nome',
+        'rota_nome': 'rota_nome',
+        'rota codigo': 'rota_codigo',
+        'rota_codigo': 'rota_codigo',
+        'rota código': 'rota_codigo',
         'regional': 'regional',
         
         // Centro de Custo e Senior
         'centro de custo': 'centro_custo_id',
         'centro_custo_id': 'centro_custo_id',
         'centro_custo': 'centro_custo_id',
+        'centro de custo codigo': 'centro_custo_codigo',
+        'centro_custo_codigo': 'centro_custo_codigo',
+        'centro de custo código': 'centro_custo_codigo',
+        'centro de custo nome': 'centro_custo_nome',
+        'centro_custo_nome': 'centro_custo_nome',
         'lot': 'centro_custo_id', // Mantém compatibilidade com importações antigas
         'lote': 'centro_custo_id', // Mantém compatibilidade com importações antigas
         'cc senior': 'cc_senior',
@@ -214,9 +224,9 @@ class UnidadesEscolaresImportController {
         'abastecimento': 'abastecimento',
         'ordem entrega': 'ordem_entrega',
         'ordem_entrega': 'ordem_entrega',
+        'ordem de entrega': 'ordem_entrega',
         
         // Status e Observações
-        'status': 'status',
         'status': 'status',
         'observacoes': 'observacoes',
         'observações': 'observacoes',
@@ -231,8 +241,39 @@ class UnidadesEscolaresImportController {
         'supervisao': 'supervisao',
         'coordenação': 'coordenacao',
         'coordenacao': 'coordenacao',
+        'latitude': 'lat',
         'lat': 'lat',
-        'long': 'long'
+        'longitude': 'long',
+        'long': 'long',
+        
+        // Filial
+        'filial id': 'filial_id',
+        'filial_id': 'filial_id',
+        'filial nome': 'filial_nome',
+        'filial_nome': 'filial_nome',
+        'filial codigo': 'filial_codigo',
+        'filial_codigo': 'filial_codigo',
+        'filial código': 'filial_codigo',
+        
+        // Rota Nutricionista
+        'rota nutricionista id': 'rota_nutricionista_id',
+        'rota_nutricionista_id': 'rota_nutricionista_id',
+        'rota nutricionista codigo': 'rota_nutricionista_codigo',
+        'rota_nutricionista_codigo': 'rota_nutricionista_codigo',
+        'rota nutricionista código': 'rota_nutricionista_codigo',
+        'nutricionista nome': 'nutricionista_nome',
+        'nutricionista_nome': 'nutricionista_nome',
+        'nutricionista email': 'nutricionista_email',
+        'nutricionista_email': 'nutricionista_email',
+        
+        // Almoxarifado
+        'almoxarifado id': 'almoxarifado_id',
+        'almoxarifado_id': 'almoxarifado_id',
+        'almoxarifado codigo': 'almoxarifado_codigo',
+        'almoxarifado_codigo': 'almoxarifado_codigo',
+        'almoxarifado código': 'almoxarifado_codigo',
+        'almoxarifado nome': 'almoxarifado_nome',
+        'almoxarifado_nome': 'almoxarifado_nome'
       };
 
       if (directMappings[header]) {
@@ -367,11 +408,33 @@ class UnidadesEscolaresImportController {
     }
 
     if (columnMapping.lat !== undefined) {
-      unidade.lat = UnidadesEscolaresImportController.getCellValue(row, columnMapping.lat);
+      const latValue = UnidadesEscolaresImportController.getCellValue(row, columnMapping.lat);
+      // Converter para número (o banco vai arredondar para 10 casas decimais)
+      unidade.lat = latValue ? parseFloat(latValue) : null;
     }
 
     if (columnMapping.long !== undefined) {
-      unidade.long = UnidadesEscolaresImportController.getCellValue(row, columnMapping.long);
+      const longValue = UnidadesEscolaresImportController.getCellValue(row, columnMapping.long);
+      // Converter para número (o banco vai arredondar para 10 casas decimais)
+      unidade.long = longValue ? parseFloat(longValue) : null;
+    }
+
+    // Filial
+    if (columnMapping.filial_id !== undefined) {
+      const filialValue = UnidadesEscolaresImportController.getCellValue(row, columnMapping.filial_id);
+      unidade.filial_id = filialValue ? parseInt(filialValue) : null;
+    }
+
+    // Rota Nutricionista
+    if (columnMapping.rota_nutricionista_id !== undefined) {
+      const rotaNutricionistaValue = UnidadesEscolaresImportController.getCellValue(row, columnMapping.rota_nutricionista_id);
+      unidade.rota_nutricionista_id = rotaNutricionistaValue ? parseInt(rotaNutricionistaValue) : null;
+    }
+
+    // Almoxarifado
+    if (columnMapping.almoxarifado_id !== undefined) {
+      const almoxarifadoValue = UnidadesEscolaresImportController.getCellValue(row, columnMapping.almoxarifado_id);
+      unidade.almoxarifado_id = almoxarifadoValue ? parseInt(almoxarifadoValue) : null;
     }
 
     return unidade;
@@ -482,8 +545,9 @@ class UnidadesEscolaresImportController {
           INSERT INTO unidades_escolares (
             codigo_teknisa, nome_escola, cidade, estado, pais, endereco, numero, bairro, cep,
             centro_distribuicao, rota_id, regional, centro_custo_id, cc_senior, codigo_senior, abastecimento,
-            ordem_entrega, status, observacoes, filial_id, atendimento, horario, supervisao, coordenacao, lat, \`long\`
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ordem_entrega, status, observacoes, filial_id, atendimento, horario, supervisao, coordenacao, lat, \`long\`,
+            rota_nutricionista_id, almoxarifado_id
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
 
         // Função helper para converter undefined para null
@@ -502,7 +566,7 @@ class UnidadesEscolaresImportController {
           nullIfUndefined(unidade.bairro),
           nullIfUndefined(unidade.cep),
           nullIfUndefined(unidade.centro_distribuicao),
-          null, // rota_id sempre NULL na importação - será relacionado depois na tela de rotas
+          nullIfUndefined(unidade.rota_id), // rota_id pode ser importado ou relacionado depois
           nullIfUndefined(unidade.regional),
           centroCustoId || null,
           nullIfUndefined(unidade.cc_senior),
@@ -511,13 +575,17 @@ class UnidadesEscolaresImportController {
           nullIfUndefined(unidade.ordem_entrega, 0),
           nullIfUndefined(unidade.status, 'ativo'),
           nullIfUndefined(unidade.observacoes),
-          null, // filial_id sempre NULL na importação - será relacionado depois na tela de filiais
+          nullIfUndefined(unidade.filial_id), // filial_id pode ser importado ou relacionado depois
           nullIfUndefined(unidade.atendimento),
           nullIfUndefined(unidade.horario),
           nullIfUndefined(unidade.supervisao),
           nullIfUndefined(unidade.coordenacao),
-          nullIfUndefined(unidade.lat),
-          nullIfUndefined(unidade.long)
+          // lat e long já são números (convertidos acima)
+          unidade.lat !== null && unidade.lat !== undefined ? unidade.lat : null,
+          unidade.long !== null && unidade.long !== undefined ? unidade.long : null,
+          // Novos campos
+          nullIfUndefined(unidade.rota_nutricionista_id),
+          nullIfUndefined(unidade.almoxarifado_id)
         ];
 
         await executeQuery(insertQuery, insertParams);
@@ -538,30 +606,47 @@ class UnidadesEscolaresImportController {
       const workbook = new ExcelJS.Workbook();
       const worksheet = workbook.addWorksheet('Unidades Escolares');
       
-      // Definir cabeçalhos seguindo a ordem exata especificada pelo usuário
+      // Definir cabeçalhos seguindo a mesma ordem do export
       const headers = [
-        'Codigo Teknisa',
-        'Cidade',
+        'Código Teknisa',
         'Nome da Escola',
+        'Cidade',
+        'Estado',
+        'País',
         'Endereço',
-        'Numero',
+        'Número',
         'Bairro',
         'CEP',
+        'Centro de Distribuição',
+        'Rota ID',
+        'Rota Nome',
+        'Rota Código',
+        'Regional',
+        'Centro de Custo ID',
+        'Centro de Custo Código',
+        'Centro de Custo Nome',
+        'CC Senior',
+        'Código Senior',
+        'Abastecimento',
+        'Ordem Entrega',
+        'Status',
+        'Observações',
+        'Atendimento',
+        'Horário',
         'Supervisão',
         'Coordenação',
-        'Centro de Distribuição',
-        'Rota',
-        'Regional',
-        'LOTE',
-        'C.C. Senior',
-        'Codigo Senior',
-        'Abastecimento',
-        'LAT',
-        'LONG',
-        'STATUS',
-        'Ordem de Entrega',
-        'Atendimento',
-        'Horario'
+        'Latitude',
+        'Longitude',
+        'Filial ID',
+        'Filial Nome',
+        'Filial Código',
+        'Rota Nutricionista ID',
+        'Rota Nutricionista Código',
+        'Nutricionista Nome',
+        'Nutricionista Email',
+        'Almoxarifado ID',
+        'Almoxarifado Código',
+        'Almoxarifado Nome'
       ];
       
       // Adicionar cabeçalhos
@@ -570,23 +655,142 @@ class UnidadesEscolaresImportController {
       headerRow.fill = {
         type: 'pattern',
         pattern: 'solid',
-        fgColor: { argb: 'FFE0E0E0' }
+        fgColor: { argb: 'FF4CAF50' }
       };
+      headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
       
-      // Adicionar algumas linhas de exemplo seguindo a ordem exata dos cabeçalhos
+      // Adicionar algumas linhas de exemplo
       const exemplos = [
-        ['001', 'São Paulo', 'Escola Exemplo 1', 'Rua das Flores', '123', 'Centro', '01234-567', 'João Silva', 'Maria Santos', 'CD São Paulo', '1', 'São Paulo', 'LOTE 01', '001', '001001', 'SEMANAL', '-23.5505', '-46.6333', 'ativo', '1', 'Integral', '07:00 às 17:00'],
-        ['002', 'Rio de Janeiro', 'Escola Exemplo 2', 'Av. Copacabana', '456', 'Copacabana', '22070-001', 'Pedro Costa', 'Ana Lima', 'CD Rio de Janeiro', '2', 'Rio de Janeiro', 'LOTE 02', '002', '002002', 'MENSAL', '-22.9068', '-43.1729', 'ativo', '2', 'Manhã', '07:00 às 12:00']
+        [
+          '001',
+          'Escola Exemplo 1',
+          'São Paulo',
+          'SP',
+          'Brasil',
+          'Rua das Flores',
+          '123',
+          'Centro',
+          '01234-567',
+          'CD São Paulo',
+          '1',
+          'Rota Centro',
+          'ROTA-001',
+          'São Paulo',
+          '1',
+          'CC001',
+          'Centro de Custo Exemplo',
+          '001',
+          '001001',
+          'SEMANAL',
+          '1',
+          'ativo',
+          'Observações da escola',
+          'Integral',
+          '07:00 às 17:00',
+          'João Silva',
+          'Maria Santos',
+          '-23.550519',
+          '-46.633309',
+          '1',
+          'Filial São Paulo',
+          'FIL-001',
+          '1',
+          'RN-001',
+          'Nutricionista Exemplo',
+          'nutricionista@exemplo.com',
+          '1',
+          'ALM-001',
+          'Almoxarifado Central'
+        ],
+        [
+          '002',
+          'Escola Exemplo 2',
+          'Rio de Janeiro',
+          'RJ',
+          'Brasil',
+          'Av. Copacabana',
+          '456',
+          'Copacabana',
+          '22070-001',
+          'CD Rio de Janeiro',
+          '2',
+          'Rota Zona Sul',
+          'ROTA-002',
+          'Rio de Janeiro',
+          '2',
+          'CC002',
+          'Centro de Custo Zona Sul',
+          '002',
+          '002002',
+          'MENSAL',
+          '2',
+          'ativo',
+          '',
+          'Manhã',
+          '07:00 às 12:00',
+          'Pedro Costa',
+          'Ana Lima',
+          '-22.906847',
+          '-43.172896',
+          '2',
+          'Filial Rio de Janeiro',
+          'FIL-002',
+          '',
+          '',
+          '',
+          '',
+          '',
+          '',
+          ''
+        ]
       ];
       
       exemplos.forEach(exemplo => {
         worksheet.addRow(exemplo);
       });
       
-      // Ajustar largura das colunas
-      worksheet.columns.forEach(column => {
-        column.width = 20;
-      });
+      // Definir largura das colunas (similar ao export)
+      worksheet.columns = [
+        { header: 'Código Teknisa', width: 15 },
+        { header: 'Nome da Escola', width: 40 },
+        { header: 'Cidade', width: 25 },
+        { header: 'Estado', width: 10 },
+        { header: 'País', width: 15 },
+        { header: 'Endereço', width: 40 },
+        { header: 'Número', width: 15 },
+        { header: 'Bairro', width: 25 },
+        { header: 'CEP', width: 15 },
+        { header: 'Centro de Distribuição', width: 30 },
+        { header: 'Rota ID', width: 10 },
+        { header: 'Rota Nome', width: 30 },
+        { header: 'Rota Código', width: 15 },
+        { header: 'Regional', width: 20 },
+        { header: 'Centro de Custo ID', width: 15 },
+        { header: 'Centro de Custo Código', width: 20 },
+        { header: 'Centro de Custo Nome', width: 30 },
+        { header: 'CC Senior', width: 20 },
+        { header: 'Código Senior', width: 20 },
+        { header: 'Abastecimento', width: 20 },
+        { header: 'Ordem Entrega', width: 15 },
+        { header: 'Status', width: 15 },
+        { header: 'Observações', width: 50 },
+        { header: 'Atendimento', width: 20 },
+        { header: 'Horário', width: 20 },
+        { header: 'Supervisão', width: 30 },
+        { header: 'Coordenação', width: 30 },
+        { header: 'Latitude', width: 15 },
+        { header: 'Longitude', width: 15 },
+        { header: 'Filial ID', width: 10 },
+        { header: 'Filial Nome', width: 30 },
+        { header: 'Filial Código', width: 15 },
+        { header: 'Rota Nutricionista ID', width: 20 },
+        { header: 'Rota Nutricionista Código', width: 25 },
+        { header: 'Nutricionista Nome', width: 30 },
+        { header: 'Nutricionista Email', width: 30 },
+        { header: 'Almoxarifado ID', width: 15 },
+        { header: 'Almoxarifado Código', width: 20 },
+        { header: 'Almoxarifado Nome', width: 30 }
+      ];
       
       // Configurar resposta
       res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');

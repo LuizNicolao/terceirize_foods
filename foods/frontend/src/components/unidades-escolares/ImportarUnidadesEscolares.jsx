@@ -1,23 +1,18 @@
 import React, { useState, useRef } from 'react';
-import { FaFileUpload, FaDownload, FaCheckCircle, FaExclamationTriangle, FaTimes } from 'react-icons/fa';
+import { FaUpload, FaDownload, FaCheckCircle, FaExclamationTriangle, FaTimes } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import UnidadesEscolaresService from '../../services/unidadesEscolares';
-import { Modal } from '../ui';
+import { Modal, Button } from '../ui';
 
 const ImportarUnidadesEscolares = ({ isOpen, onClose, onImportSuccess }) => {
   const [file, setFile] = useState(null);
-  const [fileName, setFileName] = useState('');
   const [uploading, setUploading] = useState(false);
-  const [preview, setPreview] = useState(null);
-  const [errors, setErrors] = useState([]);
-  const [errorDetails, setErrorDetails] = useState('');
-  const [errorsByRow, setErrorsByRow] = useState(null);
-  const [totalErrors, setTotalErrors] = useState(0);
-  const [affectedRows, setAffectedRows] = useState(0);
+  const [resultado, setResultado] = useState(null);
+  const [erro, setErro] = useState(null);
   const fileInputRef = useRef(null);
 
-  const handleFileSelect = (event) => {
-    const selectedFile = event.target.files[0];
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files[0];
     if (selectedFile) {
       // Validar tipo de arquivo
       const allowedTypes = [
@@ -25,71 +20,26 @@ const ImportarUnidadesEscolares = ({ isOpen, onClose, onImportSuccess }) => {
         'application/vnd.ms-excel'
       ];
       
-      if (!allowedTypes.includes(selectedFile.type)) {
-        toast.error('Por favor, selecione um arquivo Excel válido (.xlsx ou .xls)');
+      if (!allowedTypes.includes(selectedFile.type) && !selectedFile.name.match(/\.(xlsx|xls)$/)) {
+        setErro('Por favor, selecione um arquivo Excel válido (.xlsx ou .xls)');
+        setFile(null);
         return;
       }
 
       // Validar tamanho (máximo 10MB)
       if (selectedFile.size > 10 * 1024 * 1024) {
-        toast.error('O arquivo é muito grande. Tamanho máximo permitido: 10MB');
+        setErro('O arquivo é muito grande. Tamanho máximo permitido: 10MB');
+        setFile(null);
         return;
       }
 
       setFile(selectedFile);
-      setFileName(selectedFile.name);
-      setErrors([]);
-      setErrorDetails('');
-      setErrorsByRow(null);
-      setTotalErrors(0);
-      setAffectedRows(0);
-      setPreview(null);
+      setErro(null);
+      setResultado(null);
     }
   };
 
-  const handleUpload = async () => {
-    if (!file) {
-      toast.error('Por favor, selecione um arquivo para importar');
-      return;
-    }
-
-    setUploading(true);
-    setErrors([]);
-    setErrorDetails('');
-    setErrorsByRow(null);
-    setTotalErrors(0);
-    setAffectedRows(0);
-
-    try {
-      const formData = new FormData();
-      formData.append('planilha', file);
-
-      const response = await UnidadesEscolaresService.importarPlanilha(formData);
-      
-      if (response.success) {
-        toast.success(response.message);
-        setPreview(response.data);
-        
-        if (onImportSuccess) {
-          onImportSuccess(response.data);
-        }
-      } else {
-        setErrors(response.validationErrors || []);
-        setErrorDetails(response.details || '');
-        setErrorsByRow(response.errorsByRow || null);
-        setTotalErrors(response.totalErrors || 0);
-        setAffectedRows(response.affectedRows || 0);
-        toast.error(response.message || 'Erro na importação');
-      }
-    } catch (error) {
-      console.error('Erro ao importar:', error);
-      toast.error('Erro ao importar arquivo. Tente novamente.');
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  const handleDownloadTemplate = async () => {
+  const handleDownloadModelo = async () => {
     try {
       const response = await UnidadesEscolaresService.downloadTemplate();
       
@@ -110,224 +60,185 @@ const ImportarUnidadesEscolares = ({ isOpen, onClose, onImportSuccess }) => {
     }
   };
 
-  const handleRemoveFile = () => {
-    setFile(null);
-    setFileName('');
-    setErrors([]);
-    setErrorDetails('');
-    setErrorsByRow(null);
-    setTotalErrors(0);
-    setAffectedRows(0);
-    setPreview(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+  const handleImport = async () => {
+    if (!file) {
+      setErro('Selecione um arquivo para importar');
+      return;
+    }
+
+    try {
+      setUploading(true);
+      setErro(null);
+      
+      const formData = new FormData();
+      formData.append('planilha', file);
+
+      const response = await UnidadesEscolaresService.importarPlanilha(formData);
+      
+      if (response.success) {
+        setResultado({
+          totalProcessed: response.data?.totalProcessed || 0,
+          totalInserted: response.data?.totalInserted || 0,
+          unidades: response.data?.unidades || [],
+          erros: response.data?.erros || []
+        });
+        onImportSuccess(response.data);
+      } else {
+        setErro(response.message || 'Erro na importação');
+      }
+    } catch (error) {
+      console.error('Erro na importação:', error);
+      setErro('Erro na importação');
+    } finally {
+      setUploading(false);
     }
   };
 
-  const handleButtonClick = () => {
-    fileInputRef.current?.click();
+  const handleClose = () => {
+    setFile(null);
+    setResultado(null);
+    setErro(null);
+    onClose();
   };
-
-  if (!isOpen) return null;
 
   return (
     <Modal
       isOpen={isOpen}
-      onClose={onClose}
-      title="📊 Importar Unidades Escolares"
-      size="6xl"
+      onClose={handleClose}
+      title="Importar Unidades Escolares"
+      size="3xl"
     >
       <div className="space-y-6">
-        {/* Seção: Download do Template */}
+        {/* Instruções */}
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h3 className="text-lg font-semibold text-blue-800 mb-3 flex items-center gap-2">
-            📋 Template da Planilha
-          </h3>
-          <p className="text-blue-700 mb-4">
-            Baixe o template com as colunas corretas para preencher com suas unidades escolares.
-          </p>
-          <button
-            onClick={handleDownloadTemplate}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+          <h3 className="font-semibold text-blue-900 mb-2">📋 Instruções:</h3>
+          <ul className="text-sm text-blue-800 space-y-1 list-disc list-inside">
+            <li>Baixe o modelo de planilha clicando no botão abaixo</li>
+            <li>Preencha os dados conforme o exemplo fornecido</li>
+            <li>Os campos <strong>Código Teknisa</strong>, <strong>Nome da Escola</strong>, <strong>Cidade</strong> e <strong>Estado</strong> são obrigatórios</li>
+            <li>Formato de CEP: 00000-000 ou 00000000</li>
+            <li>Status: "ativo" ou "inativo" (padrão: ativo)</li>
+            <li>País: Padrão "Brasil" se não informado</li>
+          </ul>
+        </div>
+
+        {/* Botão para baixar modelo */}
+        <div className="flex justify-center">
+          <Button
+            onClick={handleDownloadModelo}
+            variant="outline"
+            className="flex items-center gap-2"
           >
-            <FaDownload /> Baixar Template
-          </button>
+            <FaDownload />
+            Baixar Modelo de Planilha
+          </Button>
         </div>
 
-        {/* Seção: Upload da Planilha */}
-        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-          <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
-            📤 Upload da Planilha
-          </h3>
-          
-          {!file ? (
-            <div className="text-center">
-              <button
-                type="button"
-                onClick={handleButtonClick}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold text-lg"
+        {/* Upload de arquivo */}
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-700">
+            Selecionar Arquivo Excel
+          </label>
+          <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-gray-400 transition-colors">
+            <div className="space-y-1 text-center">
+              <FaUpload className="mx-auto h-12 w-12 text-gray-400" />
+              <div className="flex text-sm text-gray-600">
+                <label
+                  htmlFor="file-upload"
+                  className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
               >
-                <FaFileUpload /> Selecionar Planilha Excel
-              </button>
+                  <span>Selecionar arquivo</span>
               <input
-                ref={fileInputRef}
+                    id="file-upload"
+                    name="file-upload"
                 type="file"
+                    className="sr-only"
                 accept=".xlsx,.xls"
-                onChange={handleFileSelect}
-                className="hidden"
-              />
-              <p className="text-gray-600 mt-3 text-sm">
-                Formatos aceitos: .xlsx, .xls (máximo 10MB)
-              </p>
-            </div>
-          ) : (
-            <div className="bg-white border border-green-200 rounded-lg p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <FaCheckCircle className="text-green-600 text-xl" />
-                  <div>
-                    <p className="font-semibold text-green-800">{fileName}</p>
-                    <p className="text-sm text-green-600">
-                      Arquivo selecionado com sucesso
-                    </p>
-                  </div>
-                </div>
-                <button
-                  onClick={handleRemoveFile}
-                  className="text-red-500 hover:text-red-700 transition-colors"
-                >
-                  <FaTimes size={20} />
-                </button>
+                    onChange={handleFileChange}
+                    ref={fileInputRef}
+                    disabled={uploading}
+                  />
+                </label>
+                <p className="pl-1">ou arraste e solte aqui</p>
               </div>
-              
-              <button
-                onClick={handleUpload}
-                disabled={uploading}
-                className="mt-4 w-full inline-flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-semibold"
-              >
-                {uploading ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    Importando...
-                  </>
-                ) : (
-                  <>
-                    <FaFileUpload /> Importar Unidades Escolares
-                  </>
-                )}
-              </button>
+              <p className="text-xs text-gray-500">XLSX, XLS até 10MB</p>
             </div>
-          )}
+          </div>
         </div>
 
-        {/* Seção: Erros de Validação */}
-        {(errors.length > 0 || totalErrors > 0 || errorDetails) && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-            <h3 className="text-lg font-semibold text-red-800 mb-3 flex items-center gap-2">
-              <FaExclamationTriangle /> Erros de Validação
-            </h3>
-            
-            {/* Resumo dos Erros */}
-            <div className="bg-red-100 border border-red-300 rounded p-3 mb-4">
-              <p className="text-red-800 font-medium">
-                Encontrados {totalErrors} erro(s) em {affectedRows} linha(s) da planilha.
-              </p>
-              <p className="text-red-700 text-sm mt-1">
-                Corrija os erros antes de tentar importar novamente.
-              </p>
-              
-              {/* Debug Info */}
-              <div className="mt-2 p-2 bg-gray-100 rounded text-xs">
-                <p><strong>Debug:</strong> errors.length: {errors.length}, totalErrors: {totalErrors}, affectedRows: {affectedRows}</p>
-                <p><strong>errorDetails:</strong> {errorDetails ? 'Sim' : 'Não'}</p>
-                <p><strong>errorsByRow:</strong> {errorsByRow ? Object.keys(errorsByRow).length + ' linhas' : 'Não'}</p>
-              </div>
+        {/* Arquivo selecionado */}
+        {file && (
+          <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+            <div className="flex items-center">
+              <FaCheckCircle className="text-green-400 mr-2" />
+              <span className="text-sm font-medium text-green-800">{file.name}</span>
             </div>
-
-            {/* Detalhes dos Erros */}
-            {errorDetails && (
-              <div className="bg-white border border-red-200 rounded p-4 mb-4">
-                <h4 className="font-semibold text-red-800 mb-2">Detalhes dos Erros:</h4>
-                <pre className="text-red-700 text-sm whitespace-pre-wrap font-mono">
-                  {errorDetails}
-                </pre>
+            <p className="text-xs text-green-600 mt-1">
+              Tamanho: {(file.size / 1024).toFixed(1)} KB
+            </p>
               </div>
             )}
 
-            {/* Erros por Linha */}
-            {errorsByRow && (
-              <div className="space-y-3 max-h-80 overflow-y-auto">
-                {Object.keys(errorsByRow).map(row => (
-                  <div key={row} className="bg-white border border-red-200 rounded p-3">
-                    <h4 className="font-semibold text-red-800 mb-2">
-                      Linha {row}:
-                    </h4>
-                    <div className="space-y-2">
-                      {errorsByRow[row].map((error, index) => (
-                        <div key={index} className="bg-red-50 border border-red-100 rounded p-2">
-                          <p className="font-medium text-red-800">
-                            {error.field}
-                          </p>
-                          <p className="text-red-700 text-sm">
-                            Valor: "{error.value || 'vazio'}"
-                          </p>
-                          <p className="text-red-600 text-sm">
-                            {error.error}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
+        {/* Erro */}
+        {erro && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+            <div className="flex items-center">
+              <FaExclamationTriangle className="text-red-400 mr-2" />
+              <span className="text-sm font-medium text-red-800">{erro}</span>
               </div>
-            )}
           </div>
         )}
 
-        {/* Seção: Preview da Importação */}
-        {preview && (
+        {/* Resultado */}
+        {resultado && (
           <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-            <h3 className="text-lg font-semibold text-green-800 mb-3 flex items-center gap-2">
-              <FaCheckCircle /> Importação Realizada com Sucesso!
-            </h3>
-            <div className="bg-white border border-green-200 rounded-lg p-4">
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="font-semibold">Total processado:</span> {preview.totalProcessed}
-                </div>
-                <div>
-                  <span className="font-semibold">Total importado:</span> {preview.totalInserted}
-                </div>
-              </div>
-              
-              {preview.unidades && preview.unidades.length > 0 && (
-                <div className="mt-4">
-                  <p className="font-semibold text-green-800 mb-2">Primeiras unidades importadas:</p>
-                  <div className="space-y-2 max-h-40 overflow-y-auto">
-                    {preview.unidades.map((unidade, index) => (
-                      <div key={index} className="bg-gray-50 rounded p-2 text-xs">
-                        <span className="font-semibold">{unidade.codigo_teknisa}</span> - {unidade.nome_escola}
-                      </div>
+            <h4 className="font-semibold text-green-900 mb-2">✅ Importação Concluída!</h4>
+            <div className="text-sm text-green-800 space-y-1">
+              <p>• {resultado.totalProcessed} linhas processadas</p>
+              <p>• {resultado.totalInserted} unidades importadas</p>
+              {resultado.erros && resultado.erros.length > 0 && (
+                <div className="mt-2">
+                  <p className="font-medium">Erros encontrados:</p>
+                  <ul className="list-disc list-inside ml-4">
+                    {resultado.erros.map((erro, index) => (
+                      <li key={index} className="text-red-600">{erro}</li>
                     ))}
-                  </div>
+                  </ul>
                 </div>
               )}
             </div>
           </div>
         )}
 
-        {/* Instruções */}
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <h3 className="text-lg font-semibold text-yellow-800 mb-3 flex items-center gap-2">
-            💡 Instruções
-          </h3>
-          <div className="text-yellow-700 space-y-2 text-sm">
-            <p><strong>Colunas obrigatórias:</strong> Código Teknisa, Nome da Escola, Cidade, Estado</p>
-            <p><strong>Colunas opcionais:</strong> País, Endereço, Número, Bairro, CEP, Centro de Distribuição, Rota ID, Regional, Centro de Custo (ou Centro de Custo ID), C.C. Senior, Código Senior, Abastecimento, Ordem de Entrega, Status, Observações</p>
-            <p><strong>Formato de CEP:</strong> 00000-000 ou 00000000</p>
-            <p><strong>Status:</strong> "ativo" ou "inativo" (padrão: ativo)</p>
-            <p><strong>País:</strong> Padrão "Brasil" se não informado</p>
-          </div>
+        {/* Botões de ação */}
+        <div className="flex justify-end space-x-3 pt-4 border-t">
+          <Button
+            onClick={handleClose}
+            variant="outline"
+            disabled={uploading}
+          >
+            <FaTimes className="mr-2" />
+            {resultado ? 'Fechar' : 'Cancelar'}
+          </Button>
+          {!resultado && (
+            <Button
+              onClick={handleImport}
+              disabled={!file || uploading}
+              className="flex items-center space-x-2"
+            >
+              {uploading ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  <span>Importando...</span>
+                </>
+              ) : (
+                <>
+                  <FaUpload />
+                  <span>Importar Unidades Escolares</span>
+                </>
+              )}
+            </Button>
+          )}
         </div>
       </div>
     </Modal>

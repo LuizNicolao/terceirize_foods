@@ -112,19 +112,21 @@ class UnidadesEscolaresListController {
       }
 
       // Filtro por rota
-      // Usa a nova tabela unidades_escolares_rotas (normalizada)
-      // Mantém compatibilidade com campo antigo rota_id por enquanto
+      // Considera tanto a tabela de relacionamento quanto o campo direto rota_id
       if (rota_id) {
         const rotaIdNum = parseInt(rota_id, 10);
         if (!isNaN(rotaIdNum)) {
           whereConditions.push(`
-            ue.id IN (
-              SELECT uer.unidade_escolar_id
-              FROM unidades_escolares_rotas uer
-              WHERE uer.rota_id = ?
+            (
+              ue.id IN (
+                SELECT uer.unidade_escolar_id
+                FROM unidades_escolares_rotas uer
+                WHERE uer.rota_id = ?
+              )
+              OR ue.rota_id = ?
             )
           `);
-          params.push(rotaIdNum);
+          params.push(rotaIdNum, rotaIdNum);
         }
       }
 
@@ -140,7 +142,7 @@ class UnidadesEscolaresListController {
         SELECT COUNT(DISTINCT ue.id) as total 
         FROM unidades_escolares ue
         LEFT JOIN unidades_escolares_rotas uer ON ue.id = uer.unidade_escolar_id
-        LEFT JOIN rotas r ON uer.rota_id = r.id
+        LEFT JOIN rotas r ON (uer.rota_id = r.id OR ue.rota_id = r.id)
         WHERE ${whereConditions.join(' AND ')}
       `;
       const countResult = await executeQuery(countQuery, params);
@@ -178,7 +180,10 @@ class UnidadesEscolaresListController {
           ue.id, ue.codigo_teknisa, ue.nome_escola, ue.cidade, ue.estado, 
           ue.pais, ue.endereco, ue.numero, ue.bairro, ue.cep,
           ue.centro_distribuicao, 
-          GROUP_CONCAT(DISTINCT uer.rota_id ORDER BY uer.rota_id SEPARATOR ',') as rota_id,
+          COALESCE(
+            GROUP_CONCAT(DISTINCT uer.rota_id ORDER BY uer.rota_id SEPARATOR ','),
+            ue.rota_id
+          ) as rota_id,
           ue.regional, ue.centro_custo_id,
           cc.codigo as centro_custo_codigo, cc.nome as centro_custo_nome, 
           ue.cc_senior, ue.codigo_senior, ue.abastecimento, ue.ordem_entrega, 
@@ -196,7 +201,7 @@ class UnidadesEscolaresListController {
           a.nome as almoxarifado_nome
         FROM unidades_escolares ue
         LEFT JOIN unidades_escolares_rotas uer ON ue.id = uer.unidade_escolar_id
-        LEFT JOIN rotas r ON uer.rota_id = r.id
+        LEFT JOIN rotas r ON (uer.rota_id = r.id OR ue.rota_id = r.id)
         LEFT JOIN filiais f ON ue.filial_id = f.id
         LEFT JOIN centro_custo cc ON ue.centro_custo_id = cc.id
         LEFT JOIN rotas_nutricionistas rn ON ue.rota_nutricionista_id = rn.id
@@ -291,7 +296,10 @@ class UnidadesEscolaresListController {
           ue.id, ue.codigo_teknisa, ue.nome_escola, ue.cidade, ue.estado, 
           ue.pais, ue.endereco, ue.numero, ue.bairro, ue.cep,
           ue.centro_distribuicao, 
-          GROUP_CONCAT(DISTINCT uer.rota_id ORDER BY uer.rota_id SEPARATOR ',') as rota_id,
+          COALESCE(
+            NULLIF(GROUP_CONCAT(DISTINCT uer.rota_id ORDER BY uer.rota_id SEPARATOR ','), ''),
+            CAST(ue.rota_id AS CHAR)
+          ) as rota_id,
           GROUP_CONCAT(DISTINCT r.nome ORDER BY r.nome SEPARATOR ', ') as rota_nome,
           GROUP_CONCAT(DISTINCT r.codigo ORDER BY r.codigo SEPARATOR ', ') as rota_codigo,
           ue.regional, ue.centro_custo_id,
@@ -311,7 +319,7 @@ class UnidadesEscolaresListController {
           a.nome as almoxarifado_nome
         FROM unidades_escolares ue
         LEFT JOIN unidades_escolares_rotas uer ON ue.id = uer.unidade_escolar_id
-        LEFT JOIN rotas r ON uer.rota_id = r.id
+        LEFT JOIN rotas r ON (uer.rota_id = r.id OR ue.rota_id = r.id)
         LEFT JOIN filiais f ON ue.filial_id = f.id
         LEFT JOIN centro_custo cc ON ue.centro_custo_id = cc.id
         LEFT JOIN rotas_nutricionistas_escolas rne ON ue.id = rne.unidade_escolar_id

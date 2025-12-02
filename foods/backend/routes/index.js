@@ -51,6 +51,7 @@ const notasFiscaisRoutes = require('./notas-fiscais/notaFiscalRoute');
 const pdfTemplatesRoutes = require('./pdf-templates');
 const openaiRoutes = require('./openai/openaiRoute');
 const cepRoutes = require('./shared/cepRoute');
+const fichaHomologacaoRoutes = require('./ficha-homologacao');
 
 // Definir todas as rotas com seus caminhos
 const routes = [
@@ -100,7 +101,8 @@ const routes = [
   { path: '/notas-fiscais', router: notasFiscaisRoutes },
   { path: '/pdf-templates', router: pdfTemplatesRoutes },
   { path: '/openai', router: openaiRoutes },
-  { path: '/shared', router: cepRoutes }
+  { path: '/shared', router: cepRoutes },
+  { path: '/ficha-homologacao', router: fichaHomologacaoRoutes }
 ];
 
 module.exports = routes;

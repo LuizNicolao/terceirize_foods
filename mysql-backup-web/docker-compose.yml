@@ -27,6 +27,13 @@ services:
       FOODS_DB_PASSWORD: foods123456
       FOODS_DB_NAME: foods_db
       
+      # MySQL Connection para backups (mysqldump)
+      # IMPORTANTE: Usa foods_user que já tem ALL PRIVILEGES em todos os bancos
+      MYSQL_HOST: terceirize_mysql
+      MYSQL_PORT: 3306
+      MYSQL_USER: foods_user
+      MYSQL_PASSWORD: foods123456
+      
       # Backup Configuration
       # Caminho dentro do container (volume monta terceirize_foods/bkp_banco_dados do host para /backups)
       BACKUP_BASE_DIR: /backups

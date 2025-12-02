@@ -1,5 +1,24 @@
 const { executeQuery } = require('../../config/database');
 
+// Função auxiliar para formatar números com vírgula como separador decimal
+const formatarNumeroBR = (valor) => {
+  if (valor === null || valor === undefined || valor === '') return '';
+  
+  // Se já for string com vírgula, retorna como está
+  if (typeof valor === 'string' && valor.includes(',')) {
+    return valor;
+  }
+  
+  // Converte para número
+  const num = parseFloat(valor);
+  if (isNaN(num)) return valor.toString();
+  
+  // Converte para string e substitui ponto por vírgula
+  // Remove zeros desnecessários no final, mas mantém pelo menos uma casa decimal se houver
+  const str = num.toString();
+  return str.replace('.', ',');
+};
+
 class ProdutoGenericoExportController {
   static async exportarXLSX(req, res) {
     try {
@@ -79,8 +98,8 @@ class ProdutoGenericoExportController {
 
       const produtos = await executeQuery(query, params);
 
-      produtos.forEach(produto => {
-        worksheet.addRow({
+      produtos.forEach((produto, index) => {
+        const row = worksheet.addRow({
           codigo: produto.codigo || '',
           nome: produto.nome || '',
           grupo: produto.grupo_nome || '',
@@ -92,19 +111,34 @@ class ProdutoGenericoExportController {
             (produto.produto_origem_nome || ''),
           status: produto.status === 1 ? 'Ativo' : 'Inativo',
           total_produtos: produto.total_produtos || 0,
-          unidade_medida: produto.unidade_medida_nome || '',
-          fator_conversao: produto.fator_conversao || '',
+          unidade_medida: produto.unidade_medida_sigla || produto.unidade_medida_nome || '',
+          fator_conversao: formatarNumeroBR(produto.fator_conversao),
           referencia_mercado: produto.referencia_mercado || '',
           referencia_interna: produto.referencia_interna || '',
           referencia_externa: produto.referencia_externa || '',
-          peso_liquido: produto.peso_liquido || '',
-          peso_bruto: produto.peso_bruto || '',
+          peso_liquido: formatarNumeroBR(produto.peso_liquido),
+          peso_bruto: formatarNumeroBR(produto.peso_bruto),
           regra_palet: produto.regra_palet || '',
           prazo_validade_padrao: produto.prazo_validade_padrao || '',
           unidade_validade: produto.unidade_validade || '',
           criado_em: produto.criado_em ? new Date(produto.criado_em).toLocaleString('pt-BR') : '',
           atualizado_em: produto.atualizado_em ? new Date(produto.atualizado_em).toLocaleString('pt-BR') : ''
         });
+        
+        // Definir as colunas numéricas como texto para preservar a formatação com vírgula
+        const fatorConversaoCell = row.getCell('fator_conversao');
+        const pesoLiquidoCell = row.getCell('peso_liquido');
+        const pesoBrutoCell = row.getCell('peso_bruto');
+        
+        if (fatorConversaoCell.value) {
+          fatorConversaoCell.numFmt = '@'; // Formato texto
+        }
+        if (pesoLiquidoCell.value) {
+          pesoLiquidoCell.numFmt = '@'; // Formato texto
+        }
+        if (pesoBrutoCell.value) {
+          pesoBrutoCell.numFmt = '@'; // Formato texto
+        }
       });
 
       res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
@@ -191,13 +225,13 @@ class ProdutoGenericoExportController {
         }
         doc.text(`Status: ${produto.status === 1 ? 'Ativo' : 'Inativo'}`);
         doc.text(`Produtos Vinculados: ${produto.total_produtos || 0}`);
-        if (produto.unidade_medida_nome) doc.text(`Unidade Medida: ${produto.unidade_medida_nome}`);
-        if (produto.fator_conversao) doc.text(`Fator Conversão: ${produto.fator_conversao}`);
+        if (produto.unidade_medida_sigla || produto.unidade_medida_nome) doc.text(`Unidade Medida: ${produto.unidade_medida_sigla || produto.unidade_medida_nome}`);
+        if (produto.fator_conversao) doc.text(`Fator Conversão: ${formatarNumeroBR(produto.fator_conversao)}`);
         if (produto.referencia_mercado) doc.text(`Ref. Mercado: ${produto.referencia_mercado}`);
         if (produto.referencia_interna) doc.text(`Ref. Interna: ${produto.referencia_interna}`);
         if (produto.referencia_externa) doc.text(`Ref. Externa: ${produto.referencia_externa}`);
-        if (produto.peso_liquido) doc.text(`Peso Líquido: ${produto.peso_liquido}`);
-        if (produto.peso_bruto) doc.text(`Peso Bruto: ${produto.peso_bruto}`);
+        if (produto.peso_liquido) doc.text(`Peso Líquido: ${formatarNumeroBR(produto.peso_liquido)}`);
+        if (produto.peso_bruto) doc.text(`Peso Bruto: ${formatarNumeroBR(produto.peso_bruto)}`);
         if (produto.regra_palet) doc.text(`Regra Palet: ${produto.regra_palet}`);
         if (produto.prazo_validade_padrao) doc.text(`Prazo Validade: ${produto.prazo_validade_padrao}`);
         if (produto.unidade_validade) doc.text(`Unidade Validade: ${produto.unidade_validade}`);

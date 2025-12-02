@@ -121,13 +121,34 @@ const createCustomIcon = (isCurrent, status, filialColor, ordemEntrega) => {
  * @returns {number|null} - Coordenada validada ou null se inválida
  */
 const parseCoordinate = (value, type = 'lat') => {
-  if (value === null || value === undefined || value === '') return null;
+  if (value === null || value === undefined || value === '') {
+    return null;
+  }
+  
+  // Se já for um número, validar diretamente
+  if (typeof value === 'number') {
+    if (isNaN(value)) {
+      return null;
+    }
+    
+    // Validar limites
+    if (type === 'lat' && (value < -90 || value > 90)) {
+      return null;
+    }
+    if (type === 'lon' && (value < -180 || value > 180)) {
+      return null;
+    }
+    
+    return value;
+  }
   
   // Converter para string e remover espaços
   let strValue = String(value).trim();
   
   // Se estiver vazio após trim, retornar null
-  if (strValue === '' || strValue === 'null' || strValue === 'undefined') return null;
+  if (strValue === '' || strValue === 'null' || strValue === 'undefined') {
+    return null;
+  }
   
   // Converter vírgula para ponto (formato brasileiro)
   const normalized = strValue.replace(',', '.');
@@ -144,22 +165,16 @@ const parseCoordinate = (value, type = 'lat') => {
     if (parsed < -90 || parsed > 90) {
       return null;
     }
-    // Rejeitar coordenadas exatamente em 0,0 (Golfo da Guiné - provavelmente erro)
-    // Mas permitir se for longitude válida
   } else if (type === 'lon') {
     // Longitude: -180 a 180 graus
     if (parsed < -180 || parsed > 180) {
-    return null;
-  }
+      return null;
+    }
   }
   
-  // Rejeitar coordenadas muito próximas de zero (provavelmente erro de cadastro)
-  // Latitude 0 é válida (Equador), mas longitude 0 também (Meridiano de Greenwich)
-  // Vamos apenas validar se ambas são exatamente 0,0 (isso será feito no componente)
-  
-  // Arredondar para 8 casas decimais (precisão do banco)
-  // Isso garante que não haja problemas de precisão de ponto flutuante
-  return Math.round(parsed * 100000000) / 100000000;
+  // Retornar o valor parseado diretamente (sem arredondar)
+  // O JavaScript já mantém a precisão suficiente para 10 casas decimais
+  return parsed;
 };
 
 // Componente para ajustar o zoom quando a unidade atual mudar
@@ -202,12 +217,38 @@ const MapaContent = ({ unidadeAtual = null, filialId = null, rotaId = null, sear
 
         const response = await UnidadesEscolaresService.listar(params);
         
-        if (response.success) {
+        if (response.success && response.data && Array.isArray(response.data)) {
           // Filtrar apenas unidades com coordenadas válidas e converter coordenadas
           const unidadesComCoordenadas = (response.data || [])
             .map(unidade => {
               const lat = parseCoordinate(unidade.lat, 'lat');
               const long = parseCoordinate(unidade.long, 'lon');
+              
+              // Log apenas se houver rota selecionada para verificar vínculo e coordenadas
+              if (rotaId) {
+                // Verificar se a unidade tem vínculo com a rota
+                // rota_id pode vir como string separada por vírgulas (GROUP_CONCAT) ou como número
+                let temRota = false;
+                if (unidade.rota_id) {
+                  const rotasArray = unidade.rota_id.toString().split(',').map(r => r.trim());
+                  temRota = rotasArray.includes(rotaId.toString()) || 
+                           rotasArray.includes(parseInt(rotaId).toString()) ||
+                           unidade.rota_id === parseInt(rotaId);
+                }
+                
+                const temCoordenadas = lat !== null && long !== null;
+                
+                console.log(`[MapaContent] Escola: ${unidade.nome_escola}`, {
+                  id: unidade.id,
+                  tem_vinculo_rota: temRota,
+                  rota_id_escola: unidade.rota_id,
+                  rota_id_filtro: rotaId,
+                  tem_lat_long: temCoordenadas,
+                  lat: lat,
+                  long: long
+                });
+              }
+              
               return {
                 ...unidade,
                 lat,
@@ -215,14 +256,43 @@ const MapaContent = ({ unidadeAtual = null, filialId = null, rotaId = null, sear
               };
             })
             .filter(
-              unidade => 
-                unidade.lat !== null && 
-                unidade.long !== null &&
-                // Rejeitar coordenadas exatamente em 0,0 (Golfo da Guiné - provavelmente erro de cadastro)
-                !(unidade.lat === 0 && unidade.long === 0) &&
-                // Rejeitar coordenadas muito próximas de zero (erro comum)
-                (Math.abs(unidade.lat) > 0.0001 || Math.abs(unidade.long) > 0.0001)
+              unidade => {
+                const isValid = unidade.lat !== null && 
+                  unidade.long !== null &&
+                  !isNaN(unidade.lat) &&
+                  !isNaN(unidade.long) &&
+                  // Rejeitar coordenadas exatamente em 0,0 (Golfo da Guiné - provavelmente erro de cadastro)
+                  !(unidade.lat === 0 && unidade.long === 0);
+                
+                return isValid;
+              }
             );
+          
+          // Log resumo apenas se houver rota selecionada
+          if (rotaId) {
+            const unidadesNaRotaComCoordenadas = unidadesComCoordenadas.filter(u => {
+              if (!u.rota_id) return false;
+              const rotasArray = u.rota_id.toString().split(',').map(r => r.trim());
+              return rotasArray.includes(rotaId.toString()) || 
+                     rotasArray.includes(parseInt(rotaId).toString()) ||
+                     u.rota_id === parseInt(rotaId);
+            });
+            
+            console.log('[MapaContent] Resumo da rota:', {
+              rota_id: rotaId,
+              total_recebidas: response.data?.length || 0,
+              total_com_coordenadas: unidadesComCoordenadas.length,
+              unidades_na_rota_com_coordenadas: unidadesNaRotaComCoordenadas.length,
+              unidades_na_rota_sem_coordenadas: response.data?.filter(u => {
+                if (!u.rota_id) return false;
+                const rotasArray = u.rota_id.toString().split(',').map(r => r.trim());
+                const temRota = rotasArray.includes(rotaId.toString()) || 
+                               rotasArray.includes(parseInt(rotaId).toString()) ||
+                               u.rota_id === parseInt(rotaId);
+                return temRota && (!u.lat || !u.long);
+              }).length || 0
+            });
+          }
           
           // Se houver rota selecionada, ordenar por ordem_entrega
           let unidadesOrdenadas = unidadesComCoordenadas;

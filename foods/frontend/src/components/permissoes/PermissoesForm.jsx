@@ -34,6 +34,7 @@ const PermissoesForm = ({
       { key: 'produto_origem', label: 'Produtos Origem' },
       { key: 'produto_comercial', label: 'Produtos Comerciais' },
       { key: 'produto_generico', label: 'Produtos Genéricos' },
+      { key: 'ficha_homologacao', label: 'Ficha Homologação' },
       { key: 'intolerancias', label: 'Intolerâncias' },
       { key: 'patrimonios', label: 'Patrimônios' },
       { key: 'rotas_nutricionistas', label: 'Rotas Nutricionistas' },

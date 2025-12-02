@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FaPlus, FaQuestionCircle, FaList, FaMap } from 'react-icons/fa';
+import { FaPlus, FaQuestionCircle, FaList, FaMap, FaUpload } from 'react-icons/fa';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { useUnidadesEscolares } from '../../hooks/useUnidadesEscolares';
 import { useAuditoria } from '../../hooks/common/useAuditoria';
@@ -115,9 +115,10 @@ const UnidadesEscolares = () => {
                 onClick={() => setShowImportModal(true)} 
                 variant="outline" 
                 size="sm"
-                className="text-green-600 border-green-600 hover:bg-green-50"
               >
-                📊 Importar
+                <FaUpload className="mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Importar</span>
+                <span className="sm:hidden">Importar</span>
               </Button>
               <Button onClick={handleAddUnidade} size="sm">
                 <FaPlus className="mr-1 sm:mr-2" />

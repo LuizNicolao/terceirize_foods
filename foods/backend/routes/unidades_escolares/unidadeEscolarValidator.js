@@ -92,16 +92,36 @@ const unidadeEscolarValidations = {
       .isString().trim().isLength({ max: 100 }).withMessage('Centro de distribuição deve ter no máximo 100 caracteres'),
     
     body('rota_id')
-      .optional()
-      .isInt({ min: 1 }).withMessage('ID da rota deve ser um número inteiro positivo'),
+      .optional({ nullable: true, checkFalsy: true })
+      .custom((value) => {
+        if (value === null || value === undefined || value === '' || value === 'null' || value === 'undefined') {
+          return true;
+        }
+        const numValue = parseInt(value);
+        if (isNaN(numValue) || numValue < 1) {
+          throw new Error('ID da rota deve ser um número inteiro positivo');
+        }
+        return true;
+      }),
     
     body('regional')
       .optional()
       .isString().trim().isLength({ max: 100 }).withMessage('Regional deve ter no máximo 100 caracteres'),
     
     body('centro_custo_id')
-      .optional()
-      .isInt({ min: 1 }).withMessage('ID do centro de custo deve ser um número inteiro positivo'),
+      .optional({ nullable: true, checkFalsy: true })
+      .custom((value) => {
+        // Se não foi fornecido ou é vazio/null, aceitar (campo apenas leitura)
+        if (value === null || value === undefined || value === '' || value === 'null' || value === 'undefined') {
+          return true;
+        }
+        // Se foi fornecido, deve ser um número inteiro positivo
+        const numValue = parseInt(value);
+        if (isNaN(numValue) || numValue < 1) {
+          throw new Error('ID do centro de custo deve ser um número inteiro positivo');
+        }
+        return true;
+      }),
     
     body('cc_senior')
       .optional()
@@ -185,16 +205,36 @@ const unidadeEscolarValidations = {
       .isString().trim().isLength({ max: 100 }).withMessage('Centro de distribuição deve ter no máximo 100 caracteres'),
     
     body('rota_id')
-      .optional()
-      .isInt({ min: 1 }).withMessage('ID da rota deve ser um número inteiro positivo'),
+      .optional({ nullable: true, checkFalsy: true })
+      .custom((value) => {
+        if (value === null || value === undefined || value === '' || value === 'null' || value === 'undefined') {
+          return true;
+        }
+        const numValue = parseInt(value);
+        if (isNaN(numValue) || numValue < 1) {
+          throw new Error('ID da rota deve ser um número inteiro positivo');
+        }
+        return true;
+      }),
     
     body('regional')
       .optional()
       .isString().trim().isLength({ max: 100 }).withMessage('Regional deve ter no máximo 100 caracteres'),
     
     body('centro_custo_id')
-      .optional()
-      .isInt({ min: 1 }).withMessage('ID do centro de custo deve ser um número inteiro positivo'),
+      .optional({ nullable: true, checkFalsy: true })
+      .custom((value) => {
+        // Se não foi fornecido ou é vazio/null, aceitar (campo apenas leitura)
+        if (value === null || value === undefined || value === '' || value === 'null' || value === 'undefined') {
+          return true;
+        }
+        // Se foi fornecido, deve ser um número inteiro positivo
+        const numValue = parseInt(value);
+        if (isNaN(numValue) || numValue < 1) {
+          throw new Error('ID do centro de custo deve ser um número inteiro positivo');
+        }
+        return true;
+      }),
     
     body('cc_senior')
       .optional()
