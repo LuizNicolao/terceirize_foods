@@ -1,6 +1,8 @@
 node_modules/
 .env
-backups/
+# Ignorar apenas o diretório de backups de banco de dados, não os componentes
+/backups/
+backend/backups/
 *.log
 .DS_Store
 dist/
