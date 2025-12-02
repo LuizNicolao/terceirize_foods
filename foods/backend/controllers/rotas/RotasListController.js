@@ -120,6 +120,8 @@ class RotasListController {
       const query = `
         SELECT 
           r.*,
+          r.rota_coordenadas,
+          r.rota_escolas_ids,
           f.filial as filial_nome,
           tr.nome as tipo_rota_nome,
           tr.grupo_id as tipo_rota_grupo_id,

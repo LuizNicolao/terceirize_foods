@@ -1,0 +1,23 @@
+services:
+  osrm:
+    image: osrm/osrm-backend:latest
+    container_name: osrm_server
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./data:/data
+    command: osrm-routed --algorithm mld /data/brazil-latest.osrm
+    networks:
+      - terceirize_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/route/v1/driving/-51.055,-26.3559;-49.5953,-27.0659"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+networks:
+  terceirize_network:
+    external: true
+

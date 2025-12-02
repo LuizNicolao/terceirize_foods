@@ -68,6 +68,18 @@ router.get('/centro-custo/:centro_custo_id',
   AlmoxarifadoController.buscarAlmoxarifadosPorCentroCusto
 );
 
+// GET /api/almoxarifado/export/xlsx - Exportar almoxarifados para XLSX
+router.get('/export/xlsx',
+  checkPermission('visualizar'),
+  AlmoxarifadoController.exportarXLSX
+);
+
+// GET /api/almoxarifado/export/pdf - Exportar almoxarifados para PDF
+router.get('/export/pdf',
+  checkPermission('visualizar'),
+  AlmoxarifadoController.exportarPDF
+);
+
 // GET /api/almoxarifado/:id - Buscar almoxarifado por ID
 router.get('/:id', 
   checkPermission('visualizar'),

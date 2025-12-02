@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { FaMapMarkerAlt } from 'react-icons/fa';
 import UnidadesEscolaresService from '../../services/unidadesEscolares';
+import RotasService from '../../services/rotas';
 import { MapControls, RoutePolyline, RouteMarkers, RouteInfo, MarkerClusterGroup, calculateRouteDistance } from './mapa';
 import toast from 'react-hot-toast';
 
@@ -177,6 +178,8 @@ const MapController = ({ center, zoom }) => {
 const MapaContent = ({ unidadeAtual = null, filialId = null, rotaId = null, searchTerm = '' }) => {
   const [unidadesEscolares, setUnidadesEscolares] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingRota, setLoadingRota] = useState(false);
+  const [rotaCoordenadasSalvas, setRotaCoordenadasSalvas] = useState(null);
   const [mapCenter, setMapCenter] = useState([-14.235, -51.9253]); // Centro do Brasil
   const [mapZoom, setMapZoom] = useState(5);
   const [filiaisMap, setFiliaisMap] = useState(new Map()); // Mapa de filiais para cores
@@ -291,6 +294,43 @@ const MapaContent = ({ unidadeAtual = null, filialId = null, rotaId = null, sear
     carregarUnidadesEscolares();
   }, [unidadeAtual?.id, filialId, rotaId, searchTerm]);
 
+  // Buscar coordenadas salvas da rota quando houver rotaId
+  useEffect(() => {
+    if (!rotaId) {
+      setRotaCoordenadasSalvas(null);
+      return;
+    }
+
+    const buscarCoordenadasRota = async () => {
+      try {
+        const response = await RotasService.buscarPorId(rotaId);
+        if (response.success && response.data) {
+          const rota = response.data;
+          // Verificar se há coordenadas salvas e se são válidas
+          if (rota.rota_coordenadas) {
+            try {
+              const coordenadas = typeof rota.rota_coordenadas === 'string' 
+                ? JSON.parse(rota.rota_coordenadas) 
+                : rota.rota_coordenadas;
+              
+              if (Array.isArray(coordenadas) && coordenadas.length >= 2) {
+                setRotaCoordenadasSalvas(coordenadas);
+                return;
+              }
+            } catch (e) {
+              // Erro ao parsear coordenadas salvas - ignorar e continuar
+            }
+          }
+        }
+        setRotaCoordenadasSalvas(null);
+      } catch (error) {
+        setRotaCoordenadasSalvas(null);
+      }
+    };
+
+    buscarCoordenadasRota();
+  }, [rotaId]);
+
   // Calcular coordenadas da rota quando houver rotaId e unidades ordenadas
   // IMPORTANTE: Este hook deve estar ANTES de qualquer retorno condicional
   const { rotaCoordenadas, unidadesComOrdem, distanciaTotal } = useMemo(() => {
@@ -307,7 +347,17 @@ const MapaContent = ({ unidadeAtual = null, filialId = null, rotaId = null, sear
       return { rotaCoordenadas: [], unidadesComOrdem: [], distanciaTotal: 0 };
     }
     
-    // Criar array de coordenadas [lat, long] na ordem de entrega
+    // Se houver coordenadas salvas, usar elas (prioridade)
+    if (rotaCoordenadasSalvas && rotaCoordenadasSalvas.length >= 2) {
+      const distancia = calculateRouteDistance(rotaCoordenadasSalvas);
+      return {
+        rotaCoordenadas: rotaCoordenadasSalvas,
+        unidadesComOrdem,
+        distanciaTotal: distancia
+      };
+    }
+    
+    // Caso contrário, criar array de coordenadas [lat, long] na ordem de entrega
     const coordenadas = unidadesComOrdem.map(u => [u.lat, u.long]);
     
     // Calcular distância total
@@ -318,7 +368,7 @@ const MapaContent = ({ unidadeAtual = null, filialId = null, rotaId = null, sear
       unidadesComOrdem,
       distanciaTotal: distancia
     };
-  }, [rotaId, unidadesEscolares]);
+  }, [rotaId, unidadesEscolares, rotaCoordenadasSalvas]);
 
   if (loading) {
     return (
@@ -392,7 +442,8 @@ const MapaContent = ({ unidadeAtual = null, filialId = null, rotaId = null, sear
               color="#ef4444"
               weight={5}
               opacity={0.8}
-              useRealRoute={true}
+              useRealRoute={!rotaCoordenadasSalvas}
+              onLoadingChange={setLoadingRota}
             />
             <RouteMarkers 
               unidadesComOrdem={unidadesComOrdem}
@@ -488,6 +539,14 @@ const MapaContent = ({ unidadeAtual = null, filialId = null, rotaId = null, sear
         })}
         </MarkerClusterGroup>
       </MapContainer>
+      
+      {/* Loading da rota */}
+      {loadingRota && (
+        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-white rounded-lg shadow-lg p-4 z-[1000] border border-gray-200 flex items-center gap-3">
+          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-green-600"></div>
+          <span className="text-sm text-gray-700 font-medium">Calculando rota...</span>
+        </div>
+      )}
       
       {/* Informações da Rota */}
       {rotaId && unidadesComOrdem.length >= 2 && (

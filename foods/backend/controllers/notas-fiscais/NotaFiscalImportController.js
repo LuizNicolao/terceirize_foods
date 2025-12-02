@@ -46,15 +46,16 @@ class NotaFiscalImportController {
       // Criar workbook
       const workbook = new ExcelJS.Workbook();
       
-      // Aba 1: Dados da Nota Fiscal
-      const worksheetNF = workbook.addWorksheet('Notas Fiscais');
+      // Única aba com todas as informações (Nota Fiscal + Itens)
+      const worksheet = workbook.addWorksheet('Notas Fiscais');
       
-      // Definir colunas da nota fiscal
-      worksheetNF.columns = [
+      // Definir colunas: dados da nota fiscal + dados dos itens
+      worksheet.columns = [
+        // Dados da Nota Fiscal
         { header: 'Tipo Nota', key: 'tipo_nota', width: 15 },
         { header: 'Número Nota', key: 'numero_nota', width: 15 },
         { header: 'Série', key: 'serie', width: 10 },
-        { header: 'Chave Acesso', key: 'chave_acesso', width: 50 },
+        { header: 'CNPJ', key: 'cnpj', width: 20 },
         { header: 'Fornecedor (Razão Social)', key: 'fornecedor', width: 40 },
         { header: 'Filial', key: 'filial', width: 30 },
         { header: 'Almoxarifado (Código)', key: 'almoxarifado', width: 20 },
@@ -67,12 +68,19 @@ class NotaFiscalImportController {
         { header: 'Valor ICMS', key: 'valor_icms', width: 15 },
         { header: 'Natureza Operação', key: 'natureza_operacao', width: 30 },
         { header: 'CFOP', key: 'cfop', width: 10 },
-        { header: 'Observações', key: 'observacoes', width: 40 }
+        { header: 'Observações', key: 'observacoes', width: 40 },
+        // Dados dos Itens
+        { header: 'Número Item', key: 'numero_item', width: 15 },
+        { header: 'NomeUnidade de Medida', key: 'nome_unidade_medida', width: 50 },
+        { header: 'Quantidade', key: 'quantidade', width: 15 },
+        { header: 'Valor Unitário', key: 'valor_unitario', width: 15 },
+        { header: 'Valor Total Item', key: 'valor_total_item', width: 15 },
+        { header: 'Valor Desconto Item', key: 'valor_desconto_item', width: 15 }
       ];
 
       // Estilizar cabeçalho
-      worksheetNF.getRow(1).font = { bold: true };
-      worksheetNF.getRow(1).fill = {
+      worksheet.getRow(1).font = { bold: true };
+      worksheet.getRow(1).fill = {
         type: 'pattern',
         pattern: 'solid',
         fgColor: { argb: 'FFE6F3FF' }
@@ -82,113 +90,62 @@ class NotaFiscalImportController {
       const dataAtual = new Date();
       const dataExemplo = dataAtual.toISOString().split('T')[0]; // YYYY-MM-DD
 
-      const exemploNF = {
-        tipo_nota: 'ENTRADA',
-        numero_nota: '12345',
-        serie: '1',
-        chave_acesso: '',
-        fornecedor: fornecedores[0]?.razao_social || 'FORNECEDOR EXEMPLO LTDA',
-        filial: filiais[0]?.filial || 'FILIAL EXEMPLO',
-        almoxarifado: '001',
-        data_emissao: dataExemplo,
-        data_saida: dataExemplo,
-        valor_produtos: 1000.00,
-        valor_frete: 50.00,
-        valor_desconto: 0.00,
-        valor_ipi: 0.00,
-        valor_icms: 0.00,
-        natureza_operacao: 'COMPRA',
-        cfop: '5102',
-        observacoes: 'Nota fiscal de exemplo'
-      };
-
-      worksheetNF.addRow(exemploNF);
-
-      // Aba 2: Itens da Nota Fiscal
-      const worksheetItens = workbook.addWorksheet('Itens');
-      
-      // Definir colunas dos itens
-      worksheetItens.columns = [
-        { header: 'Número Nota', key: 'numero_nota', width: 15 },
-        { header: 'Série', key: 'serie', width: 10 },
-        { header: 'Número Item', key: 'numero_item', width: 15 },
-        { header: 'Código Produto', key: 'codigo_produto', width: 20 },
-        { header: 'Descrição', key: 'descricao', width: 50 },
-        { header: 'NCM', key: 'ncm', width: 15 },
-        { header: 'CFOP', key: 'cfop', width: 10 },
-        { header: 'Unidade Comercial', key: 'unidade_comercial', width: 15 },
-        { header: 'Quantidade', key: 'quantidade', width: 15 },
-        { header: 'Valor Unitário', key: 'valor_unitario', width: 15 },
-        { header: 'Valor Total', key: 'valor_total', width: 15 },
-        { header: 'Valor Desconto', key: 'valor_desconto', width: 15 },
-        { header: 'Valor IPI', key: 'valor_ipi', width: 15 },
-        { header: 'Alíquota IPI', key: 'aliquota_ipi', width: 15 },
-        { header: 'Valor ICMS', key: 'valor_icms', width: 15 },
-        { header: 'Alíquota ICMS', key: 'aliquota_icms', width: 15 },
-        { header: 'Valor PIS', key: 'valor_pis', width: 15 },
-        { header: 'Alíquota PIS', key: 'aliquota_pis', width: 15 },
-        { header: 'Valor COFINS', key: 'valor_cofins', width: 15 },
-        { header: 'Alíquota COFINS', key: 'aliquota_cofins', width: 15 }
-      ];
-
-      // Estilizar cabeçalho
-      worksheetItens.getRow(1).font = { bold: true };
-      worksheetItens.getRow(1).fill = {
-        type: 'pattern',
-        pattern: 'solid',
-        fgColor: { argb: 'FFE6F3FF' }
-      };
-
-      // Adicionar itens de exemplo
-      const exemploItens = [
+      // Exemplo: uma nota fiscal com 2 itens
+      const exemploLinhas = [
         {
+          tipo_nota: 'ENTRADA',
           numero_nota: '12345',
           serie: '1',
-          numero_item: 1,
-          codigo_produto: 'PROD001',
-          descricao: 'Produto Exemplo 1',
-          ncm: '12345678',
+          cnpj: '12.345.678/0001-90',
+          fornecedor: fornecedores[0]?.razao_social || 'FORNECEDOR EXEMPLO LTDA',
+          filial: filiais[0]?.filial || 'FILIAL EXEMPLO',
+          almoxarifado: '001',
+          data_emissao: dataExemplo,
+          data_saida: dataExemplo,
+          valor_produtos: 1000.00,
+          valor_frete: 50.00,
+          valor_desconto: 0.00,
+          valor_ipi: 0.00,
+          valor_icms: 0.00,
+          natureza_operacao: 'COMPRA',
           cfop: '5102',
-          unidade_comercial: 'UN',
+          observacoes: 'Nota fiscal de exemplo',
+          numero_item: 1,
+          nome_unidade_medida: 'Produto Exemplo 1 - UN',
           quantidade: 10,
           valor_unitario: 50.00,
-          valor_total: 500.00,
-          valor_desconto: 0.00,
-          valor_ipi: 0.00,
-          aliquota_ipi: 0.00,
-          valor_icms: 0.00,
-          aliquota_icms: 0.00,
-          valor_pis: 0.00,
-          aliquota_pis: 0.00,
-          valor_cofins: 0.00,
-          aliquota_cofins: 0.00
+          valor_total_item: 500.00,
+          valor_desconto_item: 0.00
         },
         {
+          tipo_nota: 'ENTRADA',
           numero_nota: '12345',
           serie: '1',
-          numero_item: 2,
-          codigo_produto: 'PROD002',
-          descricao: 'Produto Exemplo 2',
-          ncm: '87654321',
-          cfop: '5102',
-          unidade_comercial: 'UN',
-          quantidade: 5,
-          valor_unitario: 100.00,
-          valor_total: 500.00,
+          cnpj: '12.345.678/0001-90',
+          fornecedor: fornecedores[0]?.razao_social || 'FORNECEDOR EXEMPLO LTDA',
+          filial: filiais[0]?.filial || 'FILIAL EXEMPLO',
+          almoxarifado: '001',
+          data_emissao: dataExemplo,
+          data_saida: dataExemplo,
+          valor_produtos: 1000.00,
+          valor_frete: 50.00,
           valor_desconto: 0.00,
           valor_ipi: 0.00,
-          aliquota_ipi: 0.00,
           valor_icms: 0.00,
-          aliquota_icms: 0.00,
-          valor_pis: 0.00,
-          aliquota_pis: 0.00,
-          valor_cofins: 0.00,
-          aliquota_cofins: 0.00
+          natureza_operacao: 'COMPRA',
+          cfop: '5102',
+          observacoes: 'Nota fiscal de exemplo',
+          numero_item: 2,
+          nome_unidade_medida: 'Produto Exemplo 2 - UN',
+          quantidade: 5,
+          valor_unitario: 100.00,
+          valor_total_item: 500.00,
+          valor_desconto_item: 0.00
         }
       ];
 
-      exemploItens.forEach(item => {
-        worksheetItens.addRow(item);
+      exemploLinhas.forEach(linha => {
+        worksheet.addRow(linha);
       });
 
       // Configurar resposta
@@ -216,174 +173,179 @@ class NotaFiscalImportController {
       const workbook = new ExcelJS.Workbook();
       await workbook.xlsx.load(req.file.buffer);
       
-      // Ler aba de Notas Fiscais
-      const worksheetNF = workbook.getWorksheet('Notas Fiscais');
-      if (!worksheetNF) {
+      // Ler única aba
+      const worksheet = workbook.getWorksheet('Notas Fiscais');
+      if (!worksheet) {
         return errorResponse(res, 'Aba "Notas Fiscais" não encontrada na planilha', 400);
       }
 
-      // Ler aba de Itens
-      const worksheetItens = workbook.getWorksheet('Itens');
-      if (!worksheetItens) {
-        return errorResponse(res, 'Aba "Itens" não encontrada na planilha', 400);
-      }
-
-      const notasFiscais = [];
+      const notasFiscaisMap = {}; // Agrupar por chave da nota (numero_nota + serie)
       const erros = [];
-      let linhaNF = 2; // Começar da linha 2 (pular cabeçalho)
+      let linhaAtual = 2; // Começar da linha 2 (pular cabeçalho)
 
-      // Processar cada linha da aba de Notas Fiscais
-      worksheetNF.eachRow((row, rowNumber) => {
+      // Processar cada linha da planilha
+      worksheet.eachRow((row, rowNumber) => {
         if (rowNumber === 1) return; // Pular cabeçalho
 
         const valores = row.values;
         if (!valores || valores.length < 10) return;
 
-        const notaFiscal = {
-          tipo_nota: valores[1]?.toString().trim() || 'ENTRADA',
-          numero_nota: valores[2]?.toString().trim(),
-          serie: valores[3]?.toString().trim() || '',
-          chave_acesso: valores[4]?.toString().trim() || null,
-          fornecedor: valores[5]?.toString().trim(),
-          filial: valores[6]?.toString().trim(),
-          almoxarifado: valores[7]?.toString().trim(),
-          data_emissao: valores[8]?.toString().trim(),
-          data_saida: valores[9]?.toString().trim(),
-          valor_produtos: parseFloat(valores[10]) || 0.00,
-          valor_frete: parseFloat(valores[11]) || 0.00,
-          valor_desconto: parseFloat(valores[12]) || 0.00,
-          valor_ipi: parseFloat(valores[13]) || 0.00,
-          valor_icms: parseFloat(valores[14]) || 0.00,
-          natureza_operacao: valores[15]?.toString().trim() || null,
-          cfop: valores[16]?.toString().trim() || null,
-          observacoes: valores[17]?.toString().trim() || null
-        };
+        // Dados da Nota Fiscal (colunas 1-17)
+        const tipo_nota = valores[1]?.toString().trim() || 'ENTRADA';
+        const numero_nota = valores[2]?.toString().trim();
+        const serie = valores[3]?.toString().trim() || '';
+        const cnpj = valores[4]?.toString().trim() || null;
+        const fornecedor = valores[5]?.toString().trim();
+        const filial = valores[6]?.toString().trim();
+        const almoxarifado = valores[7]?.toString().trim();
+        const data_emissao = valores[8]?.toString().trim();
+        const data_saida = valores[9]?.toString().trim();
+        const valor_produtos = parseFloat(valores[10]) || 0.00;
+        const valor_frete = parseFloat(valores[11]) || 0.00;
+        const valor_desconto = parseFloat(valores[12]) || 0.00;
+        const valor_ipi = parseFloat(valores[13]) || 0.00;
+        const valor_icms = parseFloat(valores[14]) || 0.00;
+        const natureza_operacao = valores[15]?.toString().trim() || null;
+        const cfop = valores[16]?.toString().trim() || null;
+        const observacoes = valores[17]?.toString().trim() || null;
 
-        // Validações básicas
-        if (!notaFiscal.numero_nota) {
-          erros.push(`Linha ${linhaNF}: Número da nota é obrigatório`);
-          linhaNF++;
+        // Dados do Item (colunas 18-23)
+        const numero_item = parseInt(valores[18]) || 0;
+        const nome_unidade_medida = valores[19]?.toString().trim() || '';
+        const quantidade = parseFloat(valores[20]) || 0;
+        const valor_unitario = parseFloat(valores[21]) || 0.00;
+        const valor_total_item = parseFloat(valores[22]) || 0.00;
+        const valor_desconto_item = parseFloat(valores[23]) || 0.00;
+
+        // Validações básicas da nota fiscal (apenas na primeira linha de cada nota)
+        const chaveNota = `${numero_nota}_${serie}`;
+        
+        if (!notasFiscaisMap[chaveNota]) {
+          // Primeira vez que encontramos esta nota, validar dados da nota
+          if (!numero_nota) {
+            erros.push(`Linha ${linhaAtual}: Número da nota é obrigatório`);
+            linhaAtual++;
+            return;
+          }
+
+          if (!fornecedor) {
+            erros.push(`Linha ${linhaAtual}: Fornecedor é obrigatório`);
+            linhaAtual++;
+            return;
+          }
+
+          if (!filial) {
+            erros.push(`Linha ${linhaAtual}: Filial é obrigatória`);
+            linhaAtual++;
+            return;
+          }
+
+          if (!almoxarifado) {
+            erros.push(`Linha ${linhaAtual}: Almoxarifado é obrigatório`);
+            linhaAtual++;
+            return;
+          }
+
+          if (!data_emissao) {
+            erros.push(`Linha ${linhaAtual}: Data de emissão é obrigatória`);
+            linhaAtual++;
+            return;
+          }
+
+          if (!data_saida) {
+            erros.push(`Linha ${linhaAtual}: Data de saída é obrigatória`);
+            linhaAtual++;
+            return;
+          }
+
+          // Validar formato da data
+          const dataRegex = /^\d{4}-\d{2}-\d{2}$/;
+          if (!dataRegex.test(data_emissao)) {
+            erros.push(`Linha ${linhaAtual}: Data de emissão deve estar no formato YYYY-MM-DD`);
+            linhaAtual++;
+            return;
+          }
+
+          if (!dataRegex.test(data_saida)) {
+            erros.push(`Linha ${linhaAtual}: Data de saída deve estar no formato YYYY-MM-DD`);
+            linhaAtual++;
+            return;
+          }
+
+          // Criar objeto da nota fiscal
+          notasFiscaisMap[chaveNota] = {
+            tipo_nota,
+            numero_nota,
+            serie,
+            cnpj,
+            fornecedor,
+            filial,
+            almoxarifado,
+            data_emissao,
+            data_saida,
+            valor_produtos,
+            valor_frete,
+            valor_desconto,
+            valor_ipi,
+            valor_icms,
+            natureza_operacao,
+            cfop,
+            observacoes,
+            itens: []
+          };
+        }
+
+        // Validações do item
+        if (!nome_unidade_medida) {
+          erros.push(`Linha ${linhaAtual}: NomeUnidade de Medida é obrigatório`);
+          linhaAtual++;
           return;
         }
 
-        if (!notaFiscal.fornecedor) {
-          erros.push(`Linha ${linhaNF}: Fornecedor é obrigatório`);
-          linhaNF++;
+        if (quantidade <= 0) {
+          erros.push(`Linha ${linhaAtual}: Quantidade deve ser maior que zero`);
+          linhaAtual++;
           return;
         }
 
-        if (!notaFiscal.filial) {
-          erros.push(`Linha ${linhaNF}: Filial é obrigatória`);
-          linhaNF++;
+        if (valor_unitario < 0) {
+          erros.push(`Linha ${linhaAtual}: Valor unitário não pode ser negativo`);
+          linhaAtual++;
           return;
         }
 
-        if (!notaFiscal.almoxarifado) {
-          erros.push(`Linha ${linhaNF}: Almoxarifado é obrigatório`);
-          linhaNF++;
-          return;
-        }
+        // Processar a coluna combinada "NomeUnidade de Medida"
+        const partes = nome_unidade_medida.split(' - ');
+        const descricao = partes[0] || nome_unidade_medida;
+        const unidade_comercial = partes[1] || null;
 
-        if (!notaFiscal.data_emissao) {
-          erros.push(`Linha ${linhaNF}: Data de emissão é obrigatória`);
-          linhaNF++;
-          return;
-        }
+        // Adicionar item à nota fiscal
+        notasFiscaisMap[chaveNota].itens.push({
+          numero_item,
+          codigo_produto: '',
+          descricao,
+          ncm: null,
+          cfop: null,
+          unidade_comercial,
+          quantidade,
+          valor_unitario,
+          valor_total: valor_total_item,
+          valor_desconto: valor_desconto_item,
+          valor_ipi: 0.00,
+          aliquota_ipi: 0.00,
+          valor_icms: 0.00,
+          aliquota_icms: 0.00,
+          valor_pis: 0.00,
+          aliquota_pis: 0.00,
+          valor_cofins: 0.00,
+          aliquota_cofins: 0.00
+        });
 
-        if (!notaFiscal.data_saida) {
-          erros.push(`Linha ${linhaNF}: Data de saída é obrigatória`);
-          linhaNF++;
-          return;
-        }
-
-        // Validar formato da data
-        const dataRegex = /^\d{4}-\d{2}-\d{2}$/;
-        if (!dataRegex.test(notaFiscal.data_emissao)) {
-          erros.push(`Linha ${linhaNF}: Data de emissão deve estar no formato YYYY-MM-DD`);
-          linhaNF++;
-          return;
-        }
-
-        if (!dataRegex.test(notaFiscal.data_saida)) {
-          erros.push(`Linha ${linhaNF}: Data de saída deve estar no formato YYYY-MM-DD`);
-          linhaNF++;
-          return;
-        }
-
-        notasFiscais.push(notaFiscal);
-        linhaNF++;
+        linhaAtual++;
       });
 
-      // Processar itens
-      const itensPorNota = {};
-      let linhaItem = 2;
-
-      worksheetItens.eachRow((row, rowNumber) => {
-        if (rowNumber === 1) return; // Pular cabeçalho
-
-        const valores = row.values;
-        if (!valores || valores.length < 10) return;
-
-        const numeroNota = valores[1]?.toString().trim();
-        const serie = valores[2]?.toString().trim() || '';
-
-        if (!numeroNota) {
-          erros.push(`Linha ${linhaItem} (Itens): Número da nota é obrigatório`);
-          linhaItem++;
-          return;
-        }
-
-        const chaveNota = `${numeroNota}_${serie}`;
-
-        if (!itensPorNota[chaveNota]) {
-          itensPorNota[chaveNota] = [];
-        }
-
-        const item = {
-          numero_nota: numeroNota,
-          serie: serie,
-          numero_item: parseInt(valores[3]) || 0,
-          codigo_produto: valores[4]?.toString().trim() || '',
-          descricao: valores[5]?.toString().trim() || '',
-          ncm: valores[6]?.toString().trim() || null,
-          cfop: valores[7]?.toString().trim() || null,
-          unidade_comercial: valores[8]?.toString().trim() || null,
-          quantidade: parseFloat(valores[9]) || 0,
-          valor_unitario: parseFloat(valores[10]) || 0.00,
-          valor_total: parseFloat(valores[11]) || 0.00,
-          valor_desconto: parseFloat(valores[12]) || 0.00,
-          valor_ipi: parseFloat(valores[13]) || 0.00,
-          aliquota_ipi: parseFloat(valores[14]) || 0.00,
-          valor_icms: parseFloat(valores[15]) || 0.00,
-          aliquota_icms: parseFloat(valores[16]) || 0.00,
-          valor_pis: parseFloat(valores[17]) || 0.00,
-          aliquota_pis: parseFloat(valores[18]) || 0.00,
-          valor_cofins: parseFloat(valores[19]) || 0.00,
-          aliquota_cofins: parseFloat(valores[20]) || 0.00
-        };
-
-        // Validações básicas do item
-        if (!item.descricao) {
-          erros.push(`Linha ${linhaItem} (Itens): Descrição do produto é obrigatória`);
-          linhaItem++;
-          return;
-        }
-
-        if (item.quantidade <= 0) {
-          erros.push(`Linha ${linhaItem} (Itens): Quantidade deve ser maior que zero`);
-          linhaItem++;
-          return;
-        }
-
-        if (item.valor_unitario < 0) {
-          erros.push(`Linha ${linhaItem} (Itens): Valor unitário não pode ser negativo`);
-          linhaItem++;
-          return;
-        }
-
-        itensPorNota[chaveNota].push(item);
-        linhaItem++;
-      });
+      // Converter map em array
+      const notasFiscais = Object.values(notasFiscaisMap);
 
       if (erros.length > 0) {
         return errorResponse(res, 'Erros de validação encontrados', 400, { erros });
@@ -472,7 +434,7 @@ class NotaFiscalImportController {
           const usuarioId = req.user?.id || null;
 
           // Verificar se há itens para esta nota antes de processar
-          const itens = itensPorNota[chaveNota] || [];
+          const itens = notaFiscal.itens || [];
           
           if (itens.length === 0) {
             erros.push(`Nota ${notaFiscal.numero_nota}: A nota fiscal deve ter pelo menos um item`);
@@ -485,10 +447,24 @@ class NotaFiscalImportController {
             // Atualizar nota fiscal existente
             notaFiscalId = existentes[0].id;
             
+            // Buscar fornecedor por CNPJ se fornecido, caso contrário usar razao_social
+            let fornecedorIdFinal = fornecedorId;
+            if (notaFiscal.cnpj) {
+              const fornecedorCnpjQuery = `
+                SELECT id FROM fornecedores 
+                WHERE cnpj = ? AND status = 1
+                LIMIT 1
+              `;
+              const fornecedoresCnpj = await executeQuery(fornecedorCnpjQuery, [notaFiscal.cnpj.replace(/[^\d]/g, '')]);
+              if (fornecedoresCnpj.length > 0) {
+                fornecedorIdFinal = fornecedoresCnpj[0].id;
+              }
+            }
+
             const updateQuery = `
               UPDATE notas_fiscais SET
                 tipo_nota = ?,
-                chave_acesso = ?,
+                fornecedor_id = ?,
                 filial_id = ?,
                 almoxarifado_id = ?,
                 data_emissao = ?,
@@ -510,7 +486,7 @@ class NotaFiscalImportController {
 
             await executeQuery(updateQuery, [
               notaFiscal.tipo_nota,
-              notaFiscal.chave_acesso,
+              fornecedorIdFinal,
               filialId,
               almoxarifadoId,
               dataEmissaoMySQL,
@@ -533,22 +509,35 @@ class NotaFiscalImportController {
             
             atualizados++;
           } else {
+            // Buscar fornecedor por CNPJ se fornecido, caso contrário usar razao_social
+            let fornecedorIdFinal = fornecedorId;
+            if (notaFiscal.cnpj) {
+              const fornecedorCnpjQuery = `
+                SELECT id FROM fornecedores 
+                WHERE cnpj = ? AND status = 1
+                LIMIT 1
+              `;
+              const fornecedoresCnpj = await executeQuery(fornecedorCnpjQuery, [notaFiscal.cnpj.replace(/[^\d]/g, '')]);
+              if (fornecedoresCnpj.length > 0) {
+                fornecedorIdFinal = fornecedoresCnpj[0].id;
+              }
+            }
+
             // Inserir nova nota fiscal
             const insertQuery = `
               INSERT INTO notas_fiscais (
-                tipo_nota, numero_nota, serie, chave_acesso, fornecedor_id, filial_id, almoxarifado_id,
+                tipo_nota, numero_nota, serie, fornecedor_id, filial_id, almoxarifado_id,
                 data_emissao, data_saida, data_lancamento, valor_produtos, valor_frete,
                 valor_desconto, valor_ipi, valor_icms, valor_total, natureza_operacao, cfop,
                 observacoes, status, usuario_cadastro_id
-              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'LANCADA', ?)
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'LANCADA', ?)
             `;
 
             const resultado = await executeQuery(insertQuery, [
               notaFiscal.tipo_nota,
               notaFiscal.numero_nota,
               notaFiscal.serie || '',
-              notaFiscal.chave_acesso,
-              fornecedorId,
+              fornecedorIdFinal,
               filialId,
               almoxarifadoId,
               dataEmissaoMySQL,

@@ -2,6 +2,7 @@ const AlmoxarifadoListController = require('./AlmoxarifadoListController');
 const AlmoxarifadoCRUDController = require('./AlmoxarifadoCRUDController');
 const AlmoxarifadoSearchController = require('./AlmoxarifadoSearchController');
 const AlmoxarifadoStatsController = require('./AlmoxarifadoStatsController');
+const AlmoxarifadoExportController = require('./AlmoxarifadoExportController');
 
 module.exports = {
   listarAlmoxarifados: AlmoxarifadoListController.listarAlmoxarifados,
@@ -16,5 +17,7 @@ module.exports = {
   buscarAlmoxarifadosPorFilial: AlmoxarifadoSearchController.buscarAlmoxarifadosPorFilial,
   buscarAlmoxarifadosPorCentroCusto: AlmoxarifadoSearchController.buscarAlmoxarifadosPorCentroCusto,
   buscarEstatisticas: AlmoxarifadoStatsController.buscarEstatisticas,
+  exportarXLSX: AlmoxarifadoExportController.exportarXLSX,
+  exportarPDF: AlmoxarifadoExportController.exportarPDF,
 };
 
