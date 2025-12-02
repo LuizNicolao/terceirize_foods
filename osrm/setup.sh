@@ -21,15 +21,26 @@ fi
 
 cd ..
 
-echo "⚙️ Processando dados (isso pode demorar 10-30 minutos)..."
-echo "   Passo 1/3: Extraindo dados..."
-docker run -t -v "$(pwd)/data:/data" osrm/osrm-backend osrm-extract -p /opt/car.lua /data/brazil-latest.osm.pbf
+echo "⚙️ Processando dados (isso pode demorar 30-60 minutos para o Brasil inteiro)..."
+echo "   ⚠️  ATENÇÃO: Este processo requer pelo menos 6GB de RAM disponível"
+echo "   📊 Memória disponível: $(free -h | grep Mem | awk '{print $7}')"
+echo ""
+echo "   Passo 1/3: Extraindo dados (pode demorar 20-40 minutos)..."
+echo "   💡 Este é o passo mais demorado e que mais consome memória"
+docker run --rm -t --memory="6g" --memory-swap="6g" -v "$(pwd)/data:/data" osrm/osrm-backend osrm-extract -p /opt/car.lua /data/brazil-latest.osm.pbf
 
+if [ ! -f "data/brazil-latest.osrm" ]; then
+    echo "❌ Erro: Arquivo .osrm não foi gerado. Verifique os logs acima."
+    exit 1
+fi
+
+echo "   ✅ Extração concluída!"
+echo ""
 echo "   Passo 2/3: Particionando..."
-docker run -t -v "$(pwd)/data:/data" osrm/osrm-backend osrm-partition /data/brazil-latest.osrm
+docker run --rm -t --memory="4g" --memory-swap="4g" -v "$(pwd)/data:/data" osrm/osrm-backend osrm-partition /data/brazil-latest.osrm
 
 echo "   Passo 3/3: Customizando..."
-docker run -t -v "$(pwd)/data:/data" osrm/osrm-backend osrm-customize /data/brazil-latest.osrm
+docker run --rm -t --memory="4g" --memory-swap="4g" -v "$(pwd)/data:/data" osrm/osrm-backend osrm-customize /data/brazil-latest.osrm
 
 echo "✅ Processamento concluído!"
 
