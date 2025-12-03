@@ -21,6 +21,31 @@ class FichaHomologacaoCRUDController {
    * Criar nova ficha de homologação
    */
   static criarFichaHomologacao = asyncHandler(async (req, res) => {
+    // Logs para debug
+    console.log('=== INÍCIO CRIAÇÃO FICHA HOMOLOGAÇÃO ===');
+    console.log('Timestamp:', new Date().toISOString());
+    console.log('User-Agent:', req.get('User-Agent') || 'N/A');
+    console.log('Content-Type:', req.get('Content-Type') || 'N/A');
+    console.log('IP:', req.ip || req.connection.remoteAddress || 'N/A');
+    console.log('req.body keys:', Object.keys(req.body || {}));
+    console.log('req.files:', req.files ? Object.keys(req.files) : 'Nenhum arquivo');
+    
+    if (req.files) {
+      Object.keys(req.files).forEach(field => {
+        const files = req.files[field];
+        if (Array.isArray(files) && files.length > 0) {
+          files.forEach((file, index) => {
+            console.log(`Arquivo ${field}[${index}]:`, {
+              originalname: file.originalname,
+              mimetype: file.mimetype,
+              size: file.size,
+              path: file.path
+            });
+          });
+        }
+      });
+    }
+
     const {
       produto_generico_id,
       tipo,
@@ -58,6 +83,17 @@ class FichaHomologacaoCRUDController {
       pdf_avaliacao_antiga,
       status
     } = req.body;
+
+    console.log('Dados parseados do body:', {
+      produto_generico_id,
+      tipo,
+      data_analise,
+      marca,
+      fornecedor_id,
+      avaliador_id,
+      unidade_medida_id,
+      status
+    });
 
     // Verificar se nome genérico existe (se fornecido)
     if (produto_generico_id) {
@@ -113,12 +149,14 @@ class FichaHomologacaoCRUDController {
     let fotoProdutoCozidoPath = null;
     let pdfAvaliacaoAntigaPath = null;
 
+    console.log('Processando arquivos...');
     if (req.files) {
       // Processar foto_embalagem
       if (req.files.foto_embalagem && req.files.foto_embalagem[0]) {
         const file = req.files.foto_embalagem[0];
         const foodsRoot = path.join(__dirname, '../..');
         fotoEmbalagemPath = path.relative(foodsRoot, file.path).replace(/\\/g, '/');
+        console.log('Foto embalagem processada:', fotoEmbalagemPath);
       }
 
       // Processar foto_produto_cru
@@ -126,6 +164,7 @@ class FichaHomologacaoCRUDController {
         const file = req.files.foto_produto_cru[0];
         const foodsRoot = path.join(__dirname, '../..');
         fotoProdutoCruPath = path.relative(foodsRoot, file.path).replace(/\\/g, '/');
+        console.log('Foto produto cru processada:', fotoProdutoCruPath);
       }
 
       // Processar foto_produto_cozido
@@ -133,6 +172,7 @@ class FichaHomologacaoCRUDController {
         const file = req.files.foto_produto_cozido[0];
         const foodsRoot = path.join(__dirname, '../..');
         fotoProdutoCozidoPath = path.relative(foodsRoot, file.path).replace(/\\/g, '/');
+        console.log('Foto produto cozido processada:', fotoProdutoCozidoPath);
       }
 
       // Processar pdf_avaliacao_antiga
@@ -140,7 +180,10 @@ class FichaHomologacaoCRUDController {
         const file = req.files.pdf_avaliacao_antiga[0];
         const foodsRoot = path.join(__dirname, '../..');
         pdfAvaliacaoAntigaPath = path.relative(foodsRoot, file.path).replace(/\\/g, '/');
+        console.log('PDF avaliação antiga processado:', pdfAvaliacaoAntigaPath);
       }
+    } else {
+      console.log('Nenhum arquivo em req.files');
     }
 
     // Se não houver arquivos no upload mas houver no body (edição mantendo arquivos existentes)
@@ -158,21 +201,47 @@ class FichaHomologacaoCRUDController {
       pdfAvaliacaoAntigaPath = pdf_avaliacao_antiga;
     }
 
+    // Preparar valores para INSERT
+    const insertValues = [
+      produto_generico_id, tipo, data_analise, marca, fabricante, fornecedor_id,
+      composicao, fabricacao, lote, validade, unidade_medida_id,
+      peso, peso_valor || null, peso_cru, peso_cru_valor || null, peso_cozido, peso_cozido_valor || null, fator_coccao, fator_coccao_valor || null, cor, cor_observacao || null, odor, odor_observacao || null, sabor, sabor_observacao || null, aparencia, aparencia_observacao || null,
+      conclusao, resultado_final || null, avaliador_id, fotoEmbalagemPath, fotoProdutoCruPath, fotoProdutoCozidoPath, pdfAvaliacaoAntigaPath, status || 'ativo'
+    ];
+
+    console.log('Valores para INSERT:', {
+      produto_generico_id: insertValues[0],
+      tipo: insertValues[1],
+      data_analise: insertValues[2],
+      marca: insertValues[3],
+      fornecedor_id: insertValues[5],
+      avaliador_id: insertValues[30],
+      foto_embalagem: insertValues[31],
+      foto_produto_cru: insertValues[32],
+      foto_produto_cozido: insertValues[33],
+      pdf_avaliacao_antiga: insertValues[34]
+    });
+
     // Inserir nova ficha de homologação
-    const result = await executeQuery(
-      `INSERT INTO ficha_homologacao (
-        produto_generico_id, tipo, data_analise, marca, fabricante, fornecedor_id,
-        composicao, fabricacao, lote, validade, unidade_medida_id,
-        peso, peso_valor, peso_cru, peso_cru_valor, peso_cozido, peso_cozido_valor, fator_coccao, fator_coccao_valor, cor, cor_observacao, odor, odor_observacao, sabor, sabor_observacao, aparencia, aparencia_observacao,
-        conclusao, resultado_final, avaliador_id, foto_embalagem, foto_produto_cru, foto_produto_cozido, pdf_avaliacao_antiga, status
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        produto_generico_id, tipo, data_analise, marca, fabricante, fornecedor_id,
-        composicao, fabricacao, lote, validade, unidade_medida_id,
-        peso, peso_valor || null, peso_cru, peso_cru_valor || null, peso_cozido, peso_cozido_valor || null, fator_coccao, fator_coccao_valor || null, cor, cor_observacao || null, odor, odor_observacao || null, sabor, sabor_observacao || null, aparencia, aparencia_observacao || null,
-        conclusao, resultado_final || null, avaliador_id, fotoEmbalagemPath, fotoProdutoCruPath, fotoProdutoCozidoPath, pdfAvaliacaoAntigaPath, status || 'ativo'
-      ]
-    );
+    let result;
+    try {
+      result = await executeQuery(
+        `INSERT INTO ficha_homologacao (
+          produto_generico_id, tipo, data_analise, marca, fabricante, fornecedor_id,
+          composicao, fabricacao, lote, validade, unidade_medida_id,
+          peso, peso_valor, peso_cru, peso_cru_valor, peso_cozido, peso_cozido_valor, fator_coccao, fator_coccao_valor, cor, cor_observacao, odor, odor_observacao, sabor, sabor_observacao, aparencia, aparencia_observacao,
+          conclusao, resultado_final, avaliador_id, foto_embalagem, foto_produto_cru, foto_produto_cozido, pdf_avaliacao_antiga, status
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        insertValues
+      );
+      console.log('INSERT executado com sucesso. ID inserido:', result.insertId);
+    } catch (error) {
+      console.error('ERRO no INSERT:', error);
+      console.error('Código do erro:', error.code);
+      console.error('Mensagem do erro:', error.message);
+      console.error('SQL State:', error.sqlState);
+      throw error;
+    }
 
     // Buscar ficha de homologação criada
     const fichaHomologacaoCriada = await executeQuery(
@@ -195,6 +264,9 @@ class FichaHomologacaoCRUDController {
       [result.insertId]
     );
 
+    console.log('Ficha criada com sucesso. ID:', fichaHomologacaoCriada[0]?.id);
+    console.log('=== FIM CRIAÇÃO FICHA HOMOLOGAÇÃO ===');
+    
     successResponse(res, fichaHomologacaoCriada[0], 'Ficha de homologação criada com sucesso');
   });
 
