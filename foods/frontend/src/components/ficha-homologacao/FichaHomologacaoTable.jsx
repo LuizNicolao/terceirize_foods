@@ -117,7 +117,7 @@ const FichaHomologacaoTable = ({
                   </td>
                   <td className="px-3 py-2 whitespace-nowrap">
                     <div className="text-sm text-gray-900">
-                      {ficha.marca_nome || '-'}
+                      {ficha.marca || '-'}
                     </div>
                   </td>
                   <td className="px-3 py-2">
@@ -192,7 +192,7 @@ const FichaHomologacaoTable = ({
                 <span className="font-medium">Data:</span> {formatDate ? formatDate(ficha.data_analise) : (ficha.data_analise || '-')}
               </div>
               <div>
-                <span className="font-medium">Marca:</span> {ficha.marca_nome || '-'}
+                <span className="font-medium">Marca:</span> {ficha.marca || '-'}
               </div>
               <div>
                 <span className="font-medium">Fornecedor:</span> {ficha.fornecedor_nome || '-'}

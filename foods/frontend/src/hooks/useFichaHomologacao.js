@@ -105,13 +105,13 @@ export const useFichaHomologacao = () => {
       await baseEntity.onSubmit(data);
     } else {
       // Se for objeto JSON, fazer a limpeza normal
-      const cleanData = {
-        ...data,
-        composicao: data.composicao && data.composicao.trim() !== '' ? data.composicao.trim() : null,
-        conclusao: data.conclusao && data.conclusao.trim() !== '' ? data.conclusao.trim() : null
-      };
-      
-      await baseEntity.onSubmit(cleanData);
+    const cleanData = {
+      ...data,
+      composicao: data.composicao && data.composicao.trim() !== '' ? data.composicao.trim() : null,
+      conclusao: data.conclusao && data.conclusao.trim() !== '' ? data.conclusao.trim() : null
+    };
+    
+    await baseEntity.onSubmit(cleanData);
     }
   }, [baseEntity]);
 
