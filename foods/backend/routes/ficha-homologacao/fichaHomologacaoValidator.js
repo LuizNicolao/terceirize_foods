@@ -16,7 +16,8 @@ const cleanEmptyFields = (req, res, next) => {
     'produto_generico_id', 'fornecedor_id', 'unidade_medida_id',
     'avaliador_id', 'composicao', 'fabricante', 'lote', 'foto_embalagem',
     'foto_produto_cru', 'foto_produto_cozido', 'conclusao', 'resultado_final', 'pdf_avaliacao_antiga',
-    'peso_cru_valor', 'peso_cozido_valor', 'fator_coccao_valor'
+    'peso_valor', 'peso_cru_valor', 'peso_cozido_valor', 'fator_coccao_valor',
+    'cor_observacao', 'odor_observacao', 'sabor_observacao', 'aparencia_observacao'
   ];
   
   fieldsToClean.forEach(field => {
@@ -33,32 +34,59 @@ const cleanEmptyFields = (req, res, next) => {
     req.body.fabricante = req.body.fabricante.toUpperCase().trim();
   }
 
-  // Converter campos numéricos
-  if (req.body.produto_generico_id && req.body.produto_generico_id !== '') {
-    req.body.produto_generico_id = parseInt(req.body.produto_generico_id);
+  // Converter campos numéricos apenas se ainda forem strings (parseFormData já converteu se necessário)
+  if (req.body.produto_generico_id && typeof req.body.produto_generico_id === 'string' && req.body.produto_generico_id !== '') {
+    const numValue = parseInt(req.body.produto_generico_id, 10);
+    if (!isNaN(numValue)) {
+      req.body.produto_generico_id = numValue;
+    }
   }
 
-  if (req.body.fornecedor_id && req.body.fornecedor_id !== '') {
-    req.body.fornecedor_id = parseInt(req.body.fornecedor_id);
+  if (req.body.fornecedor_id && typeof req.body.fornecedor_id === 'string' && req.body.fornecedor_id !== '') {
+    const numValue = parseInt(req.body.fornecedor_id, 10);
+    if (!isNaN(numValue)) {
+      req.body.fornecedor_id = numValue;
+    }
   }
 
-  if (req.body.unidade_medida_id && req.body.unidade_medida_id !== '') {
-    req.body.unidade_medida_id = parseInt(req.body.unidade_medida_id);
+  if (req.body.unidade_medida_id && typeof req.body.unidade_medida_id === 'string' && req.body.unidade_medida_id !== '') {
+    const numValue = parseInt(req.body.unidade_medida_id, 10);
+    if (!isNaN(numValue)) {
+      req.body.unidade_medida_id = numValue;
+    }
   }
 
-  if (req.body.avaliador_id && req.body.avaliador_id !== '') {
-    req.body.avaliador_id = parseInt(req.body.avaliador_id);
+  if (req.body.avaliador_id && typeof req.body.avaliador_id === 'string' && req.body.avaliador_id !== '') {
+    const numValue = parseInt(req.body.avaliador_id, 10);
+    if (!isNaN(numValue)) {
+      req.body.avaliador_id = numValue;
+    }
   }
 
-  // Converter campos decimais
-  if (req.body.peso_cru_valor && req.body.peso_cru_valor !== '') {
-    req.body.peso_cru_valor = parseFloat(req.body.peso_cru_valor);
+  // Converter campos decimais apenas se ainda forem strings
+  if (req.body.peso_valor && typeof req.body.peso_valor === 'string' && req.body.peso_valor !== '' && req.body.peso_valor !== 'null') {
+    const numValue = parseFloat(req.body.peso_valor);
+    if (!isNaN(numValue)) {
+      req.body.peso_valor = numValue;
+    }
   }
-  if (req.body.peso_cozido_valor && req.body.peso_cozido_valor !== '') {
-    req.body.peso_cozido_valor = parseFloat(req.body.peso_cozido_valor);
+  if (req.body.peso_cru_valor && typeof req.body.peso_cru_valor === 'string' && req.body.peso_cru_valor !== '') {
+    const numValue = parseFloat(req.body.peso_cru_valor);
+    if (!isNaN(numValue)) {
+      req.body.peso_cru_valor = numValue;
+    }
   }
-  if (req.body.fator_coccao_valor && req.body.fator_coccao_valor !== '') {
-    req.body.fator_coccao_valor = parseFloat(req.body.fator_coccao_valor);
+  if (req.body.peso_cozido_valor && typeof req.body.peso_cozido_valor === 'string' && req.body.peso_cozido_valor !== '') {
+    const numValue = parseFloat(req.body.peso_cozido_valor);
+    if (!isNaN(numValue)) {
+      req.body.peso_cozido_valor = numValue;
+    }
+  }
+  if (req.body.fator_coccao_valor && typeof req.body.fator_coccao_valor === 'string' && req.body.fator_coccao_valor !== '') {
+    const numValue = parseFloat(req.body.fator_coccao_valor);
+    if (!isNaN(numValue)) {
+      req.body.fator_coccao_valor = numValue;
+    }
   }
 
   next();
@@ -110,7 +138,8 @@ const fichaHomologacaoValidations = {
       .isISO8601()
       .withMessage('Data de análise deve ser uma data válida'),
     body('produto_generico_id')
-      .optional()
+      .notEmpty()
+      .withMessage('Nome genérico é obrigatório')
       .isInt({ min: 1 })
       .withMessage('Nome genérico ID deve ser um número inteiro positivo'),
     body('marca')
@@ -120,7 +149,8 @@ const fichaHomologacaoValidations = {
       .isLength({ max: 200 })
       .withMessage('Marca deve ter no máximo 200 caracteres'),
     body('fornecedor_id')
-      .optional()
+      .notEmpty()
+      .withMessage('Fornecedor é obrigatório')
       .isInt({ min: 1 })
       .withMessage('Fornecedor ID deve ser um número inteiro positivo'),
     body('unidade_medida_id')
@@ -128,20 +158,24 @@ const fichaHomologacaoValidations = {
       .isInt({ min: 1 })
       .withMessage('Unidade de medida ID deve ser um número inteiro positivo'),
     body('avaliador_id')
-      .optional()
+      .notEmpty()
+      .withMessage('Avaliador é obrigatório')
       .isInt({ min: 1 })
       .withMessage('Avaliador ID deve ser um número inteiro positivo'),
     body('fabricante')
-      .optional()
+      .notEmpty()
+      .withMessage('Fabricante é obrigatório')
       .isString()
-      .isLength({ max: 100 })
-      .withMessage('Fabricante deve ter no máximo 100 caracteres'),
+      .isLength({ max: 200 })
+      .withMessage('Fabricante deve ter no máximo 200 caracteres'),
     body('composicao')
-      .optional()
+      .notEmpty()
+      .withMessage('Composição é obrigatória')
       .isString()
       .withMessage('Composição deve ser uma string'),
     body('lote')
-      .optional()
+      .notEmpty()
+      .withMessage('Lote é obrigatório')
       .isString()
       .isLength({ max: 50 })
       .withMessage('Lote deve ter no máximo 50 caracteres'),
@@ -179,6 +213,10 @@ const fichaHomologacaoValidations = {
       .optional()
       .isIn(['BOM', 'REGULAR', 'RUIM'])
       .withMessage('Peso deve ser BOM, REGULAR ou RUIM'),
+    body('peso_valor')
+      .optional()
+      .isFloat({ min: 0 })
+      .withMessage('Peso (valor) deve ser um número positivo'),
     body('peso_cru')
       .optional()
       .isIn(['BOM', 'REGULAR', 'RUIM'])
@@ -219,6 +257,26 @@ const fichaHomologacaoValidations = {
       .optional()
       .isIn(['BOM', 'REGULAR', 'RUIM'])
       .withMessage('Aparência deve ser BOM, REGULAR ou RUIM'),
+    body('cor_observacao')
+      .optional()
+      .isString()
+      .isLength({ max: 100 })
+      .withMessage('Observação de cor deve ter no máximo 100 caracteres'),
+    body('odor_observacao')
+      .optional()
+      .isString()
+      .isLength({ max: 100 })
+      .withMessage('Observação de odor deve ter no máximo 100 caracteres'),
+    body('sabor_observacao')
+      .optional()
+      .isString()
+      .isLength({ max: 100 })
+      .withMessage('Observação de sabor deve ter no máximo 100 caracteres'),
+    body('aparencia_observacao')
+      .optional()
+      .isString()
+      .isLength({ max: 100 })
+      .withMessage('Observação de aparência deve ter no máximo 100 caracteres'),
     body('conclusao')
       .notEmpty()
       .withMessage('Conclusão é obrigatória')
@@ -256,25 +314,42 @@ const fichaHomologacaoValidations = {
       .withMessage('Data de análise deve ser uma data válida'),
     body('produto_generico_id')
       .optional()
-      .isInt({ min: 1 })
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') return true;
+        const numValue = typeof value === 'number' ? value : parseInt(value, 10);
+        return !isNaN(numValue) && numValue > 0;
+      })
       .withMessage('Nome genérico ID deve ser um número inteiro positivo'),
     body('marca')
-      .notEmpty()
-      .withMessage('Marca é obrigatória')
-      .isString()
-      .isLength({ max: 200 })
-      .withMessage('Marca deve ter no máximo 200 caracteres'),
+      .optional()
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') return true;
+        return typeof value === 'string' && value.trim().length > 0 && value.length <= 200;
+      })
+      .withMessage('Marca é obrigatória e deve ter no máximo 200 caracteres'),
     body('fornecedor_id')
       .optional()
-      .isInt({ min: 1 })
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') return true;
+        const numValue = typeof value === 'number' ? value : parseInt(value, 10);
+        return !isNaN(numValue) && numValue > 0;
+      })
       .withMessage('Fornecedor ID deve ser um número inteiro positivo'),
     body('unidade_medida_id')
       .optional()
-      .isInt({ min: 1 })
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') return true;
+        const numValue = typeof value === 'number' ? value : parseInt(value, 10);
+        return !isNaN(numValue) && numValue > 0;
+      })
       .withMessage('Unidade de medida ID deve ser um número inteiro positivo'),
     body('avaliador_id')
       .optional()
-      .isInt({ min: 1 })
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') return true;
+        const numValue = typeof value === 'number' ? value : parseInt(value, 10);
+        return !isNaN(numValue) && numValue > 0;
+      })
       .withMessage('Avaliador ID deve ser um número inteiro positivo'),
     body('fabricante')
       .optional()
@@ -283,7 +358,10 @@ const fichaHomologacaoValidations = {
       .withMessage('Fabricante deve ter no máximo 100 caracteres'),
     body('composicao')
       .optional()
-      .isString()
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') return true;
+        return typeof value === 'string';
+      })
       .withMessage('Composição deve ser uma string'),
     body('lote')
       .optional()
@@ -324,6 +402,10 @@ const fichaHomologacaoValidations = {
       .optional()
       .isIn(['BOM', 'REGULAR', 'RUIM'])
       .withMessage('Peso deve ser BOM, REGULAR ou RUIM'),
+    body('peso_valor')
+      .optional()
+      .isFloat({ min: 0 })
+      .withMessage('Peso (valor) deve ser um número positivo'),
     body('peso_cru')
       .optional()
       .isIn(['BOM', 'REGULAR', 'RUIM'])
@@ -364,14 +446,41 @@ const fichaHomologacaoValidations = {
       .optional()
       .isIn(['BOM', 'REGULAR', 'RUIM'])
       .withMessage('Aparência deve ser BOM, REGULAR ou RUIM'),
-    body('conclusao')
+    body('cor_observacao')
       .optional()
       .isString()
+      .isLength({ max: 100 })
+      .withMessage('Observação de cor deve ter no máximo 100 caracteres'),
+    body('odor_observacao')
+      .optional()
+      .isString()
+      .isLength({ max: 100 })
+      .withMessage('Observação de odor deve ter no máximo 100 caracteres'),
+    body('sabor_observacao')
+      .optional()
+      .isString()
+      .isLength({ max: 100 })
+      .withMessage('Observação de sabor deve ter no máximo 100 caracteres'),
+    body('aparencia_observacao')
+      .optional()
+      .isString()
+      .isLength({ max: 100 })
+      .withMessage('Observação de aparência deve ter no máximo 100 caracteres'),
+    body('conclusao')
+      .optional()
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') return true;
+        return typeof value === 'string';
+      })
       .withMessage('Conclusão deve ser uma string'),
     body('resultado_final')
       .optional()
       .isIn(['APROVADO', 'APROVADO_COM_RESSALVAS', 'REPROVADO'])
-      .withMessage('Resultado final deve ser APROVADO, APROVADO_COM_RESSALVAS ou REPROVADO'),
+      .withMessage('Resultado final deve ser APROVADO, APROVADO_COM_RESSALVAS ou REPROVADO')
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') return true;
+        return ['APROVADO', 'APROVADO_COM_RESSALVAS', 'REPROVADO'].includes(value);
+      }),
     body('status')
       .optional()
       .isIn(['ativo', 'inativo'])

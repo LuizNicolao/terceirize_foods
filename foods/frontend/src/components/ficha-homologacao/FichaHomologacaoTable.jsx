@@ -6,9 +6,11 @@ const FichaHomologacaoTable = ({
   canView,
   canEdit,
   canDelete,
+  canPrint,
   onView,
   onEdit,
   onDelete,
+  onPrint,
   getStatusLabel,
   getStatusColor,
   getTipoLabel,
@@ -141,9 +143,12 @@ const FichaHomologacaoTable = ({
                       canView={canView}
                       canEdit={canEdit}
                       canDelete={canDelete}
+                      canPrint={canPrint}
                       onView={() => onView(ficha.id)}
                       onEdit={() => onEdit(ficha.id)}
                       onDelete={() => onDelete(ficha.id)}
+                      onPrint={onPrint ? () => onPrint(ficha.id) : undefined}
+                      item={ficha.id}
                     />
                   </td>
                 </tr>
@@ -174,9 +179,12 @@ const FichaHomologacaoTable = ({
                 canView={canView}
                 canEdit={canEdit}
                 canDelete={canDelete}
+                canPrint={canPrint}
                 onView={() => onView(ficha.id)}
                 onEdit={() => onEdit(ficha.id)}
                 onDelete={() => onDelete(ficha.id)}
+                onPrint={onPrint ? () => onPrint(ficha.id) : undefined}
+                item={ficha.id}
               />
             </div>
             <div className="grid grid-cols-2 gap-2 text-xs text-gray-600 mt-2">

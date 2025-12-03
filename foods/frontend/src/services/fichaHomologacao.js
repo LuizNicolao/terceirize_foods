@@ -79,7 +79,12 @@ class FichaHomologacaoService {
 
   async criar(data) {
     try {
-      const response = await api.post('/ficha-homologacao', data);
+      // Se for FormData, NÃO definir Content-Type manualmente
+      // O navegador precisa definir automaticamente com o boundary correto
+      const isFormData = data instanceof FormData;
+      const config = isFormData ? {} : {};
+
+      const response = await api.post('/ficha-homologacao', data, config);
       
       // Extrair dados da estrutura HATEOAS
       let fichaHomologacao = null;
@@ -113,7 +118,12 @@ class FichaHomologacaoService {
 
   async atualizar(id, data) {
     try {
-      const response = await api.put(`/ficha-homologacao/${id}`, data);
+      // Se for FormData, NÃO definir Content-Type manualmente
+      // O navegador precisa definir automaticamente com o boundary correto
+      const isFormData = data instanceof FormData;
+      const config = isFormData ? {} : {};
+
+      const response = await api.put(`/ficha-homologacao/${id}`, data, config);
       
       // Extrair dados da estrutura HATEOAS
       let fichaHomologacao = null;
@@ -233,6 +243,20 @@ class FichaHomologacaoService {
     }
   }
 
+  async gerarPDF(id, templateId = null) {
+    try {
+      const params = templateId ? { template_id: templateId } : {};
+      const response = await api.get(`/ficha-homologacao/${id}/pdf`, {
+        params,
+        responseType: 'blob'
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao gerar PDF:', error);
+      throw error;
+    }
+  }
+
   // Métodos auxiliares para carregar dados relacionados
   async getNomeGenericos() {
     try {
@@ -307,6 +331,17 @@ class FichaHomologacaoService {
         error: error.response?.data?.message || 'Erro ao carregar usuários'
       };
     }
+  }
+
+  /**
+   * Obter URL para download/exibição de arquivo
+   * @param {number} id - ID da ficha de homologação
+   * @param {string} tipo - Tipo de arquivo: foto_embalagem, foto_produto_cru, foto_produto_cozido, pdf_avaliacao_antiga
+   * @returns {string} URL do arquivo
+   */
+  getArquivoUrl(id, tipo) {
+    const baseURL = api.defaults.baseURL;
+    return `${baseURL}/ficha-homologacao/${id}/download/${tipo}`;
   }
 }
 

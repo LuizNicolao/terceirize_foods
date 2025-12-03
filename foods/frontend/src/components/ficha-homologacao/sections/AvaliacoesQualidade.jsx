@@ -8,7 +8,9 @@ const avaliacaoOptions = ['BOM', 'REGULAR', 'RUIM'];
 const AvaliacoesQualidade = ({
   register,
   errors,
-  viewMode
+  viewMode,
+  watch,
+  setValue
 }) => {
   return (
     <FormSection
@@ -33,7 +35,7 @@ const AvaliacoesQualidade = ({
                 Ruim
               </th>
               <th className="text-center py-2 px-3 text-xs font-semibold text-gray-700 min-w-[120px]">
-                Valor (kg)
+                Valor (kg) / Observação
               </th>
             </tr>
           </thead>
@@ -54,7 +56,21 @@ const AvaliacoesQualidade = ({
                   />
                 </td>
               ))}
-              <td className="py-2 px-3"></td>
+              <td className="py-2 px-3">
+                <Input
+                  type="text"
+                  value={watch('peso_valor') ? (() => {
+                    const valor = parseFloat(watch('peso_valor'));
+                    // Se for número inteiro, mostrar sem decimais; caso contrário, mostrar até 3 casas decimais sem zeros à direita
+                    return valor % 1 === 0 ? valor.toString() : valor.toFixed(3).replace(/\.?0+$/, '');
+                  })() : ''}
+                  disabled={true}
+                  readOnly={true}
+                  placeholder="Preenchido automaticamente"
+                  className="w-full text-sm py-1 px-2 bg-gray-100"
+                />
+                <input type="hidden" {...register('peso_valor')} />
+              </td>
             </tr>
             {errors.peso && (
               <tr>
@@ -164,9 +180,10 @@ const AvaliacoesQualidade = ({
                     min: { value: 0, message: 'Fator de cocção deve ser positivo' }
                   })}
                   error={errors.fator_coccao_valor?.message}
-                  disabled={viewMode}
-                  placeholder="0.000"
-                  className="w-full text-sm py-1 px-2"
+                  disabled={true}
+                  readOnly={true}
+                  placeholder="Calculado automaticamente"
+                  className="w-full text-sm py-1 px-2 bg-gray-100"
                 />
               </td>
             </tr>
@@ -194,7 +211,18 @@ const AvaliacoesQualidade = ({
                   />
                 </td>
               ))}
-              <td className="py-2 px-3"></td>
+              <td className="py-2 px-3">
+                <Input
+                  type="text"
+                  {...register('cor_observacao', { 
+                    maxLength: { value: 100, message: 'Observação deve ter no máximo 100 caracteres' }
+                  })}
+                  error={errors.cor_observacao?.message}
+                  disabled={viewMode}
+                  placeholder="Observação breve"
+                  className="w-full text-sm py-1 px-2"
+                />
+              </td>
             </tr>
             {errors.cor && (
               <tr>
@@ -220,7 +248,18 @@ const AvaliacoesQualidade = ({
                   />
                 </td>
               ))}
-              <td className="py-2 px-3"></td>
+              <td className="py-2 px-3">
+                <Input
+                  type="text"
+                  {...register('odor_observacao', { 
+                    maxLength: { value: 100, message: 'Observação deve ter no máximo 100 caracteres' }
+                  })}
+                  error={errors.odor_observacao?.message}
+                  disabled={viewMode}
+                  placeholder="Observação breve"
+                  className="w-full text-sm py-1 px-2"
+                />
+              </td>
             </tr>
             {errors.odor && (
               <tr>
@@ -246,7 +285,18 @@ const AvaliacoesQualidade = ({
                   />
                 </td>
               ))}
-              <td className="py-2 px-3"></td>
+              <td className="py-2 px-3">
+                <Input
+                  type="text"
+                  {...register('sabor_observacao', { 
+                    maxLength: { value: 100, message: 'Observação deve ter no máximo 100 caracteres' }
+                  })}
+                  error={errors.sabor_observacao?.message}
+                  disabled={viewMode}
+                  placeholder="Observação breve"
+                  className="w-full text-sm py-1 px-2"
+                />
+              </td>
             </tr>
             {errors.sabor && (
               <tr>
@@ -272,7 +322,18 @@ const AvaliacoesQualidade = ({
                   />
                 </td>
               ))}
-              <td className="py-2 px-3"></td>
+              <td className="py-2 px-3">
+                <Input
+                  type="text"
+                  {...register('aparencia_observacao', { 
+                    maxLength: { value: 100, message: 'Observação deve ter no máximo 100 caracteres' }
+                  })}
+                  error={errors.aparencia_observacao?.message}
+                  disabled={viewMode}
+                  placeholder="Observação breve"
+                  className="w-full text-sm py-1 px-2"
+                />
+              </td>
             </tr>
             {errors.aparencia && (
               <tr>

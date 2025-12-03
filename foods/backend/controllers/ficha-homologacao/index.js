@@ -8,6 +8,8 @@ const FichaHomologacaoCRUDController = require('./FichaHomologacaoCRUDController
 const FichaHomologacaoSearchController = require('./FichaHomologacaoSearchController');
 const FichaHomologacaoStatsController = require('./FichaHomologacaoStatsController');
 const FichaHomologacaoExportController = require('./FichaHomologacaoExportController');
+const FichaHomologacaoPDFController = require('./FichaHomologacaoPDFController');
+const FichaHomologacaoDownloadController = require('./FichaHomologacaoDownloadController');
 
 const FichaHomologacaoController = {
   // Operações de Listagem
@@ -32,7 +34,13 @@ const FichaHomologacaoController = {
 
   // Operações de Exportação
   exportarXLSX: FichaHomologacaoExportController.exportarXLSX,
-  exportarPDF: FichaHomologacaoExportController.exportarPDF
+  exportarPDF: FichaHomologacaoExportController.exportarPDF,
+
+  // Operações de PDF
+  gerarPDF: FichaHomologacaoPDFController.gerarPDF,
+
+  // Operações de Download
+  downloadArquivo: FichaHomologacaoDownloadController.downloadArquivo
 };
 
 module.exports = FichaHomologacaoController;

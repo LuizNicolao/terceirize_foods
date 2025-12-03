@@ -7,6 +7,7 @@ import { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import fichaHomologacaoService from '../services/fichaHomologacao';
 import api from '../services/api';
+import PdfTemplatesService from '../services/pdfTemplatesService';
 import { useBaseEntity } from './common/useBaseEntity';
 import useTableSort from './common/useTableSort';
 
@@ -60,6 +61,12 @@ export const useFichaHomologacao = () => {
     reavaliacoes: 0
   });
 
+  // Estados para impressão
+  const [loadingPrint, setLoadingPrint] = useState(false);
+  const [showTemplateSelectModal, setShowTemplateSelectModal] = useState(false);
+  const [templatesDisponiveis, setTemplatesDisponiveis] = useState([]);
+  const [pendingPrintIds, setPendingPrintIds] = useState([]);
+
   /**
    * Carrega dados auxiliares
    */
@@ -90,13 +97,22 @@ export const useFichaHomologacao = () => {
    * Submissão customizada
    */
   const onSubmit = useCallback(async (data) => {
-    const cleanData = {
-      ...data,
-      composicao: data.composicao && data.composicao.trim() !== '' ? data.composicao.trim() : null,
-      conclusao: data.conclusao && data.conclusao.trim() !== '' ? data.conclusao.trim() : null
-    };
-    
-    await baseEntity.onSubmit(cleanData);
+    // Se for FormData, não fazer spread (isso converteria para objeto)
+    if (data instanceof FormData) {
+      // Para FormData, apenas limpar os campos de texto se necessário
+      // Mas não podemos modificar FormData diretamente, então passamos como está
+      // O backend vai processar os campos de texto corretamente
+      await baseEntity.onSubmit(data);
+    } else {
+      // Se for objeto JSON, fazer a limpeza normal
+      const cleanData = {
+        ...data,
+        composicao: data.composicao && data.composicao.trim() !== '' ? data.composicao.trim() : null,
+        conclusao: data.conclusao && data.conclusao.trim() !== '' ? data.conclusao.trim() : null
+      };
+      
+      await baseEntity.onSubmit(cleanData);
+    }
   }, [baseEntity]);
 
   /**
@@ -215,6 +231,86 @@ export const useFichaHomologacao = () => {
     return colors[avaliacao] || 'gray';
   }, []);
 
+  /**
+   * Buscar templates e decidir se mostra modal ou imprime direto
+   */
+  const buscarTemplatesEImprimir = useCallback(async (ids) => {
+    try {
+      // Buscar templates disponíveis para fichas de homologação
+      const templatesResponse = await PdfTemplatesService.listarTemplatesPorTela('ficha-homologacao');
+      
+      if (templatesResponse.success && templatesResponse.data && templatesResponse.data.length > 0) {
+        // Se houver múltiplos templates, mostrar modal de seleção
+        if (templatesResponse.data.length > 1) {
+          setTemplatesDisponiveis(templatesResponse.data);
+          setPendingPrintIds(ids);
+          setShowTemplateSelectModal(true);
+        } else {
+          // Se houver apenas um template, usar ele automaticamente
+          const templateId = templatesResponse.data[0].id;
+          await imprimirComTemplate(ids, templateId);
+        }
+      } else {
+        // Se não houver templates, usar geração padrão (sem template_id)
+        await imprimirComTemplate(ids, null);
+      }
+    } catch (error) {
+      console.error('Erro ao buscar templates:', error);
+      // Em caso de erro, usar geração padrão
+      await imprimirComTemplate(ids, null);
+    }
+  }, []);
+
+  /**
+   * Imprimir usando template específico
+   */
+  const imprimirComTemplate = useCallback(async (ids, templateId) => {
+    setLoadingPrint(true);
+    try {
+      // Gerar PDF para cada ficha selecionada
+      for (const id of ids) {
+        const response = await fichaHomologacaoService.gerarPDF(id, templateId);
+        if (response) {
+          // Abrir PDF em nova aba
+          const blob = new Blob([response], { type: 'application/pdf' });
+          const url = window.URL.createObjectURL(blob);
+          window.open(url, '_blank');
+          window.URL.revokeObjectURL(url);
+        }
+      }
+      toast.success(`${ids.length} ficha(s) de homologação impressa(s) com sucesso!`);
+    } catch (error) {
+      console.error('Erro ao imprimir fichas de homologação:', error);
+      toast.error('Erro ao gerar PDF das fichas de homologação');
+    } finally {
+      setLoadingPrint(false);
+    }
+  }, []);
+
+  /**
+   * Imprimir uma ficha individual
+   */
+  const handleImprimir = useCallback(async (id) => {
+    await buscarTemplatesEImprimir([id]);
+  }, [buscarTemplatesEImprimir]);
+
+  /**
+   * Selecionar template no modal
+   */
+  const handleSelecionarTemplate = useCallback(async (templateId) => {
+    setShowTemplateSelectModal(false);
+    await imprimirComTemplate(pendingPrintIds, templateId);
+    setPendingPrintIds([]);
+  }, [pendingPrintIds, imprimirComTemplate]);
+
+  /**
+   * Fechar modal de seleção de template
+   */
+  const handleCloseTemplateModal = useCallback(() => {
+    setShowTemplateSelectModal(false);
+    setPendingPrintIds([]);
+  }, []);
+
   return {
     // Dados
     fichasHomologacao: fichasHomologacaoOrdenadas || baseEntity.items,
@@ -279,7 +375,15 @@ export const useFichaHomologacao = () => {
     // Ordenação
     sortField,
     sortDirection,
-    handleSort
+    handleSort,
+
+    // Impressão
+    handleImprimir,
+    loadingPrint,
+    showTemplateSelectModal,
+    templatesDisponiveis,
+    handleSelecionarTemplate,
+    handleCloseTemplateModal
   };
 };
 

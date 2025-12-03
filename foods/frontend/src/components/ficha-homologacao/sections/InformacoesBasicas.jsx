@@ -10,10 +10,12 @@ const InformacoesBasicas = ({
   setValue,
   errors,
   nomeGenericos,
+  usuarios,
   user,
   viewMode,
   tipoSelecionado,
-  fichaHomologacao
+  fichaHomologacao,
+  onFileChange
 }) => {
   return (
     <FormSection
@@ -68,15 +70,18 @@ const InformacoesBasicas = ({
           </div>
 
           <div>
-            <Input
-              label="Avaliador"
-              type="text"
-              value={watch('avaliador_nome') || user?.nome || ''}
-              disabled={true}
-              readOnly={true}
-              className="bg-gray-100"
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Avaliador <span className="text-red-500">*</span>
+            </label>
+            <SearchableSelect
+              value={watch('avaliador_id') || ''}
+              onChange={(value) => setValue('avaliador_id', value, { shouldValidate: true })}
+              options={usuarios?.map(u => ({ value: u.id, label: u.nome || u.email })) || []}
+              disabled={viewMode}
+              placeholder="Selecione o avaliador"
+              error={errors.avaliador_id?.message}
             />
-            <input type="hidden" {...register('avaliador_id')} />
+            {errors.avaliador_id && <p className="text-red-500 text-xs mt-1">{errors.avaliador_id.message}</p>}
           </div>
 
           {/* Campo de PDF da Avaliação Antiga - apenas para Reavaliação */}

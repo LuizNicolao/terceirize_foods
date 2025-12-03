@@ -9,6 +9,8 @@ const { fichaHomologacaoValidations, commonValidations } = require('./fichaHomol
 const { paginationMiddleware } = require('../../middleware/pagination');
 const { hateoasMiddleware } = require('../../middleware/hateoas');
 const { auditMiddleware, AUDIT_ACTIONS } = require('../../utils/audit');
+const { uploadFichaHomologacao, handleUploadError } = require('../../middleware/uploadFichaHomologacao');
+const parseFormData = require('../../middleware/parseFormData');
 const FichaHomologacaoController = require('../../controllers/ficha-homologacao');
 
 const router = express.Router();
@@ -26,6 +28,20 @@ router.get('/',
   FichaHomologacaoController.listarFichasHomologacao
 );
 
+// GET /api/ficha-homologacao/:id/pdf - Gerar PDF da ficha (deve vir antes de /:id)
+router.get('/:id/pdf',
+  checkPermission('visualizar'),
+  commonValidations.id,
+  FichaHomologacaoController.gerarPDF
+);
+
+// GET /api/ficha-homologacao/:id/download/:tipo - Download de arquivo (deve vir antes de /:id)
+router.get('/:id/download/:tipo',
+  checkPermission('visualizar'),
+  commonValidations.id,
+  FichaHomologacaoController.downloadArquivo
+);
+
 // GET /api/ficha-homologacao/:id - Buscar ficha de homologação por ID
 router.get('/:id', 
   checkPermission('visualizar'),
@@ -36,6 +52,9 @@ router.get('/:id',
 // POST /api/ficha-homologacao - Criar nova ficha de homologação
 router.post('/', 
   checkPermission('criar'),
+  uploadFichaHomologacao,
+  handleUploadError,
+  parseFormData,
   auditMiddleware(AUDIT_ACTIONS.CREATE, 'ficha_homologacao'),
   fichaHomologacaoValidations.create,
   FichaHomologacaoController.criarFichaHomologacao
@@ -44,6 +63,9 @@ router.post('/',
 // PUT /api/ficha-homologacao/:id - Atualizar ficha de homologação
 router.put('/:id', 
   checkPermission('editar'),
+  uploadFichaHomologacao,
+  handleUploadError,
+  parseFormData,
   auditMiddleware(AUDIT_ACTIONS.UPDATE, 'ficha_homologacao'),
   fichaHomologacaoValidations.update,
   FichaHomologacaoController.atualizarFichaHomologacao

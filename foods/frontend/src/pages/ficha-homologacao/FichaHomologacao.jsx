@@ -15,6 +15,7 @@ import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
 import { FichaHomologacaoModal, FichaHomologacaoTable, FichaHomologacaoStats } from '../../components/ficha-homologacao';
 import { AuditModal, ExportButtons } from '../../components/shared';
+import TemplateSelectModal from '../../components/solicitacoes-compras/TemplateSelectModal';
 
 const FichaHomologacao = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
@@ -70,7 +71,12 @@ const FichaHomologacao = () => {
     getAvaliacaoColor,
     sortField,
     sortDirection,
-    handleSort
+    handleSort,
+    handleImprimir,
+    showTemplateSelectModal,
+    templatesDisponiveis,
+    handleSelecionarTemplate,
+    handleCloseTemplateModal
   } = useFichaHomologacao();
 
   const {
@@ -195,9 +201,11 @@ const FichaHomologacao = () => {
         canView={canView('ficha_homologacao')}
         canEdit={canEdit('ficha_homologacao')}
         canDelete={canDelete('ficha_homologacao')}
+        canPrint={canView('ficha_homologacao')}
         onView={handleViewFichaHomologacao}
         onEdit={handleEditFichaHomologacao}
         onDelete={handleDeleteFichaHomologacao}
+        onPrint={canView('ficha_homologacao') ? handleImprimir : null}
         getStatusLabel={getStatusLabel}
         getStatusColor={getStatusColor}
         getTipoLabel={getTipoLabel}
@@ -229,13 +237,15 @@ const FichaHomologacao = () => {
             usuarios={usuarios}
         onSubmit={onSubmit}
         viewMode={viewMode}
+        onPrint={canView('ficha_homologacao') ? handleImprimir : null}
       />
 
       {/* Modal de Validação */}
       <ValidationErrorModal
         isOpen={showValidationModal}
         onClose={handleCloseValidationModal}
-        errors={validationErrors}
+        errors={validationErrors?.errors || (Array.isArray(validationErrors) ? validationErrors : [])}
+        errorCategories={validationErrors?.errorCategories}
       />
 
       {/* Modal de Confirmação de Exclusão */}
@@ -259,6 +269,15 @@ const FichaHomologacao = () => {
         onExportPDF={handleExportAuditPDF}
         setFilters={setAuditFilters}
         entityName="ficha_homologacao"
+      />
+
+      {/* Modal de Seleção de Template */}
+      <TemplateSelectModal
+        isOpen={showTemplateSelectModal}
+        onClose={handleCloseTemplateModal}
+        templates={templatesDisponiveis}
+        onSelect={handleSelecionarTemplate}
+        title="Selecione o Template para Impressão"
       />
     </div>
   );

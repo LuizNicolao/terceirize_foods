@@ -24,6 +24,18 @@ api.interceptors.request.use(
     }
     // Sempre enviar cookies
     config.withCredentials = true;
+    
+    // Se for FormData, garantir que o Content-Type não seja definido manualmente
+    // O navegador precisa definir automaticamente com o boundary correto
+    if (config.data instanceof FormData) {
+      // Remover Content-Type se foi definido manualmente
+      delete config.headers['Content-Type'];
+      delete config.headers['content-type'];
+      
+      // O axios automaticamente não serializa FormData, mas garantimos aqui
+      config.transformRequest = [];
+    }
+    
     return config;
   },
   (error) => {

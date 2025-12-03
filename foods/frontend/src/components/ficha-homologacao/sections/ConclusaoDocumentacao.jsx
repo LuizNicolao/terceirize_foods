@@ -1,6 +1,69 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaFileAlt, FaCamera } from 'react-icons/fa';
 import FormSection from './FormSection';
+import fichaHomologacaoService from '../../../services/fichaHomologacao';
+import api from '../../../services/api';
+
+// Componente para carregar imagem autenticada
+const AuthenticatedImage = ({ id, tipo, alt, className }) => {
+  const [imageUrl, setImageUrl] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    const loadImage = async () => {
+      try {
+        setLoading(true);
+        const url = fichaHomologacaoService.getArquivoUrl(id, tipo);
+        
+        // Fazer requisição com autenticação
+        const response = await api.get(url, {
+          responseType: 'blob'
+        });
+        
+        // Criar blob URL a partir da resposta
+        const blob = new Blob([response.data]);
+        const blobUrl = URL.createObjectURL(blob);
+        setImageUrl(blobUrl);
+        setError(false);
+      } catch (err) {
+        console.error('Erro ao carregar imagem:', err);
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id && tipo) {
+      loadImage();
+    }
+
+    // Limpar blob URL quando componente desmontar
+    return () => {
+      if (imageUrl) {
+        URL.revokeObjectURL(imageUrl);
+      }
+    };
+  }, [id, tipo]);
+
+  if (loading) {
+    return (
+      <div className={`${className} flex items-center justify-center bg-gray-100`}>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+      </div>
+    );
+  }
+
+  if (error || !imageUrl) {
+    return (
+      <div className={`${className} flex items-center justify-center bg-gray-100 text-gray-400`}>
+        <span className="text-xs">Imagem não disponível</span>
+      </div>
+    );
+  }
+
+  return <img src={imageUrl} alt={alt} className={className} />;
+};
 
 const ConclusaoDocumentacao = ({
   register,
@@ -29,8 +92,15 @@ const ConclusaoDocumentacao = ({
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
             />
             {errors.foto_embalagem && <p className="text-red-500 text-xs mt-1">{errors.foto_embalagem.message}</p>}
-            {fichaHomologacao?.foto_embalagem && (
-              <p className="text-xs text-gray-500 mt-1">Arquivo atual: {fichaHomologacao.foto_embalagem}</p>
+            {fichaHomologacao?.foto_embalagem && fichaHomologacao?.id && (
+              <div className="mt-2">
+                <AuthenticatedImage
+                  id={fichaHomologacao.id}
+                  tipo="foto_embalagem"
+                  alt="Foto da embalagem"
+                  className="w-full h-32 object-cover rounded-md border border-gray-300"
+                />
+              </div>
             )}
           </div>
 
@@ -46,8 +116,15 @@ const ConclusaoDocumentacao = ({
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
             />
             {errors.foto_produto_cru && <p className="text-red-500 text-xs mt-1">{errors.foto_produto_cru.message}</p>}
-            {fichaHomologacao?.foto_produto_cru && (
-              <p className="text-xs text-gray-500 mt-1">Arquivo atual: {fichaHomologacao.foto_produto_cru}</p>
+            {fichaHomologacao?.foto_produto_cru && fichaHomologacao?.id && (
+              <div className="mt-2">
+                <AuthenticatedImage
+                  id={fichaHomologacao.id}
+                  tipo="foto_produto_cru"
+                  alt="Foto do produto cru"
+                  className="w-full h-32 object-cover rounded-md border border-gray-300"
+                />
+              </div>
             )}
           </div>
 
@@ -63,8 +140,15 @@ const ConclusaoDocumentacao = ({
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
             />
             {errors.foto_produto_cozido && <p className="text-red-500 text-xs mt-1">{errors.foto_produto_cozido.message}</p>}
-            {fichaHomologacao?.foto_produto_cozido && (
-              <p className="text-xs text-gray-500 mt-1">Arquivo atual: {fichaHomologacao.foto_produto_cozido}</p>
+            {fichaHomologacao?.foto_produto_cozido && fichaHomologacao?.id && (
+              <div className="mt-2">
+                <AuthenticatedImage
+                  id={fichaHomologacao.id}
+                  tipo="foto_produto_cozido"
+                  alt="Foto do produto cozido"
+                  className="w-full h-32 object-cover rounded-md border border-gray-300"
+                />
+              </div>
             )}
           </div>
         </div>
