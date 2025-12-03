@@ -221,14 +221,31 @@ class FichaHomologacaoPDFController {
       ? `${ficha.nome_generico_codigo} - ${ficha.nome_generico_nome}`
       : (ficha.nome_generico_nome || '-');
     
-    // Linha com colspan para nome genérico
+    const unidadeMedidaText = ficha.unidade_medida_sigla || ficha.unidade_medida_nome || '-';
+    
+    // Linha com Nome Genérico e Unidade de Medida lado a lado (usando 5 colunas)
+    const colWidth5 = tableAWidth / 5;
     doc.moveTo(leftMargin, tableAY + 36).lineTo(leftMargin + tableAWidth, tableAY + 36).stroke();
-    doc.rect(leftMargin, tableAY + 36, colWidthA, 18).fillColor('#f5f5f5').fill().fillColor('black');
+    
+    // Nome Genérico - Label
+    doc.rect(leftMargin, tableAY + 36, colWidth5, 18).fillColor('#f5f5f5').fill().fillColor('black');
     doc.fontSize(fontSize).font('Helvetica-Bold');
-    doc.text('Nome Genérico do Produto', leftMargin + cellPadding, tableAY + 42, { width: colWidthA - (cellPadding * 2) });
-    doc.rect(leftMargin + colWidthA, tableAY + 36, colWidthA * 3, 18).fillColor('#ffffff').fill().fillColor('black');
+    doc.text('Nome Genérico', leftMargin + cellPadding, tableAY + 42, { width: colWidth5 - (cellPadding * 2) });
+    
+    // Nome Genérico - Valor (2 colunas)
+    doc.rect(leftMargin + colWidth5, tableAY + 36, colWidth5 * 2, 18).fillColor('#ffffff').fill().fillColor('black');
     doc.font('Helvetica');
-    doc.text(nomeGenericoText, leftMargin + colWidthA + cellPadding, tableAY + 42, { width: (colWidthA * 3) - (cellPadding * 2) });
+    doc.text(nomeGenericoText, leftMargin + colWidth5 + cellPadding, tableAY + 42, { width: (colWidth5 * 2) - (cellPadding * 2) });
+    
+    // Unidade de Medida - Label
+    doc.rect(leftMargin + (colWidth5 * 3), tableAY + 36, colWidth5, 18).fillColor('#f5f5f5').fill().fillColor('black');
+    doc.font('Helvetica-Bold');
+    doc.text('Unidade', leftMargin + (colWidth5 * 3) + cellPadding, tableAY + 42, { width: colWidth5 - (cellPadding * 2) });
+    
+    // Unidade de Medida - Valor
+    doc.rect(leftMargin + (colWidth5 * 4), tableAY + 36, colWidth5, 18).fillColor('#ffffff').fill().fillColor('black');
+    doc.font('Helvetica');
+    doc.text(unidadeMedidaText, leftMargin + (colWidth5 * 4) + cellPadding, tableAY + 42, { width: colWidth5 - (cellPadding * 2) });
     doc.moveTo(leftMargin, tableAY + 54).lineTo(leftMargin + tableAWidth, tableAY + 54).stroke();
 
     // PDF da Avaliação Antiga (se for reavaliação)
@@ -272,10 +289,7 @@ class FichaHomologacaoPDFController {
     const tableBY = doc.y;
     
     drawTableRow(tableBY, 'Marca', ficha.marca, 'Fabricante', ficha.fabricante);
-    drawTableRow(tableBY + 18, 'Fornecedor', ficha.fornecedor_nome || ficha.fornecedor_nome_fantasia, 'Unidade de Medida', 
-      ficha.unidade_medida_sigla && ficha.unidade_medida_nome
-        ? `${ficha.unidade_medida_sigla} - ${ficha.unidade_medida_nome}`
-        : (ficha.unidade_medida_sigla || ficha.unidade_medida_nome || '-'));
+    drawTableRow(tableBY + 18, 'Fornecedor', ficha.fornecedor_nome || ficha.fornecedor_nome_fantasia, '', '');
     
     // Composição (colspan)
     doc.moveTo(leftMargin, tableBY + 36).lineTo(leftMargin + tableAWidth, tableBY + 36).stroke();
@@ -288,31 +302,35 @@ class FichaHomologacaoPDFController {
     doc.text(composicaoText.substring(0, 100) + (composicaoText.length > 100 ? '...' : ''), leftMargin + colWidthA + cellPadding, tableBY + 42, { width: (colWidthA * 3) - (cellPadding * 2) });
     doc.moveTo(leftMargin, tableBY + 54).lineTo(leftMargin + tableAWidth, tableBY + 54).stroke();
     
-    // Lote, Fabricação, Validade (3 colunas)
+    // Lote, Fabricação, Validade (3 colunas na mesma linha)
     const colWidth3 = tableAWidth / 3;
     doc.moveTo(leftMargin, tableBY + 54).lineTo(leftMargin + tableAWidth, tableBY + 54).stroke();
+    
+    // Lote
     doc.rect(leftMargin, tableBY + 54, colWidth3, 18).fillColor('#f5f5f5').fill().fillColor('black');
     doc.fontSize(fontSize).font('Helvetica-Bold');
     doc.text('Lote', leftMargin + cellPadding, tableBY + 60, { width: colWidth3 - (cellPadding * 2) });
-    doc.rect(leftMargin + colWidth3, tableBY + 54, colWidth3, 18).fillColor('#ffffff').fill().fillColor('black');
-    doc.font('Helvetica');
-    doc.text(ficha.lote || '-', leftMargin + colWidth3 + cellPadding, tableBY + 60, { width: colWidth3 - (cellPadding * 2) });
-    
-    doc.rect(leftMargin + (colWidth3 * 2), tableBY + 54, colWidth3, 18).fillColor('#f5f5f5').fill().fillColor('black');
-    doc.font('Helvetica-Bold');
-    doc.text('Data de Fabricação', leftMargin + (colWidth3 * 2) + cellPadding, tableBY + 60, { width: colWidth3 - (cellPadding * 2) });
-    doc.moveTo(leftMargin, tableBY + 72).lineTo(leftMargin + tableAWidth, tableBY + 72).stroke();
-    
     doc.rect(leftMargin, tableBY + 72, colWidth3, 18).fillColor('#ffffff').fill().fillColor('black');
     doc.font('Helvetica');
-    doc.text(formatDate(ficha.fabricacao), leftMargin + cellPadding, tableBY + 78, { width: colWidth3 - (cellPadding * 2) });
+    doc.text(ficha.lote || '-', leftMargin + cellPadding, tableBY + 78, { width: colWidth3 - (cellPadding * 2) });
     
-    doc.rect(leftMargin + colWidth3, tableBY + 72, colWidth3, 18).fillColor('#f5f5f5').fill().fillColor('black');
+    // Data de Fabricação
+    doc.rect(leftMargin + colWidth3, tableBY + 54, colWidth3, 18).fillColor('#f5f5f5').fill().fillColor('black');
     doc.font('Helvetica-Bold');
-    doc.text('Data de Validade', leftMargin + colWidth3 + cellPadding, tableBY + 78, { width: colWidth3 - (cellPadding * 2) });
+    doc.text('Data de Fabricação', leftMargin + colWidth3 + cellPadding, tableBY + 60, { width: colWidth3 - (cellPadding * 2) });
+    doc.rect(leftMargin + colWidth3, tableBY + 72, colWidth3, 18).fillColor('#ffffff').fill().fillColor('black');
+    doc.font('Helvetica');
+    doc.text(formatDate(ficha.fabricacao), leftMargin + colWidth3 + cellPadding, tableBY + 78, { width: colWidth3 - (cellPadding * 2) });
+    
+    // Data de Validade
+    doc.rect(leftMargin + (colWidth3 * 2), tableBY + 54, colWidth3, 18).fillColor('#f5f5f5').fill().fillColor('black');
+    doc.font('Helvetica-Bold');
+    doc.text('Data de Validade', leftMargin + (colWidth3 * 2) + cellPadding, tableBY + 60, { width: colWidth3 - (cellPadding * 2) });
     doc.rect(leftMargin + (colWidth3 * 2), tableBY + 72, colWidth3, 18).fillColor('#ffffff').fill().fillColor('black');
     doc.font('Helvetica');
     doc.text(formatDate(ficha.validade), leftMargin + (colWidth3 * 2) + cellPadding, tableBY + 78, { width: colWidth3 - (cellPadding * 2) });
+    
+    doc.moveTo(leftMargin, tableBY + 72).lineTo(leftMargin + tableAWidth, tableBY + 72).stroke();
     doc.moveTo(leftMargin, tableBY + 90).lineTo(leftMargin + tableAWidth, tableBY + 90).stroke();
 
     doc.y = tableBY + 108;
@@ -434,19 +452,26 @@ class FichaHomologacaoPDFController {
       doc.fontSize(fontSize).font('Helvetica');
       doc.text(avaliacao.criterio, leftMargin + cellPadding, rowY + 6, { width: colWidthsC.criterio - (cellPadding * 2) });
 
-      // Marcar avaliação (Bom/Regular/Ruim) com X
+      // Marcar avaliação (Bom/Regular/Ruim) com X centralizado abaixo do texto
       let x = leftMargin + colWidthsC.criterio;
-      const markY = rowY + 9;
+      const textY = rowY + 6; // Posição do texto "Bom", "Regular", "Ruim"
+      const markY = rowY + 12; // Posição do X (abaixo do texto)
       
       if (avaliacao.valor === 'BOM') {
         doc.fontSize(10).font('Helvetica-Bold').fillColor('#10B981');
-        doc.text('X', x + (colWidthsC.bom / 2) - 3, markY, { width: colWidthsC.bom, align: 'center' });
+        const bomCenterX = x + (colWidthsC.bom / 2);
+        const bomTextWidth = doc.widthOfString('X');
+        doc.text('X', bomCenterX - (bomTextWidth / 2), markY);
       } else if (avaliacao.valor === 'REGULAR') {
         doc.fontSize(10).font('Helvetica-Bold').fillColor('#F59E0B');
-        doc.text('X', x + colWidthsC.bom + (colWidthsC.regular / 2) - 3, markY, { width: colWidthsC.regular, align: 'center' });
+        const regularCenterX = x + colWidthsC.bom + (colWidthsC.regular / 2);
+        const regularTextWidth = doc.widthOfString('X');
+        doc.text('X', regularCenterX - (regularTextWidth / 2), markY);
       } else if (avaliacao.valor === 'RUIM') {
         doc.fontSize(10).font('Helvetica-Bold').fillColor('#EF4444');
-        doc.text('X', x + colWidthsC.bom + colWidthsC.regular + (colWidthsC.ruim / 2) - 3, markY, { width: colWidthsC.ruim, align: 'center' });
+        const ruimCenterX = x + colWidthsC.bom + colWidthsC.regular + (colWidthsC.ruim / 2);
+        const ruimTextWidth = doc.widthOfString('X');
+        doc.text('X', ruimCenterX - (ruimTextWidth / 2), markY);
       }
       doc.fillColor('black');
 

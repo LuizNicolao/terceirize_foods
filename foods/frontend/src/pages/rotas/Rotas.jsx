@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { FaPlus, FaQuestionCircle } from 'react-icons/fa';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { useRotas } from '../../hooks/useRotas';
 import { useAuditoria } from '../../hooks/common/useAuditoria';
-import { useExport } from '../../hooks/common/useExport';
+import { useExportWithFilters } from '../../hooks/common/useExportWithFilters';
 import RotasService from '../../services/rotas';
 import { Button, ValidationErrorModal, ConfirmModal } from '../../components/ui';
 import { CadastroFilterBar } from '../../components/ui';
@@ -85,7 +85,15 @@ const Rotas = () => {
     setAuditFilters
   } = useAuditoria('rotas');
 
-  const { handleExportXLSX, handleExportPDF } = useExport(RotasService);
+  // Função para obter parâmetros de filtro para exportação
+  const getFilterParams = useCallback(() => {
+    return {
+      search: searchTerm || undefined,
+      filial_id: filialFilter && filialFilter !== 'todos' ? filialFilter : undefined
+    };
+  }, [searchTerm, filialFilter]);
+
+  const { handleExportXLSX, handleExportPDF } = useExportWithFilters(RotasService, getFilterParams);
 
   if (loading) {
     return (

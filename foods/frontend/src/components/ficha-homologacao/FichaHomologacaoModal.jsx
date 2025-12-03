@@ -46,10 +46,8 @@ const FichaHomologacaoModal = ({
         }
       });
       // Avaliador já é preenchido pelo loop acima
-      // Preencher unidade de medida se vier do backend
-      if (fichaHomologacao.unidade_medida_sigla && fichaHomologacao.unidade_medida_nome) {
-        setValue('unidade_medida_nome', `${fichaHomologacao.unidade_medida_sigla} - ${fichaHomologacao.unidade_medida_nome}`);
-      } else if (fichaHomologacao.unidade_medida_sigla) {
+      // Preencher unidade de medida se vier do backend (apenas sigla)
+      if (fichaHomologacao.unidade_medida_sigla) {
         setValue('unidade_medida_nome', fichaHomologacao.unidade_medida_sigla);
       } else if (fichaHomologacao.unidade_medida_nome) {
         setValue('unidade_medida_nome', fichaHomologacao.unidade_medida_nome);
@@ -87,10 +85,8 @@ const FichaHomologacaoModal = ({
         if (produtoGenerico.unidade_medida_id) {
           setValue('unidade_medida_id', produtoGenerico.unidade_medida_id);
         }
-        // Preencher nome da unidade de medida para exibição
-        if (produtoGenerico.unidade_medida_sigla && produtoGenerico.unidade_medida_nome) {
-          setValue('unidade_medida_nome', `${produtoGenerico.unidade_medida_sigla} - ${produtoGenerico.unidade_medida_nome}`);
-        } else if (produtoGenerico.unidade_medida_sigla) {
+        // Preencher nome da unidade de medida para exibição (apenas sigla)
+        if (produtoGenerico.unidade_medida_sigla) {
           setValue('unidade_medida_nome', produtoGenerico.unidade_medida_sigla);
         } else if (produtoGenerico.unidade_medida_nome) {
           setValue('unidade_medida_nome', produtoGenerico.unidade_medida_nome);

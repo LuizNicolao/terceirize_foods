@@ -68,19 +68,6 @@ const InformacoesProduto = ({
               />
               {errors.fornecedor_id && <p className="text-red-500 text-xs mt-1">{errors.fornecedor_id.message}</p>}
             </div>
-
-            <div>
-              <Input
-                label="Unidade de Medida"
-                type="text"
-                {...register('unidade_medida_nome')}
-                disabled={true}
-                readOnly={true}
-                className="bg-gray-100"
-                placeholder="Preenchido automaticamente do produto genérico"
-              />
-              <input type="hidden" {...register('unidade_medida_id')} />
-            </div>
           </div>
 
           {/* Coluna 2 */}

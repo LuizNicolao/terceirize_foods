@@ -4,12 +4,15 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import React from 'react';
+import ReactDOM from 'react-dom/client';
 import toast from 'react-hot-toast';
 import fichaHomologacaoService from '../services/fichaHomologacao';
 import api from '../services/api';
 import PdfTemplatesService from '../services/pdfTemplatesService';
 import { useBaseEntity } from './common/useBaseEntity';
 import useTableSort from './common/useTableSort';
+import FichaHomologacaoPrint from '../components/ficha-homologacao/FichaHomologacaoPrint';
 
 export const useFichaHomologacao = () => {
   // Hook base para funcionalidades CRUD
@@ -288,11 +291,144 @@ export const useFichaHomologacao = () => {
   }, []);
 
   /**
-   * Imprimir uma ficha individual
+   * Imprimir uma ficha individual - abre o diálogo de impressão do navegador diretamente
    */
-  const handleImprimir = useCallback(async (id) => {
-    await buscarTemplatesEImprimir([id]);
-  }, [buscarTemplatesEImprimir]);
+  const handleImprimir = useCallback(async (item) => {
+    try {
+      const fichaId = typeof item === 'object' ? item.id : item;
+      const response = await fichaHomologacaoService.buscarPorId(fichaId);
+      
+      if (response && response.success && response.data) {
+        const ficha = response.data;
+        
+        // Criar container para impressão na mesma página
+        const printContainer = document.createElement('div');
+        printContainer.id = 'print-container-ficha-homologacao';
+        printContainer.style.cssText = `
+          position: fixed;
+          top: -9999px;
+          left: -9999px;
+          width: 210mm;
+          min-height: 297mm;
+          background: white;
+          z-index: 9999;
+        `;
+        document.body.appendChild(printContainer);
+        
+        // Criar estilo para esconder o resto da página durante impressão
+        const printStyle = document.createElement('style');
+        printStyle.id = 'print-style-ficha-homologacao';
+        printStyle.textContent = `
+          @media print {
+            @page {
+              size: A4;
+              margin: 0mm;
+            }
+            * {
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            html, body {
+              margin: 0 !important;
+              padding: 0 !important;
+              width: 210mm !important;
+              height: 297mm !important;
+              overflow: hidden !important;
+            }
+            body > *:not(#print-container-ficha-homologacao) {
+              display: none !important;
+              visibility: hidden !important;
+            }
+            /* Ocultar qualquer elemento que possa aparecer */
+            header, nav, footer, .navbar, .sidebar, .menu, button, .no-print {
+              display: none !important;
+              visibility: hidden !important;
+            }
+            #print-container-ficha-homologacao {
+              position: absolute !important;
+              top: 0 !important;
+              left: 0 !important;
+              width: 210mm !important;
+              margin: 0 !important;
+              padding: 10mm !important;
+              box-sizing: border-box !important;
+              background: white !important;
+            }
+          }
+        `;
+        document.head.appendChild(printStyle);
+        
+        // Renderizar componente
+        const root = ReactDOM.createRoot(printContainer);
+        root.render(React.createElement(FichaHomologacaoPrint, { ficha }));
+        
+        // Aguardar renderização e carregamento das imagens antes de imprimir
+        const waitForImages = () => {
+          const images = printContainer.querySelectorAll('img');
+          if (images.length === 0) {
+            // Se não houver imagens, imprimir imediatamente
+            setTimeout(() => window.print(), 200);
+            return;
+          }
+          
+          let loadedCount = 0;
+          const totalImages = images.length;
+          
+          const checkAllLoaded = () => {
+            loadedCount++;
+            if (loadedCount === totalImages) {
+              // Todas as imagens carregadas, aguardar um pouco mais e imprimir
+              setTimeout(() => window.print(), 300);
+            }
+          };
+          
+          images.forEach((img) => {
+            if (img.complete) {
+              checkAllLoaded();
+            } else {
+              img.onload = checkAllLoaded;
+              img.onerror = checkAllLoaded; // Continuar mesmo se houver erro
+            }
+          });
+          
+          // Timeout de segurança: imprimir após 3 segundos mesmo se algumas imagens não carregarem
+          setTimeout(() => {
+            if (loadedCount < totalImages) {
+              window.print();
+            }
+          }, 3000);
+        };
+        
+        // Aguardar um pouco para o componente renderizar
+        setTimeout(() => {
+          waitForImages();
+          
+          // Limpar após impressão
+          const cleanup = () => {
+            root.unmount();
+            if (printContainer.parentNode) {
+              printContainer.parentNode.removeChild(printContainer);
+            }
+            const styleEl = document.getElementById('print-style-ficha-homologacao');
+            if (styleEl) {
+              styleEl.parentNode.removeChild(styleEl);
+            }
+            window.removeEventListener('afterprint', cleanup);
+          };
+          
+          window.addEventListener('afterprint', cleanup);
+          
+          // Fallback: limpar após 10 segundos se afterprint não disparar
+          setTimeout(cleanup, 10000);
+        }, 200);
+      } else {
+        toast.error('Erro ao buscar dados da ficha de homologação para impressão');
+      }
+    } catch (error) {
+      console.error('Erro ao imprimir ficha de homologação:', error);
+      toast.error('Erro ao imprimir ficha de homologação');
+    }
+  }, []);
 
   /**
    * Selecionar template no modal

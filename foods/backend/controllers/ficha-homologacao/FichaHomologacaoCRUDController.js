@@ -226,11 +226,11 @@ class FichaHomologacaoCRUDController {
     let result;
     try {
       result = await executeQuery(
-        `INSERT INTO ficha_homologacao (
-          produto_generico_id, tipo, data_analise, marca, fabricante, fornecedor_id,
-          composicao, fabricacao, lote, validade, unidade_medida_id,
-          peso, peso_valor, peso_cru, peso_cru_valor, peso_cozido, peso_cozido_valor, fator_coccao, fator_coccao_valor, cor, cor_observacao, odor, odor_observacao, sabor, sabor_observacao, aparencia, aparencia_observacao,
-          conclusao, resultado_final, avaliador_id, foto_embalagem, foto_produto_cru, foto_produto_cozido, pdf_avaliacao_antiga, status
+      `INSERT INTO ficha_homologacao (
+        produto_generico_id, tipo, data_analise, marca, fabricante, fornecedor_id,
+        composicao, fabricacao, lote, validade, unidade_medida_id,
+        peso, peso_valor, peso_cru, peso_cru_valor, peso_cozido, peso_cozido_valor, fator_coccao, fator_coccao_valor, cor, cor_observacao, odor, odor_observacao, sabor, sabor_observacao, aparencia, aparencia_observacao,
+        conclusao, resultado_final, avaliador_id, foto_embalagem, foto_produto_cru, foto_produto_cozido, pdf_avaliacao_antiga, status
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         insertValues
       );
@@ -266,7 +266,7 @@ class FichaHomologacaoCRUDController {
 
     console.log('Ficha criada com sucesso. ID:', fichaHomologacaoCriada[0]?.id);
     console.log('=== FIM CRIAÇÃO FICHA HOMOLOGAÇÃO ===');
-    
+
     successResponse(res, fichaHomologacaoCriada[0], 'Ficha de homologação criada com sucesso');
   });
 
