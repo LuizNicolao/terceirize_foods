@@ -79,6 +79,7 @@ tmp/
 **/uploads/
 **/temp/
 **/tmp/
+foods/arquivos/
 
 # IDE files
 .vscode/
