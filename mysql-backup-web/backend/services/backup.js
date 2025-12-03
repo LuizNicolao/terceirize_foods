@@ -142,14 +142,15 @@ async function createBackup(databaseName, backupType = 'manual', selectedTables 
     // Preparar argumentos base do mysqldump
     const baseArgs = [
         '--single-transaction',      // Backup consistente sem travar tabelas
-        '--routines',                // Incluir stored procedures e functions
+        '--skip-routines',           // Pular procedures/functions (evita erro de permissão)
         '--triggers',                // Incluir triggers
         '--events',                  // Incluir eventos agendados
         '--quick',                   // Carregar tabela em memória linha por linha
         '--lock-tables=false',       // Não travar tabelas
+        '--no-tablespaces',          // Não incluir tablespaces (evita erro de PROCESS privilege)
         '--complete-insert',         // Usar INSERT INTO completo com nomes de colunas
         '--add-drop-table',          // Adicionar DROP TABLE antes de CREATE TABLE
-      '--create-options'           // Incluir opções de CREATE TABLE
+        '--create-options'           // Incluir opções de CREATE TABLE
     ];
     
     // Se tabelas específicas foram selecionadas, adicionar ao comando

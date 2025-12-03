@@ -153,7 +153,6 @@ class NotaFiscalImportController {
       res.end();
 
     } catch (error) {
-      console.error('Erro ao gerar modelo:', error);
       return errorResponse(res, 'Erro ao gerar modelo de planilha', 500);
     }
   }
@@ -286,7 +285,6 @@ class NotaFiscalImportController {
             const mes = String(dataExcel.getMonth() + 1).padStart(2, '0');
             const ano = dataExcel.getFullYear();
             data_emissao_validada = `${dia}/${mes}/${ano}`;
-            console.log(`Linha ${linhaAtual} - Data emissão convertida de Excel:`, data_emissao, '->', data_emissao_validada);
           }
           
           if (!isNaN(data_saida) && data_saida.toString().indexOf('/') === -1 && data_saida.toString().indexOf('-') === -1) {
@@ -295,7 +293,6 @@ class NotaFiscalImportController {
             const mes = String(dataExcel.getMonth() + 1).padStart(2, '0');
             const ano = dataExcel.getFullYear();
             data_saida_validada = `${dia}/${mes}/${ano}`;
-            console.log(`Linha ${linhaAtual} - Data saída convertida de Excel:`, data_saida, '->', data_saida_validada);
           }
           
           const dataRegex = /^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}$/;
@@ -388,9 +385,7 @@ class NotaFiscalImportController {
         // Processar dados do produto
         const descricao = produto_nome;
 
-        // Debug: verificar se a nota existe no map
         if (!notasFiscaisMap[chaveNota]) {
-          console.error(`ERRO: Nota ${chaveNota} não encontrada no map na linha ${linhaAtual}`);
           erros.push(`Linha ${linhaAtual}: Erro interno - nota fiscal não encontrada`);
           linhaAtual++;
           return;
@@ -419,7 +414,6 @@ class NotaFiscalImportController {
         };
 
         notasFiscaisMap[chaveNota].itens.push(itemData);
-        console.log(`Linha ${linhaAtual}: Item ${numero_item} adicionado à nota ${chaveNota}. Total de itens: ${notasFiscaisMap[chaveNota].itens.length}`);
 
         linhaAtual++;
       });
@@ -428,7 +422,6 @@ class NotaFiscalImportController {
       const notasFiscais = Object.values(notasFiscaisMap);
 
       if (erros.length > 0) {
-        console.log('Erros de validação:', erros);
         return errorResponse(res, 'Erros de validação encontrados', 400, { erros });
       }
 
@@ -510,11 +503,6 @@ class NotaFiscalImportController {
           // Verificar se há itens para esta nota antes de processar
           const itens = notaFiscal.itens || [];
           
-          console.log(`Nota ${notaFiscal.numero_nota}: Total de itens encontrados:`, itens.length);
-          if (itens.length > 0) {
-            console.log(`Nota ${notaFiscal.numero_nota}: Primeiro item:`, JSON.stringify(itens[0]));
-          }
-          
           if (itens.length === 0) {
             erros.push(`Nota ${notaFiscal.numero_nota}: A nota fiscal deve ter pelo menos um item`);
             continue;
@@ -532,14 +520,6 @@ class NotaFiscalImportController {
           const valor_total = valor_produtos +
             parseFloat(notaFiscal.valor_frete || 0) -
             parseFloat(notaFiscal.valor_desconto || 0);
-
-          console.log(`Nota ${notaFiscal.numero_nota}: Valores calculados:`, {
-            valor_produtos_calculado,
-            valor_produtos_usado: valor_produtos,
-            valor_frete: parseFloat(notaFiscal.valor_frete || 0),
-            valor_desconto: parseFloat(notaFiscal.valor_desconto || 0),
-            valor_total
-          });
 
           let notaFiscalId;
 
@@ -654,13 +634,9 @@ class NotaFiscalImportController {
           }
 
           // Inserir itens da nota fiscal
-          console.log(`Nota ${notaFiscal.numero_nota} (ID: ${notaFiscalId}): Inserindo ${itens.length} itens`);
-          
           for (const item of itens) {
             try {
               const valor_total_item = (item.quantidade * item.valor_unitario) - (item.valor_desconto || 0);
-
-              console.log(`Inserindo item ${item.numero_item}: ${item.descricao}, Qtd: ${item.quantidade}, Valor: ${item.valor_unitario}`);
 
               const itemQuery = `
                 INSERT INTO notas_fiscais_itens (
@@ -692,18 +668,12 @@ class NotaFiscalImportController {
                 item.valor_cofins,
                 item.aliquota_cofins
               ]);
-              
-              console.log(`Item ${item.numero_item} inserido com sucesso`);
             } catch (itemError) {
-              console.error(`Erro ao inserir item ${item.numero_item}:`, itemError);
               erros.push(`Nota ${notaFiscal.numero_nota}, Item ${item.numero_item}: Erro ao inserir - ${itemError.message}`);
             }
           }
-          
-          console.log(`Nota ${notaFiscal.numero_nota}: Todos os itens processados`);
 
         } catch (error) {
-          console.error(`Erro ao processar nota fiscal ${notaFiscal.numero_nota}:`, error);
           erros.push(`Nota ${notaFiscal.numero_nota}: Erro interno - ${error.message}`);
         }
       }
@@ -716,8 +686,6 @@ class NotaFiscalImportController {
       });
 
     } catch (error) {
-      console.error('Erro na importação:', error);
-      console.error('Stack trace:', error.stack);
       return errorResponse(res, `Erro interno na importação: ${error.message}`, 500);
     }
   }
