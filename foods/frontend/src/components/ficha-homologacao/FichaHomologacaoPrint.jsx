@@ -302,20 +302,20 @@ const FichaHomologacaoPrint = ({ ficha }) => {
                 <tr>
                   <th style={{ width: '25%' }}>ID</th>
                   <td style={{ width: '25%' }}>{ficha.id}</td>
-                  <th style={{ width: '25%' }}>Tipo</th>
-                  <td style={{ width: '25%' }}>{tipoText}</td>
+                  <th style={{ width: '15%' }}>Tipo</th>
+                  <td style={{ width: '35%' }}>{tipoText}</td>
                 </tr>
                 <tr>
                   <th>Data da Análise</th>
                   <td>{formatDate(ficha.data_analise)}</td>
-                  <th>Avaliador</th>
-                  <td>{ficha.avaliador_nome || '-'}</td>
+                  <th style={{ width: '15%' }}>Avaliador</th>
+                  <td style={{ width: '35%' }}>{ficha.avaliador_nome || '-'}</td>
                 </tr>
                 <tr>
-                  <th style={{ width: '20%' }}>Nome Genérico do Produto</th>
-                  <td style={{ width: '30%' }}>{nomeGenericoText}</td>
-                  <th style={{ width: '20%' }}>Unidade de Medida</th>
-                  <td style={{ width: '30%' }}>{unidadeMedidaText}</td>
+                  <th style={{ width: '25%' }}>Nome Genérico do Produto</th>
+                  <td style={{ width: '50%' }}>{nomeGenericoText}</td>
+                  <th style={{ width: '10%' }}>Unidade de Medida</th>
+                  <td style={{ width: '15%' }}>{unidadeMedidaText}</td>
                 </tr>
                 {ficha.tipo === 'REAVALIACAO' && ficha.pdf_avaliacao_antiga && (
                   <tr>
@@ -335,28 +335,26 @@ const FichaHomologacaoPrint = ({ ficha }) => {
             <table>
               <tbody>
                 <tr>
-                  <th style={{ width: '25%' }}>Marca</th>
+                  <th style={{ width: '25%', fontSize: '6pt', padding: '2px 4px' }}>Marca</th>
                   <td style={{ width: '25%' }}>{ficha.marca || '-'}</td>
-                  <th style={{ width: '25%' }}>Fabricante</th>
-                  <td style={{ width: '25%' }}>{ficha.fabricante || '-'}</td>
+                  <th style={{ width: '25%', fontSize: '6pt', padding: '2px 4px' }}>Fabricante</th>
+                  <td colSpan="3" style={{ width: '25%' }}>{ficha.fabricante || '-'}</td>
                 </tr>
                 <tr>
-                  <th>Fornecedor</th>
-                  <td colSpan="3">{ficha.fornecedor_nome || ficha.fornecedor_nome_fantasia || '-'}</td>
+                  <th style={{ fontSize: '6pt', padding: '2px 4px' }}>Fornecedor</th>
+                  <td colSpan="5">{ficha.fornecedor_nome || ficha.fornecedor_nome_fantasia || '-'}</td>
                 </tr>
                 <tr>
-                  <th>Composição</th>
-                  <td colSpan="3">{ficha.composicao || '-'}</td>
+                  <th style={{ fontSize: '6pt', padding: '2px 4px' }}>Composição</th>
+                  <td colSpan="5">{ficha.composicao || '-'}</td>
                 </tr>
                 <tr>
-                  <th>Lote</th>
-                  <td>{ficha.lote || '-'}</td>
-                  <th>Data de Fabricação</th>
-                  <td>{formatDate(ficha.fabricacao)}</td>
-                </tr>
-                <tr>
-                  <th>Data de Validade</th>
-                  <td colSpan="3">{formatDate(ficha.validade)}</td>
+                  <th style={{ fontSize: '6pt', padding: '2px 4px', width: '8%' }}>Lote</th>
+                  <td style={{ width: '10%' }}>{ficha.lote || '-'}</td>
+                  <th style={{ fontSize: '6pt', padding: '2px 4px', width: '18%' }}>Data de Fabricação</th>
+                  <td style={{ width: '18%' }}>{formatDate(ficha.fabricacao)}</td>
+                  <th style={{ fontSize: '6pt', padding: '2px 4px', width: '20%' }}>Data de Validade</th>
+                  <td style={{ width: '26%' }}>{formatDate(ficha.validade)}</td>
                 </tr>
               </tbody>
             </table>
