@@ -6,18 +6,21 @@
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { FaTimes, FaSave, FaEye, FaEdit } from 'react-icons/fa';
-import { Button, Input, Modal } from '../ui';
-import SearchableSelect from '../ui/SearchableSelect';
+import { Button, Modal } from '../ui';
 import { useAuth } from '../../contexts/AuthContext';
+import {
+  InformacoesBasicas,
+  InformacoesProduto,
+  AvaliacoesQualidade,
+  ConclusaoDocumentacao
+} from './sections';
 
 const FichaHomologacaoModal = ({
   isOpen,
   onClose,
   fichaHomologacao,
   nomeGenericos,
-  marcas,
   fornecedores,
-  unidadesMedida,
   usuarios,
   onSubmit,
   viewMode = false
@@ -45,6 +48,14 @@ const FichaHomologacaoModal = ({
       if (fichaHomologacao.avaliador_nome) {
         setValue('avaliador_nome', fichaHomologacao.avaliador_nome);
       }
+      // Preencher unidade de medida se vier do backend
+      if (fichaHomologacao.unidade_medida_sigla && fichaHomologacao.unidade_medida_nome) {
+        setValue('unidade_medida_nome', `${fichaHomologacao.unidade_medida_sigla} - ${fichaHomologacao.unidade_medida_nome}`);
+      } else if (fichaHomologacao.unidade_medida_sigla) {
+        setValue('unidade_medida_nome', fichaHomologacao.unidade_medida_sigla);
+      } else if (fichaHomologacao.unidade_medida_nome) {
+        setValue('unidade_medida_nome', fichaHomologacao.unidade_medida_nome);
+      }
     } else if (!fichaHomologacao && isOpen) {
       // Resetar formulário para nova ficha
       reset();
@@ -57,38 +68,61 @@ const FichaHomologacaoModal = ({
         setValue('avaliador_nome', user.nome);
       }
     }
-  }, [fichaHomologacao, isOpen, setValue, reset, user]);
+    
+    // Registrar campos para validação
+    register('produto_generico_id', { required: 'Nome genérico é obrigatório' });
+    register('marca', { required: 'Marca é obrigatória' });
+    register('fabricante', { required: 'Fabricante é obrigatório' });
+    register('fornecedor_id', { required: 'Fornecedor é obrigatório' });
+  }, [fichaHomologacao, isOpen, setValue, reset, user, register]);
 
-  // Observar mudanças na marca para preencher fabricante
-  const marcaId = watch('marca_id');
+  // Observar mudanças no tipo para mostrar/ocultar campo de PDF
+  const tipoSelecionado = watch('tipo');
+
+  // Observar mudanças no produto genérico para preencher unidade de medida automaticamente
+  const produtoGenericoId = watch('produto_generico_id');
   useEffect(() => {
-    if (marcaId && marcas) {
-      const marcaSelecionada = marcas.find(m => m.id === parseInt(marcaId));
-      if (marcaSelecionada && marcaSelecionada.fabricante) {
-        setValue('fabricante', marcaSelecionada.fabricante);
+    if (produtoGenericoId && nomeGenericos) {
+      const produtoGenericoSelecionado = nomeGenericos.find(pg => pg.id === parseInt(produtoGenericoId));
+      if (produtoGenericoSelecionado && produtoGenericoSelecionado.unidade_medida_id) {
+        setValue('unidade_medida_id', produtoGenericoSelecionado.unidade_medida_id);
+        // Preencher nome da unidade de medida para exibição
+        if (produtoGenericoSelecionado.unidade_medida_sigla && produtoGenericoSelecionado.unidade_medida_nome) {
+          setValue('unidade_medida_nome', `${produtoGenericoSelecionado.unidade_medida_sigla} - ${produtoGenericoSelecionado.unidade_medida_nome}`);
+        } else if (produtoGenericoSelecionado.unidade_medida_sigla) {
+          setValue('unidade_medida_nome', produtoGenericoSelecionado.unidade_medida_sigla);
+        } else if (produtoGenericoSelecionado.unidade_medida_nome) {
+          setValue('unidade_medida_nome', produtoGenericoSelecionado.unidade_medida_nome);
+        }
+      } else {
+        setValue('unidade_medida_id', null);
+        setValue('unidade_medida_nome', '');
       }
+    } else {
+      setValue('unidade_medida_id', null);
+      setValue('unidade_medida_nome', '');
     }
-  }, [marcaId, marcas, setValue]);
+  }, [produtoGenericoId, nomeGenericos, setValue]);
 
   // Processar envio do formulário
   const handleFormSubmit = (data) => {
     const formData = {
       ...data,
       produto_generico_id: data.produto_generico_id ? parseInt(data.produto_generico_id) : null,
-      marca_id: data.marca_id ? parseInt(data.marca_id) : null,
       fornecedor_id: data.fornecedor_id ? parseInt(data.fornecedor_id) : null,
-      unidade_medida_id: data.unidade_medida_id ? parseInt(data.unidade_medida_id) : null,
       avaliador_id: data.avaliador_id ? parseInt(data.avaliador_id) : null,
+      marca: data.marca ? data.marca.toUpperCase().trim() : null,
+      fabricante: data.fabricante ? data.fabricante.toUpperCase().trim() : null,
       fabricacao: data.fabricacao || null,
       validade: data.validade || null
     };
+    // Remover unidade_medida_nome (apenas para exibição)
+    delete formData.unidade_medida_nome;
 
     onSubmit(formData);
   };
 
   if (!isOpen) return null;
-
-  const avaliacaoOptions = ['BOM', 'REGULAR', 'RUIM'];
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="full">
@@ -122,318 +156,43 @@ const FichaHomologacaoModal = ({
         <form onSubmit={handleSubmit(handleFormSubmit)} className="p-6">
           <div className="space-y-6">
             
-            {/* Card 1 - Informações Básicas */}
-            <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
-              <h3 className="text-xs font-semibold text-gray-700 mb-2 pb-1 border-b-2 border-green-500">
-                Informações Básicas
-              </h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                {/* Coluna 1 */}
-                <div className="space-y-2">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Nome Genérico do Produto <span className="text-red-500">*</span>
-                    </label>
-                    <SearchableSelect
-                      options={nomeGenericos?.map(ng => ({ value: ng.id, label: `${ng.codigo} - ${ng.nome}` })) || []}
-                      {...register('produto_generico_id', { required: 'Nome genérico é obrigatório' })}
-                      disabled={viewMode}
-                      placeholder="Selecione o nome genérico"
-                    />
-                    {errors.produto_generico_id && <p className="text-red-500 text-xs mt-1">{errors.produto_generico_id.message}</p>}
-                  </div>
+            {/* SEÇÃO 1: Informações Básicas */}
+            <InformacoesBasicas
+              register={register}
+              watch={watch}
+              setValue={setValue}
+              errors={errors}
+              nomeGenericos={nomeGenericos}
+              user={user}
+              viewMode={viewMode}
+              tipoSelecionado={tipoSelecionado}
+              fichaHomologacao={fichaHomologacao}
+            />
 
-                  <div>
-                    <Input
-                      label="Data da Análise *"
-                      type="date"
-                      {...register('data_analise', { required: 'Data de análise é obrigatória' })}
-                      error={errors.data_analise?.message}
-                      disabled={viewMode}
-                    />
-                  </div>
-                </div>
+            {/* SEÇÃO 2: Informações do Produto */}
+            <InformacoesProduto
+              register={register}
+              watch={watch}
+              setValue={setValue}
+              errors={errors}
+              fornecedores={fornecedores}
+              viewMode={viewMode}
+            />
 
-                {/* Coluna 2 */}
-                <div className="space-y-2">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Tipo <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      {...register('tipo', { required: 'Tipo é obrigatório' })}
-                      disabled={viewMode}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                    >
-                      <option value="NOVO_PRODUTO">Novo Produto</option>
-                      <option value="REAVALIACAO">Reavaliação</option>
-                    </select>
-                    {errors.tipo && <p className="text-red-500 text-xs mt-1">{errors.tipo.message}</p>}
-                  </div>
+            {/* SEÇÃO 3: Avaliações de Qualidade */}
+            <AvaliacoesQualidade
+              register={register}
+              errors={errors}
+              viewMode={viewMode}
+            />
 
-                  <div>
-                    <Input
-                      label="Avaliador"
-                      type="text"
-                      value={watch('avaliador_nome') || user?.nome || ''}
-                      disabled={true}
-                      readOnly={true}
-                      className="bg-gray-100"
-                    />
-                    <input type="hidden" {...register('avaliador_id')} />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Card 2 - Informações do Produto */}
-            <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
-              <h3 className="text-xs font-semibold text-gray-700 mb-2 pb-1 border-b-2 border-green-500">
-                Informações do Produto
-              </h3>
-              
-              <div className="space-y-2">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                  {/* Coluna 1 */}
-                  <div className="space-y-2">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Marca <span className="text-red-500">*</span>
-                      </label>
-                      <SearchableSelect
-                        options={marcas?.map(m => ({ value: m.id, label: m.marca })) || []}
-                        {...register('marca_id', { required: 'Marca é obrigatória' })}
-                        disabled={viewMode}
-                        placeholder="Selecione a marca"
-                      />
-                      {errors.marca_id && <p className="text-red-500 text-xs mt-1">{errors.marca_id.message}</p>}
-                    </div>
-
-                    <div>
-                      <Input
-                        label="Fabricante"
-                        type="text"
-                        {...register('fabricante')}
-                        disabled={true}
-                        readOnly={true}
-                        className="bg-gray-100"
-                        placeholder="Preenchido automaticamente"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Fornecedor <span className="text-red-500">*</span>
-                      </label>
-                      <SearchableSelect
-                        options={fornecedores?.map(f => ({ value: f.id, label: f.razao_social || f.nome_fantasia })) || []}
-                        {...register('fornecedor_id', { required: 'Fornecedor é obrigatório' })}
-                        disabled={viewMode}
-                        placeholder="Selecione o fornecedor"
-                      />
-                      {errors.fornecedor_id && <p className="text-red-500 text-xs mt-1">{errors.fornecedor_id.message}</p>}
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Unidade de Medida <span className="text-red-500">*</span>
-                      </label>
-                      <SearchableSelect
-                        options={unidadesMedida?.map(um => ({ value: um.id, label: `${um.sigla} - ${um.nome}` })) || []}
-                        {...register('unidade_medida_id', { required: 'Unidade de medida é obrigatória' })}
-                        disabled={viewMode}
-                        placeholder="Selecione a unidade de medida"
-                      />
-                      {errors.unidade_medida_id && <p className="text-red-500 text-xs mt-1">{errors.unidade_medida_id.message}</p>}
-                    </div>
-                  </div>
-
-                  {/* Coluna 2 */}
-                  <div className="space-y-2">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Composição <span className="text-red-500">*</span>
-                      </label>
-                      <textarea
-                        {...register('composicao', { required: 'Composição é obrigatória' })}
-                        disabled={viewMode}
-                        rows={10}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
-                        placeholder="Digite a composição do produto"
-                      />
-                      {errors.composicao && <p className="text-red-500 text-xs mt-1">{errors.composicao.message}</p>}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Linha com Lote e Datas na mesma linha */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                  <div>
-                    <Input
-                      label="Lote *"
-                      type="text"
-                      {...register('lote', { required: 'Lote é obrigatório' })}
-                      error={errors.lote?.message}
-                      disabled={viewMode}
-                      placeholder="Digite o lote"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <Input
-                        label="Data de Fabricação *"
-                        type="date"
-                        {...register('fabricacao', { required: 'Data de fabricação é obrigatória' })}
-                        error={errors.fabricacao?.message}
-                        disabled={viewMode}
-                      />
-                    </div>
-
-                    <div>
-                      <Input
-                        label="Data de Validade *"
-                        type="date"
-                        {...register('validade', { required: 'Data de validade é obrigatória' })}
-                        error={errors.validade?.message}
-                        disabled={viewMode}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Card 3 - Avaliações de Qualidade */}
-            <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
-              <h3 className="text-xs font-semibold text-gray-700 mb-2 pb-1 border-b-2 border-green-500">
-                Avaliações de Qualidade
-              </h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Coluna Esquerda */}
-                <div className="space-y-3">
-                  {[
-                    { field: 'peso', label: 'Peso' },
-                    { field: 'peso_cru', label: 'Peso Cru' },
-                    { field: 'peso_cozido', label: 'Peso Cozido' },
-                    { field: 'fator_coccao', label: 'Fator de Cocção' }
-                  ].map(({ field, label }) => (
-                    <div key={field} className="flex items-center gap-3">
-                      <span className="text-sm font-medium text-gray-700 min-w-[120px]">{label} <span className="text-red-500">*</span></span>
-                      <div className="flex gap-4">
-                        {avaliacaoOptions.map(option => (
-                          <label key={option} className="flex items-center gap-1.5 cursor-pointer">
-                            <input
-                              type="radio"
-                              value={option}
-                              {...register(field, { required: `${label} é obrigatório` })}
-                              disabled={viewMode}
-                              className="w-4 h-4 text-green-600 focus:ring-green-500"
-                            />
-                            <span className="text-sm text-gray-700">
-                              {option === 'BOM' ? 'Bom' : option === 'REGULAR' ? 'Regular' : 'Ruim'}
-                            </span>
-                          </label>
-                        ))}
-                      </div>
-                      {errors[field] && <p className="text-red-500 text-xs ml-2">{errors[field].message}</p>}
-                    </div>
-                  ))}
-                </div>
-
-                {/* Coluna Direita */}
-                <div className="space-y-3">
-                  {[
-                    { field: 'cor', label: 'Cor' },
-                    { field: 'odor', label: 'Odor' },
-                    { field: 'sabor', label: 'Sabor' },
-                    { field: 'aparencia', label: 'Aparência' }
-                  ].map(({ field, label }) => (
-                    <div key={field} className="flex items-center gap-3">
-                      <span className="text-sm font-medium text-gray-700 min-w-[120px]">{label} <span className="text-red-500">*</span></span>
-                      <div className="flex gap-4">
-                        {avaliacaoOptions.map(option => (
-                          <label key={option} className="flex items-center gap-1.5 cursor-pointer">
-                            <input
-                              type="radio"
-                              value={option}
-                              {...register(field, { required: `${label} é obrigatório` })}
-                              disabled={viewMode}
-                              className="w-4 h-4 text-green-600 focus:ring-green-500"
-                            />
-                            <span className="text-sm text-gray-700">
-                              {option === 'BOM' ? 'Bom' : option === 'REGULAR' ? 'Regular' : 'Ruim'}
-                            </span>
-                          </label>
-                        ))}
-                      </div>
-                      {errors[field] && <p className="text-red-500 text-xs ml-2">{errors[field].message}</p>}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Card 4 - Conclusão e Documentação */}
-            <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
-              <h3 className="text-xs font-semibold text-gray-700 mb-2 pb-1 border-b-2 border-green-500">
-                Conclusão e Documentação
-              </h3>
-              
-              <div className="space-y-2">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Conclusão <span className="text-red-500">*</span>
-                  </label>
-                  <textarea
-                    {...register('conclusao', { required: 'Conclusão é obrigatória' })}
-                    disabled={viewMode}
-                    rows={6}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
-                    placeholder="Digite a conclusão da análise"
-                  />
-                  {errors.conclusao && <p className="text-red-500 text-xs mt-1">{errors.conclusao.message}</p>}
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Foto da Embalagem <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      {...register('foto_embalagem', { required: 'Foto da embalagem é obrigatória' })}
-                      disabled={viewMode}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                    />
-                    {errors.foto_embalagem && <p className="text-red-500 text-xs mt-1">{errors.foto_embalagem.message}</p>}
-                    {fichaHomologacao?.foto_embalagem && (
-                      <p className="text-xs text-gray-500 mt-1">Arquivo atual: {fichaHomologacao.foto_embalagem}</p>
-                    )}
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Foto do Produto <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      {...register('foto_produto', { required: 'Foto do produto é obrigatória' })}
-                      disabled={viewMode}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                    />
-                    {errors.foto_produto && <p className="text-red-500 text-xs mt-1">{errors.foto_produto.message}</p>}
-                    {fichaHomologacao?.foto_produto && (
-                      <p className="text-xs text-gray-500 mt-1">Arquivo atual: {fichaHomologacao.foto_produto}</p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
+            {/* SEÇÃO 4: Conclusão e Documentação */}
+            <ConclusaoDocumentacao
+              register={register}
+              errors={errors}
+              viewMode={viewMode}
+              fichaHomologacao={fichaHomologacao}
+            />
 
             {/* Status (oculto ou em um lugar discreto) */}
             {!viewMode && (

@@ -28,7 +28,6 @@ class FichaHomologacaoSearchController {
         fh.*,
         ng.nome as nome_generico_nome,
         ng.codigo as nome_generico_codigo,
-        m.marca as marca_nome,
         f.razao_social as fornecedor_nome,
         f.nome_fantasia as fornecedor_nome_fantasia,
         um.nome as unidade_medida_nome,
@@ -36,7 +35,6 @@ class FichaHomologacaoSearchController {
         u.nome as avaliador_nome
       FROM ficha_homologacao fh
       LEFT JOIN produto_generico ng ON fh.produto_generico_id = ng.id
-      LEFT JOIN marcas m ON fh.marca_id = m.id
       LEFT JOIN fornecedores f ON fh.fornecedor_id = f.id
       LEFT JOIN unidades_medida um ON fh.unidade_medida_id = um.id
       LEFT JOIN usuarios u ON fh.avaliador_id = u.id
@@ -44,7 +42,7 @@ class FichaHomologacaoSearchController {
         ng.nome LIKE ? OR 
         ng.codigo LIKE ? OR 
         f.nome LIKE ? OR 
-        m.marca LIKE ? OR
+        fh.marca LIKE ? OR
         fh.fabricante LIKE ?
       ) AND fh.status = 'ativo'
       ORDER BY fh.data_analise DESC

@@ -31,7 +31,6 @@ const FichaHomologacao = () => {
     showDeleteConfirmModal,
     fichaHomologacaoToDelete,
     nomeGenericos,
-    marcas,
     fornecedores,
     unidadesMedida,
     usuarios,
@@ -225,11 +224,9 @@ const FichaHomologacao = () => {
         isOpen={showModal}
         onClose={handleCloseModal}
         fichaHomologacao={editingFichaHomologacao}
-        nomeGenericos={nomeGenericos}
-        marcas={marcas}
-        fornecedores={fornecedores}
-        unidadesMedida={unidadesMedida}
-        usuarios={usuarios}
+            nomeGenericos={nomeGenericos}
+            fornecedores={fornecedores}
+            usuarios={usuarios}
         onSubmit={onSubmit}
         viewMode={viewMode}
       />

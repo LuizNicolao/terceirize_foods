@@ -150,7 +150,7 @@ async function createBackup(databaseName, backupType = 'manual', selectedTables 
         '--no-tablespaces',          // Não incluir tablespaces (evita erro de PROCESS privilege)
         '--complete-insert',         // Usar INSERT INTO completo com nomes de colunas
         '--add-drop-table',          // Adicionar DROP TABLE antes de CREATE TABLE
-        '--create-options'           // Incluir opções de CREATE TABLE
+      '--create-options'           // Incluir opções de CREATE TABLE
     ];
     
     // Se tabelas específicas foram selecionadas, adicionar ao comando

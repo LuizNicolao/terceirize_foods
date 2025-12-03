@@ -25,7 +25,6 @@ class FichaHomologacaoListController {
         fh.*,
         ng.nome as nome_generico_nome,
         ng.codigo as nome_generico_codigo,
-        m.marca as marca_nome,
         f.razao_social as fornecedor_nome,
         f.nome_fantasia as fornecedor_nome_fantasia,
         um.nome as unidade_medida_nome,
@@ -34,7 +33,6 @@ class FichaHomologacaoListController {
         u.email as avaliador_email
       FROM ficha_homologacao fh
       LEFT JOIN produto_generico ng ON fh.produto_generico_id = ng.id
-      LEFT JOIN marcas m ON fh.marca_id = m.id
       LEFT JOIN fornecedores f ON fh.fornecedor_id = f.id
       LEFT JOIN unidades_medida um ON fh.unidade_medida_id = um.id
       LEFT JOIN usuarios u ON fh.avaliador_id = u.id
@@ -45,7 +43,7 @@ class FichaHomologacaoListController {
 
     // Aplicar filtros
     if (search) {
-      baseQuery += ' AND (ng.nome LIKE ? OR ng.codigo LIKE ? OR f.razao_social LIKE ? OR f.nome_fantasia LIKE ? OR m.marca LIKE ? OR fh.fabricante LIKE ? OR fh.lote LIKE ?)';
+      baseQuery += ' AND (ng.nome LIKE ? OR ng.codigo LIKE ? OR f.razao_social LIKE ? OR f.nome_fantasia LIKE ? OR fh.marca LIKE ? OR fh.fabricante LIKE ? OR fh.lote LIKE ?)';
       params.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
     }
 
@@ -88,7 +86,7 @@ class FichaHomologacaoListController {
           'status': 'fh.status',
           'nome_generico_nome': 'ng.nome',
           'fornecedor_nome': 'f.razao_social',
-          'marca_nome': 'm.marca',
+          'marca_nome': 'fh.marca',
           'avaliador_nome': 'u.nome'
         };
         
@@ -111,8 +109,7 @@ class FichaHomologacaoListController {
       FROM ficha_homologacao fh
       LEFT JOIN produto_generico ng ON fh.produto_generico_id = ng.id
       LEFT JOIN fornecedores f ON fh.fornecedor_id = f.id
-      LEFT JOIN marcas m ON fh.marca_id = m.id
-      WHERE 1=1${search ? ' AND (ng.nome LIKE ? OR ng.codigo LIKE ? OR f.nome LIKE ? OR m.marca LIKE ? OR fh.fabricante LIKE ? OR fh.lote LIKE ?)' : ''}${status !== undefined && status !== '' ? ' AND fh.status = ?' : ''}${tipo ? ' AND fh.tipo = ?' : ''}${produto_generico_id ? ' AND fh.produto_generico_id = ?' : ''}${fornecedor_id ? ' AND fh.fornecedor_id = ?' : ''}${avaliador_id ? ' AND fh.avaliador_id = ?' : ''}
+      WHERE 1=1${search ? ' AND (ng.nome LIKE ? OR ng.codigo LIKE ? OR f.razao_social LIKE ? OR f.nome_fantasia LIKE ? OR fh.marca LIKE ? OR fh.fabricante LIKE ? OR fh.lote LIKE ?)' : ''}${status !== undefined && status !== '' ? ' AND fh.status = ?' : ''}${tipo ? ' AND fh.tipo = ?' : ''}${produto_generico_id ? ' AND fh.produto_generico_id = ?' : ''}${fornecedor_id ? ' AND fh.fornecedor_id = ?' : ''}${avaliador_id ? ' AND fh.avaliador_id = ?' : ''}
     `;
     const countParams = params;
     const totalResult = await executeQuery(countQuery, countParams);
@@ -157,7 +154,6 @@ class FichaHomologacaoListController {
         fh.*,
         ng.nome as nome_generico_nome,
         ng.codigo as nome_generico_codigo,
-        m.marca as marca_nome,
         f.razao_social as fornecedor_nome,
         f.nome_fantasia as fornecedor_nome_fantasia,
         um.nome as unidade_medida_nome,
@@ -166,7 +162,6 @@ class FichaHomologacaoListController {
         u.email as avaliador_email
       FROM ficha_homologacao fh
       LEFT JOIN produto_generico ng ON fh.produto_generico_id = ng.id
-      LEFT JOIN marcas m ON fh.marca_id = m.id
       LEFT JOIN fornecedores f ON fh.fornecedor_id = f.id
       LEFT JOIN unidades_medida um ON fh.unidade_medida_id = um.id
       LEFT JOIN usuarios u ON fh.avaliador_id = u.id
@@ -190,14 +185,12 @@ class FichaHomologacaoListController {
         fh.*,
         ng.nome as nome_generico_nome,
         ng.codigo as nome_generico_codigo,
-        m.marca as marca_nome,
         f.razao_social as fornecedor_nome,
         um.nome as unidade_medida_nome,
         um.sigla as unidade_medida_sigla,
         u.nome as avaliador_nome
       FROM ficha_homologacao fh
       LEFT JOIN produto_generico ng ON fh.produto_generico_id = ng.id
-      LEFT JOIN marcas m ON fh.marca_id = m.id
       LEFT JOIN fornecedores f ON fh.fornecedor_id = f.id
       LEFT JOIN unidades_medida um ON fh.unidade_medida_id = um.id
       LEFT JOIN usuarios u ON fh.avaliador_id = u.id
@@ -223,14 +216,12 @@ class FichaHomologacaoListController {
         fh.*,
         ng.nome as nome_generico_nome,
         ng.codigo as nome_generico_codigo,
-        m.marca as marca_nome,
         f.razao_social as fornecedor_nome,
         um.nome as unidade_medida_nome,
         um.sigla as unidade_medida_sigla,
         u.nome as avaliador_nome
       FROM ficha_homologacao fh
       LEFT JOIN produto_generico ng ON fh.produto_generico_id = ng.id
-      LEFT JOIN marcas m ON fh.marca_id = m.id
       LEFT JOIN fornecedores f ON fh.fornecedor_id = f.id
       LEFT JOIN unidades_medida um ON fh.unidade_medida_id = um.id
       LEFT JOIN usuarios u ON fh.avaliador_id = u.id
@@ -253,14 +244,12 @@ class FichaHomologacaoListController {
         fh.*,
         ng.nome as nome_generico_nome,
         ng.codigo as nome_generico_codigo,
-        m.marca as marca_nome,
         f.razao_social as fornecedor_nome,
         um.nome as unidade_medida_nome,
         um.sigla as unidade_medida_sigla,
         u.nome as avaliador_nome
       FROM ficha_homologacao fh
       LEFT JOIN produto_generico ng ON fh.produto_generico_id = ng.id
-      LEFT JOIN marcas m ON fh.marca_id = m.id
       LEFT JOIN fornecedores f ON fh.fornecedor_id = f.id
       LEFT JOIN unidades_medida um ON fh.unidade_medida_id = um.id
       LEFT JOIN usuarios u ON fh.avaliador_id = u.id
@@ -283,14 +272,12 @@ class FichaHomologacaoListController {
         fh.*,
         ng.nome as nome_generico_nome,
         ng.codigo as nome_generico_codigo,
-        m.marca as marca_nome,
         f.razao_social as fornecedor_nome,
         um.nome as unidade_medida_nome,
         um.sigla as unidade_medida_sigla,
         u.nome as avaliador_nome
       FROM ficha_homologacao fh
       LEFT JOIN produto_generico ng ON fh.produto_generico_id = ng.id
-      LEFT JOIN marcas m ON fh.marca_id = m.id
       LEFT JOIN fornecedores f ON fh.fornecedor_id = f.id
       LEFT JOIN unidades_medida um ON fh.unidade_medida_id = um.id
       LEFT JOIN usuarios u ON fh.avaliador_id = u.id
@@ -313,14 +300,12 @@ class FichaHomologacaoListController {
         fh.*,
         ng.nome as nome_generico_nome,
         ng.codigo as nome_generico_codigo,
-        m.marca as marca_nome,
         f.razao_social as fornecedor_nome,
         um.nome as unidade_medida_nome,
         um.sigla as unidade_medida_sigla,
         u.nome as avaliador_nome
       FROM ficha_homologacao fh
       LEFT JOIN produto_generico ng ON fh.produto_generico_id = ng.id
-      LEFT JOIN marcas m ON fh.marca_id = m.id
       LEFT JOIN fornecedores f ON fh.fornecedor_id = f.id
       LEFT JOIN unidades_medida um ON fh.unidade_medida_id = um.id
       LEFT JOIN usuarios u ON fh.avaliador_id = u.id

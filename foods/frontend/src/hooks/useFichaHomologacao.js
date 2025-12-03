@@ -48,9 +48,7 @@ export const useFichaHomologacao = () => {
   
   // Dados auxiliares
   const [nomeGenericos, setNomeGenericos] = useState([]);
-  const [marcas, setMarcas] = useState([]);
   const [fornecedores, setFornecedores] = useState([]);
-  const [unidadesMedida, setUnidadesMedida] = useState([]);
   const [usuarios, setUsuarios] = useState([]);
   
   // Estatísticas específicas
@@ -67,11 +65,9 @@ export const useFichaHomologacao = () => {
    */
   const carregarDadosAuxiliares = useCallback(async () => {
     try {
-      const [nomeGenericosRes, marcasRes, fornecedoresRes, unidadesRes, usuariosRes] = await Promise.all([
+      const [nomeGenericosRes, fornecedoresRes, usuariosRes] = await Promise.all([
         api.get('/produto-generico?limit=1000'),
-        api.get('/marcas?limit=1000'),
         api.get('/fornecedores?limit=1000'),
-        api.get('/unidades?limit=1000'),
         api.get('/usuarios?limit=1000')
       ]);
 
@@ -82,9 +78,7 @@ export const useFichaHomologacao = () => {
       };
 
       setNomeGenericos(processData(nomeGenericosRes));
-      setMarcas(processData(marcasRes));
       setFornecedores(processData(fornecedoresRes));
-      setUnidadesMedida(processData(unidadesRes));
       setUsuarios(processData(usuariosRes));
     } catch (error) {
       console.error('Erro ao carregar dados auxiliares:', error);
@@ -235,9 +229,7 @@ export const useFichaHomologacao = () => {
     
     // Dados auxiliares
     nomeGenericos,
-    marcas,
     fornecedores,
-    unidadesMedida,
     usuarios,
     
     // Filtros

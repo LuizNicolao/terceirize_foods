@@ -126,6 +126,8 @@ const ImportNotasFiscaisModal = ({ isOpen, onClose, onImportSuccess }) => {
             <li>As <strong>datas</strong> devem estar no formato DD/MM/YYYY (ex: 15/01/2025)</li>
             <li>Os <strong>valores</strong> devem ser números (ex: 1000.50)</li>
             <li>Na aba <strong>"Itens"</strong>, relacione os itens às notas fiscais usando número e série</li>
+            <li>O campo <strong>"ID produto Generico"</strong> é opcional, mas se preenchido, buscará automaticamente o grupo relacionado</li>
+            <li>O campo <strong>"Produto Generico"</strong> deve conter o nome do produto genérico</li>
             <li>Notas fiscais duplicadas (mesmo número, série e fornecedor) serão atualizadas</li>
           </ul>
         </div>

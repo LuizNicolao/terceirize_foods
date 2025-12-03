@@ -68,7 +68,8 @@ class NotaFiscalImportController {
         { header: 'Observações', key: 'observacoes', width: 40 },
         // Dados dos Itens
         { header: 'Número Item', key: 'numero_item', width: 15 },
-        { header: 'Produto Nome', key: 'produto_nome', width: 40 },
+        { header: 'ID produto Generico', key: 'produto_generico_id', width: 20 },
+        { header: 'Produto Generico', key: 'produto_nome', width: 40 },
         { header: 'Unidade de Medida', key: 'unidade_medida', width: 20 },
         { header: 'Quantidade', key: 'quantidade', width: 15 },
         { header: 'Valor Unitário', key: 'valor_unitario', width: 15 },
@@ -109,6 +110,7 @@ class NotaFiscalImportController {
           natureza_operacao: 'COMPRA',
           observacoes: 'Nota fiscal de exemplo',
           numero_item: 1,
+          produto_generico_id: 1,
           produto_nome: 'Produto Exemplo 1',
           unidade_medida: 'UN',
           quantidade: 10,
@@ -132,6 +134,7 @@ class NotaFiscalImportController {
           natureza_operacao: 'COMPRA',
           observacoes: 'Nota fiscal de exemplo',
           numero_item: 2,
+          produto_generico_id: 2,
           produto_nome: 'Produto Exemplo 2',
           unidade_medida: 'UN',
           quantidade: 5,
@@ -186,7 +189,7 @@ class NotaFiscalImportController {
         const valores = row.values;
         if (!valores || valores.length < 10) return;
 
-        // Dados da Nota Fiscal (colunas 1-17)
+        // Dados da Nota Fiscal (colunas 1-14)
         const tipo_nota = valores[1]?.toString().trim() || 'ENTRADA';
         const numero_nota = valores[2]?.toString().trim();
         const serie = valores[3]?.toString().trim() || '';
@@ -222,14 +225,15 @@ class NotaFiscalImportController {
         const natureza_operacao = valores[13]?.toString().trim() || null;
         const observacoes = valores[14]?.toString().trim() || null;
 
-        // Dados do Item (colunas 15-21)
+        // Dados do Item (colunas 15-22)
         const numero_item = parseInt(valores[15]) || 0;
-        const produto_nome = valores[16]?.toString().trim() || '';
-        const unidade_medida = valores[17]?.toString().trim() || '';
-        const quantidade = parseFloat(valores[18]) || 0;
-        const valor_unitario = parseFloat(valores[19]) || 0.00;
-        const valor_total_item = parseFloat(valores[20]) || 0.00;
-        const valor_desconto_item = parseFloat(valores[21]) || 0.00;
+        const produto_generico_id = valores[16] ? parseInt(valores[16]) : null;
+        const produto_nome = valores[17]?.toString().trim() || '';
+        const unidade_medida = valores[18]?.toString().trim() || '';
+        const quantidade = parseFloat(valores[19]) || 0;
+        const valor_unitario = parseFloat(valores[20]) || 0.00;
+        const valor_total_item = parseFloat(valores[21]) || 0.00;
+        const valor_desconto_item = parseFloat(valores[22]) || 0.00;
 
         // Validações básicas da nota fiscal (apenas na primeira linha de cada nota)
         const chaveNota = `${numero_nota}_${serie}`;
@@ -394,6 +398,7 @@ class NotaFiscalImportController {
         // Adicionar item à nota fiscal
         const itemData = {
           numero_item,
+          produto_generico_id: produto_generico_id || null,
           codigo_produto: '',
           descricao,
           ncm: null,
@@ -636,38 +641,64 @@ class NotaFiscalImportController {
           // Inserir itens da nota fiscal
           for (const item of itens) {
             try {
-              const valor_total_item = (item.quantidade * item.valor_unitario) - (item.valor_desconto || 0);
+            const valor_total_item = (item.quantidade * item.valor_unitario) - (item.valor_desconto || 0);
 
-              const itemQuery = `
-                INSERT INTO notas_fiscais_itens (
-                  nota_fiscal_id, numero_item, codigo_produto, descricao,
+              // Buscar grupo_id e grupo_nome do produto_generico
+              let grupoId = null;
+              let grupoNome = null;
+              
+              if (item.produto_generico_id) {
+                try {
+                  const produtoGrupo = await executeQuery(
+                    `SELECT pg.grupo_id, g.nome as grupo_nome
+                     FROM produto_generico pg
+                     LEFT JOIN grupos g ON pg.grupo_id = g.id
+                     WHERE pg.id = ?`,
+                    [item.produto_generico_id]
+                  );
+                  
+                  if (produtoGrupo && produtoGrupo.length > 0) {
+                    grupoId = produtoGrupo[0].grupo_id || null;
+                    grupoNome = produtoGrupo[0].grupo_nome || null;
+                  }
+                } catch (error) {
+                  // Continua sem grupo_id e grupo_nome em caso de erro
+                }
+              }
+
+            const itemQuery = `
+              INSERT INTO notas_fiscais_itens (
+                  nota_fiscal_id, produto_generico_id, grupo_id, grupo_nome, numero_item, codigo_produto, descricao,
                   ncm, cfop, unidade_medida, quantidade, valor_unitario, valor_total,
-                  valor_desconto, valor_ipi, aliquota_ipi, valor_icms, aliquota_icms,
-                  valor_pis, aliquota_pis, valor_cofins, aliquota_cofins
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-              `;
+                valor_desconto, valor_ipi, aliquota_ipi, valor_icms, aliquota_icms,
+                valor_pis, aliquota_pis, valor_cofins, aliquota_cofins
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `;
 
-              await executeQuery(itemQuery, [
-                notaFiscalId,
-                item.numero_item,
-                item.codigo_produto,
-                item.descricao,
-                item.ncm,
-                item.cfop,
+            await executeQuery(itemQuery, [
+              notaFiscalId,
+                item.produto_generico_id || null,
+                grupoId,
+                grupoNome,
+              item.numero_item,
+              item.codigo_produto,
+              item.descricao,
+              item.ncm,
+              item.cfop,
                 item.unidade_medida,
-                item.quantidade,
-                item.valor_unitario,
-                valor_total_item,
-                item.valor_desconto,
-                item.valor_ipi,
-                item.aliquota_ipi,
-                item.valor_icms,
-                item.aliquota_icms,
-                item.valor_pis,
-                item.aliquota_pis,
-                item.valor_cofins,
-                item.aliquota_cofins
-              ]);
+              item.quantidade,
+              item.valor_unitario,
+              valor_total_item,
+              item.valor_desconto,
+              item.valor_ipi,
+              item.aliquota_ipi,
+              item.valor_icms,
+              item.aliquota_icms,
+              item.valor_pis,
+              item.aliquota_pis,
+              item.valor_cofins,
+              item.aliquota_cofins
+            ]);
             } catch (itemError) {
               erros.push(`Nota ${notaFiscal.numero_nota}, Item ${item.numero_item}: Erro ao inserir - ${itemError.message}`);
             }

@@ -23,7 +23,7 @@ class FichaHomologacaoCRUDController {
       produto_generico_id,
       tipo,
       data_analise,
-      marca_id,
+      marca,
       fabricante,
       fornecedor_id,
       composicao,
@@ -33,16 +33,22 @@ class FichaHomologacaoCRUDController {
       unidade_medida_id,
       peso,
       peso_cru,
+      peso_cru_valor,
       peso_cozido,
+      peso_cozido_valor,
       fator_coccao,
+      fator_coccao_valor,
       cor,
       odor,
       sabor,
       aparencia,
       conclusao,
+      resultado_final,
       avaliador_id,
       foto_embalagem,
-      foto_produto,
+      foto_produto_cru,
+      foto_produto_cozido,
+      pdf_avaliacao_antiga,
       status
     } = req.body;
 
@@ -55,18 +61,6 @@ class FichaHomologacaoCRUDController {
 
       if (nomeGenerico.length === 0) {
         return errorResponse(res, 'Nome genérico não encontrado', STATUS_CODES.BAD_REQUEST);
-      }
-    }
-
-    // Verificar se marca existe (se fornecido)
-    if (marca_id) {
-      const marca = await executeQuery(
-        'SELECT id FROM marcas WHERE id = ?',
-        [marca_id]
-      );
-
-      if (marca.length === 0) {
-        return errorResponse(res, 'Marca não encontrada', STATUS_CODES.BAD_REQUEST);
       }
     }
 
@@ -109,16 +103,16 @@ class FichaHomologacaoCRUDController {
     // Inserir nova ficha de homologação
     const result = await executeQuery(
       `INSERT INTO ficha_homologacao (
-        produto_generico_id, tipo, data_analise, marca_id, fabricante, fornecedor_id,
+        produto_generico_id, tipo, data_analise, marca, fabricante, fornecedor_id,
         composicao, fabricacao, lote, validade, unidade_medida_id,
-        peso, peso_cru, peso_cozido, fator_coccao, cor, odor, sabor, aparencia,
-        conclusao, avaliador_id, foto_embalagem, foto_produto, status
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        peso, peso_cru, peso_cru_valor, peso_cozido, peso_cozido_valor, fator_coccao, fator_coccao_valor, cor, odor, sabor, aparencia,
+        conclusao, resultado_final, avaliador_id, foto_embalagem, foto_produto_cru, foto_produto_cozido, pdf_avaliacao_antiga, status
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        produto_generico_id, tipo, data_analise, marca_id, fabricante, fornecedor_id,
+        produto_generico_id, tipo, data_analise, marca, fabricante, fornecedor_id,
         composicao, fabricacao, lote, validade, unidade_medida_id,
-        peso, peso_cru, peso_cozido, fator_coccao, cor, odor, sabor, aparencia,
-        conclusao, avaliador_id, foto_embalagem, foto_produto, status || 'ativo'
+        peso, peso_cru, peso_cru_valor || null, peso_cozido, peso_cozido_valor || null, fator_coccao, fator_coccao_valor || null, cor, odor, sabor, aparencia,
+        conclusao, resultado_final || null, avaliador_id, foto_embalagem, foto_produto_cru, foto_produto_cozido, pdf_avaliacao_antiga || null, status || 'ativo'
       ]
     );
 
@@ -128,7 +122,6 @@ class FichaHomologacaoCRUDController {
         fh.*,
         ng.nome as nome_generico_nome,
         ng.codigo as nome_generico_codigo,
-        m.marca as marca_nome,
         f.razao_social as fornecedor_nome,
         f.nome_fantasia as fornecedor_nome_fantasia,
         um.nome as unidade_medida_nome,
@@ -137,7 +130,6 @@ class FichaHomologacaoCRUDController {
         u.email as avaliador_email
       FROM ficha_homologacao fh
       LEFT JOIN produto_generico ng ON fh.produto_generico_id = ng.id
-      LEFT JOIN marcas m ON fh.marca_id = m.id
       LEFT JOIN fornecedores f ON fh.fornecedor_id = f.id
       LEFT JOIN unidades_medida um ON fh.unidade_medida_id = um.id
       LEFT JOIN usuarios u ON fh.avaliador_id = u.id
@@ -157,7 +149,7 @@ class FichaHomologacaoCRUDController {
       produto_generico_id,
       tipo,
       data_analise,
-      marca_id,
+      marca,
       fabricante,
       fornecedor_id,
       composicao,
@@ -167,16 +159,22 @@ class FichaHomologacaoCRUDController {
       unidade_medida_id,
       peso,
       peso_cru,
+      peso_cru_valor,
       peso_cozido,
+      peso_cozido_valor,
       fator_coccao,
+      fator_coccao_valor,
       cor,
       odor,
       sabor,
       aparencia,
       conclusao,
+      resultado_final,
       avaliador_id,
       foto_embalagem,
-      foto_produto,
+      foto_produto_cru,
+      foto_produto_cozido,
+      pdf_avaliacao_antiga,
       status
     } = req.body;
 
@@ -202,17 +200,6 @@ class FichaHomologacaoCRUDController {
       }
     }
 
-    // Verificar se marca existe (se fornecido)
-    if (marca_id !== undefined && marca_id !== null) {
-      const marca = await executeQuery(
-        'SELECT id FROM marcas WHERE id = ?',
-        [marca_id]
-      );
-
-      if (marca.length === 0) {
-        return errorResponse(res, 'Marca não encontrada', STATUS_CODES.BAD_REQUEST);
-      }
-    }
 
     // Verificar se fornecedor existe (se fornecido)
     if (fornecedor_id !== undefined && fornecedor_id !== null) {
@@ -256,7 +243,7 @@ class FichaHomologacaoCRUDController {
         produto_generico_id = ?,
         tipo = ?,
         data_analise = ?,
-        marca_id = ?,
+        marca = ?,
         fabricante = ?,
         fornecedor_id = ?,
         composicao = ?,
@@ -266,23 +253,29 @@ class FichaHomologacaoCRUDController {
         unidade_medida_id = ?,
         peso = ?,
         peso_cru = ?,
+        peso_cru_valor = ?,
         peso_cozido = ?,
+        peso_cozido_valor = ?,
         fator_coccao = ?,
+        fator_coccao_valor = ?,
         cor = ?,
         odor = ?,
         sabor = ?,
         aparencia = ?,
         conclusao = ?,
+        resultado_final = ?,
         avaliador_id = ?,
         foto_embalagem = ?,
-        foto_produto = ?,
+        foto_produto_cru = ?,
+        foto_produto_cozido = ?,
+        pdf_avaliacao_antiga = ?,
         status = ?
       WHERE id = ?`,
       [
-        produto_generico_id, tipo, data_analise, marca_id, fabricante, fornecedor_id,
+        produto_generico_id, tipo, data_analise, marca, fabricante, fornecedor_id,
         composicao, fabricacao, lote, validade, unidade_medida_id,
-        peso, peso_cru, peso_cozido, fator_coccao, cor, odor, sabor, aparencia,
-        conclusao, avaliador_id, foto_embalagem, foto_produto, status, id
+        peso, peso_cru, peso_cru_valor || null, peso_cozido, peso_cozido_valor || null, fator_coccao, fator_coccao_valor || null, cor, odor, sabor, aparencia,
+        conclusao, resultado_final || null, avaliador_id, foto_embalagem, foto_produto_cru, foto_produto_cozido, pdf_avaliacao_antiga || null, status, id
       ]
     );
 
@@ -292,7 +285,6 @@ class FichaHomologacaoCRUDController {
         fh.*,
         ng.nome as nome_generico_nome,
         ng.codigo as nome_generico_codigo,
-        m.marca as marca_nome,
         f.razao_social as fornecedor_nome,
         f.nome_fantasia as fornecedor_nome_fantasia,
         um.nome as unidade_medida_nome,
@@ -301,7 +293,6 @@ class FichaHomologacaoCRUDController {
         u.email as avaliador_email
       FROM ficha_homologacao fh
       LEFT JOIN produto_generico ng ON fh.produto_generico_id = ng.id
-      LEFT JOIN marcas m ON fh.marca_id = m.id
       LEFT JOIN fornecedores f ON fh.fornecedor_id = f.id
       LEFT JOIN unidades_medida um ON fh.unidade_medida_id = um.id
       LEFT JOIN usuarios u ON fh.avaliador_id = u.id
