@@ -136,3 +136,4 @@ Geracao_necessidade/
 # OSRM - Dados processados (muito grandes para Git)
 osrm/data/
 !osrm/data/.gitkeep
+foods/frontend/public/ckeditor5/
