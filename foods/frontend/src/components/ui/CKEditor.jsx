@@ -49,7 +49,7 @@ import {
   Undo,
   Clipboard,
   PasteFromOffice
-} from 'ckeditor5/dist/ckeditor5.js';
+} from '../../../node_modules/ckeditor5/dist/ckeditor5.js';
 
 // Importar traduções em português brasileiro usando caminho relativo
 import ptBrTranslations from '../../../node_modules/ckeditor5/dist/translations/pt-br.js';
