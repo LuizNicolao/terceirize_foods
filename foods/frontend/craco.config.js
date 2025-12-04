@@ -40,6 +40,10 @@ module.exports = {
       // Alias para react-dom/client apontando para o arquivo correto
       webpackConfig.resolve.alias['react-dom/client'] = path.resolve(__dirname, 'node_modules/react-dom/client.js');
       
+      // Alias para react/jsx-runtime e react/jsx-dev-runtime
+      webpackConfig.resolve.alias['react/jsx-runtime'] = path.resolve(__dirname, 'node_modules/react/jsx-runtime.js');
+      webpackConfig.resolve.alias['react/jsx-dev-runtime'] = path.resolve(__dirname, 'node_modules/react/jsx-dev-runtime.js');
+      
       // Alias para es-toolkit/compat para resolver problemas com CKEditor 5 emoji
       webpackConfig.resolve.alias['es-toolkit/compat'] = path.resolve(__dirname, 'node_modules/es-toolkit/compat.js');
       
