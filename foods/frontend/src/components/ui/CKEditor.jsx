@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { CKEditor as CKEditorComponent } from '@ckeditor/ckeditor5-react';
-import 'ckeditor5/ckeditor5.css';
+import 'ckeditor5/dist/ckeditor5.css';
 import api from '../../services/api';
 import {
   ClassicEditor as ClassicEditorBase,
