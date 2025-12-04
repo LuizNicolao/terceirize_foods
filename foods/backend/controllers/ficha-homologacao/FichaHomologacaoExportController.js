@@ -116,6 +116,7 @@ class FichaHomologacaoExportController {
       await workbook.xlsx.write(res);
       res.end();
     } catch (error) {
+      console.error('Erro:', error);
       res.status(500).json({ success: false, error: 'Erro interno' });
     }
   }
@@ -216,6 +217,7 @@ class FichaHomologacaoExportController {
 
       doc.end();
     } catch (error) {
+      console.error('Erro:', error);
       res.status(500).json({ success: false, error: 'Erro interno' });
     }
   }
