@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { CKEditor as CKEditorComponent } from '@ckeditor/ckeditor5-react';
-import 'ckeditor5/dist/ckeditor5.css';
+// Importar CSS do CKEditor 5 usando caminho relativo do node_modules
+// Isso funciona tanto no desenvolvimento quanto na produção
+import '../../../node_modules/ckeditor5/dist/ckeditor5.css';
 import api from '../../services/api';
 import {
   ClassicEditor as ClassicEditorBase,
