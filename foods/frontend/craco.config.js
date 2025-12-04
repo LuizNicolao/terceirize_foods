@@ -8,10 +8,13 @@ module.exports = {
         webpackConfig.resolve = {};
       }
 
-      // Configurar exportsFields para permitir importações que não estão nos exports
-      // Isso resolve o problema com ckeditor5 que tem exports muito restritivos
-      if (!webpackConfig.resolve.exportsFields) {
-        webpackConfig.resolve.exportsFields = ['exports', 'module', 'main', 'browser'];
+      // Configurar exportsFields para ser mais permissivo
+      // Prioriza 'main' e 'module' antes de 'exports' para evitar problemas com exports inválidos
+      webpackConfig.resolve.exportsFields = ['main', 'module', 'browser', 'exports'];
+
+      // Configurar conditionNames para ser mais permissivo
+      if (!webpackConfig.resolve.conditionNames) {
+        webpackConfig.resolve.conditionNames = ['require', 'node', 'default'];
       }
 
       // Adicionar alias para ckeditor5 para garantir resolução correta
