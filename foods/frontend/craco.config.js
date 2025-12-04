@@ -11,7 +11,8 @@ module.exports = {
       // Priorizar campos tradicionais antes de exports - ignora exports problemáticos
       // Isso resolve problemas com ckeditor5, react-query, react-dom e outros pacotes
       // Usa 'main' e 'module' primeiro, só depois tenta 'exports' se necessário
-      webpackConfig.resolve.exportsFields = ['main', 'module', 'browser'];
+      // COMENTADO TEMPORARIAMENTE PARA TESTE
+      // webpackConfig.resolve.exportsFields = ['main', 'module', 'browser'];
 
       // Configurar conditionNames para ser mais permissivo
       if (!webpackConfig.resolve.conditionNames) {
@@ -30,7 +31,8 @@ module.exports = {
       }
 
       // Configurar fullySpecified para false - permite resolução sem extensão
-      webpackConfig.resolve.fullySpecified = false;
+      // COMENTADO TEMPORARIAMENTE PARA TESTE
+      // webpackConfig.resolve.fullySpecified = false;
 
       // Adicionar alias para ckeditor5 e react-dom/client
       if (!webpackConfig.resolve.alias) {
@@ -60,25 +62,26 @@ module.exports = {
 
       // Configurar fullySpecified nas regras do webpack para módulos ESM
       // Isso permite resolver imports sem extensões em módulos ESM
-      if (webpackConfig.module && webpackConfig.module.rules) {
-        webpackConfig.module.rules.forEach(rule => {
-          if (rule.oneOf) {
-            rule.oneOf.forEach(oneOfRule => {
-              if (oneOfRule.resolve) {
-                oneOfRule.resolve.fullySpecified = false;
-              } else if (oneOfRule.use) {
-                oneOfRule.use.forEach(useItem => {
-                  if (useItem && useItem.options && useItem.options.resolve) {
-                    useItem.options.resolve.fullySpecified = false;
-                  }
-                });
-              }
-            });
-          } else if (rule.resolve) {
-            rule.resolve.fullySpecified = false;
-          }
-        });
-      }
+      // COMENTADO TEMPORARIAMENTE PARA TESTE
+      // if (webpackConfig.module && webpackConfig.module.rules) {
+      //   webpackConfig.module.rules.forEach(rule => {
+      //     if (rule.oneOf) {
+      //       rule.oneOf.forEach(oneOfRule => {
+      //         if (oneOfRule.resolve) {
+      //           oneOfRule.resolve.fullySpecified = false;
+      //         } else if (oneOfRule.use) {
+      //           oneOfRule.use.forEach(useItem => {
+      //             if (useItem && useItem.options && useItem.options.resolve) {
+      //               useItem.options.resolve.fullySpecified = false;
+      //             }
+      //           });
+      //         }
+      //       });
+      //     } else if (rule.resolve) {
+      //       rule.resolve.fullySpecified = false;
+      //     }
+      //   });
+      // }
 
       return webpackConfig;
     }
