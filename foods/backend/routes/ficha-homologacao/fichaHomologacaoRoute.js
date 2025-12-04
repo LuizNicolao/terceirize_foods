@@ -22,7 +22,7 @@ router.use(hateoasMiddleware('ficha-homologacao'));
 
 // GET /api/ficha-homologacao - Listar fichas de homologação
 router.get('/', 
-  checkPermission('visualizar'),
+  checkScreenPermission('ficha_homologacao', 'visualizar'),
   commonValidations.search,
   commonValidations.pagination,
   FichaHomologacaoController.listarFichasHomologacao
@@ -30,28 +30,28 @@ router.get('/',
 
 // GET /api/ficha-homologacao/:id/pdf - Gerar PDF da ficha (deve vir antes de /:id)
 router.get('/:id/pdf',
-  checkPermission('visualizar'),
+  checkScreenPermission('ficha_homologacao', 'visualizar'),
   commonValidations.id,
   FichaHomologacaoController.gerarPDF
 );
 
 // GET /api/ficha-homologacao/:id/download/:tipo - Download de arquivo (deve vir antes de /:id)
 router.get('/:id/download/:tipo',
-  checkPermission('visualizar'),
+  checkScreenPermission('ficha_homologacao', 'visualizar'),
   commonValidations.id,
   FichaHomologacaoController.downloadArquivo
 );
 
 // GET /api/ficha-homologacao/:id - Buscar ficha de homologação por ID
 router.get('/:id', 
-  checkPermission('visualizar'),
+  checkScreenPermission('ficha_homologacao', 'visualizar'),
   commonValidations.id,
   FichaHomologacaoController.buscarFichaHomologacaoPorId
 );
 
 // POST /api/ficha-homologacao - Criar nova ficha de homologação
 router.post('/', 
-  checkPermission('criar'),
+  checkScreenPermission('ficha_homologacao', 'criar'),
   uploadFichaHomologacao,
   handleUploadError,
   parseFormData,
@@ -62,7 +62,7 @@ router.post('/',
 
 // PUT /api/ficha-homologacao/:id - Atualizar ficha de homologação
 router.put('/:id', 
-  checkPermission('editar'),
+  checkScreenPermission('ficha_homologacao', 'editar'),
   uploadFichaHomologacao,
   handleUploadError,
   parseFormData,
@@ -73,7 +73,7 @@ router.put('/:id',
 
 // DELETE /api/ficha-homologacao/:id - Excluir ficha de homologação
 router.delete('/:id', 
-  checkPermission('excluir'),
+  checkScreenPermission('ficha_homologacao', 'excluir'),
   auditMiddleware(AUDIT_ACTIONS.DELETE, 'ficha_homologacao'),
   commonValidations.id,
   FichaHomologacaoController.excluirFichaHomologacao
@@ -81,31 +81,31 @@ router.delete('/:id',
 
 // GET /api/ficha-homologacao/ativos - Listar fichas de homologação ativas
 router.get('/ativos', 
-  checkPermission('visualizar'),
+  checkScreenPermission('ficha_homologacao', 'visualizar'),
   FichaHomologacaoController.buscarFichasHomologacaoAtivas
 );
 
 // GET /api/ficha-homologacao/tipo/:tipo - Buscar por tipo
 router.get('/tipo/:tipo', 
-  checkPermission('visualizar'),
+  checkScreenPermission('ficha_homologacao', 'visualizar'),
   FichaHomologacaoController.buscarFichasHomologacaoPorTipo
 );
 
 // GET /api/ficha-homologacao/produto-generico/:produto_generico_id - Buscar por produto genérico
 router.get('/produto-generico/:produto_generico_id', 
-  checkPermission('visualizar'),
+  checkScreenPermission('ficha_homologacao', 'visualizar'),
   FichaHomologacaoController.buscarFichasHomologacaoPorNomeGenerico
 );
 
 // GET /api/ficha-homologacao/fornecedor/:fornecedor_id - Buscar por fornecedor
 router.get('/fornecedor/:fornecedor_id', 
-  checkPermission('visualizar'),
+  checkScreenPermission('ficha_homologacao', 'visualizar'),
   FichaHomologacaoController.buscarFichasHomologacaoPorFornecedor
 );
 
 // GET /api/ficha-homologacao/avaliador/:avaliador_id - Buscar por avaliador
 router.get('/avaliador/:avaliador_id', 
-  checkPermission('visualizar'),
+  checkScreenPermission('ficha_homologacao', 'visualizar'),
   FichaHomologacaoController.buscarFichasHomologacaoPorAvaliador
 );
 

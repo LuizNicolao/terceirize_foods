@@ -268,23 +268,31 @@ const fichaHomologacaoValidations = {
       .withMessage('Aparência deve ser BOM, REGULAR ou RUIM'),
     body('cor_observacao')
       .optional()
-      .isString()
-      .isLength({ max: 100 })
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') return true;
+        return typeof value === 'string' && value.length <= 100;
+      })
       .withMessage('Observação de cor deve ter no máximo 100 caracteres'),
     body('odor_observacao')
       .optional()
-      .isString()
-      .isLength({ max: 100 })
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') return true;
+        return typeof value === 'string' && value.length <= 100;
+      })
       .withMessage('Observação de odor deve ter no máximo 100 caracteres'),
     body('sabor_observacao')
       .optional()
-      .isString()
-      .isLength({ max: 100 })
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') return true;
+        return typeof value === 'string' && value.length <= 100;
+      })
       .withMessage('Observação de sabor deve ter no máximo 100 caracteres'),
     body('aparencia_observacao')
       .optional()
-      .isString()
-      .isLength({ max: 100 })
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') return true;
+        return typeof value === 'string' && value.length <= 100;
+      })
       .withMessage('Observação de aparência deve ter no máximo 100 caracteres'),
     body('conclusao')
       .notEmpty()
@@ -310,7 +318,7 @@ const fichaHomologacaoValidations = {
           const temArquivoSalvo = value && value !== '' && typeof value === 'string' && !value.startsWith('data:');
           
           if (!temArquivoNovo && !temArquivoSalvo) {
-            throw new Error('PDF da avaliação antiga é obrigatório para reavaliação');
+          throw new Error('PDF da avaliação antiga é obrigatório para reavaliação');
           }
         }
         return true;
@@ -473,23 +481,31 @@ const fichaHomologacaoValidations = {
       .withMessage('Aparência deve ser BOM, REGULAR ou RUIM'),
     body('cor_observacao')
       .optional()
-      .isString()
-      .isLength({ max: 100 })
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') return true;
+        return typeof value === 'string' && value.length <= 100;
+      })
       .withMessage('Observação de cor deve ter no máximo 100 caracteres'),
     body('odor_observacao')
       .optional()
-      .isString()
-      .isLength({ max: 100 })
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') return true;
+        return typeof value === 'string' && value.length <= 100;
+      })
       .withMessage('Observação de odor deve ter no máximo 100 caracteres'),
     body('sabor_observacao')
       .optional()
-      .isString()
-      .isLength({ max: 100 })
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') return true;
+        return typeof value === 'string' && value.length <= 100;
+      })
       .withMessage('Observação de sabor deve ter no máximo 100 caracteres'),
     body('aparencia_observacao')
       .optional()
-      .isString()
-      .isLength({ max: 100 })
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') return true;
+        return typeof value === 'string' && value.length <= 100;
+      })
       .withMessage('Observação de aparência deve ter no máximo 100 caracteres'),
     body('conclusao')
       .optional()
@@ -520,7 +536,7 @@ const fichaHomologacaoValidations = {
           const temArquivoSalvo = value && value !== '' && typeof value === 'string' && !value.startsWith('data:');
           
           if (!temArquivoNovo && !temArquivoSalvo) {
-            throw new Error('PDF da avaliação antiga é obrigatório para reavaliação');
+          throw new Error('PDF da avaliação antiga é obrigatório para reavaliação');
           }
         }
         return true;

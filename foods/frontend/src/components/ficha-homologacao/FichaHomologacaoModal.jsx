@@ -107,8 +107,8 @@ const FichaHomologacaoModal = ({
   useEffect(() => {
     if (pesoCozidoValor && pesoCruValor && parseFloat(pesoCruValor) > 0) {
       const fatorCoccao = parseFloat(pesoCozidoValor) / parseFloat(pesoCruValor);
-      // Arredondar para 3 casas decimais
-      const fatorCoccaoArredondado = Math.round(fatorCoccao * 1000) / 1000;
+      // Arredondar para 2 casas decimais
+      const fatorCoccaoArredondado = Math.round(fatorCoccao * 100) / 100;
       setValue('fator_coccao_valor', fatorCoccaoArredondado);
     } else if (!pesoCozidoValor || !pesoCruValor || parseFloat(pesoCruValor) === 0) {
       // Limpar o campo se algum dos valores for removido ou se peso cru for zero

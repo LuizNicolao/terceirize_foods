@@ -175,7 +175,7 @@ const AvaliacoesQualidade = ({
               <td className="py-2 px-3">
                 <Input
                   type="number"
-                  step="0.001"
+                  step="0.01"
                   {...register('fator_coccao_valor', { 
                     min: { value: 0, message: 'Fator de cocção deve ser positivo' }
                   })}
