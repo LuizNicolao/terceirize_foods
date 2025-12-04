@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { CKEditor as CKEditorComponent } from '@ckeditor/ckeditor5-react';
-import 'ckeditor5/ckeditor5.css';
 import {
   ClassicEditor as ClassicEditorBase,
   Essentials,
