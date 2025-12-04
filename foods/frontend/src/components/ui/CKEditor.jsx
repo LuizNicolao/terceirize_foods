@@ -1,7 +1,249 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { CKEditor as CKEditorComponent } from '@ckeditor/ckeditor5-react';
+import 'ckeditor5/ckeditor5.css';
+import api from '../../services/api';
+import {
+  ClassicEditor as ClassicEditorBase,
+  Essentials,
+  Bold,
+  Italic,
+  Underline,
+  Strikethrough,
+  Code,
+  Subscript,
+  Superscript,
+  Paragraph,
+  Heading,
+  BlockQuote,
+  Link,
+  List,
+  Table,
+  TableToolbar,
+  TableProperties,
+  TableCellProperties,
+  MediaEmbed,
+  Image,
+  ImageCaption,
+  ImageStyle,
+  ImageToolbar,
+  ImageUpload,
+  SimpleUploadAdapter,
+  Alignment,
+  FontSize,
+  FontFamily,
+  FontColor,
+  FontBackgroundColor,
+  Indent,
+  IndentBlock,
+  SourceEditing,
+  GeneralHtmlSupport,
+  HtmlEmbed,
+  HorizontalLine,
+  PageBreak,
+  RemoveFormat,
+  SelectAll,
+  SpecialCharacters,
+  WordCount,
+  Undo,
+  Clipboard,
+  PasteFromOffice
+} from 'ckeditor5';
+
+// Importar traduções em português brasileiro
+import ptBrTranslations from 'ckeditor5/translations/pt-br.js';
+
+// Criar classe de editor customizada
+class ClassicEditor extends ClassicEditorBase {
+  static builtinPlugins = [
+    Essentials,
+    Bold,
+    Italic,
+    Underline,
+    Strikethrough,
+    Code,
+    Subscript,
+    Superscript,
+    Paragraph,
+    Heading,
+    BlockQuote,
+    Link,
+    List,
+    // Plugins de tabela - ordem importante: Table primeiro, depois TableToolbar, depois TableProperties e TableCellProperties
+    Table,
+    TableToolbar,
+    TableProperties,
+    TableCellProperties,
+    MediaEmbed,
+    Image,
+    ImageCaption,
+    ImageStyle,
+    ImageToolbar,
+    ImageUpload,
+    SimpleUploadAdapter,
+    Alignment,
+    FontSize,
+    FontFamily,
+    FontColor,
+    FontBackgroundColor,
+    Indent,
+    IndentBlock,
+    SourceEditing,
+    GeneralHtmlSupport,
+    HtmlEmbed,
+    HorizontalLine,
+    PageBreak,
+    RemoveFormat,
+    SelectAll,
+    SpecialCharacters,
+    WordCount,
+    Undo,
+    Clipboard,
+    PasteFromOffice
+  ];
+
+  static defaultConfig = {
+    licenseKey: 'GPL',
+    language: 'pt-br',
+    ...(ptBrTranslations && { translations: [ptBrTranslations] }),
+    toolbar: {
+      items: [
+        'heading',
+        '|',
+        'bold',
+        'italic',
+        'underline',
+        'strikethrough',
+        'code',
+        'subscript',
+        'superscript',
+        '|',
+        'fontSize',
+        'fontFamily',
+        'fontColor',
+        'fontBackgroundColor',
+        '|',
+        'alignment',
+        '|',
+        'numberedList',
+        'bulletedList',
+        '|',
+        'outdent',
+        'indent',
+        '|',
+        'link',
+        'blockQuote',
+        'insertTable',
+        'uploadImage',
+        'mediaEmbed',
+        'horizontalLine',
+        'pageBreak',
+        'htmlEmbed',
+        'specialCharacters',
+        '|',
+        'sourceEditing',
+        'removeFormat',
+        '|',
+        'undo',
+        'redo'
+      ],
+      shouldNotGroupWhenFull: true
+    },
+    heading: {
+      options: [
+        { model: 'paragraph', title: 'Parágrafo', class: 'ck-heading_paragraph' },
+        { model: 'heading1', view: 'h1', title: 'Título 1', class: 'ck-heading_heading1' },
+        { model: 'heading2', view: 'h2', title: 'Título 2', class: 'ck-heading_heading2' },
+        { model: 'heading3', view: 'h3', title: 'Título 3', class: 'ck-heading_heading3' },
+        { model: 'heading4', view: 'h4', title: 'Título 4', class: 'ck-heading_heading4' }
+      ]
+    },
+    fontFamily: {
+      options: [
+        'default',
+        'Arial, Helvetica, sans-serif',
+        'Courier New, Courier, monospace',
+        'Georgia, serif',
+        'Lucida Sans Unicode, Lucida Grande, sans-serif',
+        'Tahoma, Geneva, sans-serif',
+        'Times New Roman, Times, serif',
+        'Trebuchet MS, Helvetica, sans-serif',
+        'Verdana, Geneva, sans-serif'
+      ]
+    },
+    fontSize: {
+      options: [9, 11, 13, 'default', 17, 19, 21, 24, 32, 48, 60, 72]
+    },
+    table: {
+      contentToolbar: [
+        'tableColumn',
+        'tableRow',
+        'mergeTableCells',
+        '|',
+        'tableProperties',
+        'tableCellProperties'
+      ],
+      tableToolbar: [
+        'tableColumn',
+        'tableRow',
+        'mergeTableCells',
+        '|',
+        'tableProperties',
+        'tableCellProperties'
+      ],
+      tableProperties: {
+        borderColors: [
+          { color: 'hsl(0, 0%, 90%)', label: 'Cinza Claro' },
+          { color: 'hsl(0, 0%, 50%)', label: 'Cinza' },
+          { color: 'hsl(0, 0%, 0%)', label: 'Preto' },
+          { color: 'hsl(0, 0%, 100%)', label: 'Branco', hasBorder: true }
+        ],
+        backgroundColors: [
+          { color: 'hsl(0, 0%, 100%)', label: 'Branco', hasBorder: true },
+          { color: 'hsl(0, 0%, 90%)', label: 'Cinza Claro' },
+          { color: 'hsl(210, 100%, 50%)', label: 'Azul' },
+          { color: 'hsl(120, 75%, 60%)', label: 'Verde' },
+          { color: 'hsl(60, 100%, 50%)', label: 'Amarelo' },
+          { color: 'hsl(0, 100%, 50%)', label: 'Vermelho' }
+        ]
+      },
+      tableCellProperties: {
+        borderColors: [
+          { color: 'hsl(0, 0%, 90%)', label: 'Cinza Claro' },
+          { color: 'hsl(0, 0%, 50%)', label: 'Cinza' },
+          { color: 'hsl(0, 0%, 0%)', label: 'Preto' },
+          { color: 'hsl(0, 0%, 100%)', label: 'Branco', hasBorder: true }
+        ],
+        backgroundColors: [
+          { color: 'hsl(0, 0%, 100%)', label: 'Branco', hasBorder: true },
+          { color: 'hsl(0, 0%, 90%)', label: 'Cinza Claro' },
+          { color: 'hsl(210, 100%, 50%)', label: 'Azul' },
+          { color: 'hsl(120, 75%, 60%)', label: 'Verde' },
+          { color: 'hsl(60, 100%, 50%)', label: 'Amarelo' },
+          { color: 'hsl(0, 100%, 50%)', label: 'Vermelho' }
+        ]
+      }
+    },
+    image: {
+      toolbar: ['imageStyle:inline', 'imageStyle:block', 'imageStyle:side', '|', 'imageTextAlternative', 'toggleImageCaption'],
+      upload: {
+        types: ['jpeg', 'jpg', 'png', 'gif', 'webp']
+      }
+    },
+    htmlSupport: {
+      allow: [
+        {
+          name: /.*/,
+          attributes: true,
+          classes: true,
+          styles: true
+        }
+      ]
+    }
+  };
+}
 
 /**
- * Componente wrapper para CKEditor 4 - Abordagem simplificada
+ * Componente wrapper para CKEditor 5
  * 
  * @param {Object} props
  * @param {string} props.value - Valor inicial do editor
@@ -22,298 +264,154 @@ const CKEditor = ({
   config = {}
 }) => {
   const editorRef = useRef(null);
-  const editorInstanceRef = useRef(null);
-  const containerRef = useRef(null);
-  const [scriptLoaded, setScriptLoaded] = useState(false);
+  const [editorReady, setEditorReady] = useState(false);
 
-  const normalizePluginsList = (...lists) => {
-    const plugins = new Set();
+  // Obter URL base da API
+  const getBaseURL = () => {
+    return api.defaults.baseURL || 'http://localhost:3001/api';
+  };
+
+  // Mesclar configuração padrão com config customizado
+  const editorConfig = {
+    ...ClassicEditor.defaultConfig,
+    ...config,
+    // Configurar upload de imagens se não foi sobrescrito
+    simpleUpload: config.simpleUpload !== undefined ? config.simpleUpload : {
+      uploadUrl: `${getBaseURL()}/pdf-templates/upload-image`,
+      withCredentials: true,
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+      }
+    }
+  };
+
+  const handleReady = (editor) => {
+    editorRef.current = editor;
+    setEditorReady(true);
     
-    lists.forEach((list) => {
-      if (!list) return;
+    // Definir valor inicial se fornecido
+    if (value && value !== editor.getData()) {
+      editor.setData(value || '');
+    }
 
-      if (Array.isArray(list)) {
-        list.forEach((item) => {
-          if (item && typeof item === 'string') {
-            plugins.add(item.trim());
-          }
-        });
-        return;
-      }
-
-      if (typeof list === 'string') {
-        list
-          .split(',')
-          .map((item) => item.trim())
-          .filter(Boolean)
-          .forEach((item) => plugins.add(item));
-      }
-    });
-
-    return Array.from(plugins).join(',');
+    // Configurar modo somente leitura se disabled
+    if (disabled) {
+      editor.enableReadOnlyMode('disabled');
+    } else {
+      editor.disableReadOnlyMode('disabled');
+    }
   };
 
-  const getBasePath = () => {
-    if (typeof window === 'undefined') {
-      return '/ckeditor/';
+  const handleChange = (event, editor) => {
+    const data = editor.getData();
+    if (onChange) {
+      onChange({
+        target: {
+          name: name || 'ckeditor',
+          value: data
+        }
+      });
     }
-
-    const publicUrlEnv = (process.env.PUBLIC_URL || '').trim();
-
-    if (publicUrlEnv && publicUrlEnv !== '.') {
-      const normalized = publicUrlEnv.endsWith('/')
-        ? publicUrlEnv.slice(0, -1)
-        : publicUrlEnv;
-      if (/^https?:\/\//i.test(normalized)) {
-        return `${normalized}/ckeditor/`;
-      }
-      const withLeadingSlash = normalized.startsWith('/')
-        ? normalized
-        : `/${normalized}`;
-      return `${withLeadingSlash}/ckeditor/`;
-    }
-
-    const pathname = window.location?.pathname || '';
-    if (pathname.startsWith('/foods')) {
-      return '/foods/ckeditor/';
-    }
-
-    return '/ckeditor/';
   };
-
-  const [basePath] = useState(() => getBasePath());
-  const getSkinConfig = () => {
-    const normalizedBase = basePath.endsWith('/') ? basePath : `${basePath}/`;
-    return `moono-lisa,${normalizedBase}skins/moono-lisa/`;
-  };
-
-  // Carregar script do CKEditor dinamicamente
-  useEffect(() => {
-    // Se já está carregado, marcar como carregado
-    if (typeof window.CKEDITOR !== 'undefined') {
-      if (!window.CKEDITOR_BASEPATH) {
-        window.CKEDITOR_BASEPATH = basePath;
-      }
-      setScriptLoaded(true);
-      return;
-    }
-
-    window.CKEDITOR_BASEPATH = basePath;
-
-    const scriptSrc = `${basePath}ckeditor.js`;
-
-    const existingScript = document.querySelector(`script[src="${scriptSrc}"]`);
-    if (existingScript) {
-      existingScript.onload = () => setScriptLoaded(true);
-      existingScript.onerror = () => console.error('Erro ao carregar CKEditor');
-      return;
-    }
-          
-          const script = document.createElement('script');
-    script.src = scriptSrc;
-          script.async = true;
-          script.onload = () => setScriptLoaded(true);
-    script.onerror = () => console.error(`Erro ao carregar CKEditor a partir de ${scriptSrc}`);
-          document.head.appendChild(script);
-  }, [basePath]);
-
-  // Inicializar editor quando script estiver carregado
-  useEffect(() => {
-    if (!scriptLoaded || typeof window.CKEDITOR === 'undefined') {
-      return;
-    }
-
-    // Se já existe uma instância, não recriar
-    if (editorInstanceRef.current) {
-      return;
-    }
-
-    // Aguardar DOM estar pronto
-    const initTimeout = setTimeout(() => {
-      if (!containerRef.current || !document.contains(containerRef.current)) {
-        return;
-      }
-
-      // Criar textarea se não existir
-      if (!editorRef.current) {
-        const textarea = document.createElement('textarea');
-        textarea.name = name || 'ckeditor';
-        textarea.id = `ckeditor-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-        textarea.setAttribute('data-ckeditor', 'true');
-        containerRef.current.appendChild(textarea);
-        editorRef.current = textarea;
-      }
-
-      // Verificar se elemento está no DOM
-      if (!editorRef.current || !document.contains(editorRef.current)) {
-        return;
-      }
-
-      // Destruir instância existente se houver (por ID)
-      if (editorRef.current.id && window.CKEDITOR.instances[editorRef.current.id]) {
-        try {
-          const existing = window.CKEDITOR.instances[editorRef.current.id];
-          if (existing && existing.status !== 'destroyed') {
-            existing.destroy(true);
-          }
-          delete window.CKEDITOR.instances[editorRef.current.id];
-        } catch (e) {
-          // Ignorar erro
-        }
-      }
-
-      // Configuração do editor
-      const defaultRemovePlugins = [
-        'exportpdf',
-        'uploadimage',
-        'easyimage',
-        'cloudservices'
-      ];
-
-      const editorConfig = {
-        language: 'pt-br',
-        height,
-        ...config
-      };
-
-      editorConfig.removePlugins = normalizePluginsList(
-        defaultRemovePlugins,
-        config?.removePlugins,
-        editorConfig?.removePlugins
-      );
-
-      editorConfig.skin = editorConfig.skin || getSkinConfig();
-      editorConfig.baseHref = editorConfig.baseHref || window.location.origin;
-      editorConfig.contentsCss = editorConfig.contentsCss || [
-        `${basePath}contents.css`,
-        `${basePath}skins/moono-lisa/editor.css`,
-        `${basePath}skins/moono-lisa/editor_gecko.css`,
-        `${basePath}skins/moono-lisa/editor_ie.css`,
-        `${basePath}skins/moono-lisa/editor_iequirks.css`,
-        `${basePath}skins/moono-lisa/editor_ie8.css`
-      ];
-
-      // Inicializar editor
-      try {
-        editorInstanceRef.current = window.CKEDITOR.replace(editorRef.current, editorConfig);
-        
-        // Configurar eventos
-        if (onChange && editorInstanceRef.current) {
-          editorInstanceRef.current.on('change', () => {
-            if (editorInstanceRef.current && editorInstanceRef.current.status !== 'destroyed') {
-              const data = editorInstanceRef.current.getData();
-              onChange({
-                target: {
-                  name: name || 'ckeditor',
-                  value: data
-                }
-              });
-            }
-          });
-        }
-
-        // Quando editor estiver pronto, definir valor inicial
-        editorInstanceRef.current.on('instanceReady', () => {
-          setTimeout(() => {
-            if (editorInstanceRef.current && editorInstanceRef.current.status !== 'destroyed') {
-              try {
-                const valueToSet = value || '';
-                const currentData = editorInstanceRef.current.getData() || '';
-                if (valueToSet !== currentData) {
-                  editorInstanceRef.current.setData(valueToSet);
-                }
-                if (name && editorInstanceRef.current) {
-                  editorInstanceRef.current.name = name;
-                }
-              } catch (e) {
-                console.warn('Erro ao definir valor inicial:', e);
-              }
-            }
-          }, 100);
-        });
-      } catch (error) {
-        console.error('Erro ao inicializar CKEditor:', error);
-        editorInstanceRef.current = null;
-      }
-    }, 100);
-
-    // Cleanup
-    return () => {
-      clearTimeout(initTimeout);
-      
-      if (editorInstanceRef.current) {
-        try {
-          if (editorInstanceRef.current.status !== 'destroyed') {
-            editorInstanceRef.current.destroy(true);
-          }
-        } catch (e) {
-          // Ignorar erro
-        }
-        editorInstanceRef.current = null;
-      }
-
-      if (editorRef.current && editorRef.current.id && window.CKEDITOR && window.CKEDITOR.instances) {
-        try {
-          delete window.CKEDITOR.instances[editorRef.current.id];
-        } catch (e) {
-          // Ignorar
-        }
-      }
-
-      if (editorRef.current && editorRef.current.parentNode) {
-        try {
-          editorRef.current.parentNode.removeChild(editorRef.current);
-        } catch (e) {
-          // Ignorar
-        }
-        editorRef.current = null;
-      }
-    };
-  }, [scriptLoaded, name, height, config, onChange]);
 
   // Atualizar valor quando prop mudar
   useEffect(() => {
-    if (editorInstanceRef.current && editorInstanceRef.current.status !== 'destroyed') {
-      try {
-        const currentData = editorInstanceRef.current.getData();
-        if (value !== currentData) {
-          editorInstanceRef.current.setData(value || '');
+    if (editorRef.current && editorReady) {
+      const currentData = editorRef.current.getData();
+      // Comparar valores normalizados (remover espaços em branco no início/fim)
+      const normalizedValue = (value || '').trim();
+      const normalizedCurrent = (currentData || '').trim();
+      
+      if (normalizedValue !== normalizedCurrent) {
+        try {
+        editorRef.current.setData(value || '');
+        } catch (error) {
+          console.error('Erro ao atualizar conteúdo do editor:', error);
         }
-      } catch (e) {
-        // Ignorar erro
       }
     }
-  }, [value]);
+  }, [value, editorReady]);
 
   // Atualizar estado disabled
   useEffect(() => {
-    if (editorInstanceRef.current && editorInstanceRef.current.status !== 'destroyed') {
+    if (editorRef.current && editorReady) {
       if (disabled) {
-        editorInstanceRef.current.setReadOnly(true);
+        editorRef.current.enableReadOnlyMode('disabled');
       } else {
-        editorInstanceRef.current.setReadOnly(false);
+        editorRef.current.disableReadOnlyMode('disabled');
       }
     }
-  }, [disabled]);
+  }, [disabled, editorReady]);
 
-  if (!scriptLoaded) {
-    return (
-      <div 
-        ref={containerRef} 
-        className={`ckeditor-wrapper ${className} flex items-center justify-center bg-gray-50 border border-gray-200 rounded`}
-        style={{ minHeight: `${height}px` }}
-      >
-        <div className="text-gray-500 text-sm">Carregando editor...</div>
-      </div>
-    );
-  }
+  // Método para inserir texto (usado pelo PdfTemplatesModal)
+  useEffect(() => {
+    if (editorRef.current && name) {
+      // Expor método para inserir texto via window
+      if (!window.ckeditor5Instances) {
+        window.ckeditor5Instances = {};
+      }
+      window.ckeditor5Instances[name] = {
+        insertText: (text) => {
+          if (editorRef.current) {
+            editorRef.current.model.change((writer) => {
+              const insertPosition = editorRef.current.model.document.selection.getFirstPosition();
+              writer.insertText(text, insertPosition);
+            });
+          }
+        }
+      };
+    }
+
+    return () => {
+      if (window.ckeditor5Instances && name) {
+        delete window.ckeditor5Instances[name];
+      }
+    };
+  }, [name, editorReady]);
+
+  // Limpar editor quando componente desmontar
+  useEffect(() => {
+    return () => {
+      if (editorRef.current) {
+        editorRef.current.destroy()
+          .catch((error) => {
+            console.error('Erro ao destruir editor:', error);
+          });
+        editorRef.current = null;
+        setEditorReady(false);
+      }
+    };
+  }, []);
 
   return (
-    <div 
-      ref={containerRef} 
-      className={`ckeditor-wrapper ${className}`}
-      style={{ minHeight: `${height}px` }}
-    />
+    <>
+      <style>{`
+        /* Garantir que a barra flutuante do CKEditor apareça acima de modais */
+        .ck.ck-balloon-panel {
+          z-index: 10000 !important;
+        }
+        .ck.ck-toolbar-container {
+          z-index: 10000 !important;
+        }
+        /* Garantir que o wrapper não corte a barra flutuante */
+        .ckeditor-wrapper {
+          position: relative;
+        }
+      `}</style>
+      <div 
+        className={`ckeditor-wrapper ${className}`}
+        style={{ minHeight: `${height}px` }}
+      >
+        <CKEditorComponent
+          editor={ClassicEditor}
+          config={editorConfig}
+          data={value || ''}
+          onReady={handleReady}
+          onChange={handleChange}
+          disabled={disabled}
+        />
+      </div>
+    </>
   );
 };
 

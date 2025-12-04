@@ -252,7 +252,6 @@ class FichaHomologacaoService {
       });
       return response.data;
     } catch (error) {
-      console.error('Erro ao gerar PDF:', error);
       throw error;
     }
   }

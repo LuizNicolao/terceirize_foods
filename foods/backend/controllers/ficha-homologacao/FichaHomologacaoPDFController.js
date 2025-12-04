@@ -27,12 +27,15 @@ class FichaHomologacaoPDFController {
         um.nome as unidade_medida_nome,
         um.sigla as unidade_medida_sigla,
         u.nome as avaliador_nome,
-        u.email as avaliador_email
+        u.email as avaliador_email,
+        u2.nome as aprovador_nome,
+        u2.email as aprovador_email
       FROM ficha_homologacao fh
       LEFT JOIN produto_generico ng ON fh.produto_generico_id = ng.id
       LEFT JOIN fornecedores f ON fh.fornecedor_id = f.id
       LEFT JOIN unidades_medida um ON fh.unidade_medida_id = um.id
       LEFT JOIN usuarios u ON fh.avaliador_id = u.id
+      LEFT JOIN usuarios u2 ON fh.aprovador_id = u2.id
       WHERE fh.id = ?`,
       [id]
     );
@@ -621,6 +624,16 @@ class FichaHomologacaoPDFController {
     doc.font('Helvetica');
     doc.text(ficha.resultado_final ? resultadoLabels[ficha.resultado_final] || ficha.resultado_final : '-', leftMargin + colWidthA + cellPadding, tableDY + 42, { width: (colWidthA * 3) - (cellPadding * 2) });
     doc.moveTo(leftMargin, tableDY + 54).lineTo(leftMargin + tableAWidth, tableDY + 54).stroke();
+
+    // Aprovador
+    doc.moveTo(leftMargin, tableDY + 54).lineTo(leftMargin + tableAWidth, tableDY + 54).stroke();
+    doc.rect(leftMargin, tableDY + 54, colWidthA, 18).fillColor('#f5f5f5').fill().fillColor('black');
+    doc.fontSize(fontSize).font('Helvetica-Bold');
+    doc.text('Aprovador', leftMargin + cellPadding, tableDY + 60, { width: colWidthA - (cellPadding * 2) });
+    doc.rect(leftMargin + colWidthA, tableDY + 54, colWidthA * 3, 18).fillColor('#ffffff').fill().fillColor('black');
+    doc.font('Helvetica');
+    doc.text(ficha.aprovador_nome || '-', leftMargin + colWidthA + cellPadding, tableDY + 60, { width: (colWidthA * 3) - (cellPadding * 2) });
+    doc.moveTo(leftMargin, tableDY + 72).lineTo(leftMargin + tableAWidth, tableDY + 72).stroke();
 
     // Finalizar PDF
     doc.end();

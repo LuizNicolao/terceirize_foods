@@ -30,12 +30,15 @@ class FichaHomologacaoListController {
         um.nome as unidade_medida_nome,
         um.sigla as unidade_medida_sigla,
         u.nome as avaliador_nome,
-        u.email as avaliador_email
+        u.email as avaliador_email,
+        u2.nome as aprovador_nome,
+        u2.email as aprovador_email
       FROM ficha_homologacao fh
       LEFT JOIN produto_generico ng ON fh.produto_generico_id = ng.id
       LEFT JOIN fornecedores f ON fh.fornecedor_id = f.id
       LEFT JOIN unidades_medida um ON fh.unidade_medida_id = um.id
       LEFT JOIN usuarios u ON fh.avaliador_id = u.id
+      LEFT JOIN usuarios u2 ON fh.aprovador_id = u2.id
       WHERE 1=1
     `;
     
@@ -159,12 +162,15 @@ class FichaHomologacaoListController {
         um.nome as unidade_medida_nome,
         um.sigla as unidade_medida_sigla,
         u.nome as avaliador_nome,
-        u.email as avaliador_email
+        u.email as avaliador_email,
+        u2.nome as aprovador_nome,
+        u2.email as aprovador_email
       FROM ficha_homologacao fh
       LEFT JOIN produto_generico ng ON fh.produto_generico_id = ng.id
       LEFT JOIN fornecedores f ON fh.fornecedor_id = f.id
       LEFT JOIN unidades_medida um ON fh.unidade_medida_id = um.id
       LEFT JOIN usuarios u ON fh.avaliador_id = u.id
+      LEFT JOIN usuarios u2 ON fh.aprovador_id = u2.id
       WHERE fh.id = ?`,
       [id]
     );

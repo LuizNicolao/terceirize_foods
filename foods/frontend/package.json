@@ -23,7 +23,9 @@
     "xlsx": "^0.18.5",
     "leaflet": "^1.9.4",
     "react-leaflet": "^4.2.1",
-    "leaflet.markercluster": "^1.5.3"
+    "leaflet.markercluster": "^1.5.3",
+    "@ckeditor/ckeditor5-react": "^11.0.0",
+    "ckeditor5": "^47.3.0"
   },
   "devDependencies": {
     "eslint": "^8.0.0",

@@ -23,7 +23,7 @@ const FotosImpressao = ({ ficha }) => {
               const blobUrl = URL.createObjectURL(blob);
               urls[tipo] = blobUrl;
             } catch (error) {
-              console.error(`Erro ao carregar ${tipo}:`, error);
+              // Erro ao carregar imagem - continuar execução
             }
           }
         });
@@ -432,6 +432,10 @@ const FichaHomologacaoPrint = ({ ficha }) => {
                 <tr>
                   <th>Resultado Final</th>
                   <td colSpan="3">{ficha.resultado_final ? (resultadoLabels[ficha.resultado_final] || ficha.resultado_final) : '-'}</td>
+                </tr>
+                <tr>
+                  <th>Aprovador</th>
+                  <td colSpan="3">{ficha.aprovador_nome || '-'}</td>
                 </tr>
               </tbody>
             </table>

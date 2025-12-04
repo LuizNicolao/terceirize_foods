@@ -10,6 +10,7 @@ const { paginationMiddleware } = require('../../middleware/pagination');
 const { hateoasMiddleware } = require('../../middleware/hateoas');
 const { auditMiddleware, auditChangesMiddleware, AUDIT_ACTIONS } = require('../../utils/audit');
 const pdfTemplatesController = require('../../controllers/pdf-templates');
+const { uploadImageForCKEditor, handleUploadError } = require('../../controllers/pdf-templates/PdfTemplatesUploadController');
 
 const router = express.Router();
 
@@ -77,6 +78,13 @@ router.delete('/:id',
   commonValidations.id,
   auditMiddleware('pdf_templates', AUDIT_ACTIONS.DELETE),
   pdfTemplatesController.excluir
+);
+
+// Upload de imagem para CKEditor
+router.post('/upload-image',
+  checkScreenPermission('pdf_templates', 'editar'),
+  handleUploadError,
+  uploadImageForCKEditor
 );
 
 module.exports = router;

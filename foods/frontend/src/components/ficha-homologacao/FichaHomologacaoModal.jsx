@@ -61,6 +61,7 @@ const FichaHomologacaoModal = ({
       // Preencher avaliador automaticamente com usuário logado
       if (user) {
         setValue('avaliador_id', user.id);
+        setValue('aprovador_id', user.id);
       }
     }
     
@@ -182,6 +183,7 @@ const FichaHomologacaoModal = ({
         produto_generico_id: convertValue(data.produto_generico_id, (v) => parseInt(v)),
         fornecedor_id: convertValue(data.fornecedor_id, (v) => parseInt(v)),
         avaliador_id: convertValue(data.avaliador_id, (v) => parseInt(v)),
+        aprovador_id: convertValue(data.aprovador_id, (v) => parseInt(v)),
         unidade_medida_id: convertValue(data.unidade_medida_id, (v) => parseInt(v)),
         
         // Campos obrigatórios de texto

@@ -31,10 +31,62 @@ const TemplateSelectModal = ({
         <div className="p-6">
           {templates.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-gray-600">Nenhum template disponível para esta tela.</p>
+              <p className="text-gray-600 mb-4">Nenhum template personalizado disponível para esta tela.</p>
+              <div
+                className="border border-gray-200 rounded-lg p-4 hover:border-green-500 hover:bg-green-50 transition-colors cursor-pointer inline-block"
+                onClick={() => onSelect(null)}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-gray-900">Usar Impressão Padrão</h3>
+                    <p className="text-sm text-gray-600">Gerar PDF usando o formato padrão do sistema</p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onSelect(null);
+                    }}
+                    className="ml-4"
+                  >
+                    <FaCheck className="w-4 h-4 text-green-600" />
+                  </Button>
+                </div>
+              </div>
             </div>
           ) : (
             <div className="space-y-3">
+              {/* Opção de usar impressão padrão */}
+              <div
+                className="border border-gray-200 rounded-lg p-4 hover:border-blue-500 hover:bg-blue-50 transition-colors cursor-pointer"
+                onClick={() => onSelect(null)}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="font-semibold text-gray-900">Usar Impressão Padrão</h3>
+                      <span className="px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-800 rounded-full">
+                        Padrão do Sistema
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-600">Gerar PDF usando o formato padrão do sistema</p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onSelect(null);
+                    }}
+                    className="ml-4"
+                  >
+                    <FaCheck className="w-4 h-4 text-blue-600" />
+                  </Button>
+                </div>
+              </div>
+              
+              {/* Templates personalizados */}
               {templates.map((template) => (
                 <div
                   key={template.id}

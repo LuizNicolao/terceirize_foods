@@ -91,7 +91,6 @@ export const useFichaHomologacao = () => {
       setFornecedores(processData(fornecedoresRes));
       setUsuarios(processData(usuariosRes));
     } catch (error) {
-      console.error('Erro ao carregar dados auxiliares:', error);
       toast.error('Erro ao carregar dados auxiliares');
     }
   }, []);
@@ -168,7 +167,6 @@ export const useFichaHomologacao = () => {
         toast.error(response.message || 'Erro ao buscar ficha de homologação');
       }
     } catch (error) {
-      console.error('Erro ao buscar ficha de homologação:', error);
       toast.error('Erro ao carregar dados da ficha de homologação');
     } finally {
       setLoading(false);
@@ -188,7 +186,6 @@ export const useFichaHomologacao = () => {
         toast.error(response.message || 'Erro ao buscar ficha de homologação');
       }
     } catch (error) {
-      console.error('Erro ao buscar ficha de homologação:', error);
       toast.error('Erro ao carregar dados da ficha de homologação');
     } finally {
       setLoading(false);
@@ -243,61 +240,34 @@ export const useFichaHomologacao = () => {
       const templatesResponse = await PdfTemplatesService.listarTemplatesPorTela('ficha-homologacao');
       
       if (templatesResponse.success && templatesResponse.data && templatesResponse.data.length > 0) {
-        // Se houver múltiplos templates, mostrar modal de seleção
-        if (templatesResponse.data.length > 1) {
+        // Sempre mostrar modal de seleção se houver templates
           setTemplatesDisponiveis(templatesResponse.data);
           setPendingPrintIds(ids);
           setShowTemplateSelectModal(true);
         } else {
-          // Se houver apenas um template, usar ele automaticamente
-          const templateId = templatesResponse.data[0].id;
-          await imprimirComTemplate(ids, templateId);
-        }
-      } else {
-        // Se não houver templates, usar geração padrão (sem template_id)
-        await imprimirComTemplate(ids, null);
+        // Se não houver templates, mostrar modal com opção de usar impressão padrão
+        setTemplatesDisponiveis([]);
+        setPendingPrintIds(ids);
+        setShowTemplateSelectModal(true);
       }
     } catch (error) {
-      console.error('Erro ao buscar templates:', error);
-      // Em caso de erro, usar geração padrão
-      await imprimirComTemplate(ids, null);
+      // Em caso de erro, mostrar modal mesmo assim
+      setTemplatesDisponiveis([]);
+      setPendingPrintIds(ids);
+      setShowTemplateSelectModal(true);
     }
   }, []);
 
   /**
-   * Imprimir usando template específico
+   * Imprimir usando template específico ou componente React padrão
    */
   const imprimirComTemplate = useCallback(async (ids, templateId) => {
     setLoadingPrint(true);
     try {
-      // Gerar PDF para cada ficha selecionada
+      // Se templateId for null, usar componente React padrão
+      if (templateId === null || templateId === undefined) {
       for (const id of ids) {
-        const response = await fichaHomologacaoService.gerarPDF(id, templateId);
-        if (response) {
-          // Abrir PDF em nova aba
-          const blob = new Blob([response], { type: 'application/pdf' });
-          const url = window.URL.createObjectURL(blob);
-          window.open(url, '_blank');
-          window.URL.revokeObjectURL(url);
-        }
-      }
-      toast.success(`${ids.length} ficha(s) de homologação impressa(s) com sucesso!`);
-    } catch (error) {
-      console.error('Erro ao imprimir fichas de homologação:', error);
-      toast.error('Erro ao gerar PDF das fichas de homologação');
-    } finally {
-      setLoadingPrint(false);
-    }
-  }, []);
-
-  /**
-   * Imprimir uma ficha individual - abre o diálogo de impressão do navegador diretamente
-   */
-  const handleImprimir = useCallback(async (item) => {
-    try {
-      const fichaId = typeof item === 'object' ? item.id : item;
-      const response = await fichaHomologacaoService.buscarPorId(fichaId);
-      
+          const response = await fichaHomologacaoService.buscarPorId(id);
       if (response && response.success && response.data) {
         const ficha = response.data;
         
@@ -339,7 +309,6 @@ export const useFichaHomologacao = () => {
               display: none !important;
               visibility: hidden !important;
             }
-            /* Ocultar qualquer elemento que possa aparecer */
             header, nav, footer, .navbar, .sidebar, .menu, button, .no-print {
               display: none !important;
               visibility: hidden !important;
@@ -421,14 +390,42 @@ export const useFichaHomologacao = () => {
           // Fallback: limpar após 10 segundos se afterprint não disparar
           setTimeout(cleanup, 10000);
         }, 200);
+          }
+        }
+        toast.success(`${ids.length} ficha(s) de homologação impressa(s) com sucesso!`);
       } else {
-        toast.error('Erro ao buscar dados da ficha de homologação para impressão');
+        // Se houver templateId, usar geração de PDF do backend
+        for (const id of ids) {
+          const response = await fichaHomologacaoService.gerarPDF(id, templateId);
+          if (response) {
+            // Abrir PDF em nova aba
+            const blob = new Blob([response], { type: 'application/pdf' });
+            const url = window.URL.createObjectURL(blob);
+            window.open(url, '_blank');
+            window.URL.revokeObjectURL(url);
+          }
+        }
+        toast.success(`${ids.length} ficha(s) de homologação impressa(s) com sucesso!`);
       }
     } catch (error) {
-      console.error('Erro ao imprimir ficha de homologação:', error);
-      toast.error('Erro ao imprimir ficha de homologação');
+      toast.error('Erro ao gerar PDF das fichas de homologação');
+    } finally {
+      setLoadingPrint(false);
     }
   }, []);
+
+  /**
+   * Imprimir uma ficha individual - busca templates e mostra modal ou imprime direto
+   */
+  const handleImprimir = useCallback(async (item) => {
+    try {
+      const fichaId = typeof item === 'object' ? item.id : item;
+      // Usar a função que busca templates e decide se mostra modal ou imprime direto
+      await buscarTemplatesEImprimir([fichaId]);
+    } catch (error) {
+      toast.error('Erro ao imprimir ficha de homologação');
+    }
+  }, [buscarTemplatesEImprimir]);
 
   /**
    * Selecionar template no modal

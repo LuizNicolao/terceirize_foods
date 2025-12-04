@@ -27,7 +27,6 @@ const AuthenticatedImage = ({ id, tipo, alt, className }) => {
         setImageUrl(blobUrl);
         setError(false);
       } catch (err) {
-        console.error('Erro ao carregar imagem:', err);
         setError(true);
       } finally {
         setLoading(false);
