@@ -387,7 +387,9 @@ const ProdutosNotaFiscal = ({
                   <tr key={index} className="hover:bg-gray-50">
                     <td className="px-3 py-2">
                       <div>
-                        <p className="text-sm font-medium text-gray-900">{item.descricao}</p>
+                        <p className="text-sm font-medium text-gray-900">
+                          {item.produto_nome || item.produto_generico_nome || item.descricao || '-'}
+                        </p>
                       </div>
                     </td>
                     <td className="px-3 py-2 text-sm text-gray-900">
