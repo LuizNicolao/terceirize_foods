@@ -50,6 +50,28 @@ module.exports = {
         plugin => !(plugin instanceof ModuleScopePlugin)
       );
 
+      // Configurar fullySpecified nas regras do webpack para módulos ESM
+      // Isso permite resolver imports sem extensões em módulos ESM
+      if (webpackConfig.module && webpackConfig.module.rules) {
+        webpackConfig.module.rules.forEach(rule => {
+          if (rule.oneOf) {
+            rule.oneOf.forEach(oneOfRule => {
+              if (oneOfRule.resolve) {
+                oneOfRule.resolve.fullySpecified = false;
+              } else if (oneOfRule.use) {
+                oneOfRule.use.forEach(useItem => {
+                  if (useItem && useItem.options && useItem.options.resolve) {
+                    useItem.options.resolve.fullySpecified = false;
+                  }
+                });
+              }
+            });
+          } else if (rule.resolve) {
+            rule.resolve.fullySpecified = false;
+          }
+        });
+      }
+
       return webpackConfig;
     }
   }
