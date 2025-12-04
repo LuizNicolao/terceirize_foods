@@ -28,6 +28,14 @@ module.exports = {
       // Alias para react-dom/client apontando para o arquivo correto
       webpackConfig.resolve.alias['react-dom/client'] = path.resolve(__dirname, 'node_modules/react-dom/client.js');
 
+      // Remover ModuleScopePlugin para permitir importações de node_modules
+      // Isso é necessário para os aliases funcionarem corretamente
+      const ModuleScopePlugin = require('react-dev-utils/ModuleScopePlugin');
+      const plugins = webpackConfig.resolve.plugins || [];
+      webpackConfig.resolve.plugins = plugins.filter(
+        plugin => !(plugin instanceof ModuleScopePlugin)
+      );
+
       return webpackConfig;
     }
   }
