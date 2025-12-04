@@ -51,8 +51,8 @@ import {
   PasteFromOffice
 } from 'ckeditor5';
 
-// Importar traduções em português brasileiro
-import ptBrTranslations from 'ckeditor5/translations/pt-br.js';
+// Importar traduções em português brasileiro usando caminho relativo
+import ptBrTranslations from '../../../node_modules/ckeditor5/dist/translations/pt-br.js';
 
 // Criar classe de editor customizada
 class ClassicEditor extends ClassicEditorBase {
