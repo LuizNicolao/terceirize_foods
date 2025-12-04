@@ -200,11 +200,20 @@ const fichaHomologacaoValidations = {
       .withMessage('Data de validade deve ser uma data válida')
       .custom((value) => {
         if (!value) return true;
+        // Criar data de hoje apenas com ano, mês e dia (sem hora)
         const hoje = new Date();
-        hoje.setHours(0, 0, 0, 0);
-        const dataValidade = new Date(value);
-        dataValidade.setHours(0, 0, 0, 0);
-        if (dataValidade < hoje) {
+        const hojeDate = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+        
+        // Criar data de validade apenas com ano, mês e dia (sem hora)
+        const dataValidadeParts = value.split('T')[0].split('-');
+        const dataValidade = new Date(
+          parseInt(dataValidadeParts[0]),
+          parseInt(dataValidadeParts[1]) - 1,
+          parseInt(dataValidadeParts[2])
+        );
+        
+        // Permitir data igual ou posterior à data atual
+        if (dataValidade < hojeDate) {
           throw new Error('Data de validade não pode ser anterior à data atual');
         }
         return true;
@@ -294,8 +303,15 @@ const fichaHomologacaoValidations = {
     body('pdf_avaliacao_antiga')
       .optional()
       .custom((value, { req }) => {
-        if (req.body.tipo === 'REAVALIACAO' && (!value || value === '')) {
-          throw new Error('PDF da avaliação antiga é obrigatório para reavaliação');
+        if (req.body.tipo === 'REAVALIACAO') {
+          // Verificar se há arquivo em req.files (upload novo)
+          const temArquivoNovo = req.files && req.files.pdf_avaliacao_antiga && req.files.pdf_avaliacao_antiga[0];
+          // Verificar se há valor no body (arquivo já salvo ou string de caminho)
+          const temArquivoSalvo = value && value !== '' && typeof value === 'string' && !value.startsWith('data:');
+          
+          if (!temArquivoNovo && !temArquivoSalvo) {
+            throw new Error('PDF da avaliação antiga é obrigatório para reavaliação');
+          }
         }
         return true;
       }),
@@ -389,11 +405,20 @@ const fichaHomologacaoValidations = {
       .withMessage('Data de validade deve ser uma data válida')
       .custom((value) => {
         if (!value) return true;
+        // Criar data de hoje apenas com ano, mês e dia (sem hora)
         const hoje = new Date();
-        hoje.setHours(0, 0, 0, 0);
-        const dataValidade = new Date(value);
-        dataValidade.setHours(0, 0, 0, 0);
-        if (dataValidade < hoje) {
+        const hojeDate = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+        
+        // Criar data de validade apenas com ano, mês e dia (sem hora)
+        const dataValidadeParts = value.split('T')[0].split('-');
+        const dataValidade = new Date(
+          parseInt(dataValidadeParts[0]),
+          parseInt(dataValidadeParts[1]) - 1,
+          parseInt(dataValidadeParts[2])
+        );
+        
+        // Permitir data igual ou posterior à data atual
+        if (dataValidade < hojeDate) {
           throw new Error('Data de validade não pode ser anterior à data atual');
         }
         return true;
@@ -488,8 +513,15 @@ const fichaHomologacaoValidations = {
     body('pdf_avaliacao_antiga')
       .optional()
       .custom((value, { req }) => {
-        if (req.body.tipo === 'REAVALIACAO' && (!value || value === '')) {
-          throw new Error('PDF da avaliação antiga é obrigatório para reavaliação');
+        if (req.body.tipo === 'REAVALIACAO') {
+          // Verificar se há arquivo em req.files (upload novo)
+          const temArquivoNovo = req.files && req.files.pdf_avaliacao_antiga && req.files.pdf_avaliacao_antiga[0];
+          // Verificar se há valor no body (arquivo já salvo ou string de caminho)
+          const temArquivoSalvo = value && value !== '' && typeof value === 'string' && !value.startsWith('data:');
+          
+          if (!temArquivoNovo && !temArquivoSalvo) {
+            throw new Error('PDF da avaliação antiga é obrigatório para reavaliação');
+          }
         }
         return true;
       }),

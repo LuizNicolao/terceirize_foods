@@ -375,9 +375,19 @@ const ProdutoEdicaoModal = ({
     } else {
       const validade = formData.validade || formatDateISO(formData.validadeBR);
       if (validade) {
-        const validadeDate = new Date(validade);
-        validadeDate.setHours(0, 0, 0, 0);
-        if (validadeDate < hoje) {
+        // Criar data de hoje apenas com ano, mês e dia (sem hora)
+        const hojeDate = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+        
+        // Criar data de validade apenas com ano, mês e dia (sem hora)
+        const validadeParts = validade.split('T')[0].split('-');
+        const validadeDate = new Date(
+          parseInt(validadeParts[0]),
+          parseInt(validadeParts[1]) - 1,
+          parseInt(validadeParts[2])
+        );
+        
+        // Permitir data igual ou posterior à data atual
+        if (validadeDate < hojeDate) {
           newErrors.validade = 'Data de validade não pode ser anterior à data atual';
           hasErrors = true;
         }
@@ -585,11 +595,20 @@ const ProdutoEdicaoModal = ({
               min={new Date().toISOString().split('T')[0]}
               onChange={(e) => {
                 const dataSelecionada = e.target.value;
+                // Criar data de hoje apenas com ano, mês e dia (sem hora)
                 const hoje = new Date();
-                hoje.setHours(0, 0, 0, 0);
-                const dataValidade = new Date(dataSelecionada);
+                const hojeDate = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
                 
-                if (dataValidade < hoje) {
+                // Criar data de validade apenas com ano, mês e dia (sem hora)
+                const dataValidadeParts = dataSelecionada.split('-');
+                const dataValidade = new Date(
+                  parseInt(dataValidadeParts[0]),
+                  parseInt(dataValidadeParts[1]) - 1,
+                  parseInt(dataValidadeParts[2])
+                );
+                
+                // Permitir data igual ou posterior à data atual
+                if (dataValidade < hojeDate) {
                   setErrors(prev => ({
                     ...prev,
                     validade: 'Data de validade não pode ser anterior à data atual'

@@ -134,11 +134,20 @@ const InformacoesProduto = ({
                 required: 'Data de validade é obrigatória',
                 validate: (value) => {
                   if (!value) return true;
+                  // Criar data de hoje apenas com ano, mês e dia (sem hora)
                   const hoje = new Date();
-                  hoje.setHours(0, 0, 0, 0);
-                  const dataValidade = new Date(value);
-                  dataValidade.setHours(0, 0, 0, 0);
-                  if (dataValidade < hoje) {
+                  const hojeDate = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+                  
+                  // Criar data de validade apenas com ano, mês e dia (sem hora)
+                  const dataValidadeParts = value.split('-');
+                  const dataValidade = new Date(
+                    parseInt(dataValidadeParts[0]),
+                    parseInt(dataValidadeParts[1]) - 1,
+                    parseInt(dataValidadeParts[2])
+                  );
+                  
+                  // Permitir data igual ou posterior à data atual
+                  if (dataValidade < hojeDate) {
                     return 'Data de validade não pode ser anterior à data atual';
                   }
                   return true;
