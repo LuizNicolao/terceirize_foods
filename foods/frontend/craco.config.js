@@ -41,6 +41,9 @@ module.exports = {
       
       // Alias para react-dom/client apontando para o arquivo correto
       webpackConfig.resolve.alias['react-dom/client'] = path.resolve(__dirname, 'node_modules/react-dom/client.js');
+      
+      // Alias para es-toolkit/compat para resolver problemas com CKEditor 5 emoji
+      webpackConfig.resolve.alias['es-toolkit/compat'] = path.resolve(__dirname, 'node_modules/es-toolkit/compat.js');
 
       // Remover ModuleScopePlugin para permitir importações de node_modules
       // Isso é necessário para os aliases funcionarem corretamente
