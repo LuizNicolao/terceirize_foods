@@ -142,10 +142,20 @@ const PdfTemplatesModal = ({
     }
   }, [template, isOpen, setValue, reset]);
 
-  // Função para inserir variável no editor CKEditor 5
+  // Função para inserir variável no editor
   const inserirVariavel = (variavel) => {
-    if (window.ckeditor5Instances && window.ckeditor5Instances.html_template) {
-      window.ckeditor5Instances.html_template.insertText(`{{${variavel}}}`);
+    const textarea = document.querySelector('textarea[name="html_template"]');
+    if (textarea) {
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const text = textarea.value;
+      const newText = text.substring(0, start) + `{{${variavel}}}` + text.substring(end);
+      textarea.value = newText;
+      textarea.focus();
+      textarea.setSelectionRange(start + `{{${variavel}}}`.length, start + `{{${variavel}}}`.length);
+      // Disparar evento onChange
+      const event = new Event('input', { bubbles: true });
+      textarea.dispatchEvent(event);
     }
   };
 
