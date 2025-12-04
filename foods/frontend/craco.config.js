@@ -17,6 +17,20 @@ module.exports = {
         webpackConfig.resolve.conditionNames = ['require', 'node', 'default'];
       }
 
+      // Configurar extensions para incluir .js automaticamente
+      // Isso resolve problemas com módulos ESM que precisam de extensões explícitas
+      if (!webpackConfig.resolve.extensions) {
+        webpackConfig.resolve.extensions = ['.js', '.jsx', '.json', '.ts', '.tsx'];
+      } else {
+        // Garantir que .js está presente
+        if (!webpackConfig.resolve.extensions.includes('.js')) {
+          webpackConfig.resolve.extensions.unshift('.js');
+        }
+      }
+
+      // Configurar fullySpecified para false - permite resolução sem extensão
+      webpackConfig.resolve.fullySpecified = false;
+
       // Adicionar alias para ckeditor5 e react-dom/client
       if (!webpackConfig.resolve.alias) {
         webpackConfig.resolve.alias = {};
