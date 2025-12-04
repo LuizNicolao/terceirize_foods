@@ -36,9 +36,6 @@ module.exports = {
         webpackConfig.resolve.alias = {};
       }
       
-      // Alias para ckeditor5 apontando diretamente para o arquivo dist
-      webpackConfig.resolve.alias['ckeditor5'] = path.resolve(__dirname, 'node_modules/ckeditor5/dist/ckeditor5.js');
-      
       // Alias para react-dom/client apontando para o arquivo correto
       webpackConfig.resolve.alias['react-dom/client'] = path.resolve(__dirname, 'node_modules/react-dom/client.js');
       
