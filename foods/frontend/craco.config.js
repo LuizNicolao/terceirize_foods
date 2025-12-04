@@ -46,11 +46,12 @@ module.exports = {
       webpackConfig.resolve.alias['react/jsx-runtime'] = path.resolve(__dirname, 'node_modules/react/jsx-runtime.js');
       webpackConfig.resolve.alias['react/jsx-dev-runtime'] = path.resolve(__dirname, 'node_modules/react/jsx-dev-runtime.js');
       
-      // Alias para es-toolkit/compat para resolver problemas com CKEditor 5 emoji
-      webpackConfig.resolve.alias['es-toolkit/compat'] = path.resolve(__dirname, 'node_modules/es-toolkit/compat.js');
+      // COMENTADO TEMPORARIAMENTE - relacionado ao CKEditor que está desabilitado
+      // // Alias para es-toolkit/compat para resolver problemas com CKEditor 5 emoji
+      // webpackConfig.resolve.alias['es-toolkit/compat'] = path.resolve(__dirname, 'node_modules/es-toolkit/compat.js');
       
-      // Alias para vanilla-colorful/lib/entrypoints/hex para resolver problemas com CKEditor 5 UI
-      webpackConfig.resolve.alias['vanilla-colorful/lib/entrypoints/hex'] = path.resolve(__dirname, 'node_modules/vanilla-colorful/lib/entrypoints/hex.js');
+      // // Alias para vanilla-colorful/lib/entrypoints/hex para resolver problemas com CKEditor 5 UI
+      // webpackConfig.resolve.alias['vanilla-colorful/lib/entrypoints/hex'] = path.resolve(__dirname, 'node_modules/vanilla-colorful/lib/entrypoints/hex.js');
 
       // Remover ModuleScopePlugin para permitir importações de node_modules
       // Isso é necessário para os aliases funcionarem corretamente
