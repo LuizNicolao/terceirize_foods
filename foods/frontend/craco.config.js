@@ -8,9 +8,9 @@ module.exports = {
         webpackConfig.resolve = {};
       }
 
-      // Configurar exportsFields para ser mais permissivo
-      // Prioriza 'main' e 'module' antes de 'exports' para evitar problemas com exports inválidos
-      webpackConfig.resolve.exportsFields = ['main', 'module', 'browser', 'exports'];
+      // Desabilitar verificação estrita de exports - prioriza apenas campos tradicionais
+      // Isso resolve problemas com ckeditor5, react-query, react-dom e outros pacotes
+      webpackConfig.resolve.exportsFields = ['main', 'module', 'browser'];
 
       // Configurar conditionNames para ser mais permissivo
       if (!webpackConfig.resolve.conditionNames) {
