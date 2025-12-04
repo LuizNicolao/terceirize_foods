@@ -1,4 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React from 'react';
+// COMENTADO TEMPORARIAMENTE - imports não usados no placeholder
+// import React, { useEffect, useRef, useState } from 'react';
 // COMENTADO TEMPORARIAMENTE PARA PERMITIR BUILD SEM CKEDITOR
 // import { CKEditor as CKEditorComponent } from '@ckeditor/ckeditor5-react';
 // // Importar CSS do CKEditor 5 usando caminho relativo do node_modules
