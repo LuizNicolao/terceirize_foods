@@ -13,7 +13,6 @@ const NotaFiscalItemModal = ({
   const [carregandoProdutos, setCarregandoProdutos] = useState(false);
   const [formData, setFormData] = useState({
     produto_id: '',
-    codigo_produto: '',
     descricao: '',
     ncm: '',
     cfop: '',
@@ -62,7 +61,6 @@ const NotaFiscalItemModal = ({
     if (item) {
       setFormData({
         produto_id: item.produto_id || '',
-        codigo_produto: item.codigo_produto || '',
         descricao: item.descricao || '',
         ncm: item.ncm || '',
         cfop: item.cfop || '',
@@ -89,7 +87,6 @@ const NotaFiscalItemModal = ({
       // Limpar formulário para novo item
       setFormData({
         produto_id: '',
-        codigo_produto: '',
         descricao: '',
         ncm: '',
         cfop: '',
@@ -122,7 +119,6 @@ const NotaFiscalItemModal = ({
       setFormData(prev => ({
         ...prev,
         produto_id: produto.id,
-        codigo_produto: produto.codigo_produto || '',
         descricao: produto.nome || prev.descricao,
         ncm: produto.ncm || prev.ncm,
         cfop: produto.cfop || prev.cfop,
@@ -142,7 +138,7 @@ const NotaFiscalItemModal = ({
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    if (!formData.codigo_produto || !formData.descricao || !formData.quantidade || !formData.valor_unitario) {
+    if (!formData.descricao || !formData.quantidade || !formData.valor_unitario) {
       alert('Preencha todos os campos obrigatórios');
       return;
     }
@@ -191,7 +187,7 @@ const NotaFiscalItemModal = ({
             }}
             options={produtos.map(produto => ({
               value: String(produto.id),
-              label: `${produto.codigo_produto || ''} - ${produto.nome}`,
+              label: `${produto.codigo || ''} - ${produto.nome}`,
               description: produto.grupo_nome || ''
             }))}
             placeholder={carregandoProdutos ? 'Carregando produtos...' : 'Buscar produto...'}
@@ -204,13 +200,6 @@ const NotaFiscalItemModal = ({
 
         {/* Informações Básicas */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Input
-            label="Código do Produto *"
-            name="codigo_produto"
-            value={formData.codigo_produto}
-            onChange={(e) => setFormData(prev => ({ ...prev, codigo_produto: e.target.value }))}
-            required
-          />
           <Input
             label="Unidade Comercial"
             name="unidade_comercial"

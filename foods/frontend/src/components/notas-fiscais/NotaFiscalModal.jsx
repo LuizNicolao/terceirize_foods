@@ -795,7 +795,6 @@ const NotaFiscalModal = ({
         
         return {
           produto_generico_id: item.produto_id || item.produto_generico_id || null,
-          codigo_produto: item.codigo_produto,
           descricao: item.descricao,
           ncm: item.ncm || null,
           cfop: item.cfop || null,

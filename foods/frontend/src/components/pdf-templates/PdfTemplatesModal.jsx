@@ -15,7 +15,6 @@ const PdfTemplatesModal = ({
   const { register, handleSubmit, reset, formState: { errors }, setValue, watch } = useForm();
   const [saving, setSaving] = useState(false);
   const [htmlContent, setHtmlContent] = useState('');
-  const [editorReady, setEditorReady] = useState(false);
 
   const telaVinculada = watch('tela_vinculada');
 
@@ -101,64 +100,6 @@ const PdfTemplatesModal = ({
         'fornecedor_nome',
         'pedido_numero',
         'status'
-      ],
-      'ficha-homologacao': [
-        // Identificação
-        'id',
-        'tipo',
-        'status',
-        // Datas
-        'data_analise',
-        'fabricacao',
-        'validade',
-        // Produto
-        'produto_generico_id',
-        'nome_generico_nome',
-        'nome_generico_codigo',
-        'marca',
-        'fabricante',
-        'composicao',
-        'lote',
-        // Fornecedor
-        'fornecedor_id',
-        'fornecedor_nome',
-        'fornecedor_nome_fantasia',
-        // Unidade de Medida
-        'unidade_medida_id',
-        'unidade_medida_nome',
-        'unidade_medida_sigla',
-        // Avaliações
-        'peso',
-        'peso_valor',
-        'peso_cru',
-        'peso_cru_valor',
-        'peso_cozido',
-        'peso_cozido_valor',
-        'fator_coccao',
-        'fator_coccao_valor',
-        'cor',
-        'cor_observacao',
-        'odor',
-        'odor_observacao',
-        'sabor',
-        'sabor_observacao',
-        'aparencia',
-        'aparencia_observacao',
-        // Conclusão
-        'conclusao',
-        'resultado_final',
-        // Usuários
-        'avaliador_id',
-        'avaliador_nome',
-        'avaliador_email',
-        'aprovador_id',
-        'aprovador_nome',
-        'aprovador_email',
-        // Documentação
-        'foto_embalagem',
-        'foto_produto_cru',
-        'foto_produto_cozido',
-        'pdf_avaliacao_antiga'
       ]
     };
 
@@ -168,14 +109,7 @@ const PdfTemplatesModal = ({
   const variaveisDisponiveis = getVariaveisDisponiveis();
 
   useEffect(() => {
-    if (isOpen) {
-      // Aguardar um pouco para garantir que o modal está completamente renderizado
-      setEditorReady(false);
-      const timer = setTimeout(() => {
-        setEditorReady(true);
-      }, 100);
-
-      if (template) {
+    if (template && isOpen) {
       // Preencher formulário com dados do template
       reset();
       Object.keys(template).forEach(key => {
@@ -183,6 +117,10 @@ const PdfTemplatesModal = ({
           setValue(key, template[key], { shouldValidate: false });
         }
       });
+      // Aguardar um pouco para o editor carregar antes de definir o conteúdo
+      setTimeout(() => {
+        setHtmlContent(template.html_template || '');
+      }, 300);
       
       // Converter campos booleanos
       setValue('ativo', template.ativo === 1 || template.ativo === true ? '1' : '0', { shouldValidate: false });
@@ -191,23 +129,16 @@ const PdfTemplatesModal = ({
       if (template.tela_vinculada) {
         setValue('tela_vinculada', template.tela_vinculada, { shouldValidate: false });
       }
-        
-        // Definir conteúdo HTML
-        setHtmlContent(template.html_template || '');
-      } else {
+    } else if (!template && isOpen) {
       // Resetar formulário para novo template
       reset();
       setHtmlContent('');
       setValue('ativo', '1', { shouldValidate: false }); // Padrão: Ativo
       setValue('padrao', '0', { shouldValidate: false }); // Padrão: Não é padrão
       setValue('tela_vinculada', '', { shouldValidate: false });
-      }
-
-      return () => clearTimeout(timer);
-    } else {
+    } else if (!isOpen) {
       // Limpar quando modal fechar
       setHtmlContent('');
-      setEditorReady(false);
     }
   }, [template, isOpen, setValue, reset]);
 
@@ -367,21 +298,13 @@ const PdfTemplatesModal = ({
             <label className="block text-sm font-medium text-gray-700 mb-2">
               HTML Template *
             </label>
-            {isOpen && editorReady && (
             <CKEditor
-                key={`template-${template?.id || 'new'}-${isOpen}`}
               value={htmlContent}
               onChange={(e) => setHtmlContent(e.target?.value || '')}
               name="html_template"
               disabled={isViewMode || saving}
               height={500}
             />
-            )}
-            {!editorReady && isOpen && (
-              <div className="flex items-center justify-center h-[500px] border border-gray-300 rounded bg-gray-50">
-                <p className="text-gray-500">Carregando editor...</p>
-              </div>
-            )}
             {errors.html_template && (
               <p className="mt-1 text-sm text-red-600">{errors.html_template.message}</p>
             )}

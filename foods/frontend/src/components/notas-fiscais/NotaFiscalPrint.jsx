@@ -468,7 +468,7 @@ const NotaFiscalPrint = ({ notaFiscal }) => {
                     return (
                       <tr key={index}>
                         <td>{item.numero_item || index + 1}</td>
-                        <td>{item.produto_codigo || item.codigo_produto || '-'}</td>
+                        <td>{item.produto_codigo || '-'}</td>
                         <td>{item.produto_nome || item.nome_produto || '-'}</td>
                         <td>{item.unidade || item.unidade_medida || '-'}</td>
                         <td>{normalizeNumber(qtd)}</td>

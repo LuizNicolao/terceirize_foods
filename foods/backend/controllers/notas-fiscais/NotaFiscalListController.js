@@ -283,16 +283,12 @@ class NotaFiscalListController {
       SELECT 
         pci.id as pedido_item_id,
         pci.produto_generico_id,
-        pci.codigo_produto,
         COALESCE(SUM(CASE WHEN nf.status = 'LANCADA' 
           THEN nfi.quantidade ELSE 0 END), 0) as quantidade_lancada
       FROM pedido_compras_itens pci
       LEFT JOIN notas_fiscais nf ON nf.pedido_compra_id = pci.pedido_id
       LEFT JOIN notas_fiscais_itens nfi ON nfi.nota_fiscal_id = nf.id 
-        AND (
-          nfi.codigo_produto COLLATE utf8mb4_unicode_ci = pci.codigo_produto
-          OR nfi.produto_generico_id = pci.produto_generico_id
-        )
+        AND nfi.produto_generico_id = pci.produto_generico_id
       WHERE pci.pedido_id = ?
     `;
     
@@ -304,7 +300,7 @@ class NotaFiscalListController {
       params.push(notaFiscalIdParam);
     }
     
-    query += ' GROUP BY pci.id, pci.produto_generico_id, pci.codigo_produto';
+    query += ' GROUP BY pci.id, pci.produto_generico_id';
     
     const quantidades = await executeQuery(query, params);
 
@@ -313,7 +309,7 @@ class NotaFiscalListController {
     quantidades.forEach(item => {
       const key = item.produto_generico_id 
         ? `produto_${item.produto_generico_id}` 
-        : `codigo_${item.codigo_produto}`;
+        : `item_${item.pedido_item_id}`;
       quantidadesMap[key] = parseFloat(item.quantidade_lancada) || 0;
       // Também criar uma chave pelo pedido_item_id para facilitar
       quantidadesMap[`item_${item.pedido_item_id}`] = parseFloat(item.quantidade_lancada) || 0;

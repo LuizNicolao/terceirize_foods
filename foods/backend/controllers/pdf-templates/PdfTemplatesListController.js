@@ -73,8 +73,7 @@ class PdfTemplatesListController {
       const telas = [
         { value: 'solicitacoes-compras', label: 'Solicitações de Compras' },
         { value: 'pedidos-compras', label: 'Pedidos de Compras' },
-        { value: 'relatorio-inspecao', label: 'Relatório de Inspeção' },
-        { value: 'ficha-homologacao', label: 'Ficha de Homologação' }
+        { value: 'relatorio-inspecao', label: 'Relatório de Inspeção' }
       ];
 
       res.json({

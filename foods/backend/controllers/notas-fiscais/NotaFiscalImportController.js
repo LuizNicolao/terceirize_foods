@@ -387,7 +387,7 @@ class NotaFiscalImportController {
         }
 
         // Processar dados do produto
-        const descricao = produto_nome;
+        const produto_generico_nome = produto_nome;
 
         if (!notasFiscaisMap[chaveNota]) {
           erros.push(`Linha ${linhaAtual}: Erro interno - nota fiscal não encontrada`);
@@ -399,8 +399,7 @@ class NotaFiscalImportController {
         const itemData = {
           numero_item,
           produto_generico_id: produto_generico_id || null,
-          codigo_produto: '',
-          descricao,
+          produto_generico_nome,
           ncm: null,
           cfop: null,
           unidade_medida: unidade_medida,
@@ -643,14 +642,15 @@ class NotaFiscalImportController {
             try {
             const valor_total_item = (item.quantidade * item.valor_unitario) - (item.valor_desconto || 0);
 
-              // Buscar grupo_id e grupo_nome do produto_generico
+              // Buscar grupo_id, grupo_nome e produto_origem_id do produto_generico
               let grupoId = null;
               let grupoNome = null;
+              let produtoOrigemId = null;
               
               if (item.produto_generico_id) {
                 try {
                   const produtoGrupo = await executeQuery(
-                    `SELECT pg.grupo_id, g.nome as grupo_nome
+                    `SELECT pg.grupo_id, pg.produto_origem_id, g.nome as grupo_nome
                      FROM produto_generico pg
                      LEFT JOIN grupos g ON pg.grupo_id = g.id
                      WHERE pg.id = ?`,
@@ -660,15 +660,16 @@ class NotaFiscalImportController {
                   if (produtoGrupo && produtoGrupo.length > 0) {
                     grupoId = produtoGrupo[0].grupo_id || null;
                     grupoNome = produtoGrupo[0].grupo_nome || null;
+                    produtoOrigemId = produtoGrupo[0].produto_origem_id || null;
                   }
                 } catch (error) {
-                  // Continua sem grupo_id e grupo_nome em caso de erro
+                  // Continua sem grupo_id, grupo_nome e produto_origem_id em caso de erro
                 }
               }
 
             const itemQuery = `
               INSERT INTO notas_fiscais_itens (
-                  nota_fiscal_id, produto_generico_id, grupo_id, grupo_nome, numero_item, codigo_produto, descricao,
+                  nota_fiscal_id, produto_generico_id, produto_origem_id, grupo_id, grupo_nome, numero_item, produto_generico_nome,
                   ncm, cfop, unidade_medida, quantidade, valor_unitario, valor_total,
                 valor_desconto, valor_ipi, aliquota_ipi, valor_icms, aliquota_icms,
                 valor_pis, aliquota_pis, valor_cofins, aliquota_cofins
@@ -678,11 +679,11 @@ class NotaFiscalImportController {
             await executeQuery(itemQuery, [
               notaFiscalId,
                 item.produto_generico_id || null,
+                produtoOrigemId,
                 grupoId,
                 grupoNome,
               item.numero_item,
-              item.codigo_produto,
-              item.descricao,
+              item.produto_generico_nome,
               item.ncm,
               item.cfop,
                 item.unidade_medida,

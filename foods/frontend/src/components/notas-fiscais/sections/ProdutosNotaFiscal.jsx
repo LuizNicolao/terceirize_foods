@@ -79,7 +79,7 @@ const ProdutosNotaFiscal = ({
           // Calcular quantidade já lançada para este item
           const keyProduto = item.produto_generico_id 
             ? `produto_${item.produto_generico_id}` 
-            : `codigo_${item.codigo_produto}`;
+            : `item_${item.id}`;
           const keyItem = `item_${item.id}`;
           const quantidadeLancada = quantidadesLancadas[keyProduto] || quantidadesLancadas[keyItem] || 0;
           
@@ -89,7 +89,6 @@ const ProdutosNotaFiscal = ({
           return {
             produto_id: item.produto_generico_id || null, // Mantido para compatibilidade com o componente
             produto_generico_id: item.produto_generico_id || null,
-            codigo_produto: item.codigo_produto || '',
             descricao: item.nome_produto || '',
             unidade_comercial: item.unidade_medida || item.unidade_sigla || 'UN',
             quantidade: quantidadeDisponivel > 0 ? quantidadeDisponivel : 0, // Quantidade recebida inicia com o disponível
@@ -160,8 +159,7 @@ const ProdutosNotaFiscal = ({
         const itensEnriquecidos = itens.map(itemNota => {
           // Encontrar item correspondente no pedido
           const itemPedido = itensPedido.find(pedItem => 
-            (pedItem.produto_generico_id && pedItem.produto_generico_id === itemNota.produto_generico_id) ||
-            (pedItem.codigo_produto && pedItem.codigo_produto === itemNota.codigo_produto)
+            pedItem.produto_generico_id && pedItem.produto_generico_id === itemNota.produto_generico_id
           );
 
           if (itemPedido) {
@@ -170,7 +168,7 @@ const ProdutosNotaFiscal = ({
             // Calcular quantidade já lançada em OUTRAS notas fiscais
             const keyProduto = itemPedido.produto_generico_id 
               ? `produto_${itemPedido.produto_generico_id}` 
-              : `codigo_${itemPedido.codigo_produto}`;
+              : `item_${itemPedido.id}`;
             const keyItem = `item_${itemPedido.id}`;
             const quantidadeLancadaOutras = quantidadesLancadas[keyProduto] || quantidadesLancadas[keyItem] || 0;
             
@@ -390,7 +388,6 @@ const ProdutosNotaFiscal = ({
                     <td className="px-3 py-2">
                       <div>
                         <p className="text-sm font-medium text-gray-900">{item.descricao}</p>
-                        <p className="text-xs text-gray-500">Código: {item.codigo_produto}</p>
                       </div>
                     </td>
                     <td className="px-3 py-2 text-sm text-gray-900">

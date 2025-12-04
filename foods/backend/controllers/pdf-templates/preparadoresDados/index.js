@@ -6,14 +6,12 @@
 const SolicitacoesComprasPreparador = require('./solicitacoesComprasPreparador');
 const PedidosComprasPreparador = require('./pedidosComprasPreparador');
 const RelatorioInspecaoPreparador = require('./relatorioInspecaoPreparador');
-const FichaHomologacaoPreparador = require('./fichaHomologacaoPreparador');
 
 // Mapeamento de tela -> preparador
 const PREPARADORES = {
   'solicitacoes-compras': SolicitacoesComprasPreparador,
   'pedidos-compras': PedidosComprasPreparador,
   'relatorio-inspecao': RelatorioInspecaoPreparador,
-  'ficha-homologacao': FichaHomologacaoPreparador,
   // Adicionar novos preparadores aqui:
   // 'outra-tela': OutraTelaPreparador,
 };

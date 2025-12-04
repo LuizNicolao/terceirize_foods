@@ -154,12 +154,6 @@ const notaFiscalValidations = {
       })
       .withMessage('A nota fiscal deve ter pelo menos um item'),
     
-    body('itens.*.codigo_produto')
-      .notEmpty()
-      .withMessage('Código do produto é obrigatório no item')
-      .isLength({ max: 60 })
-      .withMessage('Código do produto deve ter no máximo 60 caracteres'),
-    
     body('itens.*.descricao')
       .notEmpty()
       .withMessage('Descrição do produto é obrigatória no item')

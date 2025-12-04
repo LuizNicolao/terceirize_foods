@@ -263,14 +263,15 @@ class NotaFiscalCRUDController {
       // Calcular valor total do item
       const valor_total_item = (parseFloat(item.quantidade) * parseFloat(item.valor_unitario)) - parseFloat(item.valor_desconto || 0);
 
-      // Buscar grupo_id e grupo_nome do produto_generico
+      // Buscar grupo_id, grupo_nome e produto_origem_id do produto_generico
       let grupoId = null;
       let grupoNome = null;
+      let produtoOrigemId = null;
       
       if (item.produto_generico_id) {
         try {
           const produtoGrupo = await executeQuery(
-            `SELECT pg.grupo_id, g.nome as grupo_nome
+            `SELECT pg.grupo_id, pg.produto_origem_id, g.nome as grupo_nome
              FROM produto_generico pg
              LEFT JOIN grupos g ON pg.grupo_id = g.id
              WHERE pg.id = ?`,
@@ -280,16 +281,17 @@ class NotaFiscalCRUDController {
           if (produtoGrupo && produtoGrupo.length > 0) {
             grupoId = produtoGrupo[0].grupo_id || null;
             grupoNome = produtoGrupo[0].grupo_nome || null;
+            produtoOrigemId = produtoGrupo[0].produto_origem_id || null;
           }
         } catch (error) {
           console.error('Erro ao buscar grupo do produto:', error);
-          // Continua sem grupo_id e grupo_nome em caso de erro
+          // Continua sem grupo_id, grupo_nome e produto_origem_id em caso de erro
         }
       }
 
       const itemQuery = `
         INSERT INTO notas_fiscais_itens (
-          nota_fiscal_id, produto_generico_id, grupo_id, grupo_nome, numero_item, codigo_produto, descricao,
+          nota_fiscal_id, produto_generico_id, produto_origem_id, grupo_id, grupo_nome, numero_item, descricao,
           ncm, cfop, unidade_comercial, quantidade, valor_unitario, valor_total,
           valor_desconto, valor_frete, valor_seguro, valor_outras_despesas,
           valor_ipi, aliquota_ipi, valor_icms, aliquota_icms, valor_icms_st,
@@ -301,10 +303,10 @@ class NotaFiscalCRUDController {
       await executeQuery(itemQuery, [
         notaFiscalId,
         item.produto_generico_id || null,
+        produtoOrigemId,
         grupoId,
         grupoNome,
         numero_item,
-        item.codigo_produto,
         item.descricao,
         item.ncm || null,
         item.cfop || null,
@@ -771,14 +773,15 @@ class NotaFiscalCRUDController {
 
         const valor_total_item = (parseFloat(item.quantidade) * parseFloat(item.valor_unitario)) - parseFloat(item.valor_desconto || 0);
 
-        // Buscar grupo_id e grupo_nome do produto_generico
+        // Buscar grupo_id, grupo_nome e produto_origem_id do produto_generico
         let grupoId = null;
         let grupoNome = null;
+        let produtoOrigemId = null;
         
         if (item.produto_generico_id) {
           try {
             const produtoGrupo = await executeQuery(
-              `SELECT pg.grupo_id, g.nome as grupo_nome
+              `SELECT pg.grupo_id, pg.produto_origem_id, g.nome as grupo_nome
                FROM produto_generico pg
                LEFT JOIN grupos g ON pg.grupo_id = g.id
                WHERE pg.id = ?`,
@@ -788,16 +791,17 @@ class NotaFiscalCRUDController {
             if (produtoGrupo && produtoGrupo.length > 0) {
               grupoId = produtoGrupo[0].grupo_id || null;
               grupoNome = produtoGrupo[0].grupo_nome || null;
+              produtoOrigemId = produtoGrupo[0].produto_origem_id || null;
             }
           } catch (error) {
             console.error('Erro ao buscar grupo do produto:', error);
-            // Continua sem grupo_id e grupo_nome em caso de erro
+            // Continua sem grupo_id, grupo_nome e produto_origem_id em caso de erro
           }
         }
 
         const itemQuery = `
           INSERT INTO notas_fiscais_itens (
-            nota_fiscal_id, produto_generico_id, grupo_id, grupo_nome, numero_item, codigo_produto, descricao,
+            nota_fiscal_id, produto_generico_id, produto_origem_id, grupo_id, grupo_nome, numero_item, descricao,
             ncm, cfop, unidade_comercial, quantidade, valor_unitario, valor_total,
             valor_desconto, valor_frete, valor_seguro, valor_outras_despesas,
             valor_ipi, aliquota_ipi, valor_icms, aliquota_icms, valor_icms_st,
@@ -809,10 +813,10 @@ class NotaFiscalCRUDController {
         await executeQuery(itemQuery, [
           id,
           item.produto_generico_id || null,
+          produtoOrigemId,
           grupoId,
           grupoNome,
           numero_item,
-          item.codigo_produto,
           item.descricao,
           item.ncm || null,
           item.cfop || null,

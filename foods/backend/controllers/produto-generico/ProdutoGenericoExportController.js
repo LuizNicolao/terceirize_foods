@@ -27,6 +27,7 @@ class ProdutoGenericoExportController {
       const worksheet = workbook.addWorksheet('Produtos Genéricos');
 
       worksheet.columns = [
+        { header: 'ID', key: 'id', width: 10 },
         { header: 'Código', key: 'codigo', width: 15 },
         { header: 'Nome', key: 'nome', width: 40 },
         { header: 'Grupo', key: 'grupo', width: 25 },
@@ -100,6 +101,7 @@ class ProdutoGenericoExportController {
 
       produtos.forEach((produto, index) => {
         const row = worksheet.addRow({
+          id: produto.id || '',
           codigo: produto.codigo || '',
           nome: produto.nome || '',
           grupo: produto.grupo_nome || '',
