@@ -5,7 +5,7 @@
 
 const express = require('express');
 const { body } = require('express-validator');
-const { authenticateToken, checkPermission } = require('../../middleware/auth');
+const { authenticateToken, checkScreenPermission } = require('../../middleware/auth');
 const { 
   solicitacoesComprasValidations, 
   commonValidations,
@@ -27,7 +27,7 @@ router.use(hateoasMiddleware('solicitacoes-compras'));
 
 // GET /api/solicitacoes-compras - Listar todas as solicitações
 router.get('/',
-  checkPermission('visualizar'),
+  checkScreenPermission('solicitacoes_compras', 'visualizar'),
   commonValidations.search,
   commonValidations.pagination,
   SolicitacoesComprasController.listarSolicitacoes
@@ -35,21 +35,21 @@ router.get('/',
 
 // GET /api/solicitacoes-compras/:id/pdf - Gerar PDF da solicitação (deve vir antes de /:id)
 router.get('/:id/pdf',
-  checkPermission('visualizar'),
+  checkScreenPermission('solicitacoes_compras', 'visualizar'),
   commonValidations.id,
   SolicitacoesComprasController.gerarPDF
 );
 
 // GET /api/solicitacoes-compras/:id - Buscar solicitação por ID
 router.get('/:id',
-  checkPermission('visualizar'),
+  checkScreenPermission('solicitacoes_compras', 'visualizar'),
   commonValidations.id,
   SolicitacoesComprasController.buscarSolicitacaoPorId
 );
 
 // POST /api/solicitacoes-compras - Criar nova solicitação
 router.post('/',
-  checkPermission('criar'),
+  checkScreenPermission('solicitacoes_compras', 'criar'),
   auditMiddleware(AUDIT_ACTIONS.CREATE, 'solicitacoes_compras'),
   solicitacoesComprasValidations.create,
   SolicitacoesComprasController.criarSolicitacao
@@ -57,7 +57,7 @@ router.post('/',
 
 // PUT /api/solicitacoes-compras/:id - Atualizar solicitação
 router.put('/:id',
-  checkPermission('editar'),
+  checkScreenPermission('solicitacoes_compras', 'editar'),
   auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'solicitacoes_compras'),
   solicitacoesComprasValidations.update,
   SolicitacoesComprasController.atualizarSolicitacao
@@ -65,7 +65,7 @@ router.put('/:id',
 
 // DELETE /api/solicitacoes-compras/:id - Excluir solicitação
 router.delete('/:id',
-  checkPermission('excluir'),
+  checkScreenPermission('solicitacoes_compras', 'excluir'),
   auditMiddleware(AUDIT_ACTIONS.DELETE, 'solicitacoes_compras'),
   commonValidations.id,
   SolicitacoesComprasController.excluirSolicitacao
@@ -75,14 +75,14 @@ router.delete('/:id',
 
 // POST /api/solicitacoes-compras/:id/recalcular-status - Recalcular status
 router.post('/:id/recalcular-status',
-  checkPermission('editar'),
+  checkScreenPermission('solicitacoes_compras', 'editar'),
   commonValidations.id,
   SolicitacoesComprasController.recalcularStatus
 );
 
 // POST /api/solicitacoes-compras/recalcular-todos-status - Recalcular todos os status
 router.post('/recalcular-todos-status',
-  checkPermission('editar'),
+  checkScreenPermission('solicitacoes_compras', 'editar'),
   SolicitacoesComprasController.recalcularTodosStatus
 );
 
@@ -90,7 +90,7 @@ router.post('/recalcular-todos-status',
 
 // POST /api/solicitacoes-compras/buscar-semana-abastecimento - Buscar semana de abastecimento
 router.post('/buscar-semana-abastecimento',
-  checkPermission('visualizar'),
+  checkScreenPermission('solicitacoes_compras', 'visualizar'),
   body('data_entrega')
     .isISO8601()
     .withMessage('Data de entrega deve ser uma data válida (formato ISO)')

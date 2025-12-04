@@ -93,12 +93,12 @@ const ConclusaoDocumentacao = ({
             />
             {errors.foto_embalagem && <p className="text-red-500 text-xs mt-1">{errors.foto_embalagem.message}</p>}
             {fichaHomologacao?.foto_embalagem && fichaHomologacao?.id && (
-              <div className="mt-2">
+              <div className="mt-2 flex items-center justify-center bg-gray-50 rounded-md border border-gray-300" style={{ minHeight: '128px' }}>
                 <AuthenticatedImage
                   id={fichaHomologacao.id}
                   tipo="foto_embalagem"
                   alt="Foto da embalagem"
-                  className="w-full h-32 object-cover rounded-md border border-gray-300"
+                  className="max-w-full max-h-32 object-contain rounded-md"
                 />
               </div>
             )}
@@ -117,12 +117,12 @@ const ConclusaoDocumentacao = ({
             />
             {errors.foto_produto_cru && <p className="text-red-500 text-xs mt-1">{errors.foto_produto_cru.message}</p>}
             {fichaHomologacao?.foto_produto_cru && fichaHomologacao?.id && (
-              <div className="mt-2">
+              <div className="mt-2 flex items-center justify-center bg-gray-50 rounded-md border border-gray-300" style={{ minHeight: '128px' }}>
                 <AuthenticatedImage
                   id={fichaHomologacao.id}
                   tipo="foto_produto_cru"
                   alt="Foto do produto cru"
-                  className="w-full h-32 object-cover rounded-md border border-gray-300"
+                  className="max-w-full max-h-32 object-contain rounded-md"
                 />
               </div>
             )}
@@ -141,12 +141,12 @@ const ConclusaoDocumentacao = ({
             />
             {errors.foto_produto_cozido && <p className="text-red-500 text-xs mt-1">{errors.foto_produto_cozido.message}</p>}
             {fichaHomologacao?.foto_produto_cozido && fichaHomologacao?.id && (
-              <div className="mt-2">
+              <div className="mt-2 flex items-center justify-center bg-gray-50 rounded-md border border-gray-300" style={{ minHeight: '128px' }}>
                 <AuthenticatedImage
                   id={fichaHomologacao.id}
                   tipo="foto_produto_cozido"
                   alt="Foto do produto cozido"
-                  className="w-full h-32 object-cover rounded-md border border-gray-300"
+                  className="max-w-full max-h-32 object-contain rounded-md"
                 />
               </div>
             )}

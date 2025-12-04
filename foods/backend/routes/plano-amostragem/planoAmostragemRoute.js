@@ -5,7 +5,7 @@
 
 const express = require('express');
 const { query, body } = require('express-validator');
-const { authenticateToken, checkPermission, checkScreenPermission } = require('../../middleware/auth');
+const { authenticateToken, checkScreenPermission } = require('../../middleware/auth');
 const { 
   nqaValidations, 
   tabelaAmostragemValidations, 
@@ -28,7 +28,7 @@ router.use(hateoasMiddleware('plano-amostragem'));
 
 // GET /api/plano-amostragem/nqa - Listar NQAs
 router.get('/nqa', 
-  checkPermission('visualizar'),
+  checkScreenPermission('plano_amostragem', 'visualizar'),
   commonValidations.search,
   commonValidations.pagination,
   PlanoAmostragemController.listarNQAs
@@ -36,20 +36,20 @@ router.get('/nqa',
 
 // GET /api/plano-amostragem/nqa/ativos - Buscar NQAs ativos
 router.get('/nqa/ativos',
-  checkPermission('visualizar'),
+  checkScreenPermission('plano_amostragem', 'visualizar'),
   PlanoAmostragemController.buscarNQAsAtivos
 );
 
 // GET /api/plano-amostragem/nqa/:id - Buscar NQA por ID
 router.get('/nqa/:id', 
-  checkPermission('visualizar'),
+  checkScreenPermission('plano_amostragem', 'visualizar'),
   commonValidations.id,
   PlanoAmostragemController.buscarNQAPorId
 );
 
 // POST /api/plano-amostragem/nqa - Criar novo NQA
 router.post('/nqa', 
-  checkPermission('criar'),
+  checkScreenPermission('plano_amostragem', 'criar'),
   auditMiddleware(AUDIT_ACTIONS.CREATE, 'nqa'),
   nqaValidations.create,
   PlanoAmostragemController.criarNQA
@@ -57,7 +57,7 @@ router.post('/nqa',
 
 // PUT /api/plano-amostragem/nqa/:id - Atualizar NQA
 router.put('/nqa/:id', 
-  checkPermission('editar'),
+  checkScreenPermission('plano_amostragem', 'editar'),
   auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'nqa'),
   nqaValidations.update,
   PlanoAmostragemController.atualizarNQA
@@ -65,7 +65,7 @@ router.put('/nqa/:id',
 
 // DELETE /api/plano-amostragem/nqa/:id - Excluir NQA
 router.delete('/nqa/:id', 
-  checkPermission('excluir'),
+  checkScreenPermission('plano_amostragem', 'excluir'),
   auditMiddleware(AUDIT_ACTIONS.DELETE, 'nqa'),
   commonValidations.id,
   PlanoAmostragemController.excluirNQA
@@ -75,7 +75,7 @@ router.delete('/nqa/:id',
 
 // GET /api/plano-amostragem/tabela-amostragem - Listar faixas
 router.get('/tabela-amostragem', 
-  checkPermission('visualizar'),
+  checkScreenPermission('plano_amostragem', 'visualizar'),
   commonValidations.search,
   commonValidations.pagination,
   PlanoAmostragemController.listarFaixas
@@ -83,13 +83,13 @@ router.get('/tabela-amostragem',
 
 // GET /api/plano-amostragem/tabela-amostragem/nqa/:nqa_id - Buscar faixas por NQA
 router.get('/tabela-amostragem/nqa/:nqa_id',
-  checkPermission('visualizar'),
+  checkScreenPermission('plano_amostragem', 'visualizar'),
   PlanoAmostragemController.buscarFaixasPorNQA
 );
 
 // GET /api/plano-amostragem/tabela-amostragem/buscar-por-lote - Buscar plano por tamanho de lote
 router.get('/tabela-amostragem/buscar-por-lote',
-  checkPermission('visualizar'),
+  checkScreenPermission('plano_amostragem', 'visualizar'),
   [
     query('lote')
       .isInt({ min: 1 })
@@ -101,14 +101,14 @@ router.get('/tabela-amostragem/buscar-por-lote',
 
 // GET /api/plano-amostragem/tabela-amostragem/:id - Buscar faixa por ID
 router.get('/tabela-amostragem/:id', 
-  checkPermission('visualizar'),
+  checkScreenPermission('plano_amostragem', 'visualizar'),
   commonValidations.id,
   PlanoAmostragemController.buscarFaixaPorId
 );
 
 // POST /api/plano-amostragem/tabela-amostragem - Criar nova faixa
 router.post('/tabela-amostragem', 
-  checkPermission('criar'),
+  checkScreenPermission('plano_amostragem', 'criar'),
   auditMiddleware(AUDIT_ACTIONS.CREATE, 'tabela_amostragem'),
   tabelaAmostragemValidations.create,
   PlanoAmostragemController.criarFaixa
@@ -116,7 +116,7 @@ router.post('/tabela-amostragem',
 
 // POST /api/plano-amostragem/tabela-amostragem/criar-nqa-automatico - Criar NQA automaticamente
 router.post('/tabela-amostragem/criar-nqa-automatico',
-  checkPermission('criar'),
+  checkScreenPermission('plano_amostragem', 'criar'),
   auditMiddleware(AUDIT_ACTIONS.CREATE, 'nqa'),
   [
     body('codigo')
@@ -130,7 +130,7 @@ router.post('/tabela-amostragem/criar-nqa-automatico',
 
 // PUT /api/plano-amostragem/tabela-amostragem/:id - Atualizar faixa
 router.put('/tabela-amostragem/:id', 
-  checkPermission('editar'),
+  checkScreenPermission('plano_amostragem', 'editar'),
   auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'tabela_amostragem'),
   tabelaAmostragemValidations.update,
   PlanoAmostragemController.atualizarFaixa
@@ -138,7 +138,7 @@ router.put('/tabela-amostragem/:id',
 
 // DELETE /api/plano-amostragem/tabela-amostragem/:id - Excluir faixa
 router.delete('/tabela-amostragem/:id', 
-  checkPermission('excluir'),
+  checkScreenPermission('plano_amostragem', 'excluir'),
   auditMiddleware(AUDIT_ACTIONS.DELETE, 'tabela_amostragem'),
   commonValidations.id,
   PlanoAmostragemController.excluirFaixa
@@ -148,25 +148,25 @@ router.delete('/tabela-amostragem/:id',
 
 // GET /api/plano-amostragem/grupos-nqa - Listar todos os vínculos
 router.get('/grupos-nqa',
-  checkPermission('visualizar'),
+  checkScreenPermission('plano_amostragem', 'visualizar'),
   PlanoAmostragemController.listarTodosVinculos
 );
 
 // GET /api/plano-amostragem/grupos-nqa/nqa/:nqa_id - Listar grupos por NQA
 router.get('/grupos-nqa/nqa/:nqa_id',
-  checkPermission('visualizar'),
+  checkScreenPermission('plano_amostragem', 'visualizar'),
   PlanoAmostragemController.listarGruposPorNQA
 );
 
 // GET /api/plano-amostragem/grupos-nqa/grupo/:grupo_id - Buscar NQA por grupo
 router.get('/grupos-nqa/grupo/:grupo_id',
-  checkPermission('visualizar'),
+  checkScreenPermission('plano_amostragem', 'visualizar'),
   PlanoAmostragemController.buscarNQAPorGrupo
 );
 
 // POST /api/plano-amostragem/grupos-nqa - Vincular grupo a NQA
 router.post('/grupos-nqa',
-  checkPermission('criar'),
+  checkScreenPermission('plano_amostragem', 'criar'),
   auditMiddleware(AUDIT_ACTIONS.CREATE, 'grupos_nqa'),
   gruposNQAValidations.vincular,
   PlanoAmostragemController.vincularGrupo
@@ -174,7 +174,7 @@ router.post('/grupos-nqa',
 
 // DELETE /api/plano-amostragem/grupos-nqa/:grupo_id - Desvincular grupo
 router.delete('/grupos-nqa/:grupo_id',
-  checkPermission('excluir'),
+  checkScreenPermission('plano_amostragem', 'excluir'),
   auditMiddleware(AUDIT_ACTIONS.DELETE, 'grupos_nqa'),
   PlanoAmostragemController.desvincularGrupo
 );

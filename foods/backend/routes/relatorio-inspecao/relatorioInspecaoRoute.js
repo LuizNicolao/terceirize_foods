@@ -5,7 +5,7 @@
 
 const express = require('express');
 const { query, param } = require('express-validator');
-const { authenticateToken, checkPermission } = require('../../middleware/auth');
+const { authenticateToken, checkScreenPermission } = require('../../middleware/auth');
 const { 
   rirValidations, 
   commonValidations,
@@ -27,7 +27,7 @@ router.use(hateoasMiddleware('relatorio-inspecao'));
 
 // GET /api/relatorio-inspecao - Listar todos os RIRs
 router.get('/',
-  checkPermission('visualizar'),
+  checkScreenPermission('relatorio_inspecao', 'visualizar'),
   commonValidations.search,
   commonValidations.pagination,
   RIRController.listarRIRs
@@ -37,7 +37,7 @@ router.get('/',
 
 // GET /api/relatorio-inspecao/buscar-produtos-pedido?id={pedido_id}
 router.get('/buscar-produtos-pedido',
-  checkPermission('visualizar'),
+  checkScreenPermission('relatorio_inspecao', 'visualizar'),
   query('id')
     .isInt({ min: 1 })
     .withMessage('ID do pedido deve ser um número inteiro positivo'),
@@ -47,7 +47,7 @@ router.get('/buscar-produtos-pedido',
 
 // GET /api/relatorio-inspecao/buscar-nqa-grupo?grupo_id={grupo_id}
 router.get('/buscar-nqa-grupo',
-  checkPermission('visualizar'),
+  checkScreenPermission('relatorio_inspecao', 'visualizar'),
   query('grupo_id')
     .isInt({ min: 1 })
     .withMessage('grupo_id deve ser um número inteiro positivo'),
@@ -57,7 +57,7 @@ router.get('/buscar-nqa-grupo',
 
 // GET /api/relatorio-inspecao/buscar-plano-lote?nqa_id={nqa_id}&tamanho_lote={tamanho}
 router.get('/buscar-plano-lote',
-  checkPermission('visualizar'),
+  checkScreenPermission('relatorio_inspecao', 'visualizar'),
   query('nqa_id')
     .isInt({ min: 1 })
     .withMessage('nqa_id deve ser um número inteiro positivo'),
@@ -70,19 +70,19 @@ router.get('/buscar-plano-lote',
 
 // GET /api/relatorio-inspecao/pedidos-aprovados
 router.get('/pedidos-aprovados',
-  checkPermission('visualizar'),
+  checkScreenPermission('relatorio_inspecao', 'visualizar'),
   RIRController.buscarPedidosAprovados
 );
 
 // GET /api/relatorio-inspecao/grupos
 router.get('/grupos',
-  checkPermission('visualizar'),
+  checkScreenPermission('relatorio_inspecao', 'visualizar'),
   RIRController.buscarGrupos
 );
 
 // GET /api/relatorio-inspecao/saldo-pedido/:pedido_id
 router.get('/saldo-pedido/:pedido_id',
-  checkPermission('visualizar'),
+  checkScreenPermission('relatorio_inspecao', 'visualizar'),
   param('pedido_id')
     .isInt({ min: 1 })
     .withMessage('ID do pedido deve ser um número inteiro positivo'),
@@ -92,14 +92,14 @@ router.get('/saldo-pedido/:pedido_id',
 
 // GET /api/relatorio-inspecao/:id - Buscar RIR por ID (DEPOIS DAS ROTAS ESTÁTICAS)
 router.get('/:id',
-  checkPermission('visualizar'),
+  checkScreenPermission('relatorio_inspecao', 'visualizar'),
   commonValidations.id,
   RIRController.buscarRIRPorId
 );
 
 // POST /api/relatorio-inspecao - Criar novo RIR
 router.post('/',
-  checkPermission('criar'),
+  checkScreenPermission('relatorio_inspecao', 'criar'),
   auditMiddleware(AUDIT_ACTIONS.CREATE, 'relatorio_inspecao'),
   rirValidations.create,
   RIRController.criarRIR
@@ -107,7 +107,7 @@ router.post('/',
 
 // PUT /api/relatorio-inspecao/:id - Atualizar RIR
 router.put('/:id',
-  checkPermission('editar'),
+  checkScreenPermission('relatorio_inspecao', 'editar'),
   auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'relatorio_inspecao'),
   rirValidations.update,
   RIRController.atualizarRIR
@@ -115,7 +115,7 @@ router.put('/:id',
 
 // DELETE /api/relatorio-inspecao/:id - Excluir RIR
 router.delete('/:id',
-  checkPermission('excluir'),
+  checkScreenPermission('relatorio_inspecao', 'excluir'),
   auditMiddleware(AUDIT_ACTIONS.DELETE, 'relatorio_inspecao'),
   commonValidations.id,
   RIRController.excluirRIR
