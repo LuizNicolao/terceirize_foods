@@ -500,7 +500,8 @@ class NotaFiscalImportController {
           // Converter datas para formato MySQL
           const dataEmissaoMySQL = `${notaFiscal.data_emissao} 00:00:00`;
           const dataSaidaMySQL = `${notaFiscal.data_saida} 00:00:00`;
-          const dataLancamentoMySQL = new Date().toISOString().slice(0, 19).replace('T', ' ');
+          // Data de lançamento = data de emissão (quando importado)
+          const dataLancamentoMySQL = `${notaFiscal.data_emissao} 00:00:00`;
 
           const usuarioId = req.user?.id || null;
 
