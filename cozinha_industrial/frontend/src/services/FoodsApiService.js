@@ -375,6 +375,245 @@ class FoodsApiService {
   }
 
   /**
+   * ==================== PRODUTOS GENÉRICOS ====================
+   */
+  
+  /**
+   * Consultar produtos genéricos do sistema Foods
+   */
+  static async getProdutosGenericos(params = {}) {
+    try {
+      const response = await foodsApi.get('/produto-generico', { params });
+      
+      let produtosData = response.data.data || response.data;
+      if (produtosData && produtosData.items && Array.isArray(produtosData.items)) {
+        produtosData = produtosData.items;
+      }
+      
+      const arrayData = Array.isArray(produtosData) ? produtosData : [];
+      
+      return {
+        success: true,
+        data: arrayData,
+        pagination: response.data.meta?.pagination || response.data.pagination || null,
+        message: 'Produtos genéricos consultados com sucesso'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        data: [],
+        pagination: null,
+        message: error.response?.data?.message || 'Erro ao consultar produtos genéricos',
+        error: error.response?.data || error.message
+      };
+    }
+  }
+
+  /**
+   * Buscar produto genérico por ID
+   */
+  static async getProdutoGenericoById(id) {
+    try {
+      const response = await foodsApi.get(`/produto-generico/${id}`);
+      return {
+        success: true,
+        data: response.data.data || response.data,
+        message: 'Produto genérico encontrado com sucesso'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        data: null,
+        message: error.response?.data?.message || 'Erro ao buscar produto genérico',
+        error: error.response?.data || error.message
+      };
+    }
+  }
+
+  /**
+   * Buscar estatísticas de produtos genéricos
+   */
+  static async getProdutosGenericosStats() {
+    try {
+      const response = await foodsApi.get('/produto-generico/estatisticas');
+      
+      return {
+        success: true,
+        data: response.data.data || response.data,
+        message: 'Estatísticas de produtos genéricos obtidas com sucesso'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        data: null,
+        message: error.response?.data?.message || 'Erro ao buscar estatísticas de produtos genéricos',
+        error: error.response?.data || error.message
+      };
+    }
+  }
+
+  /**
+   * ==================== PRODUTOS COMERCIAIS ====================
+   */
+  
+  /**
+   * Consultar produtos comerciais do sistema Foods
+   */
+  static async getProdutosComerciais(params = {}) {
+    try {
+      const response = await foodsApi.get('/produto-comercial', { params });
+      
+      let produtosData = response.data.data || response.data;
+      if (produtosData && produtosData.items && Array.isArray(produtosData.items)) {
+        produtosData = produtosData.items;
+      }
+      
+      const arrayData = Array.isArray(produtosData) ? produtosData : [];
+      
+      return {
+        success: true,
+        data: arrayData,
+        pagination: response.data.meta?.pagination || response.data.pagination || null,
+        message: 'Produtos comerciais consultados com sucesso'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        data: [],
+        pagination: null,
+        message: error.response?.data?.message || 'Erro ao consultar produtos comerciais',
+        error: error.response?.data || error.message
+      };
+    }
+  }
+
+  /**
+   * Buscar produto comercial por ID
+   */
+  static async getProdutoComercialById(id) {
+    try {
+      const response = await foodsApi.get(`/produto-comercial/${id}`);
+      return {
+        success: true,
+        data: response.data.data || response.data,
+        message: 'Produto comercial encontrado com sucesso'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        data: null,
+        message: error.response?.data?.message || 'Erro ao buscar produto comercial',
+        error: error.response?.data || error.message
+      };
+    }
+  }
+
+  /**
+   * Buscar estatísticas de produtos comerciais
+   */
+  static async getProdutosComerciaisStats() {
+    try {
+      const response = await foodsApi.get('/produto-comercial/estatisticas');
+      
+      return {
+        success: true,
+        data: response.data.data || response.data,
+        message: 'Estatísticas de produtos comerciais obtidas com sucesso'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        data: null,
+        message: error.response?.data?.message || 'Erro ao buscar estatísticas de produtos comerciais',
+        error: error.response?.data || error.message
+      };
+    }
+  }
+
+  /**
+   * ==================== ALMOXARIFADOS ====================
+   */
+  
+  /**
+   * Consultar almoxarifados do sistema Foods
+   */
+  static async getAlmoxarifados(params = {}) {
+    try {
+      // Garantir que os parâmetros de paginação estão corretos
+      const queryParams = {
+        page: params.page || 1,
+        limit: params.limit || 100,
+        ...params
+      };
+      
+      const response = await foodsApi.get('/almoxarifado', { params: queryParams });
+      // Processar resposta - estrutura identificada: response.data.data (array)
+      let almoxarifadosData = response.data?.data;
+      
+      // Garantir que é um array
+      const arrayData = Array.isArray(almoxarifadosData) ? almoxarifadosData : [];
+      
+      return {
+        success: true,
+        data: arrayData,
+        pagination: response.data.meta?.pagination || response.data.pagination || null,
+        message: 'Almoxarifados consultados com sucesso'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        data: [],
+        pagination: null,
+        message: error.response?.data?.message || 'Erro ao consultar almoxarifados',
+        error: error.response?.data || error.message
+      };
+    }
+  }
+
+  /**
+   * Buscar almoxarifado por ID
+   */
+  static async getAlmoxarifadoById(id) {
+    try {
+      const response = await foodsApi.get(`/almoxarifado/${id}`);
+      return {
+        success: true,
+        data: response.data.data || response.data,
+        message: 'Almoxarifado encontrado com sucesso'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        data: null,
+        message: error.response?.data?.message || 'Erro ao buscar almoxarifado',
+        error: error.response?.data || error.message
+      };
+    }
+  }
+
+  /**
+   * Buscar estatísticas de almoxarifados
+   */
+  static async getAlmoxarifadosStats() {
+    try {
+      const response = await foodsApi.get('/almoxarifado/estatisticas');
+      
+      return {
+        success: true,
+        data: response.data.data || response.data,
+        message: 'Estatísticas de almoxarifados obtidas com sucesso'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        data: null,
+        message: error.response?.data?.message || 'Erro ao buscar estatísticas de almoxarifados',
+        error: error.response?.data || error.message
+      };
+    }
+  }
+
+  /**
    * ==================== FILIAIS ====================
    */
   
@@ -522,9 +761,90 @@ class FoodsApiService {
   // ===== ALMOXARIFADOS =====
 
   /**
+   * Listar centros de custo
+   */
+  static async getCentrosCusto(params = {}) {
+    try {
+      const queryParams = {
+        page: params.page || 1,
+        limit: params.limit || 100,
+        ...params
+      };
+      
+      const response = await foodsApi.get('/centro-custo', { params: queryParams });
+      
+      let centrosCustoData = response.data?.data;
+      
+      // Garantir que é um array
+      const arrayData = Array.isArray(centrosCustoData) ? centrosCustoData : [];
+      
+      return {
+        success: true,
+        data: arrayData,
+        pagination: response.data.meta?.pagination || response.data.pagination || null,
+        message: 'Centros de custo consultados com sucesso'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        data: [],
+        pagination: null,
+        message: error.response?.data?.message || 'Erro ao consultar centros de custo',
+        error: error.response?.data || error.message
+      };
+    }
+  }
+
+  /**
+   * Buscar centro de custo por ID
+   */
+  static async getCentroCustoById(id) {
+    try {
+      const response = await foodsApi.get(`/centro-custo/${id}`);
+      
+      let centroCustoData = response.data?.data || response.data;
+      
+      return {
+        success: true,
+        data: centroCustoData,
+        message: 'Centro de custo consultado com sucesso'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        data: null,
+        message: error.response?.data?.message || 'Erro ao consultar centro de custo',
+        error: error.response?.data || error.message
+      };
+    }
+  }
+
+  /**
+   * Buscar estatísticas de centros de custo
+   */
+  static async getCentrosCustoStats() {
+    try {
+      const response = await foodsApi.get('/centro-custo/estatisticas');
+      
+      return {
+        success: true,
+        data: response.data?.data || response.data,
+        message: 'Estatísticas consultadas com sucesso'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        data: null,
+        message: error.response?.data?.message || 'Erro ao consultar estatísticas',
+        error: error.response?.data || error.message
+      };
+    }
+  }
+
+  /**
    * Listar almoxarifados de uma filial
    */
-  static async getAlmoxarifados(filialId) {
+  static async getAlmoxarifadosPorFilial(filialId) {
     try {
       const response = await foodsApi.get(`/filiais/${filialId}/almoxarifados`);
       return {
@@ -613,10 +933,18 @@ class FoodsApiService {
   static async getUnidadesMedida(params = {}) {
     try {
       const response = await foodsApi.get('/unidades', { params });
+      
+      let unidadesData = response.data.data || response.data;
+      if (unidadesData && unidadesData.items && Array.isArray(unidadesData.items)) {
+        unidadesData = unidadesData.items;
+      }
+      
+      const arrayData = Array.isArray(unidadesData) ? unidadesData : [];
+      
       return {
         success: true,
-        data: response.data.data || response.data,
-        pagination: response.data.pagination,
+        data: arrayData,
+        pagination: response.data.meta?.pagination || response.data.pagination || null,
         message: 'Unidades de medida carregadas com sucesso'
       };
     } catch (error) {
@@ -773,7 +1101,7 @@ class FoodsApiService {
       return {
         success: true,
         data: response.data.data || response.data,
-        pagination: response.data.pagination,
+        pagination: response.data.meta?.pagination || response.data.pagination,
         message: 'Subgrupos carregados com sucesso'
       };
     } catch (error) {
@@ -840,7 +1168,7 @@ class FoodsApiService {
       return {
         success: true,
         data: response.data.data || response.data,
-        pagination: response.data.pagination,
+        pagination: response.data.meta?.pagination || response.data.pagination,
         message: 'Classes carregadas com sucesso'
       };
     } catch (error) {

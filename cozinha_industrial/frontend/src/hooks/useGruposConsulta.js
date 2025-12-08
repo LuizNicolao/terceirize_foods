@@ -26,9 +26,41 @@ const useGruposConsulta = () => {
     search: ''
   });
 
+  // Estados de ordenação
+  const [sortField, setSortField] = useState(null);
+  const [sortDirection, setSortDirection] = useState('asc');
+
   // Estados de conexão
   const [isConnected, setIsConnected] = useState(true);
   const [connectionStatus, setConnectionStatus] = useState(null);
+
+  /**
+   * Aplicar ordenação nos dados
+   */
+  const applySorting = useCallback((data, field, direction) => {
+    if (!field) return data;
+
+    const sortedData = [...data].sort((a, b) => {
+      let aValue = a[field];
+      let bValue = b[field];
+
+      // Tratar valores nulos/undefined
+      if (aValue == null) aValue = '';
+      if (bValue == null) bValue = '';
+
+      // Converter para string se necessário para comparação
+      if (typeof aValue === 'string') aValue = aValue.toLowerCase();
+      if (typeof bValue === 'string') bValue = bValue.toLowerCase();
+
+      if (direction === 'asc') {
+        return aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
+      } else {
+        return aValue < bValue ? 1 : aValue > bValue ? -1 : 0;
+      }
+    });
+
+    return sortedData;
+  }, []);
 
   /**
    * Aplicar paginação no frontend
@@ -105,9 +137,12 @@ const useGruposConsulta = () => {
 
       setAllGruposData(allData);
 
+      // Aplicar ordenação
+      const sortedData = applySorting(allData, sortField, sortDirection);
+
       // Aplicar paginação no frontend
       const paginatedResult = applyFrontendPagination(
-        allData,
+        sortedData,
         pagination.currentPage,
         pagination.itemsPerPage
       );
@@ -129,7 +164,7 @@ const useGruposConsulta = () => {
     } finally {
       setLoading(false);
     }
-  }, [pagination.currentPage, pagination.itemsPerPage, checkConnection, applyFrontendPagination]);
+  }, [pagination.currentPage, pagination.itemsPerPage, sortField, sortDirection, checkConnection, applyFrontendPagination, applySorting]);
 
   /**
    * Calcular estatísticas
@@ -167,9 +202,12 @@ const useGruposConsulta = () => {
       );
     }
 
+    // Aplicar ordenação
+    const sortedData = applySorting(dadosFiltrados, sortField, sortDirection);
+
     // Aplicar paginação
     const paginatedResult = applyFrontendPagination(
-      dadosFiltrados,
+      sortedData,
       1, // Reset para primeira página
       pagination.itemsPerPage
     );
@@ -181,7 +219,7 @@ const useGruposConsulta = () => {
       totalPages: paginatedResult.totalPages,
       totalItems: paginatedResult.totalItems
     }));
-  }, [allGruposData, filters.search, pagination.itemsPerPage, applyFrontendPagination]);
+  }, [allGruposData, filters.search, pagination.itemsPerPage, sortField, sortDirection, applyFrontendPagination, applySorting]);
 
   /**
    * Atualizar paginação
@@ -202,8 +240,11 @@ const useGruposConsulta = () => {
       );
     }
 
+    // Aplicar ordenação
+    const sortedData = applySorting(dadosFiltrados, sortField, sortDirection);
+
     const paginatedResult = applyFrontendPagination(
-      dadosFiltrados,
+      sortedData,
       novaPaginacao.currentPage || pagination.currentPage,
       novaPaginacao.itemsPerPage || pagination.itemsPerPage
     );
@@ -215,7 +256,7 @@ const useGruposConsulta = () => {
       totalPages: paginatedResult.totalPages,
       totalItems: paginatedResult.totalItems
     }));
-  }, [allGruposData, filters.search, pagination.currentPage, pagination.itemsPerPage, applyFrontendPagination]);
+  }, [allGruposData, filters.search, pagination.currentPage, pagination.itemsPerPage, sortField, sortDirection, applyFrontendPagination, applySorting]);
 
   /**
    * Limpar filtros
@@ -224,9 +265,12 @@ const useGruposConsulta = () => {
     setFilters({ search: '' });
     setPagination(prev => ({ ...prev, currentPage: 1 }));
     
+    // Aplicar ordenação
+    const sortedData = applySorting(allGruposData, sortField, sortDirection);
+    
     // Aplicar paginação sem filtros
     const paginatedResult = applyFrontendPagination(
-      allGruposData,
+      sortedData,
       1,
       pagination.itemsPerPage
     );
@@ -237,7 +281,7 @@ const useGruposConsulta = () => {
       totalPages: paginatedResult.totalPages,
       totalItems: paginatedResult.totalItems
     }));
-  }, [allGruposData, pagination.itemsPerPage, applyFrontendPagination]);
+  }, [allGruposData, pagination.itemsPerPage, sortField, sortDirection, applyFrontendPagination, applySorting]);
 
   /**
    * Recarregar dados
@@ -245,6 +289,46 @@ const useGruposConsulta = () => {
   const recarregar = useCallback(() => {
     carregarGrupos();
   }, [carregarGrupos]);
+
+  /**
+   * Handler para ordenação
+   */
+  const handleSort = useCallback((field) => {
+    const newDirection = sortField === field && sortDirection === 'asc' ? 'desc' : 'asc';
+    setSortField(field);
+    setSortDirection(newDirection);
+    
+    // Aplicar ordenação e paginação
+    let dadosFiltrados = [...allGruposData];
+
+    // Aplicar filtros atuais
+    if (filters.search) {
+      const searchTerm = filters.search.toLowerCase();
+      dadosFiltrados = dadosFiltrados.filter(item =>
+        item.nome?.toLowerCase().includes(searchTerm) ||
+        item.codigo?.toLowerCase().includes(searchTerm) ||
+        item.descricao?.toLowerCase().includes(searchTerm)
+      );
+    }
+
+    // Aplicar nova ordenação
+    const sortedData = applySorting(dadosFiltrados, field, newDirection);
+
+    // Aplicar paginação
+    const paginatedResult = applyFrontendPagination(
+      sortedData,
+      1, // Reset para primeira página ao ordenar
+      pagination.itemsPerPage
+    );
+
+    setGrupos(paginatedResult.data);
+    setPagination(prev => ({
+      ...prev,
+      currentPage: 1,
+      totalPages: paginatedResult.totalPages,
+      totalItems: paginatedResult.totalItems
+    }));
+  }, [allGruposData, filters.search, pagination.itemsPerPage, sortField, sortDirection, applyFrontendPagination, applySorting]);
 
   // Carregar dados na montagem do componente
   useEffect(() => {
@@ -260,12 +344,17 @@ const useGruposConsulta = () => {
     pagination,
     filters,
     
+    // Ordenação
+    sortField,
+    sortDirection,
+    
     // Ações
     carregarGrupos,
     atualizarFiltros,
     atualizarPaginacao,
     limparFiltros,
     recarregar,
+    handleSort,
     
     // Estados de conexão
     isConnected,

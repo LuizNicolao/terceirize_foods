@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaQuestionCircle } from 'react-icons/fa';
 import useSubgruposConsulta from '../../hooks/useSubgruposConsulta';
 import { SubgruposStats, SubgruposTable, SubgrupoModal } from '../../components/subgrupos';
-import { ConsultaActions } from '../../components/shared';
+import { ExportButtons } from '../../components/shared';
 import { Button, Pagination } from '../../components/ui';
 import { CadastroFilterBar } from '../../components/ui';
 
@@ -19,10 +19,13 @@ const Subgrupos = () => {
     stats,
     pagination,
     filters,
+    sortField,
+    sortDirection,
     atualizarFiltros,
     atualizarPaginacao,
     limparFiltros,
     recarregar,
+    handleSort,
     isConnected,
     hasError,
     getGrupoNome
@@ -32,17 +35,27 @@ const Subgrupos = () => {
   const [showViewModal, setShowViewModal] = useState(false);
   const [selectedSubgrupo, setSelectedSubgrupo] = useState(null);
 
-  const handleSearch = (searchTerm) => {
+  // Estado local para o termo de busca (não aplica filtro imediatamente)
+  const [searchTerm, setSearchTerm] = useState(filters.search || '');
+
+  // Atualizar estado local quando filtros mudarem externamente
+  useEffect(() => {
+    setSearchTerm(filters.search || '');
+  }, [filters.search]);
+
+  const handleSearchChange = (value) => {
+    setSearchTerm(value);
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
     atualizarFiltros({ search: searchTerm });
+    }
   };
 
-  const handleExportXLSX = () => {
-    console.log('Exportar XLSX');
-  };
+  const handleExportXLSX = () => {};
 
-  const handleExportPDF = () => {
-    console.log('Exportar PDF');
-  };
+  const handleExportPDF = () => {};
 
   const handleViewSubgrupo = (subgrupo) => {
     setSelectedSubgrupo(subgrupo);
@@ -111,19 +124,20 @@ const Subgrupos = () => {
 
       {/* Filtros */}
       <CadastroFilterBar
-        searchTerm={filters.search}
-        onSearchChange={handleSearch}
-        placeholder="Buscar por nome..."
+        searchTerm={searchTerm}
+        onSearchChange={handleSearchChange}
+        onKeyPress={handleKeyPress}
+        placeholder="Buscar por nome, código ou descrição..."
       />
 
       {/* Ações */}
-      <ConsultaActions
-        onExportXLSX={handleExportXLSX}
-        onExportPDF={handleExportPDF}
-        totalItems={pagination.totalItems}
-        loading={loading}
-        showTotal={false}
-      />
+      {/* Botões de Exportação */}
+      <div className="mb-4">
+        <ExportButtons
+          onExportXLSX={handleExportXLSX}
+          onExportPDF={handleExportPDF}
+        />
+      </div>
 
       {/* Tabela */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
@@ -131,26 +145,31 @@ const Subgrupos = () => {
           subgrupos={subgrupos}
           loading={loading}
           onView={handleViewSubgrupo}
+          onEdit={() => {}}
+          onDelete={() => {}}
           canView={true}
           canEdit={false}
           canDelete={false}
+          getStatusLabel={(status) => {
+            if (status === 'ativo' || status === 1) return 'Ativo';
+            return 'Inativo';
+          }}
           getGrupoNome={getGrupoNome}
+          sortField={sortField}
+          sortDirection={sortDirection}
+          onSort={handleSort}
         />
       </div>
 
       {/* Paginação */}
-      {pagination.totalPages > 1 && (
-        <div className="mt-6">
           <Pagination
-            currentPage={pagination.currentPage}
-            totalPages={pagination.totalPages}
+        currentPage={pagination.currentPage || 1}
+        totalPages={pagination.totalPages || 1}
             onPageChange={handlePageChange}
-            itemsPerPage={pagination.itemsPerPage}
+        itemsPerPage={pagination.itemsPerPage || 20}
             onItemsPerPageChange={handleItemsPerPageChange}
-            totalItems={pagination.totalItems}
+        totalItems={pagination.totalItems || 0}
           />
-        </div>
-      )}
 
       {/* Modal de Visualização */}
       <SubgrupoModal

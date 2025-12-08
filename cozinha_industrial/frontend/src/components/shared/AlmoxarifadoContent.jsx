@@ -25,7 +25,7 @@ const AlmoxarifadoContent = ({
     
     setLoading(true);
     try {
-      const response = await FoodsApiService.getAlmoxarifados(filialId);
+      const response = await FoodsApiService.getAlmoxarifadosPorFilial(filialId);
       if (response.success) {
         const almoxarifadosData = response.data || [];
         setAlmoxarifados(Array.isArray(almoxarifadosData) ? almoxarifadosData : []);

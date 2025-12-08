@@ -3,21 +3,27 @@
  * Centraliza a exportação de todos os controllers
  */
 
-const SubstituicoesListController = require('./SubstituicoesListController');
+const SubstituicoesNutricionistaListController = require('./nutricionista/SubstituicoesNutricionistaListController');
+const SubstituicoesCoordenacaoListController = require('./coordenacao/SubstituicoesCoordenacaoListController');
+const SubstituicoesSharedController = require('./shared/SubstituicoesSharedController');
 const SubstituicoesCRUDController = require('./SubstituicoesCRUDController');
 const SubstituicoesImpressaoController = require('./SubstituicoesImpressaoController');
 const SubstituicoesExportController = require('./SubstituicoesExportController');
 
 module.exports = {
-  // List Operations
-  listarParaSubstituicao: SubstituicoesListController.listarParaSubstituicao,
-  listarParaCoordenacao: SubstituicoesListController.listarParaCoordenacao,
-  buscarSemanaConsumo: SubstituicoesListController.buscarSemanaConsumo,
-  buscarProdutosGenericos: SubstituicoesListController.buscarProdutosGenericos,
-  buscarTiposRotaDisponiveis: SubstituicoesListController.buscarTiposRotaDisponiveis,
-  buscarRotasDisponiveis: SubstituicoesListController.buscarRotasDisponiveis,
-  buscarGruposDisponiveisParaSubstituicao: SubstituicoesListController.buscarGruposDisponiveisParaSubstituicao,
-  buscarSemanasAbastecimentoDisponiveisParaSubstituicao: SubstituicoesListController.buscarSemanasAbastecimentoDisponiveisParaSubstituicao,
+  // List Operations - Nutricionista
+  listarParaSubstituicao: SubstituicoesNutricionistaListController.listar,
+  
+  // List Operations - Coordenação
+  listarParaCoordenacao: SubstituicoesCoordenacaoListController.listar,
+  
+  // Shared Operations
+  buscarSemanaConsumo: SubstituicoesSharedController.buscarSemanaConsumo,
+  buscarProdutosGenericos: SubstituicoesSharedController.buscarProdutosGenericos,
+  buscarTiposRotaDisponiveis: SubstituicoesSharedController.buscarTiposRotaDisponiveis,
+  buscarRotasDisponiveis: SubstituicoesSharedController.buscarRotasDisponiveis,
+  buscarGruposDisponiveisParaSubstituicao: SubstituicoesSharedController.buscarGruposDisponiveisParaSubstituicao,
+  buscarSemanasAbastecimentoDisponiveisParaSubstituicao: SubstituicoesSharedController.buscarSemanasAbastecimentoDisponiveisParaSubstituicao,
 
   // CRUD Operations
   salvarSubstituicao: SubstituicoesCRUDController.salvarSubstituicao,

@@ -32,11 +32,27 @@ class NotaFiscalService {
           notasFiscais = response.data.items;
           pagination = response.data._meta?.pagination;
         }
+        // Se data.data é um objeto com _meta
+        else if (response.data.data?._meta?.pagination) {
+          notasFiscais = response.data.data.items || [];
+          pagination = response.data.data._meta.pagination;
+        }
       }
       
       // Garantir que sempre retornamos um array
       if (!Array.isArray(notasFiscais)) {
         notasFiscais = [];
+      }
+      
+      // Normalizar paginação para garantir que tenha total
+      if (pagination) {
+        pagination = {
+          ...pagination,
+          total: pagination.totalItems || pagination.total || 0,
+          limit: pagination.itemsPerPage || pagination.limit || 20,
+          page: pagination.currentPage || pagination.page || 1,
+          totalPages: pagination.totalPages || Math.ceil((pagination.totalItems || pagination.total || 0) / (pagination.itemsPerPage || pagination.limit || 20))
+        };
       }
       
       return {

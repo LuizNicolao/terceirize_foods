@@ -12,10 +12,15 @@ import Filiais from './pages/filiais/Filiais';
 import Fornecedores from './pages/fornecedores/Fornecedores';
 import UnidadesEscolares from './pages/unidades-escolares/UnidadesEscolares';
 import ProdutosOrigem from './pages/produtos-origem/ProdutosOrigem';
+import ProdutosGenericos from './pages/produtos-genericos/ProdutosGenericos';
+import ProdutosComerciais from './pages/produtos-comerciais/ProdutosComerciais';
+import Almoxarifados from './pages/almoxarifados/Almoxarifados';
+import CentrosCusto from './pages/centros-custo/CentrosCusto';
 import UnidadesMedida from './pages/unidades-medida/UnidadesMedida';
 import Grupos from './pages/grupos/Grupos';
 import Subgrupos from './pages/subgrupos/Subgrupos';
 import Classes from './pages/classes/Classes';
+import Receitas from './pages/receitas/Receitas';
 
 // Componente para rotas protegidas com autenticação
 const AuthenticatedRoute = ({ children }) => {
@@ -121,6 +126,40 @@ function App() {
               />
 
               <Route 
+                path="/produtos-genericos" 
+                element={
+                  <AuthenticatedRoute>
+                    <ProdutosGenericos />
+                  </AuthenticatedRoute>
+                }
+              />
+
+              <Route 
+                path="/produtos-comerciais" 
+                element={
+                  <AuthenticatedRoute>
+                    <ProdutosComerciais />
+                  </AuthenticatedRoute>
+                }
+              />
+
+              <Route 
+                path="/almoxarifados" 
+                element={
+                  <AuthenticatedRoute>
+                    <Almoxarifados />
+                  </AuthenticatedRoute>
+                }
+              />
+              <Route 
+                path="/centros-custo" 
+                element={
+                  <AuthenticatedRoute>
+                    <CentrosCusto />
+                  </AuthenticatedRoute>
+                }
+              />
+              <Route 
                 path="/unidades-medida" 
                 element={
                   <AuthenticatedRoute>
@@ -152,6 +191,15 @@ function App() {
                 element={
                   <AuthenticatedRoute>
                     <Classes />
+                  </AuthenticatedRoute>
+                }
+              />
+
+              <Route 
+                path="/receitas" 
+                element={
+                  <AuthenticatedRoute>
+                    <Receitas />
                   </AuthenticatedRoute>
                 }
               />

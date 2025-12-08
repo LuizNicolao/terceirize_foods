@@ -15,6 +15,7 @@ import { FaSearch, FaTimes } from 'react-icons/fa';
 const CadastroFilterBar = ({
   searchTerm,
   onSearchChange,
+  onKeyPress,
   statusFilter,
   onStatusFilterChange,
   additionalFilters = [],
@@ -31,6 +32,14 @@ const CadastroFilterBar = ({
           placeholder={placeholder}
           value={searchTerm}
           onChange={e => onSearchChange(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault(); // Prevenir submit do formulário e recarregar da página
+              if (onKeyPress) {
+                onKeyPress(e);
+              }
+            }
+          }}
           className="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
         />
       </div>

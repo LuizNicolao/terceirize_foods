@@ -19,7 +19,10 @@ import {
   FaList,
   FaTruck,
   FaStar,
-  FaRegStar
+  FaRegStar,
+  FaWarehouse,
+  FaDollarSign,
+  FaBook
 } from 'react-icons/fa';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePermissions } from '../../contexts/PermissionsContext';
@@ -38,12 +41,17 @@ const menuGroups = [
               { path: '/usuarios', icon: FaUsers, label: 'Usuários', screen: 'usuarios' },
               { path: '/filiais', icon: FaBuilding, label: 'Filiais', screen: 'filiais' },
               { path: '/fornecedores', icon: FaTruck, label: 'Fornecedores', screen: 'fornecedores' },
-              { path: '/unidades-escolares', icon: FaSchool, label: 'Unidades Escolares', screen: 'unidades_escolares' },
+              { path: '/unidades-escolares', icon: FaSchool, label: 'Cozinha Industrial', screen: 'unidades_escolares' },
               { path: '/produtos-origem', icon: FaBox, label: 'Produtos Origem', screen: 'produtos_origem' },
+              { path: '/produtos-genericos', icon: FaStar, label: 'Produtos Genéricos', screen: 'produtos_genericos' },
+              { path: '/produtos-comerciais', icon: FaBox, label: 'Produtos Comerciais', screen: 'produtos_comerciais' },
+              { path: '/almoxarifados', icon: FaWarehouse, label: 'Almoxarifados', screen: 'almoxarifados' },
+              { path: '/centros-custo', icon: FaDollarSign, label: 'Centros de Custo', screen: 'centros_custo' },
               { path: '/unidades-medida', icon: FaRuler, label: 'Unidades de Medida', screen: 'unidades_medida' },
               { path: '/grupos', icon: FaLayerGroup, label: 'Grupos', screen: 'grupos' },
               { path: '/subgrupos', icon: FaTags, label: 'Subgrupos', screen: 'subgrupos' },
               { path: '/classes', icon: FaList, label: 'Classes', screen: 'classes' },
+              { path: '/receitas', icon: FaBook, label: 'Receitas', screen: 'receitas' },
             ]
           },
   {

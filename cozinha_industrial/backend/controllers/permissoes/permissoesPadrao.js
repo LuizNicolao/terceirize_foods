@@ -14,11 +14,11 @@ const PERMISSOES_PADRAO = {
       unidades_escolares: { visualizar: true, criar: false, editar: false, excluir: false },
       produtos_origem: { visualizar: true, criar: false, editar: false, excluir: false },
       unidades_medida: { visualizar: true, criar: false, editar: false, excluir: false },
+      centros_custo: { visualizar: true, criar: false, editar: false, excluir: false },
       grupos: { visualizar: true, criar: false, editar: false, excluir: false },
       subgrupos: { visualizar: true, criar: false, editar: false, excluir: false },
       classes: { visualizar: true, criar: false, editar: false, excluir: false },
-      produtos_per_capita: { visualizar: true, criar: false, editar: false, excluir: false },
-      recebimentos_escolas: { visualizar: true, criar: true, editar: true, excluir: false },
+      receitas: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -29,11 +29,11 @@ const PERMISSOES_PADRAO = {
       unidades_escolares: { visualizar: true, criar: true, editar: true, excluir: false },
       produtos_origem: { visualizar: true, criar: false, editar: false, excluir: false },
       unidades_medida: { visualizar: true, criar: false, editar: false, excluir: false },
+      centros_custo: { visualizar: true, criar: false, editar: false, excluir: false },
       grupos: { visualizar: true, criar: false, editar: false, excluir: false },
       subgrupos: { visualizar: true, criar: false, editar: false, excluir: false },
       classes: { visualizar: true, criar: false, editar: false, excluir: false },
-      produtos_per_capita: { visualizar: true, criar: true, editar: true, excluir: false },
-      recebimentos_escolas: { visualizar: true, criar: true, editar: true, excluir: false },
+      receitas: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -44,11 +44,11 @@ const PERMISSOES_PADRAO = {
       unidades_escolares: { visualizar: true, criar: true, editar: true, excluir: true },
       produtos_origem: { visualizar: true, criar: false, editar: false, excluir: false },
       unidades_medida: { visualizar: true, criar: false, editar: false, excluir: false },
+      centros_custo: { visualizar: true, criar: false, editar: false, excluir: false },
       grupos: { visualizar: true, criar: false, editar: false, excluir: false },
       subgrupos: { visualizar: true, criar: false, editar: false, excluir: false },
       classes: { visualizar: true, criar: false, editar: false, excluir: false },
-      produtos_per_capita: { visualizar: true, criar: true, editar: true, excluir: true },
-      recebimentos_escolas: { visualizar: true, criar: true, editar: true, excluir: true },
+      receitas: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: true, criar: true, editar: true, excluir: true }
     }
   },
@@ -61,11 +61,11 @@ const PERMISSOES_PADRAO = {
       unidades_escolares: { visualizar: true, criar: false, editar: false, excluir: false },
       produtos_origem: { visualizar: true, criar: false, editar: false, excluir: false },
       unidades_medida: { visualizar: true, criar: false, editar: false, excluir: false },
+      centros_custo: { visualizar: true, criar: false, editar: false, excluir: false },
       grupos: { visualizar: true, criar: false, editar: false, excluir: false },
       subgrupos: { visualizar: true, criar: false, editar: false, excluir: false },
       classes: { visualizar: true, criar: false, editar: false, excluir: false },
-      produtos_per_capita: { visualizar: true, criar: false, editar: false, excluir: false },
-      recebimentos_escolas: { visualizar: true, criar: true, editar: true, excluir: false },
+      receitas: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -76,11 +76,11 @@ const PERMISSOES_PADRAO = {
       unidades_escolares: { visualizar: true, criar: true, editar: true, excluir: false },
       produtos_origem: { visualizar: true, criar: false, editar: false, excluir: false },
       unidades_medida: { visualizar: true, criar: false, editar: false, excluir: false },
+      centros_custo: { visualizar: true, criar: false, editar: false, excluir: false },
       grupos: { visualizar: true, criar: false, editar: false, excluir: false },
       subgrupos: { visualizar: true, criar: false, editar: false, excluir: false },
       classes: { visualizar: true, criar: false, editar: false, excluir: false },
-      produtos_per_capita: { visualizar: true, criar: true, editar: true, excluir: false },
-      recebimentos_escolas: { visualizar: true, criar: true, editar: true, excluir: false },
+      receitas: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -91,11 +91,11 @@ const PERMISSOES_PADRAO = {
       unidades_escolares: { visualizar: true, criar: true, editar: true, excluir: true },
       produtos_origem: { visualizar: true, criar: false, editar: false, excluir: false },
       unidades_medida: { visualizar: true, criar: false, editar: false, excluir: false },
+      centros_custo: { visualizar: true, criar: false, editar: false, excluir: false },
       grupos: { visualizar: true, criar: false, editar: false, excluir: false },
       subgrupos: { visualizar: true, criar: false, editar: false, excluir: false },
       classes: { visualizar: true, criar: false, editar: false, excluir: false },
-      produtos_per_capita: { visualizar: true, criar: true, editar: true, excluir: false },
-      recebimentos_escolas: { visualizar: true, criar: true, editar: true, excluir: true },
+      receitas: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -108,11 +108,11 @@ const PERMISSOES_PADRAO = {
       unidades_escolares: { visualizar: true, criar: false, editar: false, excluir: false },
       produtos_origem: { visualizar: true, criar: false, editar: false, excluir: false },
       unidades_medida: { visualizar: true, criar: false, editar: false, excluir: false },
+      centros_custo: { visualizar: true, criar: false, editar: false, excluir: false },
       grupos: { visualizar: true, criar: false, editar: false, excluir: false },
       subgrupos: { visualizar: true, criar: false, editar: false, excluir: false },
       classes: { visualizar: true, criar: false, editar: false, excluir: false },
-      produtos_per_capita: { visualizar: true, criar: false, editar: false, excluir: false },
-      recebimentos_escolas: { visualizar: true, criar: true, editar: true, excluir: false },
+      receitas: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -123,11 +123,11 @@ const PERMISSOES_PADRAO = {
       unidades_escolares: { visualizar: true, criar: true, editar: false, excluir: false },
       produtos_origem: { visualizar: true, criar: false, editar: false, excluir: false },
       unidades_medida: { visualizar: true, criar: false, editar: false, excluir: false },
+      centros_custo: { visualizar: true, criar: false, editar: false, excluir: false },
       grupos: { visualizar: true, criar: false, editar: false, excluir: false },
       subgrupos: { visualizar: true, criar: false, editar: false, excluir: false },
       classes: { visualizar: true, criar: false, editar: false, excluir: false },
-      produtos_per_capita: { visualizar: true, criar: false, editar: false, excluir: false },
-      recebimentos_escolas: { visualizar: true, criar: true, editar: true, excluir: false },
+      receitas: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -138,11 +138,11 @@ const PERMISSOES_PADRAO = {
       unidades_escolares: { visualizar: true, criar: true, editar: true, excluir: false },
       produtos_origem: { visualizar: true, criar: false, editar: false, excluir: false },
       unidades_medida: { visualizar: true, criar: false, editar: false, excluir: false },
+      centros_custo: { visualizar: true, criar: false, editar: false, excluir: false },
       grupos: { visualizar: true, criar: false, editar: false, excluir: false },
       subgrupos: { visualizar: true, criar: false, editar: false, excluir: false },
       classes: { visualizar: true, criar: false, editar: false, excluir: false },
-      produtos_per_capita: { visualizar: true, criar: true, editar: true, excluir: false },
-      recebimentos_escolas: { visualizar: true, criar: true, editar: true, excluir: false },
+      receitas: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -155,11 +155,11 @@ const PERMISSOES_PADRAO = {
       unidades_escolares: { visualizar: true, criar: false, editar: false, excluir: false },
       produtos_origem: { visualizar: true, criar: false, editar: false, excluir: false },
       unidades_medida: { visualizar: true, criar: false, editar: false, excluir: false },
+      centros_custo: { visualizar: true, criar: false, editar: false, excluir: false },
       grupos: { visualizar: true, criar: false, editar: false, excluir: false },
       subgrupos: { visualizar: true, criar: false, editar: false, excluir: false },
       classes: { visualizar: true, criar: false, editar: false, excluir: false },
-      produtos_per_capita: { visualizar: true, criar: false, editar: false, excluir: false },
-      recebimentos_escolas: { visualizar: true, criar: true, editar: true, excluir: false },
+      receitas: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -170,11 +170,11 @@ const PERMISSOES_PADRAO = {
       unidades_escolares: { visualizar: true, criar: true, editar: true, excluir: false },
       produtos_origem: { visualizar: true, criar: false, editar: false, excluir: false },
       unidades_medida: { visualizar: true, criar: false, editar: false, excluir: false },
+      centros_custo: { visualizar: true, criar: false, editar: false, excluir: false },
       grupos: { visualizar: true, criar: false, editar: false, excluir: false },
       subgrupos: { visualizar: true, criar: false, editar: false, excluir: false },
       classes: { visualizar: true, criar: false, editar: false, excluir: false },
-      produtos_per_capita: { visualizar: true, criar: true, editar: true, excluir: false },
-      recebimentos_escolas: { visualizar: true, criar: true, editar: true, excluir: false },
+      receitas: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -185,11 +185,11 @@ const PERMISSOES_PADRAO = {
       unidades_escolares: { visualizar: true, criar: true, editar: true, excluir: true },
       produtos_origem: { visualizar: true, criar: false, editar: false, excluir: false },
       unidades_medida: { visualizar: true, criar: false, editar: false, excluir: false },
+      centros_custo: { visualizar: true, criar: false, editar: false, excluir: false },
       grupos: { visualizar: true, criar: false, editar: false, excluir: false },
       subgrupos: { visualizar: true, criar: false, editar: false, excluir: false },
       classes: { visualizar: true, criar: false, editar: false, excluir: false },
-      produtos_per_capita: { visualizar: true, criar: true, editar: true, excluir: false },
-      recebimentos_escolas: { visualizar: true, criar: true, editar: true, excluir: true },
+      receitas: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -202,11 +202,11 @@ const PERMISSOES_PADRAO = {
       unidades_escolares: { visualizar: true, criar: false, editar: false, excluir: false },
       produtos_origem: { visualizar: true, criar: false, editar: false, excluir: false },
       unidades_medida: { visualizar: true, criar: false, editar: false, excluir: false },
+      centros_custo: { visualizar: true, criar: false, editar: false, excluir: false },
       grupos: { visualizar: true, criar: false, editar: false, excluir: false },
       subgrupos: { visualizar: true, criar: false, editar: false, excluir: false },
       classes: { visualizar: true, criar: false, editar: false, excluir: false },
-      produtos_per_capita: { visualizar: true, criar: false, editar: false, excluir: false },
-      recebimentos_escolas: { visualizar: true, criar: true, editar: true, excluir: false },
+      receitas: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -217,11 +217,11 @@ const PERMISSOES_PADRAO = {
       unidades_escolares: { visualizar: true, criar: true, editar: true, excluir: false },
       produtos_origem: { visualizar: true, criar: false, editar: false, excluir: false },
       unidades_medida: { visualizar: true, criar: false, editar: false, excluir: false },
+      centros_custo: { visualizar: true, criar: false, editar: false, excluir: false },
       grupos: { visualizar: true, criar: false, editar: false, excluir: false },
       subgrupos: { visualizar: true, criar: false, editar: false, excluir: false },
       classes: { visualizar: true, criar: false, editar: false, excluir: false },
-      produtos_per_capita: { visualizar: true, criar: true, editar: true, excluir: false },
-      recebimentos_escolas: { visualizar: true, criar: true, editar: true, excluir: false },
+      receitas: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -232,11 +232,11 @@ const PERMISSOES_PADRAO = {
       unidades_escolares: { visualizar: true, criar: true, editar: true, excluir: true },
       produtos_origem: { visualizar: true, criar: false, editar: false, excluir: false },
       unidades_medida: { visualizar: true, criar: false, editar: false, excluir: false },
+      centros_custo: { visualizar: true, criar: false, editar: false, excluir: false },
       grupos: { visualizar: true, criar: false, editar: false, excluir: false },
       subgrupos: { visualizar: true, criar: false, editar: false, excluir: false },
       classes: { visualizar: true, criar: false, editar: false, excluir: false },
-      produtos_per_capita: { visualizar: true, criar: true, editar: true, excluir: false },
-      recebimentos_escolas: { visualizar: true, criar: true, editar: true, excluir: true },
+      receitas: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -249,11 +249,11 @@ const PERMISSOES_PADRAO = {
       unidades_escolares: { visualizar: true, criar: false, editar: false, excluir: false },
       produtos_origem: { visualizar: true, criar: false, editar: false, excluir: false },
       unidades_medida: { visualizar: true, criar: false, editar: false, excluir: false },
+      centros_custo: { visualizar: true, criar: false, editar: false, excluir: false },
       grupos: { visualizar: true, criar: false, editar: false, excluir: false },
       subgrupos: { visualizar: true, criar: false, editar: false, excluir: false },
       classes: { visualizar: true, criar: false, editar: false, excluir: false },
-      produtos_per_capita: { visualizar: true, criar: false, editar: false, excluir: false },
-      recebimentos_escolas: { visualizar: true, criar: true, editar: true, excluir: false },
+      receitas: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -264,11 +264,11 @@ const PERMISSOES_PADRAO = {
       unidades_escolares: { visualizar: true, criar: true, editar: true, excluir: false },
       produtos_origem: { visualizar: true, criar: false, editar: false, excluir: false },
       unidades_medida: { visualizar: true, criar: false, editar: false, excluir: false },
+      centros_custo: { visualizar: true, criar: false, editar: false, excluir: false },
       grupos: { visualizar: true, criar: false, editar: false, excluir: false },
       subgrupos: { visualizar: true, criar: false, editar: false, excluir: false },
       classes: { visualizar: true, criar: false, editar: false, excluir: false },
-      produtos_per_capita: { visualizar: true, criar: true, editar: true, excluir: false },
-      recebimentos_escolas: { visualizar: true, criar: true, editar: true, excluir: false },
+      receitas: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -279,11 +279,11 @@ const PERMISSOES_PADRAO = {
       unidades_escolares: { visualizar: true, criar: true, editar: true, excluir: true },
       produtos_origem: { visualizar: true, criar: false, editar: false, excluir: false },
       unidades_medida: { visualizar: true, criar: false, editar: false, excluir: false },
+      centros_custo: { visualizar: true, criar: false, editar: false, excluir: false },
       grupos: { visualizar: true, criar: false, editar: false, excluir: false },
       subgrupos: { visualizar: true, criar: false, editar: false, excluir: false },
       classes: { visualizar: true, criar: false, editar: false, excluir: false },
-      produtos_per_capita: { visualizar: true, criar: true, editar: true, excluir: true },
-      recebimentos_escolas: { visualizar: true, criar: true, editar: true, excluir: true },
+      receitas: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   }
@@ -294,15 +294,18 @@ const TODAS_TELAS = [
   'usuarios',
   'fornecedores',
   'filiais',
-  'rotas_nutricionistas',
   'unidades_escolares',
   'produtos_origem',
+  'produtos_genericos',
+  'produtos_comerciais',
+  'almoxarifados',
+  'centros_custo',
   'unidades_medida',
   'grupos',
   'subgrupos',
   'classes',
-  'produtos_per_capita',
-  'recebimentos_escolas',
+  'receitas',
+  'rotas_nutricionistas',
   'permissoes'
 ];
 
@@ -328,15 +331,18 @@ const TELAS_COM_DESCRICOES = [
   { nome: 'usuarios', descricao: 'Gerenciamento de Usuários' },
   { nome: 'fornecedores', descricao: 'Gerenciamento de Fornecedores' },
   { nome: 'filiais', descricao: 'Gerenciamento de Filiais' },
-  { nome: 'rotas_nutricionistas', descricao: 'Gerenciamento de Rotas Nutricionistas' },
   { nome: 'unidades_escolares', descricao: 'Gerenciamento de Unidades Escolares' },
   { nome: 'produtos_origem', descricao: 'Consulta de Produtos Origem' },
+  { nome: 'produtos_genericos', descricao: 'Consulta de Produtos Genéricos' },
+  { nome: 'produtos_comerciais', descricao: 'Consulta de Produtos Comerciais' },
+  { nome: 'almoxarifados', descricao: 'Consulta de Almoxarifados' },
+  { nome: 'centros_custo', descricao: 'Consulta de Centros de Custo' },
   { nome: 'unidades_medida', descricao: 'Consulta de Unidades de Medida' },
   { nome: 'grupos', descricao: 'Consulta de Grupos' },
   { nome: 'subgrupos', descricao: 'Consulta de Subgrupos' },
   { nome: 'classes', descricao: 'Consulta de Classes' },
-  { nome: 'produtos_per_capita', descricao: 'Gerenciamento de Produtos Per Capita' },
-  { nome: 'recebimentos_escolas', descricao: 'Gerenciamento de Recebimentos Escolas' },
+  { nome: 'receitas', descricao: 'Cadastro de Receitas' },
+  { nome: 'rotas_nutricionistas', descricao: 'Gerenciamento de Rotas Nutricionistas' },
   { nome: 'permissoes', descricao: 'Gerenciamento de Permissões' }
 ];
 

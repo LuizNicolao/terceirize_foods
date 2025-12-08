@@ -22,3 +22,12 @@ export { useNecessidadesTabela } from './useNecessidadesTabela';
 export { useNecessidadesExport } from './useNecessidadesExport';
 export { useNecessidadesCRUD } from './useNecessidadesCRUD';
 
+// Hooks para análise de necessidades
+export { default as useAnaliseAjustes } from './useAnaliseAjustes';
+export { default as useAnaliseLiberacao } from './useAnaliseLiberacao';
+
+// Hooks para coordenação
+export { default as useCoordenacaoExport } from './useCoordenacaoExport';
+export { default as useCoordenacaoStats } from './useCoordenacaoStats';
+export { default as useCoordenacaoTableState } from './useCoordenacaoTableState';
+

@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaQuestionCircle } from 'react-icons/fa';
 import useGruposConsulta from '../../hooks/useGruposConsulta';
 import { GruposStats, GruposTable, GrupoModal } from '../../components/grupos';
-import { ConsultaActions } from '../../components/shared';
+import { ExportButtons } from '../../components/shared';
 import { Button, Pagination } from '../../components/ui';
 import { CadastroFilterBar } from '../../components/ui';
 
@@ -18,10 +18,13 @@ const Grupos = () => {
     stats,
     pagination,
     filters,
+    sortField,
+    sortDirection,
     atualizarFiltros,
     atualizarPaginacao,
     limparFiltros,
     recarregar,
+    handleSort,
     isConnected,
     hasError
   } = useGruposConsulta();
@@ -30,17 +33,27 @@ const Grupos = () => {
   const [showViewModal, setShowViewModal] = useState(false);
   const [selectedGrupo, setSelectedGrupo] = useState(null);
 
-  const handleSearch = (searchTerm) => {
-    atualizarFiltros({ search: searchTerm });
+  // Estado local para o termo de busca (não aplica filtro imediatamente)
+  const [searchTerm, setSearchTerm] = useState(filters.search || '');
+
+  // Atualizar estado local quando filtros mudarem externamente
+  useEffect(() => {
+    setSearchTerm(filters.search || '');
+  }, [filters.search]);
+
+  const handleSearchChange = (value) => {
+    setSearchTerm(value);
   };
 
-  const handleExportXLSX = () => {
-    console.log('Exportar XLSX');
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      atualizarFiltros({ search: searchTerm });
+    }
   };
 
-  const handleExportPDF = () => {
-    console.log('Exportar PDF');
-  };
+  const handleExportXLSX = () => {};
+
+  const handleExportPDF = () => {};
 
   const handleViewGrupo = (grupo) => {
     setSelectedGrupo(grupo);
@@ -109,19 +122,20 @@ const Grupos = () => {
 
       {/* Filtros */}
       <CadastroFilterBar
-        searchTerm={filters.search}
-        onSearchChange={handleSearch}
+        searchTerm={searchTerm}
+        onSearchChange={handleSearchChange}
+        onKeyPress={handleKeyPress}
         placeholder="Buscar por nome, código ou descrição..."
       />
 
       {/* Ações */}
-      <ConsultaActions
+      {/* Botões de Exportação */}
+      <div className="mb-4">
+        <ExportButtons
         onExportXLSX={handleExportXLSX}
         onExportPDF={handleExportPDF}
-        totalItems={pagination.totalItems}
-        loading={loading}
-        showTotal={false}
       />
+      </div>
 
       {/* Tabela */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
@@ -129,25 +143,30 @@ const Grupos = () => {
           grupos={grupos}
           loading={loading}
           onView={handleViewGrupo}
+          onEdit={() => {}}
+          onDelete={() => {}}
           canView={true}
           canEdit={false}
           canDelete={false}
+          getStatusLabel={(status) => {
+            if (status === 'ativo' || status === 1) return 'Ativo';
+            return 'Inativo';
+          }}
+          sortField={sortField}
+          sortDirection={sortDirection}
+          onSort={handleSort}
         />
       </div>
 
       {/* Paginação */}
-      {pagination.totalPages > 1 && (
-        <div className="mt-6">
           <Pagination
-            currentPage={pagination.currentPage}
-            totalPages={pagination.totalPages}
+        currentPage={pagination.currentPage || 1}
+        totalPages={pagination.totalPages || 1}
             onPageChange={handlePageChange}
-            itemsPerPage={pagination.itemsPerPage}
+        itemsPerPage={pagination.itemsPerPage || 20}
             onItemsPerPageChange={handleItemsPerPageChange}
-            totalItems={pagination.totalItems}
+        totalItems={pagination.totalItems || 0}
           />
-        </div>
-      )}
 
       {/* Modal de Visualização */}
       <GrupoModal

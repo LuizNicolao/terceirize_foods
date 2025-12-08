@@ -28,6 +28,10 @@ export const useUnidadesEscolaresConsulta = () => {
     estado: ''
   });
 
+  // Estados de ordenação
+  const [sortField, setSortField] = useState(null);
+  const [sortDirection, setSortDirection] = useState('asc');
+
   // Estados de estatísticas
   const [stats, setStats] = useState({
     total: 0,
@@ -41,6 +45,34 @@ export const useUnidadesEscolaresConsulta = () => {
     message: 'Verificando conexão...',
     success: false,
   });
+
+  /**
+   * Aplicar ordenação nos dados
+   */
+  const applySorting = useCallback((data, field, direction) => {
+    if (!field) return data;
+
+    const sortedData = [...data].sort((a, b) => {
+      let aValue = a[field];
+      let bValue = b[field];
+
+      // Tratar valores nulos/undefined
+      if (aValue == null) aValue = '';
+      if (bValue == null) bValue = '';
+
+      // Converter para string se necessário para comparação
+      if (typeof aValue === 'string') aValue = aValue.toLowerCase();
+      if (typeof bValue === 'string') bValue = bValue.toLowerCase();
+
+      if (direction === 'asc') {
+        return aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
+      } else {
+        return aValue < bValue ? 1 : aValue > bValue ? -1 : 0;
+      }
+    });
+
+    return sortedData;
+  }, []);
 
   /**
    * Aplicar paginação no frontend
@@ -150,17 +182,34 @@ export const useUnidadesEscolaresConsulta = () => {
 
       if (result.success) {
         // Garantir que result.data seja sempre um array
-        const unidadesData = Array.isArray(result.data) ? result.data : [];
+        let unidadesData = Array.isArray(result.data) ? result.data : [];
+        
+        // Filtrar apenas unidades escolares vinculadas à filial "CD TOLEDO"
+        // O campo que contém o nome da filial é 'filial_nome'
+        unidadesData = unidadesData.filter(unidade => {
+          if (unidade.filial_nome) {
+            const filialNome = unidade.filial_nome.toLowerCase().trim();
+            // Verificar se contém "cd toledo" ou apenas "toledo" (caso o nome seja apenas "TOLEDO")
+            return filialNome.includes('cd toledo') || 
+                   filialNome === 'toledo' ||
+                   filialNome.includes('toledo');
+          }
+          // Se não tiver informação de filial, não incluir
+          return false;
+        });
+        
+        // Aplicar ordenação
+        const sortedData = applySorting(unidadesData, sortField, sortDirection);
         
         // Sempre aplicar paginação no frontend (como no fornecedores)
-        setAllUnidadesEscolares(unidadesData);
+        setAllUnidadesEscolares(sortedData);
         
-        const totalItems = unidadesData.length;
+        const totalItems = sortedData.length;
         const totalPages = Math.ceil(totalItems / pagination.itemsPerPage) || 1;
         const currentPage = Math.min(pagination.currentPage, totalPages);
         
         // Aplicar paginação
-        const paginatedData = applyFrontendPagination(unidadesData, currentPage, pagination.itemsPerPage);
+        const paginatedData = applyFrontendPagination(sortedData, currentPage, pagination.itemsPerPage);
         
         setUnidadesEscolares(paginatedData);
         setPagination(prev => ({
@@ -171,7 +220,7 @@ export const useUnidadesEscolaresConsulta = () => {
         }));
 
         // Calcular estatísticas com todos os dados carregados (não apenas da página atual)
-        const estatisticas = calcularEstatisticas(unidadesData);
+        const estatisticas = calcularEstatisticas(sortedData);
         setStats(estatisticas);
       } else {
         setError(result.message);
@@ -183,7 +232,7 @@ export const useUnidadesEscolaresConsulta = () => {
     } finally {
       setLoading(false);
     }
-  }, [pagination.currentPage, pagination.itemsPerPage, filters, checkConnection, applyFrontendPagination, calcularEstatisticas]);
+  }, [pagination.currentPage, pagination.itemsPerPage, filters, sortField, sortDirection, checkConnection, applyFrontendPagination, applySorting, calcularEstatisticas]);
 
   /**
    * Carregar estatísticas
@@ -226,6 +275,25 @@ export const useUnidadesEscolaresConsulta = () => {
   }, []);
 
   /**
+   * Handler para ordenação
+   */
+  const handleSort = useCallback((field) => {
+    const newDirection = sortField === field && sortDirection === 'asc' ? 'desc' : 'asc';
+    setSortField(field);
+    setSortDirection(newDirection);
+    
+    // Reaplicar ordenação e paginação nos dados atuais
+    const sortedData = applySorting(allUnidadesEscolares, field, newDirection);
+    setAllUnidadesEscolares(sortedData);
+    
+    const paginatedData = applyFrontendPagination(sortedData, pagination.currentPage, pagination.itemsPerPage);
+    setUnidadesEscolares(paginatedData);
+    
+    // Reset para primeira página ao ordenar
+    setPagination(prev => ({ ...prev, currentPage: 1 }));
+  }, [allUnidadesEscolares, sortField, sortDirection, pagination.currentPage, pagination.itemsPerPage, applySorting, applyFrontendPagination]);
+
+  /**
    * Atualizar filtros
    */
   const atualizarFiltros = useCallback((novosFiltros) => {
@@ -233,13 +301,14 @@ export const useUnidadesEscolaresConsulta = () => {
     setPagination(prev => {
       const updatedPagination = { ...prev, currentPage: 1 }; // Reset para primeira página
       
-      // Aplicar paginação no frontend com os novos filtros
-      const paginatedData = applyFrontendPagination(allUnidadesEscolares, updatedPagination.currentPage, updatedPagination.itemsPerPage);
+      // Aplicar ordenação e paginação no frontend com os novos filtros
+      const sortedData = applySorting(allUnidadesEscolares, sortField, sortDirection);
+      const paginatedData = applyFrontendPagination(sortedData, updatedPagination.currentPage, updatedPagination.itemsPerPage);
       setUnidadesEscolares(paginatedData);
       
       return updatedPagination;
     });
-  }, [allUnidadesEscolares, applyFrontendPagination]);
+  }, [allUnidadesEscolares, sortField, sortDirection, applyFrontendPagination, applySorting]);
 
   /**
    * Atualizar paginação
@@ -248,15 +317,16 @@ export const useUnidadesEscolaresConsulta = () => {
     setPagination(prev => {
       const updatedPagination = { ...prev, ...novaPaginacao };
       
-      // Se mudou a página ou itens por página, aplicar paginação no frontend
+      // Se mudou a página ou itens por página, aplicar ordenação e paginação no frontend
       if (novaPaginacao.currentPage || novaPaginacao.itemsPerPage) {
-        const paginatedData = applyFrontendPagination(allUnidadesEscolares, updatedPagination.currentPage, updatedPagination.itemsPerPage);
+        const sortedData = applySorting(allUnidadesEscolares, sortField, sortDirection);
+        const paginatedData = applyFrontendPagination(sortedData, updatedPagination.currentPage, updatedPagination.itemsPerPage);
         setUnidadesEscolares(paginatedData);
       }
       
       return updatedPagination;
     });
-  }, [allUnidadesEscolares, applyFrontendPagination]);
+  }, [allUnidadesEscolares, sortField, sortDirection, applyFrontendPagination, applySorting]);
 
   /**
    * Recarregar dados
@@ -294,6 +364,8 @@ export const useUnidadesEscolaresConsulta = () => {
     error,
     pagination,
     filters,
+    sortField,
+    sortDirection,
     
     // Funções
     carregarUnidadesEscolares,
@@ -301,6 +373,7 @@ export const useUnidadesEscolaresConsulta = () => {
     atualizarFiltros,
     atualizarPaginacao,
     recarregar,
+    handleSort,
     
     // Estados calculados
     isConnected: connectionStatus.connected,

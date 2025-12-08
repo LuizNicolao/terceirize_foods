@@ -27,11 +27,16 @@ const Table = ({
 const TableHeader = ({ children, className = '' }) => (
   <thead className="bg-gray-50">
     <tr>
-      {React.Children.map(children, (child) => 
-        React.cloneElement(child, { 
-          className: `px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider ${className}` 
-        })
-      )}
+      {React.Children.map(children, (child) => {
+        // Não aplicar classes de alinhamento aqui - deixar o TableHeaderCell controlar
+        // Apenas aplicar padding e estilos básicos
+        const existingClassName = child.props?.className || '';
+        // Remover qualquer classe de alinhamento que possa estar no className existente
+        const baseClasses = 'px-3 py-2 sm:px-6 sm:py-3 text-xs font-medium text-gray-500 uppercase tracking-wider';
+        return React.cloneElement(child, { 
+          className: `${baseClasses} ${existingClassName} ${className}`.trim()
+        });
+      })}
     </tr>
   </thead>
 );
@@ -73,8 +78,10 @@ const TableHeaderCell = ({ children, className = '', align = 'left' }) => {
     right: 'text-right'
   };
   
+  // Aplicar alinhamento por último para garantir que sobrescreva qualquer classe de alinhamento do TableHeader
+  // O TableHeader adiciona classes antes, então o alinhamento aqui deve vir por último na string
   return (
-    <th className={`px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider ${alignClasses[align]} ${className}`}>
+    <th className={`px-3 py-2 sm:px-6 sm:py-3 text-xs font-medium text-gray-500 uppercase tracking-wider ${className} ${alignClasses[align]}`}>
       {children}
     </th>
   );

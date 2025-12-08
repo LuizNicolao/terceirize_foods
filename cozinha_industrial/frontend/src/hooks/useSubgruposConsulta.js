@@ -25,6 +25,10 @@ const useSubgruposConsulta = () => {
     grupo_id: ''
   });
 
+  // Estados de ordenação
+  const [sortField, setSortField] = useState(null);
+  const [sortDirection, setSortDirection] = useState('asc');
+
   // Estados de estatísticas
   const [stats, setStats] = useState({
     total: 0,
@@ -32,6 +36,34 @@ const useSubgruposConsulta = () => {
     inativos: 0,
     total_produtos: 0
   });
+
+  /**
+   * Aplicar ordenação nos dados
+   */
+  const applySorting = useCallback((data, field, direction) => {
+    if (!field) return data;
+
+    const sortedData = [...data].sort((a, b) => {
+      let aValue = a[field];
+      let bValue = b[field];
+
+      // Tratar valores nulos/undefined
+      if (aValue == null) aValue = '';
+      if (bValue == null) bValue = '';
+
+      // Converter para string se necessário para comparação
+      if (typeof aValue === 'string') aValue = aValue.toLowerCase();
+      if (typeof bValue === 'string') bValue = bValue.toLowerCase();
+
+      if (direction === 'asc') {
+        return aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
+      } else {
+        return aValue < bValue ? 1 : aValue > bValue ? -1 : 0;
+      }
+    });
+
+    return sortedData;
+  }, []);
 
   // Função para carregar grupos (dados auxiliares)
   const carregarGrupos = useCallback(async () => {
@@ -76,7 +108,9 @@ const useSubgruposConsulta = () => {
       const response = await FoodsApiService.getSubgrupos(params);
       
       if (response.success) {
-        setSubgrupos(response.data || []);
+        // Aplicar ordenação nos dados recebidos
+        const sortedData = applySorting(response.data || [], sortField, sortDirection);
+        setSubgrupos(sortedData);
         
         // Atualizar paginação
         if (response.pagination) {
@@ -111,7 +145,7 @@ const useSubgruposConsulta = () => {
     } finally {
       setLoading(false);
     }
-  }, [pagination.currentPage, pagination.itemsPerPage, filters]);
+  }, [pagination.currentPage, pagination.itemsPerPage, filters, sortField, sortDirection, applySorting]);
 
   // Carregar dados iniciais
   useEffect(() => {
@@ -145,6 +179,19 @@ const useSubgruposConsulta = () => {
     carregarSubgrupos();
   }, [carregarSubgrupos]);
 
+  /**
+   * Handler para ordenação
+   */
+  const handleSort = useCallback((field) => {
+    const newDirection = sortField === field && sortDirection === 'asc' ? 'desc' : 'asc';
+    setSortField(field);
+    setSortDirection(newDirection);
+    
+    // Reaplicar ordenação nos dados atuais
+    const sortedData = applySorting(subgrupos, field, newDirection);
+    setSubgrupos(sortedData);
+  }, [subgrupos, sortField, sortDirection, applySorting]);
+
   // Funções auxiliares
   const getGrupoNome = useCallback((grupoId) => {
     const grupo = grupos.find(g => g.id === grupoId);
@@ -169,6 +216,10 @@ const useSubgruposConsulta = () => {
     // Filtros
     filters,
 
+    // Ordenação
+    sortField,
+    sortDirection,
+
     // Estatísticas
     stats,
 
@@ -177,6 +228,7 @@ const useSubgruposConsulta = () => {
     atualizarPaginacao,
     limparFiltros,
     recarregar,
+    handleSort,
 
     // Funções auxiliares
     getGrupoNome

@@ -30,6 +30,10 @@ export const useProdutosOrigemConsulta = () => {
     classe_id: ''
   });
 
+  // Estados de ordenação
+  const [sortField, setSortField] = useState(null);
+  const [sortDirection, setSortDirection] = useState('asc');
+
   // Estados de estatísticas
   const [stats, setStats] = useState({
     total: 0,
@@ -44,12 +48,57 @@ export const useProdutosOrigemConsulta = () => {
   const unidadesMedida = [];
 
   /**
+   * Aplicar ordenação nos dados
+   */
+  const applySorting = useCallback((data, field, direction) => {
+    if (!field) return data;
+
+    const sortedData = [...data].sort((a, b) => {
+      let aValue = a[field];
+      let bValue = b[field];
+
+      // Tratar valores nulos/undefined
+      if (aValue == null) aValue = '';
+      if (bValue == null) bValue = '';
+
+      // Converter para string se necessário para comparação
+      if (typeof aValue === 'string') aValue = aValue.toLowerCase();
+      if (typeof bValue === 'string') bValue = bValue.toLowerCase();
+
+      if (direction === 'asc') {
+        return aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
+      } else {
+        return aValue < bValue ? 1 : aValue > bValue ? -1 : 0;
+      }
+    });
+
+    return sortedData;
+  }, []);
+
+  /**
    * Aplicar paginação no frontend
    */
   const applyFrontendPagination = useCallback((allData, currentPage, itemsPerPage) => {
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     return allData.slice(startIndex, endIndex);
+  }, []);
+
+  /**
+   * Calcular estatísticas dos produtos
+   */
+  const calcularEstatisticas = useCallback((produtosData) => {
+    const total = produtosData.length;
+    const ativos = produtosData.filter(produto => produto.status === 1 || produto.status === 'ativo').length;
+    const inativos = total - ativos;
+
+    const newStats = {
+      total,
+      ativos,
+      inativos
+    };
+    
+    setStats(newStats);
   }, []);
 
   /**
@@ -108,9 +157,12 @@ export const useProdutosOrigemConsulta = () => {
 
       setAllProdutosData(allProdutos);
 
+      // Aplicar ordenação
+      const sortedData = applySorting(allProdutos, sortField, sortDirection);
+
       // Aplicar paginação frontend
       const paginatedData = applyFrontendPagination(
-        allProdutos,
+        sortedData,
         pagination.currentPage,
         pagination.itemsPerPage
       );
@@ -135,24 +187,7 @@ export const useProdutosOrigemConsulta = () => {
     } finally {
       setLoading(false);
     }
-  }, [checkConnection, applyFrontendPagination, pagination.currentPage, pagination.itemsPerPage]);
-
-  /**
-   * Calcular estatísticas dos produtos
-   */
-  const calcularEstatisticas = useCallback((produtosData) => {
-    const total = produtosData.length;
-    const ativos = produtosData.filter(produto => produto.status === 1 || produto.status === 'ativo').length;
-    const inativos = total - ativos;
-
-    const newStats = {
-      total,
-      ativos,
-      inativos
-    };
-    
-    setStats(newStats);
-  }, []);
+  }, [checkConnection, applyFrontendPagination, applySorting, sortField, sortDirection, pagination.currentPage, pagination.itemsPerPage, calcularEstatisticas]);
 
   /**
    * Atualizar filtros
@@ -205,9 +240,12 @@ export const useProdutosOrigemConsulta = () => {
       }
     }
 
+    // Aplicar ordenação
+    const sortedData = applySorting(dadosFiltrados, sortField, sortDirection);
+
     // Aplicar paginação nos dados filtrados
     const paginatedData = applyFrontendPagination(
-      dadosFiltrados,
+      sortedData,
       1, // Reset para primeira página
       pagination.itemsPerPage
     );
@@ -224,7 +262,7 @@ export const useProdutosOrigemConsulta = () => {
 
     // Recalcular estatísticas com dados filtrados
     calcularEstatisticas(dadosFiltrados);
-  }, [allProdutosData, filters, applyFrontendPagination, pagination.itemsPerPage, calcularEstatisticas]);
+  }, [allProdutosData, filters, sortField, sortDirection, applyFrontendPagination, applySorting, pagination.itemsPerPage, calcularEstatisticas]);
 
   /**
    * Atualizar paginação
@@ -233,9 +271,32 @@ export const useProdutosOrigemConsulta = () => {
     setPagination(prev => {
       const updatedPagination = { ...prev, ...novaPaginacao };
       
+      // Aplicar filtros primeiro
+      let dadosFiltrados = allProdutosData;
+      
+      // Filtro de busca
+      if (filters.search) {
+        const searchTerm = filters.search.toLowerCase();
+        dadosFiltrados = dadosFiltrados.filter(produto => 
+          produto.nome?.toLowerCase().includes(searchTerm) ||
+          produto.codigo?.toLowerCase().includes(searchTerm) ||
+          produto.referencia_mercado?.toLowerCase().includes(searchTerm)
+        );
+      }
+
+      // Filtro de status
+      if (filters.status !== 'todos') {
+        dadosFiltrados = dadosFiltrados.filter(produto => 
+          filters.status === 'ativo' ? produto.status === 1 : produto.status === 0
+        );
+      }
+
+      // Aplicar ordenação
+      const sortedData = applySorting(dadosFiltrados, sortField, sortDirection);
+      
       // Aplicar paginação nos dados
       const paginatedData = applyFrontendPagination(
-        allProdutosData,
+        sortedData,
         updatedPagination.currentPage,
         updatedPagination.itemsPerPage
       );
@@ -244,7 +305,7 @@ export const useProdutosOrigemConsulta = () => {
 
       return updatedPagination;
     });
-  }, [allProdutosData, applyFrontendPagination]);
+  }, [allProdutosData, filters, sortField, sortDirection, applyFrontendPagination, applySorting]);
 
   /**
    * Limpar filtros
@@ -258,9 +319,12 @@ export const useProdutosOrigemConsulta = () => {
       classe_id: ''
     });
 
+    // Aplicar ordenação
+    const sortedData = applySorting(allProdutosData, sortField, sortDirection);
+
     // Aplicar paginação nos dados originais
     const paginatedData = applyFrontendPagination(
-      allProdutosData,
+      sortedData,
       1,
       pagination.itemsPerPage
     );
@@ -277,7 +341,45 @@ export const useProdutosOrigemConsulta = () => {
 
     // Recalcular estatísticas com dados originais
     calcularEstatisticas(allProdutosData);
-  }, [allProdutosData, applyFrontendPagination, pagination.itemsPerPage, calcularEstatisticas]);
+  }, [allProdutosData, sortField, sortDirection, applyFrontendPagination, applySorting, pagination.itemsPerPage, calcularEstatisticas]);
+
+  /**
+   * Handler para ordenação
+   */
+  const handleSort = useCallback((field) => {
+    const newDirection = sortField === field && sortDirection === 'asc' ? 'desc' : 'asc';
+    setSortField(field);
+    setSortDirection(newDirection);
+    
+    // Aplicar filtros primeiro
+    let dadosFiltrados = allProdutosData;
+    
+    // Filtro de busca
+    if (filters.search) {
+      const searchTerm = filters.search.toLowerCase();
+      dadosFiltrados = dadosFiltrados.filter(produto => 
+        produto.nome?.toLowerCase().includes(searchTerm) ||
+        produto.codigo?.toLowerCase().includes(searchTerm) ||
+        produto.referencia_mercado?.toLowerCase().includes(searchTerm)
+      );
+    }
+
+    // Filtro de status
+    if (filters.status !== 'todos') {
+      dadosFiltrados = dadosFiltrados.filter(produto => 
+        filters.status === 'ativo' ? produto.status === 1 : produto.status === 0
+      );
+    }
+    
+    // Reaplicar ordenação e paginação nos dados atuais
+    const sortedData = applySorting(dadosFiltrados, field, newDirection);
+    
+    const paginatedData = applyFrontendPagination(sortedData, pagination.currentPage, pagination.itemsPerPage);
+    setProdutos(paginatedData);
+    
+    // Reset para primeira página ao ordenar
+    setPagination(prev => ({ ...prev, currentPage: 1 }));
+  }, [allProdutosData, sortField, sortDirection, filters, pagination.currentPage, pagination.itemsPerPage, applySorting, applyFrontendPagination]);
 
   /**
    * Carregar dados iniciais
@@ -310,6 +412,10 @@ export const useProdutosOrigemConsulta = () => {
     classes,
     unidadesMedida,
 
+    // Ordenação
+    sortField,
+    sortDirection,
+
     // Ações
     carregarProdutos,
     atualizarFiltros,
@@ -317,6 +423,7 @@ export const useProdutosOrigemConsulta = () => {
     limparFiltros,
     recarregar,
     checkConnection,
+    handleSort,
 
     // Funções auxiliares para obter nomes (retornam os dados que já vêm do Foods)
     getGrupoName: (grupoId) => {
@@ -335,6 +442,10 @@ export const useProdutosOrigemConsulta = () => {
     getUnidadeMedidaName: (unidadeId) => {
       if (!unidadeId) return '-';
       return 'Unidade'; // Placeholder - os dados já vêm com nomes
+    },
+    getUnidadeMedidaSigla: (unidadeId) => {
+      if (!unidadeId) return '-';
+      return 'UN'; // Placeholder
     }
   };
 };

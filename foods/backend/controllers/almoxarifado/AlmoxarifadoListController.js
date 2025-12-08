@@ -212,13 +212,22 @@ class AlmoxarifadoListController {
     // Gerar links de ações baseado nas permissões do usuário
     const userPermissions = req.user ? this.getUserPermissions(req.user) : [];
     const actions = res.generateActionLinks(userPermissions);
+    
+    // Verificar se almoxarifados é um array válido
+    if (!Array.isArray(almoxarifados)) {
+      almoxarifados = [];
+    }
 
+    // Adicionar links HATEOAS (igual ao NotaFiscalListController)
+    const dataWithLinks = res.addListLinks(almoxarifados, meta.pagination, queryParams);
+    
     // Retornar resposta no formato esperado pelo frontend
+    // Passar os dados diretamente (não usar dataWithLinks.items, pois o frontend espera o array direto)
     return successResponse(res, almoxarifados, 'Almoxarifados listados com sucesso', STATUS_CODES.OK, {
       ...meta,
       statistics,
       actions,
-      _links: res.addListLinks(almoxarifados, meta.pagination, queryParams)._links
+      _links: dataWithLinks._links
     });
   });
 

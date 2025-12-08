@@ -28,6 +28,10 @@ export const useFornecedoresConsulta = () => {
     tipo: ''
   });
 
+  // Estados de ordenação
+  const [sortField, setSortField] = useState(null);
+  const [sortDirection, setSortDirection] = useState('asc');
+
   // Estados de estatísticas
   const [stats, setStats] = useState({
     total: 0,
@@ -36,12 +40,51 @@ export const useFornecedoresConsulta = () => {
   });
 
   /**
+   * Aplicar ordenação nos dados
+   */
+  const applySorting = useCallback((data, field, direction) => {
+    if (!field) return data;
+
+    const sortedData = [...data].sort((a, b) => {
+      let aValue = a[field];
+      let bValue = b[field];
+
+      // Tratar valores nulos/undefined
+      if (aValue == null) aValue = '';
+      if (bValue == null) bValue = '';
+
+      // Converter para string se necessário para comparação
+      if (typeof aValue === 'string') aValue = aValue.toLowerCase();
+      if (typeof bValue === 'string') bValue = bValue.toLowerCase();
+
+      if (direction === 'asc') {
+        return aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
+      } else {
+        return aValue < bValue ? 1 : aValue > bValue ? -1 : 0;
+      }
+    });
+
+    return sortedData;
+  }, []);
+
+  /**
    * Aplicar paginação no frontend
    */
   const applyFrontendPagination = useCallback((allData, currentPage, itemsPerPage) => {
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     return allData.slice(startIndex, endIndex);
+  }, []);
+
+  /**
+   * Calcular estatísticas localmente
+   */
+  const calcularEstatisticas = useCallback((fornecedoresData) => {
+    const total = fornecedoresData.length;
+    const ativos = fornecedoresData.filter(f => f.status === 1).length;
+    const inativos = fornecedoresData.filter(f => f.status === 0).length;
+    
+    return { total, ativos, inativos };
   }, []);
 
   /**
@@ -134,32 +177,35 @@ export const useFornecedoresConsulta = () => {
         // Garantir que result.data seja sempre um array
         const fornecedoresData = Array.isArray(result.data) ? result.data : [];
         
+        // Aplicar ordenação
+        const sortedData = applySorting(fornecedoresData, sortField, sortDirection);
+        
         // Atualizar paginação se disponível
         if (result.pagination) {
           // Usar paginação do backend
-          setAllFornecedores(fornecedoresData);
-          setFornecedores(fornecedoresData);
+          setAllFornecedores(sortedData);
+          setFornecedores(sortedData);
           setPagination(prev => ({
             ...prev,
             currentPage: result.pagination.currentPage || prev.currentPage,
             totalPages: result.pagination.totalPages || prev.totalPages,
-            totalItems: result.pagination.totalItems || fornecedoresData.length || 0
+            totalItems: result.pagination.totalItems || sortedData.length || 0
           }));
 
           // Calcular estatísticas com todos os dados carregados
-          const estatisticas = calcularEstatisticas(fornecedoresData);
+          const estatisticas = calcularEstatisticas(sortedData);
           setStats(estatisticas);
         } else {
           // Aplicar paginação no frontend
-          setAllFornecedores(fornecedoresData);
+          setAllFornecedores(sortedData);
           
-          const totalItems = fornecedoresData.length;
+          const totalItems = sortedData.length;
           const totalPages = Math.ceil(totalItems / pagination.itemsPerPage) || 1;
           const currentPage = Math.min(pagination.currentPage, totalPages);
           
           
           // Aplicar paginação
-          const paginatedData = applyFrontendPagination(fornecedoresData, currentPage, pagination.itemsPerPage);
+          const paginatedData = applyFrontendPagination(sortedData, currentPage, pagination.itemsPerPage);
           
           setFornecedores(paginatedData);
           setPagination(prev => ({
@@ -170,7 +216,7 @@ export const useFornecedoresConsulta = () => {
           }));
 
           // Calcular estatísticas com todos os dados carregados (não apenas da página atual)
-          const estatisticas = calcularEstatisticas(fornecedoresData);
+          const estatisticas = calcularEstatisticas(sortedData);
           setStats(estatisticas);
         }
       } else {
@@ -184,18 +230,7 @@ export const useFornecedoresConsulta = () => {
     } finally {
       setLoading(false);
     }
-  }, [pagination.currentPage, pagination.itemsPerPage, filters, checkConnection]);
-
-  /**
-   * Calcular estatísticas localmente
-   */
-  const calcularEstatisticas = useCallback((fornecedoresData) => {
-    const total = fornecedoresData.length;
-    const ativos = fornecedoresData.filter(f => f.status === 1).length;
-    const inativos = fornecedoresData.filter(f => f.status === 0).length;
-    
-    return { total, ativos, inativos };
-  }, []);
+  }, [pagination.currentPage, pagination.itemsPerPage, filters, sortField, sortDirection, checkConnection, applySorting, calcularEstatisticas, applyFrontendPagination]);
 
   /**
    * Carregar estatísticas
@@ -238,6 +273,25 @@ export const useFornecedoresConsulta = () => {
   }, []);
 
   /**
+   * Handler para ordenação
+   */
+  const handleSort = useCallback((field) => {
+    const newDirection = sortField === field && sortDirection === 'asc' ? 'desc' : 'asc';
+    setSortField(field);
+    setSortDirection(newDirection);
+    
+    // Reaplicar ordenação e paginação nos dados atuais
+    const sortedData = applySorting(allFornecedores, field, newDirection);
+    setAllFornecedores(sortedData);
+    
+    const paginatedData = applyFrontendPagination(sortedData, pagination.currentPage, pagination.itemsPerPage);
+    setFornecedores(paginatedData);
+    
+    // Reset para primeira página ao ordenar
+    setPagination(prev => ({ ...prev, currentPage: 1 }));
+  }, [allFornecedores, sortField, sortDirection, pagination.currentPage, pagination.itemsPerPage, applySorting, applyFrontendPagination]);
+
+  /**
    * Atualizar filtros
    */
   const atualizarFiltros = useCallback((novosFiltros) => {
@@ -245,13 +299,14 @@ export const useFornecedoresConsulta = () => {
     setPagination(prev => {
       const updatedPagination = { ...prev, currentPage: 1 }; // Reset para primeira página
       
-      // Aplicar paginação no frontend com os novos filtros
-      const paginatedData = applyFrontendPagination(allFornecedores, updatedPagination.currentPage, updatedPagination.itemsPerPage);
+      // Aplicar ordenação e paginação no frontend com os novos filtros
+      const sortedData = applySorting(allFornecedores, sortField, sortDirection);
+      const paginatedData = applyFrontendPagination(sortedData, updatedPagination.currentPage, updatedPagination.itemsPerPage);
       setFornecedores(paginatedData);
       
       return updatedPagination;
     });
-  }, [allFornecedores, applyFrontendPagination]);
+  }, [allFornecedores, sortField, sortDirection, applyFrontendPagination, applySorting]);
 
   /**
    * Atualizar paginação
@@ -260,15 +315,16 @@ export const useFornecedoresConsulta = () => {
     setPagination(prev => {
       const updatedPagination = { ...prev, ...novaPaginacao };
       
-      // Se mudou a página ou itens por página, aplicar paginação no frontend
+      // Se mudou a página ou itens por página, aplicar ordenação e paginação no frontend
       if (novaPaginacao.currentPage || novaPaginacao.itemsPerPage) {
-        const paginatedData = applyFrontendPagination(allFornecedores, updatedPagination.currentPage, updatedPagination.itemsPerPage);
+        const sortedData = applySorting(allFornecedores, sortField, sortDirection);
+        const paginatedData = applyFrontendPagination(sortedData, updatedPagination.currentPage, updatedPagination.itemsPerPage);
         setFornecedores(paginatedData);
       }
       
       return updatedPagination;
     });
-  }, [allFornecedores, applyFrontendPagination]);
+  }, [allFornecedores, sortField, sortDirection, applyFrontendPagination, applySorting]);
 
   /**
    * Recarregar dados
@@ -311,12 +367,17 @@ export const useFornecedoresConsulta = () => {
     // Filtros
     filters,
     
+    // Ordenação
+    sortField,
+    sortDirection,
+    
     // Ações
     carregarFornecedores,
     buscarFornecedorPorId,
     atualizarFiltros,
     atualizarPaginacao,
     recarregar,
+    handleSort,
     checkConnection,
     
     // Utilitários

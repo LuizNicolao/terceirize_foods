@@ -1,17 +1,16 @@
-import React, { useState } from 'react';
-import { FaQuestionCircle, FaEye, FaExclamationTriangle } from 'react-icons/fa';
+import React, { useState, useEffect } from 'react';
+import { FaQuestionCircle, FaExclamationTriangle } from 'react-icons/fa';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { useUnidadesEscolaresConsulta } from '../../hooks/useUnidadesEscolaresConsulta';
-import { Button } from '../../components/ui';
+import { Button, ValidationErrorModal, ConfirmModal } from '../../components/ui';
+import { CadastroFilterBar } from '../../components/ui';
+import { Pagination } from '../../components/ui';
+import { ExportButtons } from '../../components/shared';
 import { 
   UnidadesEscolaresTable, 
   UnidadesEscolaresStats,
   UnidadeEscolarModal
 } from '../../components/unidades-escolares';
-import { CadastroFilterBar } from '../../components/ui';
-import { Pagination } from '../../components/ui';
-import { Modal } from '../../components/ui';
-import { ConsultaActions } from '../../components/shared';
 
 const UnidadesEscolares = () => {
   const { canView } = usePermissions();
@@ -27,15 +26,24 @@ const UnidadesEscolares = () => {
     error,
     pagination,
     filters,
+    sortField,
+    sortDirection,
     carregarUnidadesEscolares,
     buscarUnidadeEscolarPorId,
     atualizarFiltros,
     atualizarPaginacao,
     recarregar,
+    handleSort,
     isConnected,
     hasError,
     isEmpty
   } = useUnidadesEscolaresConsulta();
+
+  // Estados locais para rotas e filiais (não usados no cozinha_industrial)
+  const rotas = [];
+  const filiais = [];
+  const loadingRotas = false;
+  const loadingFiliais = false;
 
   const handleView = async (unidadeEscolar) => {
     try {
@@ -52,8 +60,30 @@ const UnidadesEscolares = () => {
     setSelectedUnidadeEscolar(null);
   };
 
-  const handleSearch = (searchTerm) => {
+  // Estado local para o termo de busca (não aplica filtro imediatamente)
+  const [searchTerm, setSearchTerm] = useState(filters.search || '');
+
+  // Atualizar estado local quando filtros mudarem externamente
+  useEffect(() => {
+    setSearchTerm(filters.search || '');
+  }, [filters.search]);
+
+  const handleSearchChange = (value) => {
+    setSearchTerm(value);
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
     atualizarFiltros({ search: searchTerm });
+    }
+  };
+
+  const handleRotaFilter = (rotaFilter) => {
+    atualizarFiltros({ rotaFilter });
+  };
+
+  const handleFilialFilter = (filialFilter) => {
+    atualizarFiltros({ filialFilter });
   };
 
   const handlePageChange = (page) => {
@@ -64,13 +94,9 @@ const UnidadesEscolares = () => {
     atualizarPaginacao({ itemsPerPage, currentPage: 1 });
   };
 
-  const handleExportXLSX = () => {
-    console.log('Exportar XLSX das unidades escolares consultadas');
-  };
+  const handleExportXLSX = () => {};
 
-  const handleExportPDF = () => {
-    console.log('Exportar PDF das unidades escolares consultadas');
-  };
+  const handleExportPDF = () => {};
 
   // Estados de loading e erro
   if (loading) {
@@ -78,7 +104,7 @@ const UnidadesEscolares = () => {
       <div className="flex justify-center items-center h-screen bg-gray-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Consultando unidades escolares do sistema Foods...</p>
+          <p className="text-gray-600">Consultando cozinhas industriais do sistema Foods...</p>
           {!isConnected && (
             <p className="text-orange-600 text-sm mt-2">
               <FaExclamationTriangle className="inline mr-1" />
@@ -112,10 +138,10 @@ const UnidadesEscolares = () => {
   }
 
   return (
-    <div className="p-4 sm:p-6">
+    <div className="p-3 sm:p-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Unidades Escolares</h1>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3 sm:gap-4">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Cozinha Industrial</h1>
         <div className="flex gap-2 sm:gap-3">
           <Button
             onClick={recarregar}
@@ -135,21 +161,22 @@ const UnidadesEscolares = () => {
 
       {/* Filtros */}
       <CadastroFilterBar
-        searchTerm={filters.search}
-        onSearchChange={handleSearch}
+        searchTerm={searchTerm}
+        onSearchChange={handleSearchChange}
+        onKeyPress={handleKeyPress}
         placeholder="Buscar por código, nome da escola, cidade ou estado..."
       />
 
-      {/* Ações */}
-      <ConsultaActions
+      {/* Botões de Exportação */}
+      <div className="mb-4">
+        <ExportButtons
         onExportXLSX={handleExportXLSX}
         onExportPDF={handleExportPDF}
-        totalItems={unidadesEscolares.length}
-        loading={loading}
+          disabled={!canView('unidades_escolares')}
       />
+      </div>
 
       {/* Tabela */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
       <UnidadesEscolaresTable
           unidades={unidadesEscolares}
           loading={loading}
@@ -161,9 +188,10 @@ const UnidadesEscolares = () => {
           onDelete={() => {}}
           getRotaName={() => 'N/A'}
           loadingRotas={false}
-          mode="consulta"
+        sortField={sortField}
+        sortDirection={sortDirection}
+        onSort={handleSort}
         />
-      </div>
 
       {/* Modal de Visualização */}
       <UnidadeEscolarModal
@@ -179,18 +207,14 @@ const UnidadesEscolares = () => {
       />
 
       {/* Paginação */}
-      {pagination.totalPages > 1 && (
-        <div className="mt-6">
         <Pagination
-            currentPage={pagination.currentPage}
-            totalPages={pagination.totalPages}
+        currentPage={pagination.currentPage || 1}
+        totalPages={pagination.totalPages || 1}
           onPageChange={handlePageChange}
-            totalItems={pagination.totalItems}
-            itemsPerPage={pagination.itemsPerPage}
+        totalItems={pagination.totalItems || 0}
+        itemsPerPage={pagination.itemsPerPage || 20}
           onItemsPerPageChange={handleItemsPerPageChange}
         />
-        </div>
-      )}
     </div>
   );
 };

@@ -1,11 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaQuestionCircle } from 'react-icons/fa';
 import useUnidadesMedidaConsulta from '../../hooks/useUnidadesMedidaConsulta';
 import { UnidadesMedidaStats, UnidadesMedidaTable, UnidadeModal } from '../../components/unidades-medida';
-import { ConsultaActions } from '../../components/shared';
-import { Button } from '../../components/ui';
-import { CadastroFilterBar } from '../../components/ui';
-import Pagination from '../../components/ui/Pagination';
+import { ExportButtons } from '../../components/shared';
+import { Button, CadastroFilterBar, Pagination } from '../../components/ui';
 
 /**
  * Página de consulta de Unidades de Medida
@@ -23,17 +21,34 @@ const UnidadesMedida = () => {
     stats,
     pagination,
     filters,
+    sortField,
+    sortDirection,
     atualizarFiltros,
     atualizarPaginacao,
     limparFiltros,
     recarregar,
+    handleSort,
     isConnected,
     hasError,
     isEmpty
   } = useUnidadesMedidaConsulta();
 
-  const handleSearch = (searchTerm) => {
-    atualizarFiltros({ search: searchTerm });
+  // Estado local para o termo de busca (não aplica filtro imediatamente)
+  const [searchTerm, setSearchTerm] = useState(filters.search || '');
+
+  // Atualizar estado local quando filtros mudarem externamente
+  useEffect(() => {
+    setSearchTerm(filters.search || '');
+  }, [filters.search]);
+
+  const handleSearchChange = (value) => {
+    setSearchTerm(value);
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      atualizarFiltros({ search: searchTerm });
+    }
   };
 
   const handlePageChange = (page) => {
@@ -106,10 +121,11 @@ const UnidadesMedida = () => {
         <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Unidades de Medida</h1>
         <div className="flex gap-2 sm:gap-3">
           <Button
-            onClick={() => window.location.reload()}
+            onClick={recarregar}
             variant="ghost"
             size="sm"
             className="text-xs"
+            disabled={loading}
           >
             <FaQuestionCircle className="mr-1 sm:mr-2" />
             <span className="hidden sm:inline">Atualizar</span>
@@ -122,44 +138,51 @@ const UnidadesMedida = () => {
 
       {/* Filtros */}
       <CadastroFilterBar
-        searchTerm={filters.search}
-        onSearchChange={handleSearch}
+        searchTerm={searchTerm}
+        onSearchChange={handleSearchChange}
+        onKeyPress={handleKeyPress}
+        onClear={limparFiltros}
         placeholder="Buscar por nome, sigla ou descrição..."
       />
 
-      {/* Ações */}
-      <ConsultaActions
-        onExportXLSX={handleExportXLSX}
-        onExportPDF={handleExportPDF}
-        totalItems={pagination.totalItems}
-        loading={loading}
-        showTotal={false}
-      />
+      {/* Botões de Exportação */}
+      <div className="mb-4">
+        <ExportButtons
+          onExportXLSX={handleExportXLSX}
+          onExportPDF={handleExportPDF}
+        />
+      </div>
 
       {/* Tabela */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <UnidadesMedidaTable
-          unidadesMedida={unidadesMedida}
+          unidades={unidadesMedida}
           loading={loading}
           onView={handleViewUnidadeMedida}
+          onEdit={() => {}}
+          onDelete={() => {}}
           canView={true}
-          mode="consulta"
+          canEdit={false}
+          canDelete={false}
+          getStatusLabel={(status) => {
+            if (status === 1) return 'Ativo';
+            return 'Inativo';
+          }}
+          sortField={sortField}
+          sortDirection={sortDirection}
+          onSort={handleSort}
         />
       </div>
 
       {/* Paginação */}
-      {pagination.totalPages > 1 && (
-        <div className="mt-6">
-          <Pagination
-            currentPage={pagination.currentPage}
-            totalPages={pagination.totalPages}
-            onPageChange={handlePageChange}
-            itemsPerPage={pagination.itemsPerPage}
-            onItemsPerPageChange={handleItemsPerPageChange}
-            totalItems={pagination.totalItems}
-          />
-        </div>
-      )}
+      <Pagination
+        currentPage={pagination.currentPage || 1}
+        totalPages={pagination.totalPages || 1}
+        onPageChange={handlePageChange}
+        itemsPerPage={pagination.itemsPerPage || 20}
+        onItemsPerPageChange={handleItemsPerPageChange}
+        totalItems={pagination.totalItems || 0}
+      />
 
       {/* Modal de Visualização */}
       <UnidadeModal

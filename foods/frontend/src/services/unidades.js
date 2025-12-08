@@ -17,19 +17,37 @@ class UnidadesService {
         if (response.data.data.items) {
           unidades = response.data.data.items;
           pagination = response.data.data._meta?.pagination;
-        } else {
+        } else if (Array.isArray(response.data.data)) {
           // Se data é diretamente um array
           unidades = response.data.data;
+          pagination = response.data.data._meta?.pagination;
+        } else if (response.data.data._meta?.pagination) {
+          // Adicionado para pegar pagination diretamente de _meta
+          pagination = response.data.data._meta.pagination;
         }
       } else if (Array.isArray(response.data)) {
         // Se response.data é diretamente um array
         unidades = response.data;
+      } else if (response.data.items && Array.isArray(response.data.items)) {
+        unidades = response.data.items;
+        pagination = response.data._meta?.pagination;
+      }
+      
+      // Normalizar paginação para garantir que tenha total
+      if (pagination) {
+        pagination = {
+          ...pagination,
+          total: pagination.totalItems || pagination.total || 0,
+          limit: pagination.itemsPerPage || pagination.limit || 20,
+          page: pagination.currentPage || pagination.page || 1,
+          totalPages: pagination.totalPages || Math.ceil((pagination.totalItems || pagination.total || 0) / (pagination.itemsPerPage || pagination.limit || 20))
+        };
       }
       
       return {
         success: true,
         data: unidades,
-        pagination: pagination || response.data.pagination
+        pagination: pagination || response.data?.pagination || response.data?.meta?.pagination
       };
     } catch (error) {
       return {

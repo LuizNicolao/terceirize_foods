@@ -26,9 +26,41 @@ const useUnidadesMedidaConsulta = () => {
     search: ''
   });
 
+  // Estados de ordenação
+  const [sortField, setSortField] = useState(null);
+  const [sortDirection, setSortDirection] = useState('asc');
+
   // Estados de conexão
   const [isConnected, setIsConnected] = useState(true);
   const [connectionStatus, setConnectionStatus] = useState(null);
+
+  /**
+   * Aplicar ordenação nos dados
+   */
+  const applySorting = useCallback((data, field, direction) => {
+    if (!field) return data;
+
+    const sortedData = [...data].sort((a, b) => {
+      let aValue = a[field];
+      let bValue = b[field];
+
+      // Tratar valores nulos/undefined
+      if (aValue == null) aValue = '';
+      if (bValue == null) bValue = '';
+
+      // Converter para string se necessário para comparação
+      if (typeof aValue === 'string') aValue = aValue.toLowerCase();
+      if (typeof bValue === 'string') bValue = bValue.toLowerCase();
+
+      if (direction === 'asc') {
+        return aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
+      } else {
+        return aValue < bValue ? 1 : aValue > bValue ? -1 : 0;
+      }
+    });
+
+    return sortedData;
+  }, []);
 
   /**
    * Aplicar paginação no frontend
@@ -105,9 +137,12 @@ const useUnidadesMedidaConsulta = () => {
 
       setAllUnidadesData(allData);
 
+      // Aplicar ordenação
+      const sortedData = applySorting(allData, sortField, sortDirection);
+
       // Aplicar paginação no frontend
       const paginatedResult = applyFrontendPagination(
-        allData,
+        sortedData,
         pagination.currentPage,
         pagination.itemsPerPage
       );
@@ -129,7 +164,7 @@ const useUnidadesMedidaConsulta = () => {
     } finally {
       setLoading(false);
     }
-  }, [pagination.currentPage, pagination.itemsPerPage, checkConnection, applyFrontendPagination]);
+  }, [pagination.currentPage, pagination.itemsPerPage, checkConnection, applyFrontendPagination, applySorting, sortField, sortDirection]);
 
   /**
    * Calcular estatísticas
@@ -167,9 +202,12 @@ const useUnidadesMedidaConsulta = () => {
       );
     }
 
+    // Aplicar ordenação
+    const sortedData = applySorting(dadosFiltrados, sortField, sortDirection);
+
     // Aplicar paginação
     const paginatedResult = applyFrontendPagination(
-      dadosFiltrados,
+      sortedData,
       1, // Reset para primeira página
       pagination.itemsPerPage
     );
@@ -181,7 +219,7 @@ const useUnidadesMedidaConsulta = () => {
       totalPages: paginatedResult.totalPages,
       totalItems: paginatedResult.totalItems
     }));
-  }, [allUnidadesData, filters.search, pagination.itemsPerPage, applyFrontendPagination]);
+  }, [allUnidadesData, filters.search, pagination.itemsPerPage, applyFrontendPagination, applySorting, sortField, sortDirection]);
 
   /**
    * Atualizar paginação
@@ -202,8 +240,11 @@ const useUnidadesMedidaConsulta = () => {
       );
     }
 
+    // Aplicar ordenação
+    const sortedData = applySorting(dadosFiltrados, sortField, sortDirection);
+
     const paginatedResult = applyFrontendPagination(
-      dadosFiltrados,
+      sortedData,
       novaPaginacao.currentPage || pagination.currentPage,
       novaPaginacao.itemsPerPage || pagination.itemsPerPage
     );
@@ -215,7 +256,7 @@ const useUnidadesMedidaConsulta = () => {
       totalPages: paginatedResult.totalPages,
       totalItems: paginatedResult.totalItems
     }));
-  }, [allUnidadesData, filters.search, pagination.currentPage, pagination.itemsPerPage, applyFrontendPagination]);
+  }, [allUnidadesData, filters.search, pagination.currentPage, pagination.itemsPerPage, applyFrontendPagination, applySorting, sortField, sortDirection]);
 
   /**
    * Limpar filtros
@@ -224,9 +265,12 @@ const useUnidadesMedidaConsulta = () => {
     setFilters({ search: '' });
     setPagination(prev => ({ ...prev, currentPage: 1 }));
     
+    // Aplicar ordenação
+    const sortedData = applySorting(allUnidadesData, sortField, sortDirection);
+
     // Aplicar paginação sem filtros
     const paginatedResult = applyFrontendPagination(
-      allUnidadesData,
+      sortedData,
       1,
       pagination.itemsPerPage
     );
@@ -237,7 +281,38 @@ const useUnidadesMedidaConsulta = () => {
       totalPages: paginatedResult.totalPages,
       totalItems: paginatedResult.totalItems
     }));
-  }, [allUnidadesData, pagination.itemsPerPage, applyFrontendPagination]);
+  }, [allUnidadesData, pagination.itemsPerPage, applyFrontendPagination, applySorting, sortField, sortDirection]);
+
+  /**
+   * Handler para ordenação
+   */
+  const handleSort = useCallback((field) => {
+    const newDirection = sortField === field && sortDirection === 'asc' ? 'desc' : 'asc';
+    setSortField(field);
+    setSortDirection(newDirection);
+    
+    // Aplicar filtros primeiro
+    let dadosFiltrados = [...allUnidadesData];
+    
+    // Filtro de busca
+    if (filters.search) {
+      const searchTerm = filters.search.toLowerCase();
+      dadosFiltrados = dadosFiltrados.filter(item =>
+        item.nome?.toLowerCase().includes(searchTerm) ||
+        item.sigla?.toLowerCase().includes(searchTerm) ||
+        item.descricao?.toLowerCase().includes(searchTerm)
+      );
+    }
+    
+    // Reaplicar ordenação e paginação nos dados atuais
+    const sortedData = applySorting(dadosFiltrados, field, newDirection);
+    
+    const paginatedResult = applyFrontendPagination(sortedData, pagination.currentPage, pagination.itemsPerPage);
+    setUnidadesMedida(paginatedResult.data);
+    
+    // Reset para primeira página ao ordenar
+    setPagination(prev => ({ ...prev, currentPage: 1 }));
+  }, [allUnidadesData, sortField, sortDirection, filters, pagination.currentPage, pagination.itemsPerPage, applySorting, applyFrontendPagination]);
 
   /**
    * Recarregar dados
@@ -259,6 +334,8 @@ const useUnidadesMedidaConsulta = () => {
     stats,
     pagination,
     filters,
+    sortField,
+    sortDirection,
     
     // Ações
     carregarUnidadesMedida,
@@ -266,6 +343,7 @@ const useUnidadesMedidaConsulta = () => {
     atualizarPaginacao,
     limparFiltros,
     recarregar,
+    handleSort,
     
     // Estados de conexão
     isConnected,

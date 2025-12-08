@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaQuestionCircle, FaEye, FaExclamationTriangle } from 'react-icons/fa';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { useFiliaisConsulta } from '../../hooks/useFiliaisConsulta';
@@ -10,7 +10,7 @@ import {
 } from '../../components/filiais';
 import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
-import { ConsultaActions } from '../../components/shared';
+import { ExportButtons } from '../../components/shared';
 
 const Filiais = () => {
   const { canView } = usePermissions();
@@ -36,12 +36,17 @@ const Filiais = () => {
     // Filtros
     filters,
     
+    // Ordenação
+    sortField,
+    sortDirection,
+    
     // Ações
     carregarFiliais,
     buscarFilialPorId,
     atualizarFiltros,
     atualizarPaginacao,
     recarregar,
+    handleSort,
     
     // Utilitários
     isConnected,
@@ -65,8 +70,22 @@ const Filiais = () => {
     setSelectedFilial(null);
   };
 
-  const handleSearch = (searchTerm) => {
+  // Estado local para o termo de busca (não aplica filtro imediatamente)
+  const [searchTerm, setSearchTerm] = useState(filters.search || '');
+
+  // Atualizar estado local quando filtros mudarem externamente
+  useEffect(() => {
+    setSearchTerm(filters.search || '');
+  }, [filters.search]);
+
+  const handleSearchChange = (value) => {
+    setSearchTerm(value);
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
     atualizarFiltros({ search: searchTerm });
+    }
   };
 
   const handlePageChange = (page) => {
@@ -144,22 +163,23 @@ const Filiais = () => {
       </div>
 
       {/* Estatísticas */}
-      <FiliaisStats stats={stats} />
+      <FiliaisStats estatisticas={stats} />
 
       {/* Filtros */}
       <CadastroFilterBar
-        searchTerm={filters.search}
-        onSearchChange={handleSearch}
+        searchTerm={searchTerm}
+        onSearchChange={handleSearchChange}
+        onKeyPress={handleKeyPress}
         placeholder="Buscar por nome, cidade ou código..."
       />
 
-      {/* Ações */}
-      <ConsultaActions
+      {/* Botões de Exportação */}
+      <div className="mb-4">
+        <ExportButtons
         onExportXLSX={handleExportXLSX}
         onExportPDF={handleExportPDF}
-        totalItems={filiais.length}
-        loading={loading}
       />
+      </div>
 
       {/* Tabela */}
       <FiliaisTable
@@ -167,7 +187,9 @@ const Filiais = () => {
         loading={loading}
         onView={handleView}
         canView={canView('filiais')}
-        mode="consulta"
+        sortField={sortField}
+        sortDirection={sortDirection}
+        onSort={handleSort}
       />
 
       {/* Modal de Visualização */}
@@ -180,18 +202,14 @@ const Filiais = () => {
       />
 
       {/* Paginação */}
-      {pagination.totalPages > 1 && (
-        <div className="mt-6">
         <Pagination
-            currentPage={pagination.currentPage}
-            totalPages={pagination.totalPages}
+        currentPage={pagination.currentPage || 1}
+        totalPages={pagination.totalPages || 1}
           onPageChange={handlePageChange}
-            totalItems={pagination.totalItems}
-            itemsPerPage={pagination.itemsPerPage}
+        totalItems={pagination.totalItems || 0}
+        itemsPerPage={pagination.itemsPerPage || 20}
           onItemsPerPageChange={handleItemsPerPageChange}
         />
-        </div>
-      )}
     </div>
   );
 };

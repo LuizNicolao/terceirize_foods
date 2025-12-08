@@ -27,7 +27,7 @@ const AlmoxarifadoModal = ({
     
     setLoading(true);
     try {
-      const response = await FoodsApiService.getAlmoxarifados(filialId);
+      const response = await FoodsApiService.getAlmoxarifadosPorFilial(filialId);
       if (response.success) {
         setAlmoxarifados(response.data || []);
       } else {

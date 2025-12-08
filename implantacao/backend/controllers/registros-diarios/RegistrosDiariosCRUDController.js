@@ -39,6 +39,28 @@ class RegistrosDiariosCRUDController {
         quantidadesNormalizadas.parcial_manha = Number(quantidades.parcial) || 0;
       }
 
+      // Verificar se é um novo registro (não existe nenhum registro para essa escola/data)
+      const registrosExistentes = await executeQuery(
+        'SELECT id FROM registros_diarios WHERE escola_id = ? AND data = ? LIMIT 1',
+        [escola_id, data]
+      );
+      
+      const isNovoRegistro = registrosExistentes.length === 0;
+
+      // Validação: não permitir criar novo registro com todos os valores zero
+      if (isNovoRegistro) {
+        const valores = Object.values(quantidadesNormalizadas);
+        const temValorMaiorQueZero = valores.some(valor => Number(valor) > 0);
+        
+        if (!temValorMaiorQueZero) {
+          return res.status(400).json({
+            success: false,
+            error: 'Validação falhou',
+            message: 'É necessário informar pelo menos uma quantidade maior que zero para criar um novo registro'
+          });
+        }
+      }
+
       // Incluir chave de compatibilidade para manter histórico antigos
       const tiposRefeicao = [
         'lanche_manha',

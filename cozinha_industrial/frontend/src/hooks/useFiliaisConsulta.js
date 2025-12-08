@@ -23,11 +23,16 @@ export const useFiliaisConsulta = () => {
     status: ''
   });
 
+  // Estados de ordenação
+  const [sortField, setSortField] = useState(null);
+  const [sortDirection, setSortDirection] = useState('asc');
+
   // Estados de estatísticas
   const [stats, setStats] = useState({
-    total: 0,
-    ativos: 0,
-    inativos: 0
+    total_filiais: 0,
+    filiais_ativas: 0,
+    filiais_inativas: 0,
+    com_cnpj: 0
   });
 
   // Utilitários
@@ -54,6 +59,34 @@ export const useFiliaisConsulta = () => {
   }, []);
 
   /**
+   * Aplicar ordenação nos dados
+   */
+  const applySorting = useCallback((data, field, direction) => {
+    if (!field) return data;
+
+    const sortedData = [...data].sort((a, b) => {
+      let aValue = a[field];
+      let bValue = b[field];
+
+      // Tratar valores nulos/undefined
+      if (aValue == null) aValue = '';
+      if (bValue == null) bValue = '';
+
+      // Converter para string se necessário para comparação
+      if (typeof aValue === 'string') aValue = aValue.toLowerCase();
+      if (typeof bValue === 'string') bValue = bValue.toLowerCase();
+
+      if (direction === 'asc') {
+        return aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
+      } else {
+        return aValue < bValue ? 1 : aValue > bValue ? -1 : 0;
+      }
+    });
+
+    return sortedData;
+  }, []);
+
+  /**
    * Aplicar paginação no frontend
    */
   const applyFrontendPagination = useCallback((data, page, itemsPerPage) => {
@@ -67,13 +100,14 @@ export const useFiliaisConsulta = () => {
    */
   const calcularEstatisticas = useCallback((data) => {
     return {
-      total: data.length,
-      ativos: data.filter(item => 
+      total_filiais: data.length,
+      filiais_ativas: data.filter(item => 
         item.status === 'ativo' || item.status === 'Ativa' || item.status === 1
       ).length,
-      inativos: data.filter(item => 
+      filiais_inativas: data.filter(item => 
         item.status === 'inativo' || item.status === 'Inativa' || item.status === 0
-      ).length
+      ).length,
+      com_cnpj: data.filter(item => item.cnpj && item.cnpj.trim() !== '').length
     };
   }, []);
 
@@ -134,9 +168,26 @@ export const useFiliaisConsulta = () => {
         }
       }
 
+      // Filtrar apenas a filial "CD TOLEDO"
+      // O campo que contém o nome da filial é 'filial'
+      allFiliaisData = allFiliaisData.filter(filial => {
+        if (filial.filial) {
+          const filialNome = filial.filial.toLowerCase().trim();
+          // Verificar se contém "cd toledo" ou apenas "toledo" (caso o nome seja apenas "TOLEDO")
+          return filialNome.includes('cd toledo') || 
+                 filialNome === 'toledo' ||
+                 filialNome.includes('toledo');
+        }
+        // Se não tiver informação de filial, não incluir
+        return false;
+      });
+
+      // Aplicar ordenação
+      const sortedData = applySorting(allFiliaisData, sortField, sortDirection);
+
       // Aplicar paginação no frontend
       const paginatedData = applyFrontendPagination(
-        allFiliaisData,
+        sortedData,
         pagination.currentPage,
         pagination.itemsPerPage
       );
@@ -157,11 +208,11 @@ export const useFiliaisConsulta = () => {
       setError(error.message);
       setFiliais([]);
       setAllFiliais([]);
-      setStats({ total: 0, ativos: 0, inativos: 0 });
+      setStats({ total_filiais: 0, filiais_ativas: 0, filiais_inativas: 0, com_cnpj: 0 });
     } finally {
       setLoading(false);
     }
-  }, [filters, pagination.currentPage, pagination.itemsPerPage, checkConnection, applyFrontendPagination, calcularEstatisticas]);
+  }, [filters, pagination.currentPage, pagination.itemsPerPage, sortField, sortDirection, checkConnection, applyFrontendPagination, applySorting, calcularEstatisticas]);
 
   /**
    * Carregar estatísticas
@@ -199,15 +250,54 @@ export const useFiliaisConsulta = () => {
    */
   const atualizarFiltros = useCallback((newFilters) => {
     setFilters(prev => ({ ...prev, ...newFilters }));
-    setPagination(prev => ({ ...prev, currentPage: 1 })); // Reset para primeira página
-  }, []);
+    setPagination(prev => {
+      const updatedPagination = { ...prev, currentPage: 1 }; // Reset para primeira página
+      
+      // Aplicar ordenação e paginação no frontend com os novos filtros
+      const sortedData = applySorting(allFiliais, sortField, sortDirection);
+      const paginatedData = applyFrontendPagination(sortedData, updatedPagination.currentPage, updatedPagination.itemsPerPage);
+      setFiliais(paginatedData);
+      
+      return updatedPagination;
+    });
+  }, [allFiliais, sortField, sortDirection, applyFrontendPagination, applySorting]);
 
   /**
    * Atualizar paginação
    */
   const atualizarPaginacao = useCallback((newPagination) => {
-    setPagination(prev => ({ ...prev, ...newPagination }));
-  }, []);
+    setPagination(prev => {
+      const updatedPagination = { ...prev, ...newPagination };
+      
+      // Se mudou a página ou itens por página, aplicar ordenação e paginação no frontend
+      if (newPagination.currentPage || newPagination.itemsPerPage) {
+        const sortedData = applySorting(allFiliais, sortField, sortDirection);
+        const paginatedData = applyFrontendPagination(sortedData, updatedPagination.currentPage, updatedPagination.itemsPerPage);
+        setFiliais(paginatedData);
+      }
+      
+      return updatedPagination;
+    });
+  }, [allFiliais, sortField, sortDirection, applyFrontendPagination, applySorting]);
+
+  /**
+   * Handler para ordenação
+   */
+  const handleSort = useCallback((field) => {
+    const newDirection = sortField === field && sortDirection === 'asc' ? 'desc' : 'asc';
+    setSortField(field);
+    setSortDirection(newDirection);
+    
+    // Reaplicar ordenação e paginação nos dados atuais
+    const sortedData = applySorting(allFiliais, field, newDirection);
+    setAllFiliais(sortedData);
+    
+    const paginatedData = applyFrontendPagination(sortedData, pagination.currentPage, pagination.itemsPerPage);
+    setFiliais(paginatedData);
+    
+    // Reset para primeira página ao ordenar
+    setPagination(prev => ({ ...prev, currentPage: 1 }));
+  }, [allFiliais, sortField, sortDirection, pagination.currentPage, pagination.itemsPerPage, applySorting, applyFrontendPagination]);
 
   /**
    * Recarregar dados
@@ -242,12 +332,17 @@ export const useFiliaisConsulta = () => {
     // Filtros
     filters,
     
+    // Ordenação
+    sortField,
+    sortDirection,
+    
     // Ações
     carregarFiliais,
     buscarFilialPorId,
     atualizarFiltros,
     atualizarPaginacao,
     recarregar,
+    handleSort,
     
     // Utilitários
     isConnected,

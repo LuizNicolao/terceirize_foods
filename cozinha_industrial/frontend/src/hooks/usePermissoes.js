@@ -137,15 +137,17 @@ export const usePermissoes = () => {
         'usuarios',
         'fornecedores', 
         'filiais',
-        'rotas_nutricionistas',
         'unidades_escolares',
         'produtos_origem',
+        'produtos_genericos',
+        'produtos_comerciais',
+        'almoxarifados',
+        'centros_custo',
         'unidades_medida',
         'grupos',
         'subgrupos',
         'classes',
-        'produtos_per_capita',
-        'recebimentos_escolas',
+        'receitas',
         'permissoes'
       ];
       

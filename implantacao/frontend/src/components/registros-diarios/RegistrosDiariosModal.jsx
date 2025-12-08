@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Modal, Button, Input, SearchableSelect, ConfirmModal } from '../ui';
 import { FaList, FaChartLine, FaHistory } from 'react-icons/fa';
+import toast from 'react-hot-toast';
 import FoodsApiService from '../../services/FoodsApiService';
 import { useAuth } from '../../contexts/AuthContext';
 import RegistrosDiariosService from '../../services/registrosDiarios';
@@ -140,16 +141,16 @@ const RegistrosDiariosModal = ({
         nutricionista_id: registro.nutricionista_id || user?.id || '',
         data: registro.data || new Date().toISOString().split('T')[0],
         quantidades: {
-          lanche_manha: registro.lanche_manha != null ? String(registro.lanche_manha) : '',
-          parcial_manha: registro.parcial_manha != null
+          lanche_manha: registro.lanche_manha != null && registro.lanche_manha !== 0 ? String(registro.lanche_manha) : '',
+          parcial_manha: registro.parcial_manha != null && registro.parcial_manha !== 0
             ? String(registro.parcial_manha)
-            : registro.parcial != null
+            : registro.parcial != null && registro.parcial !== 0
               ? String(registro.parcial)
               : '',
-          almoco: registro.almoco != null ? String(registro.almoco) : '',
-          lanche_tarde: registro.lanche_tarde != null ? String(registro.lanche_tarde) : '',
-          parcial_tarde: registro.parcial_tarde != null ? String(registro.parcial_tarde) : '',
-          eja: registro.eja != null ? String(registro.eja) : ''
+          almoco: registro.almoco != null && registro.almoco !== 0 ? String(registro.almoco) : '',
+          lanche_tarde: registro.lanche_tarde != null && registro.lanche_tarde !== 0 ? String(registro.lanche_tarde) : '',
+          parcial_tarde: registro.parcial_tarde != null && registro.parcial_tarde !== 0 ? String(registro.parcial_tarde) : '',
+          eja: registro.eja != null && registro.eja !== 0 ? String(registro.eja) : ''
         }
       });
       setDadosIniciaisCarregados(true);
@@ -407,6 +408,17 @@ const RegistrosDiariosModal = ({
     // Compatibilidade: se houver parcial_manha e não parcial, enviar também parcial
     if (quantidadesFiltradas.parcial_manha !== undefined && quantidadesFiltradas.parcial === undefined) {
       quantidadesFiltradas.parcial = quantidadesFiltradas.parcial_manha;
+    }
+
+    // Validação: não permitir criar novo registro com todos os valores zero ou vazios
+    if (!registro) {
+      const valores = Object.values(quantidadesFiltradas);
+      const temValorMaiorQueZero = valores.some(valor => Number(valor) > 0);
+      
+      if (!temValorMaiorQueZero) {
+        toast.error('É necessário informar pelo menos uma quantidade maior que zero para criar um novo registro');
+        return;
+      }
     }
 
     const resultado = await onSave({

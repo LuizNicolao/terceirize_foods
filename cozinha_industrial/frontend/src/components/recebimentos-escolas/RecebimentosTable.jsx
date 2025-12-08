@@ -1,7 +1,6 @@
 import React from 'react';
 import { FaPlus } from 'react-icons/fa';
-import { ActionButtons, EmptyState } from '../ui';
-import Pagination from '../ui/Pagination';
+import { ActionButtons, EmptyState, Pagination } from '../ui';
 
 const RecebimentosTable = ({ 
   recebimentos, 

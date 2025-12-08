@@ -6,26 +6,26 @@ const UnidadesEscolaresStats = ({ estatisticas }) => {
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-4 sm:mb-6">
       <StatCard
-        title="Total de Unidades"
-        value={estatisticas?.total_unidades || 0}
+        title="Total de Cozinhas"
+        value={estatisticas.total_unidades}
         icon={FaSchool}
         color="blue"
       />
       <StatCard
-        title="Unidades Ativas"
-        value={estatisticas?.unidades_ativas || 0}
+        title="Cozinhas Ativas"
+        value={estatisticas.unidades_ativas}
         icon={FaUsers}
         color="green"
       />
       <StatCard
         title="Total de Estados"
-        value={estatisticas?.total_estados || 0}
+        value={estatisticas.total_estados}
         icon={FaMapMarkerAlt}
         color="purple"
       />
       <StatCard
         title="Total de Cidades"
-        value={estatisticas?.total_cidades || 0}
+        value={estatisticas.total_cidades}
         icon={FaRoute}
         color="orange"
       />
@@ -34,3 +34,4 @@ const UnidadesEscolaresStats = ({ estatisticas }) => {
 };
 
 export default UnidadesEscolaresStats;
+

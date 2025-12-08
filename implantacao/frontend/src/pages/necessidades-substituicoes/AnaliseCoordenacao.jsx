@@ -1,10 +1,8 @@
-import React, { useEffect, useState, useMemo } from 'react';
-import { FaExchangeAlt } from 'react-icons/fa';
+import React, { useEffect, useState } from 'react';
 import { useSubstituicoesNecessidades } from '../../hooks/useSubstituicoesNecessidades';
-import { SubstituicoesFilters, SubstituicoesTableCoordenacao } from './components';
-import { ExportButtons } from '../../components/shared';
-import SubstituicoesNecessidadesService from '../../services/substituicoesNecessidades';
-import toast from 'react-hot-toast';
+import { SubstituicoesFilters, SubstituicoesTableCoordenacao, CoordenacaoHeader, CoordenacaoEmptyState } from './components';
+import { AnaliseLoadingState, AnaliseErrorMessage } from './components/analise';
+import { useCoordenacaoExport, useCoordenacaoStats } from '../../hooks/necessidades';
 
 const AnaliseCoordenacao = () => {
   const [ajustesAtivados, setAjustesAtivados] = useState(false);
@@ -24,6 +22,7 @@ const AnaliseCoordenacao = () => {
     loadingGenericos,
     buscarProdutosGenericos,
     salvarSubstituicao,
+    deletarSubstituicao,
     atualizarFiltros,
     aplicarFiltros,
     limparFiltros,
@@ -52,29 +51,11 @@ const AnaliseCoordenacao = () => {
     }
   }, [necessidades]);
 
-  // Calcular total de escolas únicas e total de necessidades (linhas)
-  const { totalEscolas, totalNecessidades } = useMemo(() => {
-    if (!necessidades.length) return { totalEscolas: 0, totalNecessidades: 0 };
-    
-    const escolasUnicas = new Set();
-    let totalLinhas = 0;
-    
-    necessidades.forEach(necessidade => {
-      if (necessidade.escolas && Array.isArray(necessidade.escolas)) {
-        totalLinhas += necessidade.escolas.length;
-        necessidade.escolas.forEach(escola => {
-          if (escola.escola_id) {
-            escolasUnicas.add(escola.escola_id);
-          }
-        });
-      }
-    });
-    
-    return {
-      totalEscolas: escolasUnicas.size,
-      totalNecessidades: totalLinhas
-    };
-  }, [necessidades]);
+  // Estatísticas
+  const { totalEscolas, totalNecessidades, totalProdutos } = useCoordenacaoStats(necessidades);
+
+  // Exportações
+  const { handleExportXLSX, handleExportPDF } = useCoordenacaoExport(filtros);
 
   const handleSaveConsolidated = async (dados, codigoOrigem) => {
     const response = await salvarSubstituicao(dados);
@@ -84,106 +65,6 @@ const AnaliseCoordenacao = () => {
   const handleSaveIndividual = async (dados, escolaId) => {
     const response = await salvarSubstituicao(dados);
     return response;
-  };
-
-  const handleExportXLSX = async () => {
-    try {
-      // Preparar filtros para o backend
-      const filtrosExport = {};
-      
-      if (filtros.grupo) {
-        filtrosExport.grupo = typeof filtros.grupo === 'object' ? filtros.grupo.nome || filtros.grupo.id : filtros.grupo;
-      }
-      
-      if (filtros.semana_abastecimento) {
-        filtrosExport.semana_abastecimento = filtros.semana_abastecimento;
-      }
-      
-      if (filtros.semana_consumo) {
-        filtrosExport.semana_consumo = filtros.semana_consumo;
-      }
-      
-      if (filtros.tipo_rota_id) {
-        filtrosExport.tipo_rota_id = typeof filtros.tipo_rota_id === 'object' ? filtros.tipo_rota_id.id : filtros.tipo_rota_id;
-      }
-      
-      if (filtros.rota_id) {
-        filtrosExport.rota_id = typeof filtros.rota_id === 'object' ? filtros.rota_id.id : filtros.rota_id;
-      }
-
-      const response = await SubstituicoesNecessidadesService.exportarXLSX(filtrosExport);
-      
-      if (response.success) {
-        // Criar blob e fazer download
-        const blob = new Blob([response.data], {
-          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        });
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = response.filename || `substituicoes_coordenacao_${new Date().toISOString().split('T')[0]}.xlsx`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
-        toast.success('Arquivo XLSX exportado com sucesso!');
-      } else {
-        toast.error('Erro ao exportar arquivo XLSX');
-      }
-    } catch (error) {
-      console.error('Erro ao exportar XLSX:', error);
-      toast.error('Erro ao exportar arquivo XLSX');
-    }
-  };
-
-  const handleExportPDF = async () => {
-    try {
-      // Preparar filtros para o backend
-      const filtrosExport = {};
-      
-      if (filtros.grupo) {
-        filtrosExport.grupo = typeof filtros.grupo === 'object' ? filtros.grupo.nome || filtros.grupo.id : filtros.grupo;
-      }
-      
-      if (filtros.semana_abastecimento) {
-        filtrosExport.semana_abastecimento = filtros.semana_abastecimento;
-      }
-      
-      if (filtros.semana_consumo) {
-        filtrosExport.semana_consumo = filtros.semana_consumo;
-      }
-      
-      if (filtros.tipo_rota_id) {
-        filtrosExport.tipo_rota_id = typeof filtros.tipo_rota_id === 'object' ? filtros.tipo_rota_id.id : filtros.tipo_rota_id;
-      }
-      
-      if (filtros.rota_id) {
-        filtrosExport.rota_id = typeof filtros.rota_id === 'object' ? filtros.rota_id.id : filtros.rota_id;
-      }
-
-      const response = await SubstituicoesNecessidadesService.exportarPDF(filtrosExport);
-      
-      if (response.success) {
-        // Criar blob e fazer download
-        const blob = new Blob([response.data], {
-          type: 'application/pdf'
-        });
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = response.filename || `substituicoes_coordenacao_${new Date().toISOString().split('T')[0]}.pdf`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
-        toast.success('Arquivo PDF exportado com sucesso!');
-      } else {
-        toast.error('Erro ao exportar arquivo PDF');
-      }
-    } catch (error) {
-      console.error('Erro ao exportar PDF:', error);
-      toast.error('Erro ao exportar arquivo PDF');
-    }
   };
 
   return (
@@ -203,40 +84,20 @@ const AnaliseCoordenacao = () => {
         onLimparFiltros={limparFiltros}
       />
 
-      {/* Ações (Botões de Exportar) */}
-      {necessidades.length > 0 && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
-          <div className="flex justify-between items-center">
-            <h2 className="text-lg font-semibold text-gray-800">
-              Produtos para Substituição ({necessidades.length}) • {totalNecessidades} {totalNecessidades === 1 ? 'necessidade' : 'necessidades'} • {totalEscolas} {totalEscolas === 1 ? 'escola' : 'escolas'}
-            </h2>
-            <div className="flex items-center gap-2">
-              <ExportButtons
-                onExportXLSX={handleExportXLSX}
-                onExportPDF={handleExportPDF}
-                size="sm"
-                variant="outline"
-                showLabels={true}
-              />
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Header com Estatísticas e Botões de Exportar */}
+      <CoordenacaoHeader
+        totalProdutos={totalProdutos}
+        totalNecessidades={totalNecessidades}
+        totalEscolas={totalEscolas}
+        onExportXLSX={handleExportXLSX}
+        onExportPDF={handleExportPDF}
+      />
 
       {/* Error Message */}
-      {error && (
-        <div className="mb-6 bg-red-50 border border-red-200 rounded-md p-4">
-          <p className="text-red-800">{error}</p>
-        </div>
-      )}
+      <AnaliseErrorMessage error={error} />
 
       {/* Loading State */}
-      {loading && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Carregando necessidades...</p>
-        </div>
-      )}
+      {loading && <AnaliseLoadingState />}
 
       {/* Tabela */}
       {!loading && necessidades.length > 0 && (
@@ -251,33 +112,13 @@ const AnaliseCoordenacao = () => {
           onBuscarProdutosGenericos={buscarProdutosGenericos}
           onTrocarProdutoOrigem={trocarProdutoOrigem}
           onDesfazerTroca={desfazerTrocaProduto}
+          onDeletarSubstituicao={deletarSubstituicao}
         />
       )}
 
       {/* Empty State */}
-      {!loading && necessidades.length === 0 && filtrosJaAplicados && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
-          <FaExchangeAlt className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            Nenhuma necessidade encontrada
-          </h3>
-          <p className="text-gray-600">
-            Não há necessidades liberadas para coordenação com os filtros selecionados.
-          </p>
-        </div>
-      )}
-
-      {/* Initial State */}
-      {!loading && necessidades.length === 0 && !filtrosJaAplicados && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
-          <FaExchangeAlt className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            Selecione os filtros para buscar necessidades
-          </h3>
-          <p className="text-gray-600">
-            Selecione pelo menos um filtro (<strong>Tipo de Rota</strong>, <strong>Grupo de Produtos</strong> ou <strong>Semana de Abastecimento</strong>) para visualizar as necessidades liberadas para coordenação.
-          </p>
-        </div>
+      {!loading && necessidades.length === 0 && (
+        <CoordenacaoEmptyState filtrosJaAplicados={filtrosJaAplicados} />
       )}
     </>
   );

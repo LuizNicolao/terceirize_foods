@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaQuestionCircle, FaEye, FaExclamationTriangle } from 'react-icons/fa';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { useFornecedoresConsulta } from '../../hooks/useFornecedoresConsulta';
@@ -10,7 +10,7 @@ import {
 } from '../../components/fornecedores';
 import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
-import { ConsultaActions } from '../../components/shared';
+import { ExportButtons } from '../../components/shared';
 
 const Fornecedores = () => {
   const { canView } = usePermissions();
@@ -36,12 +36,17 @@ const Fornecedores = () => {
     // Filtros
     filters,
     
+    // Ordenação
+    sortField,
+    sortDirection,
+    
     // Ações
     carregarFornecedores,
     buscarFornecedorPorId,
     atualizarFiltros,
     atualizarPaginacao,
     recarregar,
+    handleSort,
     
     // Utilitários
     isConnected,
@@ -65,8 +70,22 @@ const Fornecedores = () => {
     setSelectedFornecedor(null);
   };
 
-  const handleSearch = (searchTerm) => {
+  // Estado local para o termo de busca (não aplica filtro imediatamente)
+  const [searchTerm, setSearchTerm] = useState(filters.search || '');
+
+  // Atualizar estado local quando filtros mudarem externamente
+  useEffect(() => {
+    setSearchTerm(filters.search || '');
+  }, [filters.search]);
+
+  const handleSearchChange = (value) => {
+    setSearchTerm(value);
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
     atualizarFiltros({ search: searchTerm });
+    }
   };
 
   const handlePageChange = (page) => {
@@ -77,15 +96,9 @@ const Fornecedores = () => {
     atualizarPaginacao({ itemsPerPage, currentPage: 1 });
   };
 
-  const handleExportXLSX = () => {
-    // TODO: Implementar exportação XLSX dos dados consultados
-    console.log('Exportar XLSX dos fornecedores consultados');
-  };
+  const handleExportXLSX = () => {};
 
-  const handleExportPDF = () => {
-    // TODO: Implementar exportação PDF dos dados consultados
-    console.log('Exportar PDF dos fornecedores consultados');
-  };
+  const handleExportPDF = () => {};
 
   // Estados de loading e erro
   if (loading) {
@@ -146,22 +159,24 @@ const Fornecedores = () => {
       </div>
 
       {/* Estatísticas */}
-      <FornecedoresStats stats={stats} />
+      <FornecedoresStats estatisticas={stats} />
 
       {/* Filtros */}
       <CadastroFilterBar
-        searchTerm={filters.search}
-        onSearchChange={handleSearch}
+        searchTerm={searchTerm}
+        onSearchChange={handleSearchChange}
+        onKeyPress={handleKeyPress}
         placeholder="Buscar por razão social, nome fantasia ou CNPJ..."
       />
 
       {/* Ações */}
-      <ConsultaActions
-        onExportXLSX={handleExportXLSX}
-        onExportPDF={handleExportPDF}
-        totalItems={fornecedores.length}
-        loading={loading}
-      />
+      {/* Botões de Exportação */}
+      <div className="mb-4">
+        <ExportButtons
+          onExportXLSX={handleExportXLSX}
+          onExportPDF={handleExportPDF}
+        />
+      </div>
 
       {/* Tabela */}
       <FornecedoresTable
@@ -169,7 +184,9 @@ const Fornecedores = () => {
         loading={loading}
         onView={handleView}
         canView={canView('fornecedores')}
-          mode="consulta" // Modo consulta apenas
+        sortField={sortField}
+        sortDirection={sortDirection}
+        onSort={handleSort}
         />
 
       {/* Modal de Visualização */}
@@ -177,23 +194,19 @@ const Fornecedores = () => {
         isOpen={showViewModal}
         onClose={handleCloseViewModal}
         onSubmit={() => {}} // Não usado no modo visualização
-        isViewMode={true}
+        viewMode={true}
         editingFornecedor={selectedFornecedor}
       />
 
       {/* Paginação */}
-      {pagination.totalPages > 1 && (
-        <div className="mt-6">
         <Pagination
-            currentPage={pagination.currentPage}
-            totalPages={pagination.totalPages}
+        currentPage={pagination.currentPage || 1}
+        totalPages={pagination.totalPages || 1}
           onPageChange={handlePageChange}
-            totalItems={pagination.totalItems}
-            itemsPerPage={pagination.itemsPerPage}
+        totalItems={pagination.totalItems || 0}
+        itemsPerPage={pagination.itemsPerPage || 20}
           onItemsPerPageChange={handleItemsPerPageChange}
         />
-        </div>
-      )}
     </div>
   );
 };

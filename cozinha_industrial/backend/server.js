@@ -14,6 +14,7 @@ const permissoesRoute = require('./routes/permissoes');
 const produtosPerCapitaRoute = require('./routes/produtos-per-capita/produtosPerCapitaRoute');
 const recebimentosEscolasRoute = require('./routes/recebimentos-escolas');
 const auditoriaRoute = require('./routes/auditoria/auditoriaRoute');
+const receitasRoute = require('./routes/receitas');
 
 // Definir rotas com seus middlewares
 const routes = [
@@ -29,7 +30,8 @@ const routes = [
   { path: '/permissoes', router: permissoesRoute },
   { path: '/produtos-per-capita', router: produtosPerCapitaRoute },
   { path: '/recebimentos-escolas', router: recebimentosEscolasRoute },
-  { path: '/auditoria', router: auditoriaRoute }
+  { path: '/auditoria', router: auditoriaRoute },
+  { path: '/receitas', router: receitasRoute }
 ];
 
 // Aplicar rotas com prefixos para desenvolvimento e produção
@@ -54,7 +56,8 @@ app.get('/', (req, res) => {
       usuarios: `${basePath}/usuarios`,
       permissoes: `${basePath}/permissoes`,
       produtosPerCapita: `${basePath}/produtos-per-capita`,
-      recebimentosEscolas: `${basePath}/recebimentos-escolas`
+      recebimentosEscolas: `${basePath}/recebimentos-escolas`,
+      receitas: `${basePath}/receitas`
     }
   });
 });

@@ -274,9 +274,24 @@ class SubstituicoesCRUDController {
     try {
       const { id } = req.params;
 
+      // Verificar se a substituição existe
+      const substituicao = await executeQuery(`
+        SELECT id, status FROM necessidades_substituicoes 
+        WHERE id = ?
+      `, [id]);
+
+      if (substituicao.length === 0) {
+        return res.status(404).json({
+          success: false,
+          error: 'Substituição não encontrada',
+          message: 'Substituição não encontrada'
+        });
+      }
+
+      // Alterar status para EXCLUÍDO e ativo = 0 (não deletar fisicamente)
       await executeQuery(`
         UPDATE necessidades_substituicoes 
-        SET ativo = 0, data_atualizacao = NOW()
+        SET status = 'EXCLUÍDO', ativo = 0, data_atualizacao = NOW()
         WHERE id = ?
       `, [id]);
 

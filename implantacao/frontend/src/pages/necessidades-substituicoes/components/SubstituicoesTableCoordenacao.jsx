@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { FaChevronDown, FaChevronUp, FaSave, FaUndo } from 'react-icons/fa';
-import { Button, Input, SearchableSelect, Pagination } from '../../../components/ui';
+import { FaChevronDown, FaChevronUp, FaSave, FaUndo, FaTrash } from 'react-icons/fa';
+import { Button, Input, SearchableSelect, Pagination, ConfirmModal } from '../../../components/ui';
 import toast from 'react-hot-toast';
 
 const SubstituicoesTableCoordenacao = ({
@@ -13,7 +13,8 @@ const SubstituicoesTableCoordenacao = ({
   onSaveConsolidated,
   onSaveIndividual,
   onTrocarProdutoOrigem,
-  onDesfazerTroca
+  onDesfazerTroca,
+  onDeletarSubstituicao
 }) => {
   const [expandedRows, setExpandedRows] = useState({});
   const [selectedProdutosGenericos, setSelectedProdutosGenericos] = useState({});
@@ -25,6 +26,13 @@ const SubstituicoesTableCoordenacao = ({
   const [selectedProdutosOrigemPorEscola, setSelectedProdutosOrigemPorEscola] = useState({});
   const [trocaLoading, setTrocaLoading] = useState({});
   const [origemInicialPorEscola, setOrigemInicialPorEscola] = useState({});
+  const [quantidadesOrigemEditadas, setQuantidadesOrigemEditadas] = useState({});
+  
+  // Estados para modais de confirmação
+  const [showDeleteIndividualModal, setShowDeleteIndividualModal] = useState(false);
+  const [substituicaoToDelete, setSubstituicaoToDelete] = useState(null);
+  const [showDeleteConsolidatedModal, setShowDeleteConsolidatedModal] = useState(false);
+  const [necessidadeToDelete, setNecessidadeToDelete] = useState(null);
   
   // Paginação
   const [page, setPage] = useState(1);
@@ -383,13 +391,17 @@ const SubstituicoesTableCoordenacao = ({
       necessidade_id_grupo: necessidade.necessidade_id_grupo,
       semana_abastecimento: necessidade.semana_abastecimento,
       semana_consumo: necessidade.semana_consumo,
-      escola_ids: necessidade.escolas.map(escola => ({
-        necessidade_id: escola.necessidade_id,
-        escola_id: escola.escola_id,
-        escola_nome: escola.escola_nome,
-        quantidade_origem: escola.quantidade_origem,
-        quantidade_generico: quantidadesGenericos[chaveUnica] || escola.quantidade_origem
-      }))
+      escola_ids: necessidade.escolas.map(escola => {
+        const chaveEscola = `${chaveUnica}-${escola.escola_id}`;
+        const quantidadeOrigemAtual = getQuantidadeOrigemAtual(necessidade, escola);
+        return {
+          necessidade_id: escola.necessidade_id,
+          escola_id: escola.escola_id,
+          escola_nome: escola.escola_nome,
+          quantidade_origem: quantidadeOrigemAtual,
+          quantidade_generico: quantidadesGenericos[chaveUnica] || quantidadeOrigemAtual
+        };
+      })
     };
 
     const response = await onSaveConsolidated(dados, chaveUnica);
@@ -439,8 +451,8 @@ const SubstituicoesTableCoordenacao = ({
       necessidade_id: escola.necessidade_id,
       escola_id: escola.escola_id,
       escola_nome: escola.escola_nome,
-      quantidade_origem: escola.quantidade_origem,
-      quantidade_generico: escola.selectedQuantidade || escola.quantidade_origem
+      quantidade_origem: getQuantidadeOrigemAtual(necessidade, escola),
+      quantidade_generico: escola.selectedQuantidade || getQuantidadeOrigemAtual(necessidade, escola)
     };
 
     const response = await onSaveIndividual(dados, escola.escola_id);
@@ -479,6 +491,127 @@ const SubstituicoesTableCoordenacao = ({
     }
   };
 
+  // Função para obter quantidade origem formatada
+  const getQuantidadeOrigemFormatted = (necessidade, escola) => {
+    const chaveUnica = getChaveUnica(necessidade);
+    const chaveEscola = `${chaveUnica}-${escola.escola_id}`;
+    const quantidade = quantidadesOrigemEditadas[chaveEscola] !== undefined 
+      ? quantidadesOrigemEditadas[chaveEscola] 
+      : (escola.substituicao?.quantidade_origem || escola.quantidade_origem || 0);
+    // Garantir que quantidade seja um número
+    const quantidadeNum = typeof quantidade === 'number' ? quantidade : parseFloat(quantidade) || 0;
+    return quantidadeNum.toFixed(3).replace('.', ',');
+  };
+
+  // Função para obter quantidade origem atual (número)
+  const getQuantidadeOrigemAtual = (necessidade, escola) => {
+    const chaveUnica = getChaveUnica(necessidade);
+    const chaveEscola = `${chaveUnica}-${escola.escola_id}`;
+    const quantidade = quantidadesOrigemEditadas[chaveEscola] !== undefined 
+      ? quantidadesOrigemEditadas[chaveEscola] 
+      : (escola.substituicao?.quantidade_origem || escola.quantidade_origem || 0);
+    // Garantir que quantidade seja um número
+    return typeof quantidade === 'number' ? quantidade : parseFloat(quantidade) || 0;
+  };
+
+  // Handler para mudança de quantidade origem
+  const handleQuantidadeOrigemChange = (necessidade, escola, valor) => {
+    const chaveUnica = getChaveUnica(necessidade);
+    const chaveEscola = `${chaveUnica}-${escola.escola_id}`;
+    
+    // Converter valor para número (substituir vírgula por ponto)
+    const valorNumerico = parseFloat(valor.replace(',', '.')) || 0;
+    setQuantidadesOrigemEditadas(prev => ({ ...prev, [chaveEscola]: valorNumerico }));
+    
+    // Recalcular quantidade genérica se houver produto genérico selecionado
+    const produtoSelecionado = selectedProdutosPorEscola[chaveEscola] || escola.selectedProdutoGenerico || '';
+    if (produtoSelecionado) {
+      const partes = produtoSelecionado.split('|');
+      const fatorConversao = partes.length >= 4 ? parseFloat(partes[3]) : 0;
+      if (fatorConversao > 0 && valorNumerico > 0) {
+        const quantidadeGenerica = Math.ceil(valorNumerico / fatorConversao);
+        escola.selectedQuantidade = quantidadeGenerica;
+      }
+    }
+  };
+
+  // Handler para exclusão consolidada
+  const handleDeleteConsolidated = (necessidade) => {
+    const substituicoesIds = necessidade.escolas
+      .filter(escola => escola.substituicao && escola.substituicao.id)
+      .map(escola => escola.substituicao.id);
+
+    if (substituicoesIds.length === 0) {
+      toast.error('Não há substituições salvas para excluir');
+      return null;
+    }
+
+    return { necessidade, substituicoesIds };
+  };
+
+  // Handler para exclusão individual
+  const handleDeleteIndividual = (escola) => {
+    if (!escola.substituicao || !escola.substituicao.id) return null;
+    return escola.substituicao.id;
+  };
+
+  // Handlers de confirmação de exclusão
+  const onDeleteConsolidatedClick = (necessidade) => {
+    const result = handleDeleteConsolidated(necessidade);
+    if (result) {
+      setNecessidadeToDelete(result);
+      setShowDeleteConsolidatedModal(true);
+    }
+  };
+
+  const confirmDeleteConsolidated = async () => {
+    if (!necessidadeToDelete || !onDeletarSubstituicao) return;
+
+    const { substituicoesIds } = necessidadeToDelete;
+
+    try {
+      const promises = substituicoesIds.map(id => onDeletarSubstituicao(id));
+      const resultados = await Promise.all(promises);
+
+      const sucessos = resultados.filter(r => r && r.success).length;
+      const falhas = resultados.filter(r => !r || !r.success).length;
+
+      if (sucessos > 0) {
+        toast.success(`${sucessos} ${sucessos === 1 ? 'substituição excluída' : 'substituições excluídas'} com sucesso!`);
+      }
+
+      if (falhas > 0) {
+        toast.error(`${falhas} ${falhas === 1 ? 'substituição falhou' : 'substituições falharam'} ao ser excluída`);
+      }
+    } catch (error) {
+      console.error('Erro ao excluir substituições consolidadas:', error);
+      toast.error('Erro ao excluir substituições');
+    } finally {
+      setShowDeleteConsolidatedModal(false);
+      setNecessidadeToDelete(null);
+    }
+  };
+
+  const onDeleteIndividualClick = (escola) => {
+    const id = handleDeleteIndividual(escola);
+    if (id) {
+      setSubstituicaoToDelete(id);
+      setShowDeleteIndividualModal(true);
+    }
+  };
+
+  const confirmDeleteIndividual = async () => {
+    if (!substituicaoToDelete || !onDeletarSubstituicao) return;
+
+    const response = await onDeletarSubstituicao(substituicaoToDelete);
+    if (response && response.success) {
+      // A lista será recarregada automaticamente pelo hook
+    }
+
+    setShowDeleteIndividualModal(false);
+    setSubstituicaoToDelete(null);
+  };
+
   if (necessidades.length === 0) {
     return (
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
@@ -493,18 +626,18 @@ const SubstituicoesTableCoordenacao = ({
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th style={{ width: '50px' }} className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
-              <th style={{ width: '100px' }} className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Código</th>
-              <th style={{ minWidth: '200px' }} className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Produto Origem</th>
-              <th style={{ width: '100px' }} className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Unid.</th>
-              <th style={{ width: '120px' }} className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Qtd Origem</th>
-              <th style={{ width: '130px' }} className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Semana Abast.</th>
-              <th style={{ width: '130px' }} className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Semana Consumo</th>
-              <th style={{ width: '100px' }} className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Código</th>
-              <th style={{ minWidth: '250px' }} className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Produto Genérico</th>
-              <th style={{ width: '120px' }} className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Unid. Medida</th>
-              <th style={{ width: '120px' }} className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Qtd Genérico</th>
-              <th style={{ width: '120px' }} className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+              <th style={{ width: '50px' }} className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
+              <th style={{ width: '100px' }} className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Código</th>
+              <th style={{ minWidth: '200px' }} className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Produto Origem</th>
+              <th style={{ width: '100px' }} className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Unid.</th>
+              <th style={{ width: '120px' }} className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Qtd Origem</th>
+              <th style={{ width: '130px' }} className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Semana Abast.</th>
+              <th style={{ width: '130px' }} className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Semana Consumo</th>
+              <th style={{ width: '100px' }} className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Código</th>
+              <th style={{ minWidth: '250px' }} className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Produto Genérico</th>
+              <th style={{ width: '120px' }} className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Unid. Medida</th>
+              <th style={{ width: '120px' }} className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Qtd Genérico</th>
+              <th style={{ width: '120px' }} className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -520,7 +653,7 @@ const SubstituicoesTableCoordenacao = ({
               <React.Fragment key={keyUnica}>
                 {/* Linha Consolidada */}
                 <tr className="hover:bg-gray-50">
-                  <td className="px-4 py-2 whitespace-nowrap text-center">
+                  <td className="px-2 py-2 whitespace-nowrap text-center">
                     <button
                       onClick={() => handleToggleExpand(chaveUnica)}
                       className="text-green-600 hover:text-green-700 focus:outline-none transition-colors"
@@ -532,10 +665,10 @@ const SubstituicoesTableCoordenacao = ({
                       )}
                     </button>
                   </td>
-                  <td className="px-4 py-2 whitespace-nowrap">
+                  <td className="px-2 py-2 whitespace-nowrap">
                     <span className="text-xs font-semibold text-cyan-600">{necessidade.codigo_origem}</span>
                   </td>
-                  <td className="px-4 py-2 whitespace-nowrap">
+                  <td className="px-2 py-2 whitespace-nowrap">
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
                         <div className="flex-1">
@@ -604,10 +737,10 @@ const SubstituicoesTableCoordenacao = ({
                       )}
                     </div>
                   </td>
-                  <td className="px-4 py-2 whitespace-nowrap text-center">
+                  <td className="px-2 py-2 whitespace-nowrap text-center">
                     <span className="text-xs text-gray-700">{necessidade.produto_origem_unidade}</span>
                   </td>
-                  <td className="px-4 py-2 whitespace-nowrap text-center">
+                  <td className="px-2 py-2 whitespace-nowrap text-center">
                     <span className="text-xs text-gray-900">
                       {necessidade.quantidade_total_origem ? 
                         parseFloat(necessidade.quantidade_total_origem).toFixed(3).replace('.', ',') : 
@@ -615,22 +748,22 @@ const SubstituicoesTableCoordenacao = ({
                       }
                     </span>
                   </td>
-                  <td className="px-4 py-2 whitespace-nowrap text-center">
+                  <td className="px-2 py-2 whitespace-nowrap text-center">
                     <span className="text-xs text-blue-600 font-medium">
                       {necessidade.semana_abastecimento || '-'}
                     </span>
                   </td>
-                  <td className="px-4 py-2 whitespace-nowrap text-center">
+                  <td className="px-2 py-2 whitespace-nowrap text-center">
                     <span className="text-xs text-green-600 font-medium">
                       {necessidade.semana_consumo || '-'}
                     </span>
                   </td>
-                  <td className="px-4 py-2 whitespace-nowrap">
+                  <td className="px-2 py-2 whitespace-nowrap">
                     <span className="text-xs text-purple-600">
                       {selectedProdutosGenericos[chaveUnica]?.split('|')[0] || necessidade.produto_generico_codigo || '-'}
                     </span>
                   </td>
-                  <td className="px-4 py-2 whitespace-nowrap">
+                  <td className="px-2 py-2 whitespace-nowrap">
                     <div className="flex-1">
                       <SearchableSelect
                         value={selectedProdutosGenericos[chaveUnica] || ''}
@@ -649,12 +782,12 @@ const SubstituicoesTableCoordenacao = ({
                       />
                     </div>
                   </td>
-                  <td className="px-4 py-2 whitespace-nowrap text-center">
+                  <td className="px-2 py-2 whitespace-nowrap text-center">
                     <span className="text-xs text-gray-700">
                       {undGenericos[chaveUnica] || necessidade.produto_generico_unidade || '-'}
                     </span>
                   </td>
-                  <td className="px-4 py-2 whitespace-nowrap text-center">
+                  <td className="px-2 py-2 whitespace-nowrap text-center">
                     <span className="text-xs text-cyan-600 font-semibold">
                       {quantidadesGenericos[chaveUnica] !== undefined ? 
                         quantidadesGenericos[chaveUnica] : 
@@ -662,18 +795,31 @@ const SubstituicoesTableCoordenacao = ({
                       }
                     </span>
                   </td>
-                  <td className="px-4 py-2 whitespace-nowrap text-center">
-                    {ajustesAtivados && (
-                      <Button
-                        size="xs"
-                        variant="success"
-                        onClick={() => handleSaveConsolidated(necessidade)}
-                        className="flex items-center gap-1"
-                      >
-                        <FaSave className="w-3 h-3" />
-                        Salvar
-                      </Button>
-                    )}
+                  <td className="px-2 py-2 whitespace-nowrap text-center">
+                    <div className="flex items-center justify-center gap-2">
+                      {ajustesAtivados && (
+                        <>
+                          <Button
+                            size="xs"
+                            variant="success"
+                            onClick={() => handleSaveConsolidated(necessidade)}
+                            className="flex items-center justify-center"
+                            title="Salvar"
+                          >
+                            <FaSave className="w-4 h-4" />
+                          </Button>
+                          {necessidade.escolas.some(escola => escola.substituicao && escola.substituicao.id) && onDeletarSubstituicao && (
+                            <button
+                              onClick={() => onDeleteConsolidatedClick(necessidade)}
+                              className="text-red-600 hover:text-red-800 transition-colors p-1"
+                              title="Excluir substituições"
+                            >
+                              <FaTrash className="w-4 h-4" />
+                            </button>
+                          )}
+                        </>
+                      )}
+                    </div>
                   </td>
                 </tr>
 
@@ -689,14 +835,16 @@ const SubstituicoesTableCoordenacao = ({
                         <table className="min-w-full divide-y divide-gray-200">
                           <thead>
                             <tr className="bg-gray-100">
-                              <th style={{ width: '100px' }} className="px-4 py-2 text-left text-xs font-medium text-gray-700 uppercase">Cód. Escola</th>
-                              <th style={{ minWidth: '250px' }} className="px-4 py-2 text-left text-xs font-medium text-gray-700 uppercase">Unidade Escolar</th>
-                              <th style={{ width: '100px' }} className="px-4 py-2 text-left text-xs font-medium text-gray-700 uppercase">Código</th>
-                              <th style={{ minWidth: '220px' }} className="px-4 py-2 text-left text-xs font-medium text-gray-700 uppercase">Produto Origem</th>
-                              <th style={{ minWidth: '250px' }} className="px-4 py-2 text-left text-xs font-medium text-gray-700 uppercase">Produto Genérico</th>
-                              <th style={{ width: '100px' }} className="px-4 py-2 text-center text-xs font-medium text-gray-700 uppercase">Unid. Med.</th>
-                              <th style={{ width: '100px' }} className="px-4 py-2 text-center text-xs font-medium text-gray-700 uppercase">Quantidade</th>
-                              <th style={{ width: '120px' }} className="px-4 py-2 text-center text-xs font-medium text-gray-700 uppercase">Ações</th>
+                              <th style={{ width: '100px' }} className="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Cód. Escola</th>
+                              <th style={{ minWidth: '250px' }} className="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Unidade Escolar</th>
+                              <th style={{ width: '100px' }} className="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Código</th>
+                              <th style={{ minWidth: '220px' }} className="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Produto Origem</th>
+                              <th style={{ width: '100px' }} className="px-3 py-2 text-center text-xs font-medium text-gray-700 uppercase">Unid.</th>
+                              <th style={{ width: '120px' }} className="px-3 py-2 text-center text-xs font-medium text-gray-700 uppercase">Qtd Origem</th>
+                              <th style={{ minWidth: '250px' }} className="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Produto Genérico</th>
+                              <th style={{ width: '100px' }} className="px-3 py-2 text-center text-xs font-medium text-gray-700 uppercase">Unid. Med.</th>
+                              <th style={{ width: '100px' }} className="px-3 py-2 text-center text-xs font-medium text-gray-700 uppercase">Quantidade</th>
+                              <th style={{ width: '120px' }} className="px-3 py-2 text-center text-xs font-medium text-gray-700 uppercase">Ações</th>
                             </tr>
                           </thead>
                           <tbody className="bg-white divide-y divide-gray-200">
@@ -765,22 +913,23 @@ const SubstituicoesTableCoordenacao = ({
                                 });
                               }
                               
-                              const quantidadeGenerica = produtoSelecionado && fatorConversao > 0 && escola.quantidade_origem 
-                                ? Math.ceil(parseFloat(escola.quantidade_origem) / fatorConversao)
+                              const quantidadeOrigemAtual = getQuantidadeOrigemAtual(necessidade, escola);
+                              const quantidadeGenerica = produtoSelecionado && fatorConversao > 0 && quantidadeOrigemAtual > 0
+                                ? Math.ceil(quantidadeOrigemAtual / fatorConversao)
                                 : '';
 
                               return (
                                 <tr key={`${escola.escola_id}-${idx}`}>
-                                  <td className="px-4 py-2 whitespace-nowrap text-xs font-semibold text-gray-600">
+                                  <td className="px-3 py-2 whitespace-nowrap text-xs font-semibold text-gray-600">
                                     {escola.escola_id}
                                   </td>
-                                  <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900">
+                                  <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
                                     {escola.escola_nome}
                                   </td>
-                                  <td className="px-4 py-2 whitespace-nowrap text-xs font-semibold text-purple-600">
+                                  <td className="px-3 py-2 whitespace-nowrap text-xs font-semibold text-purple-600">
                                     {codigoProduto}
                                   </td>
-                                  <td className="px-4 py-2 whitespace-nowrap">
+                                  <td className="px-3 py-2 whitespace-nowrap">
                                     <SearchableSelect
                                       value={valorOrigemAtual || ''}
                                       onChange={(value) => handleProdutoOrigemIndividualChange(necessidade, escola, value)}
@@ -819,7 +968,27 @@ const SubstituicoesTableCoordenacao = ({
                                       usePortal={false}
                                     />
                                   </td>
-                                  <td className="px-4 py-2 whitespace-nowrap">
+                                  <td className="px-3 py-2 whitespace-nowrap text-center">
+                                    <span className="text-xs text-gray-700">
+                                      {(() => {
+                                        const [, , unidadeOrigem] = valorOrigemAtual?.split('|') || [];
+                                        return unidadeOrigem || necessidade.produto_origem_unidade || '-';
+                                      })()}
+                                    </span>
+                                  </td>
+                                  <td className="px-3 py-2 text-center" style={{ minWidth: '110px', width: '110px' }}>
+                                    <Input
+                                      type="text"
+                                      inputMode="decimal"
+                                      pattern="[0-9]*[.,]?[0-9]*"
+                                      value={getQuantidadeOrigemFormatted(necessidade, escola)}
+                                      onChange={(e) => handleQuantidadeOrigemChange(necessidade, escola, e.target.value)}
+                                      className="w-full max-w-[90px] text-center text-xs py-1"
+                                      disabled={!ajustesAtivados || Boolean(escola.produto_trocado_id)}
+                                      placeholder="0,000"
+                                    />
+                                  </td>
+                                  <td className="px-3 py-2 whitespace-nowrap">
                                     <div className="flex-1">
                                       <SearchableSelect
                                         value={produtoSelecionado}
@@ -847,26 +1016,39 @@ const SubstituicoesTableCoordenacao = ({
                                       />
                                     </div>
                                   </td>
-                                  <td className="px-4 py-2 whitespace-nowrap text-center">
+                                  <td className="px-3 py-2 whitespace-nowrap text-center">
                                     <span className="text-xs text-gray-700">
                                       {unidadeProduto || '-'}
                                     </span>
                                   </td>
-                                  <td className="px-4 py-2 whitespace-nowrap text-center text-xs font-semibold text-cyan-600">
+                                  <td className="px-3 py-2 whitespace-nowrap text-center text-xs font-semibold text-cyan-600">
                                     {quantidadeGenerica || '0,000'}
                                   </td>
-                                  <td className="px-4 py-2 whitespace-nowrap text-center">
-                                    {ajustesAtivados && (
-                                      <Button
-                                        size="xs"
-                                        variant="success"
-                                        onClick={() => handleSaveIndividual(escola, necessidade)}
-                                        className="flex items-center gap-1"
-                                      >
-                                        <FaSave className="w-3 h-3" />
-                                        Salvar
-                                      </Button>
-                                    )}
+                                  <td className="px-3 py-2 whitespace-nowrap text-center">
+                                    <div className="flex items-center justify-center gap-2">
+                                      {ajustesAtivados && (
+                                        <>
+                                          <Button
+                                            size="xs"
+                                            variant="success"
+                                            onClick={() => handleSaveIndividual(escola, necessidade)}
+                                            className="flex items-center justify-center"
+                                            title="Salvar"
+                                          >
+                                            <FaSave className="w-4 h-4" />
+                                          </Button>
+                                          {escola.substituicao && escola.substituicao.id && onDeletarSubstituicao && (
+                                            <button
+                                              onClick={() => onDeleteIndividualClick(escola)}
+                                              className="text-red-600 hover:text-red-800 transition-colors p-1"
+                                              title="Excluir substituição"
+                                            >
+                                              <FaTrash className="w-4 h-4" />
+                                            </button>
+                                          )}
+                                        </>
+                                      )}
+                                    </div>
                                   </td>
                                 </tr>
                               );
@@ -900,6 +1082,39 @@ const SubstituicoesTableCoordenacao = ({
           </div>
         )}
       </div>
+
+      {/* Modal de Confirmação de Exclusão Individual */}
+      <ConfirmModal
+        isOpen={showDeleteIndividualModal}
+        onClose={() => {
+          setShowDeleteIndividualModal(false);
+          setSubstituicaoToDelete(null);
+        }}
+        onConfirm={confirmDeleteIndividual}
+        title="Excluir Substituição"
+        message="Tem certeza que deseja excluir esta substituição? Ela será removida da visualização."
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        type="danger"
+      />
+
+      {/* Modal de Confirmação de Exclusão Consolidada */}
+      <ConfirmModal
+        isOpen={showDeleteConsolidatedModal}
+        onClose={() => {
+          setShowDeleteConsolidatedModal(false);
+          setNecessidadeToDelete(null);
+        }}
+        onConfirm={confirmDeleteConsolidated}
+        title="Excluir Substituições"
+        message={necessidadeToDelete ? 
+          `Tem certeza que deseja excluir ${necessidadeToDelete.substituicoesIds.length} ${necessidadeToDelete.substituicoesIds.length === 1 ? 'substituição' : 'substituições'} de ${necessidadeToDelete.necessidade.escolas.length} ${necessidadeToDelete.necessidade.escolas.length === 1 ? 'escola' : 'escolas'}? Elas serão removidas da visualização.` :
+          'Tem certeza que deseja excluir estas substituições? Elas serão removidas da visualização.'
+        }
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        type="danger"
+      />
     </div>
   );
 };
