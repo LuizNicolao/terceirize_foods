@@ -7,6 +7,10 @@ WORKDIR /workspace
 COPY foods/frontend /workspace/foods/frontend
 COPY cozinha_industrial/frontend /workspace/cozinha_industrial/frontend
 
+# Instalar dependências do foods-frontend primeiro
+WORKDIR /workspace/foods/frontend
+RUN npm install
+
 # Ir para diretório do cozinha_industrial
 WORKDIR /workspace/cozinha_industrial/frontend
 

@@ -28,13 +28,24 @@ module.exports = {
       }
 
       // Configurar modules para priorizar node_modules do cozinha_industrial
+      // e também incluir node_modules do foods-frontend
+      const foodsFrontendNodeModules = path.resolve(__dirname, '../../foods/frontend/node_modules');
+      const cozinhaIndustrialNodeModules = path.resolve(__dirname, 'node_modules');
+      
       if (!webpackConfig.resolve.modules) {
-        webpackConfig.resolve.modules = ['node_modules', path.resolve(__dirname, 'node_modules')];
+        webpackConfig.resolve.modules = [
+          'node_modules',
+          cozinhaIndustrialNodeModules,
+          foodsFrontendNodeModules
+        ];
       } else {
         // Garantir que node_modules do cozinha_industrial seja o primeiro
-        const cozinhaIndustrialNodeModules = path.resolve(__dirname, 'node_modules');
         if (!webpackConfig.resolve.modules.includes(cozinhaIndustrialNodeModules)) {
           webpackConfig.resolve.modules.unshift(cozinhaIndustrialNodeModules);
+        }
+        // Adicionar node_modules do foods-frontend também
+        if (!webpackConfig.resolve.modules.includes(foodsFrontendNodeModules)) {
+          webpackConfig.resolve.modules.push(foodsFrontendNodeModules);
         }
       }
 

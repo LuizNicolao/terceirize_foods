@@ -23,6 +23,9 @@
     "styled-components": "^6.1.1",
     "xlsx": "^0.18.5",
     "jspdf": "^2.5.1",
+    "leaflet": "^1.9.4",
+    "react-leaflet": "^4.2.1",
+    "leaflet.markercluster": "^1.5.3",
     "foods-frontend": "file:../../foods/frontend"
   },
   "devDependencies": {
