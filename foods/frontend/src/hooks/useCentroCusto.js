@@ -67,6 +67,18 @@ export const useCentroCusto = () => {
     baseEntity.handlePageChange(1);
   }, [customFilters, baseEntity]);
 
+  /**
+   * Handle KeyPress para aplicar busca quando Enter é pressionado
+   */
+  const handleKeyPress = useCallback((e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      // Atualizar o searchTerm do customFilters com o valor do baseEntity
+      customFilters.setSearchTerm(baseEntity.searchTerm || '');
+      baseEntity.handlePageChange(1); // Reset para primeira página
+    }
+  }, [baseEntity, customFilters]);
+
   const getStatusLabel = useCallback((status) => {
     return status === 1 ? 'Ativo' : 'Inativo';
   }, []);
@@ -177,6 +189,7 @@ export const useCentroCusto = () => {
     // Ações de filtros
     setSearchTerm: baseEntity.setSearchTerm,
     clearSearch: baseEntity.clearSearch,
+    handleKeyPress,
     setStatusFilter: customFilters.setStatusFilter,
     setItemsPerPage: baseEntity.handleItemsPerPageChange,
     handleClearFilters,
