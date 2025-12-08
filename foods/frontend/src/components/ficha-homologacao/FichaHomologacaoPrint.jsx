@@ -377,9 +377,9 @@ const FichaHomologacaoPrint = ({ ficha }) => {
               </thead>
               <tbody>
                 {[
-                  { criterio: 'Peso', valor: ficha.peso, valorNum: ficha.peso_valor, unidade: ficha.unidade_medida_sigla },
-                  { criterio: 'Peso Cru', valor: ficha.peso_cru, valorNum: ficha.peso_cru_valor, unidade: ficha.unidade_medida_sigla },
-                  { criterio: 'Peso Cozido', valor: ficha.peso_cozido, valorNum: ficha.peso_cozido_valor, unidade: ficha.unidade_medida_sigla },
+                  { criterio: 'Peso', valor: ficha.peso, valorNum: ficha.peso_valor, unidade: 'KG' },
+                  { criterio: 'Peso Cru', valor: ficha.peso_cru, valorNum: ficha.peso_cru_valor, unidade: 'KG' },
+                  { criterio: 'Peso Cozido', valor: ficha.peso_cozido, valorNum: ficha.peso_cozido_valor, unidade: 'KG' },
                   { criterio: 'Fator de Cocção', valor: ficha.fator_coccao, valorNum: ficha.fator_coccao_valor },
                   { criterio: 'Cor', valor: ficha.cor, observacao: ficha.cor_observacao },
                   { criterio: 'Odor', valor: ficha.odor, observacao: ficha.odor_observacao },

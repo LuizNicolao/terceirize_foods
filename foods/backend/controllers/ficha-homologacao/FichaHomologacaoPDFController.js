@@ -409,9 +409,9 @@ class FichaHomologacaoPDFController {
 
     // Dados da tabela
     const avaliacoes = [
-      { criterio: 'Peso', valor: ficha.peso, valorNum: ficha.peso_valor, observacao: null, unidade: ficha.unidade_medida_sigla },
-      { criterio: 'Peso Cru', valor: ficha.peso_cru, valorNum: ficha.peso_cru_valor, observacao: null, unidade: ficha.unidade_medida_sigla },
-      { criterio: 'Peso Cozido', valor: ficha.peso_cozido, valorNum: ficha.peso_cozido_valor, observacao: null, unidade: ficha.unidade_medida_sigla },
+      { criterio: 'Peso', valor: ficha.peso, valorNum: ficha.peso_valor, observacao: null, unidade: 'KG' },
+      { criterio: 'Peso Cru', valor: ficha.peso_cru, valorNum: ficha.peso_cru_valor, observacao: null, unidade: 'KG' },
+      { criterio: 'Peso Cozido', valor: ficha.peso_cozido, valorNum: ficha.peso_cozido_valor, observacao: null, unidade: 'KG' },
       { criterio: 'Fator de Cocção', valor: ficha.fator_coccao, valorNum: ficha.fator_coccao_valor, observacao: null },
       { criterio: 'Cor', valor: ficha.cor, valorNum: null, observacao: ficha.cor_observacao },
       { criterio: 'Odor', valor: ficha.odor, valorNum: null, observacao: ficha.odor_observacao },
