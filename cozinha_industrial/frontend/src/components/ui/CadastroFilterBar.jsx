@@ -63,6 +63,7 @@ const CadastroFilterBar = ({
             className="min-w-[140px]"
             filterBy={filter.filterBy}
             renderOption={filter.renderOption}
+            disabled={filter.disabled}
           />
         ) : (
           <select

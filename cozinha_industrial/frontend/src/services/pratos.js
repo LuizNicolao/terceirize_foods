@@ -136,6 +136,148 @@ const pratosService = {
         data: []
       };
     }
+  },
+
+  /**
+   * Exportar pratos em XLSX
+   */
+  async exportarXLSX(params = {}) {
+    try {
+      const response = await api.get('/pratos/exportar/xlsx', {
+        params,
+        responseType: 'blob'
+      });
+      
+      // Criar link para download
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      
+      // Extrair nome do arquivo do header ou usar padrão
+      const contentDisposition = response.headers['content-disposition'];
+      let fileName = 'pratos.xlsx';
+      if (contentDisposition) {
+        const fileNameMatch = contentDisposition.match(/filename="?(.+)"?/i);
+        if (fileNameMatch && fileNameMatch[1]) {
+          fileName = fileNameMatch[1];
+        }
+      }
+      
+      link.setAttribute('download', fileName);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Erro ao exportar XLSX:', error);
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao exportar pratos em XLSX'
+      };
+    }
+  },
+
+  /**
+   * Exportar pratos em PDF
+   */
+  async exportarPDF(params = {}) {
+    try {
+      const response = await api.get('/pratos/exportar/pdf', {
+        params,
+        responseType: 'blob'
+      });
+      
+      // Criar link para download
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      
+      // Extrair nome do arquivo do header ou usar padrão
+      const contentDisposition = response.headers['content-disposition'];
+      let fileName = 'pratos.pdf';
+      if (contentDisposition) {
+        const fileNameMatch = contentDisposition.match(/filename="?(.+)"?/i);
+        if (fileNameMatch && fileNameMatch[1]) {
+          fileName = fileNameMatch[1];
+        }
+      }
+      
+      link.setAttribute('download', fileName);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Erro ao exportar PDF:', error);
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao exportar pratos em PDF'
+      };
+    }
+  },
+
+  /**
+   * Baixar modelo de planilha para importação
+   */
+  async baixarModelo() {
+    try {
+      const response = await api.get('/pratos/importar/modelo', {
+        responseType: 'blob'
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'modelo_pratos.xlsx');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Erro ao baixar modelo:', error);
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao baixar modelo de planilha'
+      };
+    }
+  },
+
+  /**
+   * Importar pratos via arquivo Excel
+   */
+  async importar(formData) {
+    try {
+      const response = await api.post('/pratos/importar', formData);
+      
+      return {
+        success: true,
+        data: response.data?.data || response.data || {}
+      };
+    } catch (error) {
+      console.error('Erro na importação:', error);
+      
+      let errorMessage = 'Erro na importação';
+      if (error.response?.data) {
+        if (error.response.data.message) {
+          errorMessage = error.response.data.message;
+        } else if (error.response.data.error) {
+          errorMessage = typeof error.response.data.error === 'string' 
+            ? error.response.data.error 
+            : (error.response.data.error?.message || JSON.stringify(error.response.data.error));
+        }
+      }
+      
+      return {
+        success: false,
+        error: errorMessage,
+        data: error.response?.data?.data || null
+      };
+    }
   }
 };
 

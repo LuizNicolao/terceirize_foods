@@ -1,19 +1,18 @@
 import React from 'react';
 import { SearchableSelect } from '../../ui';
+import FiliaisCentrosCusto from './FiliaisCentrosCusto';
 
 /**
- * Seção de Vinculações da Receita (Filial e Centro de Custo)
+ * Seção de Vinculações da Receita (Tipo de Receita e Status)
+ * Filiais e Centros de Custo agora estão em componente separado
  */
 const Vinculacoes = ({
   formData,
   isViewMode,
-  filiais,
-  centrosCusto,
   tiposReceitas = [],
-  loadingFiliais,
-  loadingCentrosCusto,
   loadingTiposReceitas,
-  onInputChange
+  onInputChange,
+  errors = {}
 }) => {
 
   return (
@@ -23,86 +22,10 @@ const Vinculacoes = ({
       </h3>
       <div className="space-y-3">
         <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Tipo de Receita <span className="text-red-500">*</span>
+          </label>
           <SearchableSelect
-            label="Filial"
-            value={formData.filial_id ? filiais.find(f => f.id === formData.filial_id)?.filial || filiais.find(f => f.id === formData.filial_id)?.nome || '' : ''}
-            onChange={(value) => {
-              const filialSelecionada = filiais.find(f => 
-                (f.filial || f.nome || f.razao_social) === value
-              );
-              if (filialSelecionada) {
-                onInputChange('filial_id', filialSelecionada.id);
-                onInputChange('filial_nome', filialSelecionada.filial || filialSelecionada.nome || filialSelecionada.razao_social || '');
-              } else {
-                onInputChange('filial_id', null);
-                onInputChange('filial_nome', '');
-              }
-            }}
-            options={filiais.map(filial => ({
-              value: filial.filial || filial.nome || filial.razao_social || '',
-              label: filial.filial || filial.nome || filial.razao_social || '',
-              description: filial.cidade ? `Cidade: ${filial.cidade}` : ''
-            }))}
-            placeholder="Digite para buscar uma filial..."
-            disabled={isViewMode}
-            loading={loadingFiliais}
-            filterBy={(option, searchTerm) => {
-              const label = option.label?.toLowerCase() || '';
-              const description = option.description?.toLowerCase() || '';
-              const term = searchTerm.toLowerCase();
-              return label.includes(term) || description.includes(term);
-            }}
-            renderOption={(option) => (
-              <div className="flex flex-col">
-                <span className="font-medium text-gray-900">{option.label}</span>
-                {option.description && (
-                  <span className="text-xs text-gray-500 mt-1">{option.description}</span>
-                )}
-              </div>
-            )}
-          />
-        </div>
-        <div>
-          <SearchableSelect
-            label="Centro de Custo"
-            value={formData.centro_custo_id ? centrosCusto.find(c => c.id === formData.centro_custo_id)?.nome || '' : ''}
-            onChange={(value) => {
-              const centroSelecionado = centrosCusto.find(c => c.nome === value);
-              if (centroSelecionado) {
-                onInputChange('centro_custo_id', centroSelecionado.id);
-                onInputChange('centro_custo_nome', centroSelecionado.nome || '');
-              } else {
-                onInputChange('centro_custo_id', null);
-                onInputChange('centro_custo_nome', '');
-              }
-            }}
-            options={centrosCusto.map(centro => ({
-              value: centro.nome || '',
-              label: centro.nome || '',
-              description: centro.filial_nome ? `Filial: ${centro.filial_nome}` : ''
-            }))}
-            placeholder="Digite para buscar um centro de custo..."
-            disabled={isViewMode}
-            loading={loadingCentrosCusto}
-            filterBy={(option, searchTerm) => {
-              const label = option.label?.toLowerCase() || '';
-              const description = option.description?.toLowerCase() || '';
-              const term = searchTerm.toLowerCase();
-              return label.includes(term) || description.includes(term);
-            }}
-            renderOption={(option) => (
-              <div className="flex flex-col">
-                <span className="font-medium text-gray-900">{option.label}</span>
-                {option.description && (
-                  <span className="text-xs text-gray-500 mt-1">{option.description}</span>
-                )}
-              </div>
-            )}
-          />
-        </div>
-        <div>
-          <SearchableSelect
-            label="Tipo de Receita"
             value={formData.tipo_receita_id ? tiposReceitas.find(t => t.id === formData.tipo_receita_id)?.tipo_receita || formData.tipo_receita_nome || '' : ''}
             onChange={(value) => {
               const tipoSelecionado = tiposReceitas.find(t => t.tipo_receita === value);
@@ -137,6 +60,9 @@ const Vinculacoes = ({
               </div>
             )}
           />
+          {errors.tipo_receita_id && (
+            <p className="mt-1 text-sm text-red-600">{errors.tipo_receita_id}</p>
+          )}
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">

@@ -9,7 +9,8 @@ const Vinculacoes = ({
   isViewMode,
   tiposPratos = [],
   loadingTiposPratos,
-  onInputChange
+  onInputChange,
+  errors = {}
 }) => {
   return (
     <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
@@ -18,8 +19,11 @@ const Vinculacoes = ({
       </h3>
       <div className="space-y-3">
         <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Tipo de Prato <span className="text-red-500">*</span>
+          </label>
+          <div className={errors.tipo_prato_id ? 'border border-red-500 rounded-md' : ''}>
           <SearchableSelect
-            label="Tipo de Prato"
             value={formData.tipo_prato_id ? tiposPratos.find(t => t.id === formData.tipo_prato_id)?.tipo_prato || formData.tipo_prato_nome || '' : ''}
             onChange={(value) => {
               const tipoSelecionado = tiposPratos.find(t => t.tipo_prato === value);
@@ -54,6 +58,10 @@ const Vinculacoes = ({
               </div>
             )}
           />
+          </div>
+          {errors.tipo_prato_id && (
+            <p className="mt-1 text-sm text-red-600">{errors.tipo_prato_id}</p>
+          )}
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">

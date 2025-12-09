@@ -19,25 +19,25 @@ class ReceitasListController {
     } = req.query;
     const pagination = req.pagination;
 
-    // Query base - usar nomes salvos diretamente (sem JOIN necessário)
+    // Query base - usar tabelas relacionais
     let baseQuery = `
-      SELECT 
+      SELECT DISTINCT
         r.id,
         r.codigo,
         r.nome,
         r.descricao,
-        r.filial_id,
-        r.filial_nome as filial,
-        r.centro_custo_id,
-        r.centro_custo_nome as centro_custo,
         r.tipo_receita_id,
         r.tipo_receita_nome as tipo_receita,
         r.status,
         r.data_cadastro,
         r.data_atualizacao,
-        COUNT(rp.id) as total_produtos
+        COUNT(DISTINCT rp.id) as total_produtos,
+        GROUP_CONCAT(DISTINCT rf.filial_nome ORDER BY rf.filial_nome SEPARATOR ', ') as filial,
+        GROUP_CONCAT(DISTINCT rcc.centro_custo_nome ORDER BY rcc.centro_custo_nome SEPARATOR ', ') as centro_custo
       FROM receitas r
       LEFT JOIN receitas_produtos rp ON r.id = rp.receita_id
+      LEFT JOIN receitas_filiais rf ON r.id = rf.receita_id
+      LEFT JOIN receitas_centros_custo rcc ON r.id = rcc.receita_id
       WHERE 1=1
     `;
     
@@ -67,13 +67,25 @@ class ReceitasListController {
     }
 
     if (filial) {
-      baseQuery += ' AND r.filial_nome LIKE ?';
+      // Verificar se é um ID numérico ou nome
+      if (!isNaN(filial) && filial !== '') {
+        baseQuery += ' AND rf.filial_id = ?';
+        params.push(parseInt(filial));
+      } else {
+        baseQuery += ' AND rf.filial_nome LIKE ?';
       params.push(`%${filial}%`);
+      }
     }
 
     if (centro_custo) {
-      baseQuery += ' AND r.centro_custo_nome LIKE ?';
+      // Verificar se é um ID numérico ou nome
+      if (!isNaN(centro_custo) && centro_custo !== '') {
+        baseQuery += ' AND rcc.centro_custo_id = ?';
+        params.push(parseInt(centro_custo));
+      } else {
+        baseQuery += ' AND rcc.centro_custo_nome LIKE ?';
       params.push(`%${centro_custo}%`);
+      }
     }
 
     baseQuery += ' GROUP BY r.id';
@@ -85,11 +97,11 @@ class ReceitasListController {
     let finalSortBy = allowedSortFields.includes(sortBy) ? sortBy : 'data_cadastro';
     const finalSortOrder = sortOrder.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
     
-    // Ajustar campos de ordenação para usar os nomes salvos diretamente
+    // Ajustar campos de ordenação
     if (finalSortBy === 'filial') {
-      finalSortBy = 'r.filial_nome';
+      finalSortBy = 'MIN(rf.filial_nome)';
     } else if (finalSortBy === 'centro_custo') {
-      finalSortBy = 'r.centro_custo_nome';
+      finalSortBy = 'MIN(rcc.centro_custo_nome)';
     } else if (finalSortBy === 'tipo_receita_nome') {
       finalSortBy = 'r.tipo_receita_nome';
     } else {
@@ -106,6 +118,26 @@ class ReceitasListController {
     // Executar query paginada
     const receitas = await executeQuery(query, params);
 
+    // Para cada receita, buscar filiais e centros de custo como arrays
+    for (const receita of receitas) {
+      // Buscar filiais
+      const filiais = await executeQuery(
+        'SELECT filial_id as id, filial_nome as nome FROM receitas_filiais WHERE receita_id = ?',
+        [receita.id]
+      );
+      receita.filiais = filiais;
+      
+      // Buscar centros de custo
+      const centrosCusto = await executeQuery(
+        'SELECT centro_custo_id as id, centro_custo_nome as nome, filial_id, filial_nome FROM receitas_centros_custo WHERE receita_id = ?',
+        [receita.id]
+      );
+      receita.centros_custo = centrosCusto;
+      
+      // Manter campos de string concatenada para compatibilidade (filial e centro_custo)
+      // Estes já vêm da query principal
+    }
+
     // Contar total de registros
     let countQuery = `
       SELECT COUNT(DISTINCT r.id) as total 
@@ -116,11 +148,13 @@ class ReceitasListController {
     
     let countParams = [];
 
-    // Count query - usar nomes salvos diretamente
+    // Count query - usar tabelas relacionais
     countQuery = `
       SELECT COUNT(DISTINCT r.id) as total 
       FROM receitas r
       LEFT JOIN receitas_produtos rp ON r.id = rp.receita_id
+      LEFT JOIN receitas_filiais rf ON r.id = rf.receita_id
+      LEFT JOIN receitas_centros_custo rcc ON r.id = rcc.receita_id
       WHERE 1=1
     `;
 
@@ -129,8 +163,8 @@ class ReceitasListController {
         r.codigo LIKE ? OR 
         r.nome LIKE ? OR 
         r.descricao LIKE ? OR
-        r.filial_nome LIKE ? OR
-        r.centro_custo_nome LIKE ? OR
+        rf.filial_nome LIKE ? OR
+        rcc.centro_custo_nome LIKE ? OR
         EXISTS (
           SELECT 1 FROM receitas_produtos rp2 
           WHERE rp2.receita_id = r.id 
@@ -147,13 +181,25 @@ class ReceitasListController {
     }
 
     if (filial) {
-      countQuery += ' AND r.filial_nome LIKE ?';
+      // Verificar se é um ID numérico ou nome
+      if (!isNaN(filial) && filial !== '') {
+        countQuery += ' AND rf.filial_id = ?';
+        countParams.push(parseInt(filial));
+      } else {
+        countQuery += ' AND rf.filial_nome LIKE ?';
       countParams.push(`%${filial}%`);
+      }
     }
 
     if (centro_custo) {
-      countQuery += ' AND r.centro_custo_nome LIKE ?';
+      // Verificar se é um ID numérico ou nome
+      if (!isNaN(centro_custo) && centro_custo !== '') {
+        countQuery += ' AND rcc.centro_custo_id = ?';
+        countParams.push(parseInt(centro_custo));
+      } else {
+        countQuery += ' AND rcc.centro_custo_nome LIKE ?';
       countParams.push(`%${centro_custo}%`);
+      }
     }
 
     const totalResult = await executeQuery(countQuery, countParams);

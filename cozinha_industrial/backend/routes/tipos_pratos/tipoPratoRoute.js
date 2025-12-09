@@ -8,6 +8,7 @@ const { auditMiddleware, AUDIT_ACTIONS } = require('../../utils/audit');
 
 const { TiposPratosCRUDController } = require('../../controllers/tipos_pratos');
 const { TiposPratosListController } = require('../../controllers/tipos_pratos');
+const { TiposPratosExportController } = require('../../controllers/tipos_pratos');
 const { tiposPratosValidations, commonValidations } = require('./tipoPratoValidator');
 
 /**
@@ -37,6 +38,20 @@ router.get(
   '/exportar/json',
   checkScreenPermission('tipos_pratos', 'visualizar'),
   TiposPratosListController.exportarJSON
+);
+
+// GET /tipos-pratos/exportar/xlsx - Exportar tipos de pratos em XLSX
+router.get(
+  '/exportar/xlsx',
+  checkScreenPermission('tipos_pratos', 'visualizar'),
+  TiposPratosExportController.exportarXLSX
+);
+
+// GET /tipos-pratos/exportar/pdf - Exportar tipos de pratos em PDF
+router.get(
+  '/exportar/pdf',
+  checkScreenPermission('tipos_pratos', 'visualizar'),
+  TiposPratosExportController.exportarPDF
 );
 
 // GET /tipos-pratos/:id - Buscar tipo de prato por ID

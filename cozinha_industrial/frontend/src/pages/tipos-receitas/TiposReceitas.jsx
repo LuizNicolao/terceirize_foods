@@ -7,6 +7,7 @@ import { ExportButtons, AuditModal } from '../../components/shared';
 import { ConfirmModal } from '../../components/ui';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { useAuditoria } from '../../hooks/common/useAuditoria';
+import tiposReceitasService from '../../services/tiposReceitas';
 import toast from 'react-hot-toast';
 
 /**
@@ -155,6 +156,34 @@ const TiposReceitas = () => {
     handlePageChange(1);
   };
 
+  const handleExportXLSX = async () => {
+    try {
+      const result = await tiposReceitasService.exportarXLSX({ search: filters.search || '' });
+      if (result.success) {
+        toast.success('Exportação XLSX realizada com sucesso!');
+      } else {
+        toast.error(result.error || 'Erro ao exportar XLSX');
+      }
+    } catch (error) {
+      console.error('Erro ao exportar XLSX:', error);
+      toast.error('Erro ao exportar tipos de receitas em XLSX');
+    }
+  };
+
+  const handleExportPDF = async () => {
+    try {
+      const result = await tiposReceitasService.exportarPDF({ search: filters.search || '' });
+      if (result.success) {
+        toast.success('Exportação PDF realizada com sucesso!');
+      } else {
+        toast.error(result.error || 'Erro ao exportar PDF');
+      }
+    } catch (error) {
+      console.error('Erro ao exportar PDF:', error);
+      toast.error('Erro ao exportar tipos de receitas em PDF');
+    }
+  };
+
   if (!canViewTiposReceitas) {
     return (
       <div className="p-4 sm:p-6">
@@ -225,7 +254,8 @@ const TiposReceitas = () => {
       <div className="mb-4">
         <ExportButtons
           onExportJSON={exportarJson}
-          onExportPDF={() => {}}
+          onExportXLSX={handleExportXLSX}
+          onExportPDF={handleExportPDF}
         />
       </div>
 

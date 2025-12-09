@@ -50,16 +50,28 @@ const InformacoesBasicas = ({
 
         {/* Descrição */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <div className="flex items-center justify-between mb-1">
+            <label className="block text-sm font-medium text-gray-700">
             Descrição da Receita
           </label>
+            <span className={`text-xs font-medium ${(formData.descricao || '').length > 220 ? 'text-red-500' : (formData.descricao || '').length > 200 ? 'text-amber-500' : 'text-gray-500'}`}>
+              {220 - ((formData.descricao || '').length)} caracteres restantes
+            </span>
+          </div>
           <textarea
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed resize-none"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed resize-none uppercase"
             value={formData.descricao}
-            onChange={(e) => onInputChange('descricao', e.target.value)}
+            onChange={(e) => {
+              const valor = e.target.value.toUpperCase();
+              // Limitar a 220 caracteres
+              if (valor.length <= 220) {
+                onInputChange('descricao', valor);
+              }
+            }}
             disabled={isViewMode}
             rows={6}
-            placeholder="Digite a descrição da receita (opcional)"
+            maxLength={220}
+            placeholder="Digite a descrição da receita (máximo 220 caracteres)"
           />
         </div>
       </div>

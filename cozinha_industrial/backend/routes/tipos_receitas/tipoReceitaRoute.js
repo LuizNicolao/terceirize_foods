@@ -8,6 +8,7 @@ const { auditMiddleware, AUDIT_ACTIONS } = require('../../utils/audit');
 
 const { TiposReceitasCRUDController } = require('../../controllers/tipos_receitas');
 const { TiposReceitasListController } = require('../../controllers/tipos_receitas');
+const { TiposReceitasExportController } = require('../../controllers/tipos_receitas');
 const { tiposReceitasValidations, commonValidations } = require('./tipoReceitaValidator');
 
 /**
@@ -37,6 +38,20 @@ router.get(
   '/exportar/json',
   checkScreenPermission('tipos_receitas', 'visualizar'),
   TiposReceitasListController.exportarJSON
+);
+
+// GET /tipos-receitas/exportar/xlsx - Exportar tipos de receitas em XLSX
+router.get(
+  '/exportar/xlsx',
+  checkScreenPermission('tipos_receitas', 'visualizar'),
+  TiposReceitasExportController.exportarXLSX
+);
+
+// GET /tipos-receitas/exportar/pdf - Exportar tipos de receitas em PDF
+router.get(
+  '/exportar/pdf',
+  checkScreenPermission('tipos_receitas', 'visualizar'),
+  TiposReceitasExportController.exportarPDF
 );
 
 // GET /tipos-receitas/:id - Buscar tipo de receita por ID

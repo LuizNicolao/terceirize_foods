@@ -1,5 +1,6 @@
 import React from 'react';
-import { ActionButtons, EmptyState, SortableTableHeader } from '../ui';
+import { FaCopy } from 'react-icons/fa';
+import { ActionButtons, EmptyState, SortableTableHeader, Button } from '../ui';
 
 /**
  * Componente de tabela para Receitas
@@ -13,6 +14,7 @@ const ReceitasTable = ({
   onView,
   onEdit,
   onDelete,
+  onDuplicate,
   sortField,
   sortDirection,
   onSort
@@ -144,14 +146,27 @@ const ReceitasTable = ({
                   </span>
                 </td>
                 <td className="px-6 py-2 whitespace-nowrap text-center text-sm font-medium">
-                  <ActionButtons
-                    canView={canView}
-                    canEdit={canEdit}
-                    canDelete={canDelete}
-                    onView={() => onView && onView(receita)}
-                    onEdit={() => onEdit && onEdit(receita)}
-                    onDelete={() => onDelete && onDelete(receita)}
-                  />
+                  <div className="flex items-center justify-center gap-1">
+                    <ActionButtons
+                      canView={canView}
+                      canEdit={canEdit}
+                      canDelete={canDelete}
+                      onView={() => onView && onView(receita)}
+                      onEdit={() => onEdit && onEdit(receita)}
+                      onDelete={() => onDelete && onDelete(receita)}
+                    />
+                    {onDuplicate && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onDuplicate(receita)}
+                        title="Duplicar receita"
+                        className="text-orange-600 hover:text-orange-800 hover:bg-orange-50"
+                      >
+                        <FaCopy className="w-3 h-3" />
+                      </Button>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}

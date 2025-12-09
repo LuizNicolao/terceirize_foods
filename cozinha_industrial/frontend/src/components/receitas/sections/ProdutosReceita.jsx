@@ -17,7 +17,8 @@ const ProdutosReceita = ({
   onAddProduto,
   onRemoveProduto,
   onUpdateProdutoPercapta,
-  onCarregarProdutosOrigem
+  onCarregarProdutosOrigem,
+  errors = {}
 }) => {
   return (
     <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
@@ -64,11 +65,18 @@ const ProdutosReceita = ({
           
           <div className="grid grid-cols-1 md:grid-cols-12 gap-2">
             <div className="md:col-span-7">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Produto Origem
+              </label>
               <SearchableSelect
                 value={produtoForm.produto_origem_id ? produtosOrigem.find(p => p.id === produtoForm.produto_origem_id)?.nome || '' : ''}
                 onChange={(value) => {
                   const produtoSelecionado = produtosOrigem.find(p => p.nome === value);
                   onProdutoFormChange('produto_origem_id', produtoSelecionado ? produtoSelecionado.id : null);
+                  // Limpar erro ao selecionar
+                  if (errors.produto_origem) {
+                    // O erro será limpo no componente pai
+                  }
                 }}
                 options={produtosOrigem
                   .filter(produto => {
@@ -107,6 +115,9 @@ const ProdutosReceita = ({
               />
             </div>
             <div className="md:col-span-3">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Percapta
+              </label>
               <Input
                 type="number"
                 step="0.001"
@@ -127,7 +138,7 @@ const ProdutosReceita = ({
                 className="w-full"
               />
             </div>
-            <div className="md:col-span-2">
+            <div className="md:col-span-2 flex items-end">
               <Button
                 type="button"
                 onClick={onAddProduto}
@@ -141,6 +152,11 @@ const ProdutosReceita = ({
               </Button>
             </div>
           </div>
+          {errors.produtos && (
+            <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded-md">
+              <p className="text-sm text-red-600">{errors.produtos}</p>
+            </div>
+          )}
         </div>
       )}
 
@@ -157,7 +173,7 @@ const ProdutosReceita = ({
                   Unidade
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                  Percapta Sugerida
+                  Percapta Sugerida <span className="text-red-500">*</span>
                 </th>
                 {!isViewMode && (
                   <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider w-20">
@@ -178,35 +194,47 @@ const ProdutosReceita = ({
                   <td className="px-4 py-3 text-sm text-gray-600">
                     {isViewMode ? (
                       produto.percapta_sugerida 
-                        ? `${Number(produto.percapta_sugerida).toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 3 })}` 
+                        ? `${Number(produto.percapta_sugerida).toFixed(3).replace('.', ',')}` 
                         : '-'
                     ) : (
-                      <input
-                        type="number"
-                        step="0.001"
-                        min="0"
-                        value={produto.percapta_sugerida !== null && produto.percapta_sugerida !== undefined ? produto.percapta_sugerida : ''}
-                        onChange={(e) => {
-                          const valor = e.target.value;
-                          // Permitir digitar 0 ou valores decimais
-                          if (valor === '' || valor === '0' || (!isNaN(parseFloat(valor)) && parseFloat(valor) >= 0)) {
-                            onUpdateProdutoPercapta(index, valor);
-                          }
-                        }}
-                        onBlur={(e) => {
-                          // Garantir que tenha no máximo 3 casas decimais ao perder o foco
-                          const valor = e.target.value;
-                          if (valor && valor !== '0' && valor.includes('.')) {
-                            const partes = valor.split('.');
-                            if (partes[1] && partes[1].length > 3) {
-                              const novoValor = `${partes[0]}.${partes[1].substring(0, 3)}`;
-                              onUpdateProdutoPercapta(index, novoValor);
+                      <div>
+                        <input
+                          type="number"
+                          step="0.001"
+                          min="0"
+                          value={produto.percapta_sugerida !== null && produto.percapta_sugerida !== undefined 
+                            ? (typeof produto.percapta_sugerida === 'number' 
+                                ? parseFloat(produto.percapta_sugerida.toFixed(3)) 
+                                : parseFloat(parseFloat(produto.percapta_sugerida).toFixed(3))
+                              )
+                            : ''}
+                          onChange={(e) => {
+                            const valor = e.target.value;
+                            // Permitir digitar 0 ou valores decimais
+                            if (valor === '' || valor === '0' || (!isNaN(parseFloat(valor)) && parseFloat(valor) >= 0)) {
+                              onUpdateProdutoPercapta(index, valor);
                             }
-                          }
-                        }}
-                        className="w-24 px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                        placeholder="0"
-                      />
+                          }}
+                          onBlur={(e) => {
+                            // Garantir que tenha no máximo 3 casas decimais ao perder o foco
+                            const valor = e.target.value;
+                            if (valor && valor !== '0' && valor.includes('.')) {
+                              const partes = valor.split('.');
+                              if (partes[1] && partes[1].length > 3) {
+                                const novoValor = `${partes[0]}.${partes[1].substring(0, 3)}`;
+                                onUpdateProdutoPercapta(index, novoValor);
+                              }
+                            }
+                          }}
+                          className={`w-24 px-2 py-1 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                            errors.produtos && (!produto.percapta_sugerida || produto.percapta_sugerida === '' || produto.percapta_sugerida === null)
+                              ? 'border-red-500'
+                              : 'border-gray-300'
+                          }`}
+                          placeholder="0"
+                          required
+                        />
+                      </div>
                     )}
                   </td>
                   {!isViewMode && (

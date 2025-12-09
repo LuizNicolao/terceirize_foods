@@ -170,6 +170,148 @@ class ReceitasService {
       };
     }
   }
+
+  async exportarXLSX(params = {}) {
+    try {
+      const response = await api.get('/receitas/exportar/xlsx', {
+        params,
+        responseType: 'blob'
+      });
+      
+      // Criar link de download
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `receitas_${new Date().toISOString().split('T')[0]}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      
+      return {
+        success: true,
+        message: 'Receitas exportadas para XLSX com sucesso!'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao exportar receitas para XLSX'
+      };
+    }
+  }
+
+  async exportarPDF(params = {}) {
+    try {
+      const response = await api.get('/receitas/exportar/pdf', {
+        params,
+        responseType: 'blob'
+      });
+      
+      // Criar link de download
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `receitas_${new Date().toISOString().split('T')[0]}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      
+      return {
+        success: true,
+        message: 'Receitas exportadas para PDF com sucesso!'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao exportar receitas para PDF'
+      };
+    }
+  }
+
+  async verificarPorCentroCustoEProdutos(centroCustoId, produtos) {
+    try {
+      const response = await api.post('/receitas/verificar-por-centro-custo-produtos', {
+        centro_custo_id: centroCustoId,
+        produtos: produtos
+      });
+      
+      // Extrair dados da estrutura HATEOAS
+      let resultado = null;
+      
+      if (response.data.data) {
+        resultado = response.data.data;
+      } else {
+        resultado = response.data;
+      }
+      
+      return {
+        success: true,
+        data: resultado
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao verificar receita'
+      };
+    }
+  }
+
+  async baixarModelo() {
+    try {
+      const response = await api.get('/receitas/importar/modelo', {
+        responseType: 'blob'
+      });
+      
+      // Criar link para download
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'modelo_receitas.xlsx');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Erro ao baixar modelo:', error);
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao baixar modelo de planilha'
+      };
+    }
+  }
+
+  async importar(formData) {
+    try {
+      // Não definir Content-Type manualmente - o navegador/axios faz isso automaticamente para FormData
+      const response = await api.post('/receitas/importar', formData);
+      
+      return {
+        success: true,
+        data: response.data?.data || response.data || {}
+      };
+    } catch (error) {
+      console.error('Erro na importação:', error);
+      
+      // Extrair mensagem de erro de forma segura
+      let errorMessage = 'Erro na importação';
+      if (error.response?.data) {
+        if (error.response.data.message) {
+          errorMessage = error.response.data.message;
+        } else if (error.response.data.error) {
+          errorMessage = typeof error.response.data.error === 'string' 
+            ? error.response.data.error 
+            : (error.response.data.error?.message || JSON.stringify(error.response.data.error));
+        }
+      }
+      
+      return {
+        success: false,
+        error: errorMessage,
+        data: error.response?.data?.data || null
+      };
+    }
+  }
 }
 
 export default new ReceitasService();

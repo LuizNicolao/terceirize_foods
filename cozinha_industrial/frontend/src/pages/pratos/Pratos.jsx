@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaPlus, FaQuestionCircle } from 'react-icons/fa';
+import { FaPlus, FaQuestionCircle, FaUpload } from 'react-icons/fa';
 import { usePratos } from '../../hooks/usePratos';
 import { PratosStats, PratosTable, PratoModal } from '../../components/pratos';
 import { Button, Pagination, CadastroFilterBar } from '../../components/ui';
@@ -9,6 +9,7 @@ import { usePermissions } from '../../contexts/PermissionsContext';
 import { useAuditoria } from '../../hooks/common/useAuditoria';
 import pratosService from '../../services/pratos';
 import toast from 'react-hot-toast';
+import ImportPratosModal from '../../components/pratos/ImportPratosModal';
 
 /**
  * Página de Cadastro de Pratos
@@ -57,6 +58,7 @@ const Pratos = () => {
   // Estados para modais
   const [showModal, setShowModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
   const [selectedPrato, setSelectedPrato] = useState(null);
   const [isViewMode, setIsViewMode] = useState(false);
   const [pratoToDelete, setPratoToDelete] = useState(null);
@@ -89,6 +91,20 @@ const Pratos = () => {
     setSelectedPrato(null);
     setIsViewMode(false);
     setShowModal(true);
+  };
+
+  const handleImportClick = () => {
+    setShowImportModal(true);
+  };
+
+  const handleImportSuccess = () => {
+    toast.success('Importação de pratos concluída!');
+    carregarPratos();
+    setShowImportModal(false);
+  };
+
+  const handleCloseImportModal = () => {
+    setShowImportModal(false);
   };
 
   const handleViewPrato = async (prato) => {
@@ -169,6 +185,34 @@ const Pratos = () => {
     handlePageChange(1);
   };
 
+  const handleExportXLSX = async () => {
+    try {
+      const result = await pratosService.exportarXLSX({ search: filters.search || '' });
+      if (result.success) {
+        toast.success('Exportação XLSX realizada com sucesso!');
+      } else {
+        toast.error(result.error || 'Erro ao exportar XLSX');
+      }
+    } catch (error) {
+      console.error('Erro ao exportar XLSX:', error);
+      toast.error('Erro ao exportar pratos em XLSX');
+    }
+  };
+
+  const handleExportPDF = async () => {
+    try {
+      const result = await pratosService.exportarPDF({ search: filters.search || '' });
+      if (result.success) {
+        toast.success('Exportação PDF realizada com sucesso!');
+      } else {
+        toast.error(result.error || 'Erro ao exportar PDF');
+      }
+    } catch (error) {
+      console.error('Erro ao exportar PDF:', error);
+      toast.error('Erro ao exportar pratos em PDF');
+    }
+  };
+
   if (!canViewPratos) {
     return (
       <div className="p-4 sm:p-6">
@@ -197,16 +241,28 @@ const Pratos = () => {
         <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Pratos</h1>
         <div className="flex gap-2 sm:gap-3">
           {canCreatePratos && (
-            <Button
-              onClick={handleAddPrato}
-              variant="primary"
-              size="sm"
-              className="text-xs"
-            >
-              <FaPlus className="mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">Novo Prato</span>
-              <span className="sm:hidden">Novo</span>
-            </Button>
+            <>
+              <Button
+                onClick={handleImportClick}
+                variant="outline"
+                size="sm"
+                className="text-xs"
+              >
+                <FaUpload className="mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Importar</span>
+                <span className="sm:hidden">Importar</span>
+              </Button>
+              <Button
+                onClick={handleAddPrato}
+                variant="primary"
+                size="sm"
+                className="text-xs"
+              >
+                <FaPlus className="mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Novo Prato</span>
+                <span className="sm:hidden">Novo</span>
+              </Button>
+            </>
           )}
           {canViewPratos && (
             <Button
@@ -239,7 +295,8 @@ const Pratos = () => {
       <div className="mb-4">
         <ExportButtons
           onExportJSON={exportarJson}
-          onExportPDF={() => {}}
+          onExportXLSX={handleExportXLSX}
+          onExportPDF={handleExportPDF}
         />
       </div>
 
@@ -302,6 +359,13 @@ const Pratos = () => {
         onExportXLSX={handleExportAuditXLSX}
         onExportPDF={handleExportAuditPDF}
         onFilterChange={(field, value) => setAuditFilters(prev => ({ ...prev, [field]: value }))}
+      />
+
+      {/* Modal de Importação de Pratos */}
+      <ImportPratosModal
+        isOpen={showImportModal}
+        onClose={handleCloseImportModal}
+        onImportSuccess={handleImportSuccess}
       />
     </div>
   );

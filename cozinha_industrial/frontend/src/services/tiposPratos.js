@@ -136,6 +136,88 @@ const tiposPratosService = {
         data: []
       };
     }
+  },
+
+  /**
+   * Exportar tipos de pratos em XLSX
+   */
+  async exportarXLSX(params = {}) {
+    try {
+      const response = await api.get('/tipos-pratos/exportar/xlsx', {
+        params,
+        responseType: 'blob'
+      });
+      
+      // Criar link para download
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      
+      // Extrair nome do arquivo do header ou usar padrão
+      const contentDisposition = response.headers['content-disposition'];
+      let fileName = 'tipos_pratos.xlsx';
+      if (contentDisposition) {
+        const fileNameMatch = contentDisposition.match(/filename="?(.+)"?/i);
+        if (fileNameMatch && fileNameMatch[1]) {
+          fileName = fileNameMatch[1];
+        }
+      }
+      
+      link.setAttribute('download', fileName);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Erro ao exportar XLSX:', error);
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao exportar tipos de pratos em XLSX'
+      };
+    }
+  },
+
+  /**
+   * Exportar tipos de pratos em PDF
+   */
+  async exportarPDF(params = {}) {
+    try {
+      const response = await api.get('/tipos-pratos/exportar/pdf', {
+        params,
+        responseType: 'blob'
+      });
+      
+      // Criar link para download
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      
+      // Extrair nome do arquivo do header ou usar padrão
+      const contentDisposition = response.headers['content-disposition'];
+      let fileName = 'tipos_pratos.pdf';
+      if (contentDisposition) {
+        const fileNameMatch = contentDisposition.match(/filename="?(.+)"?/i);
+        if (fileNameMatch && fileNameMatch[1]) {
+          fileName = fileNameMatch[1];
+        }
+      }
+      
+      link.setAttribute('download', fileName);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Erro ao exportar PDF:', error);
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao exportar tipos de pratos em PDF'
+      };
+    }
   }
 };
 

@@ -4,6 +4,7 @@
  */
 
 const express = require('express');
+const multer = require('multer');
 const { authenticateToken, checkScreenPermission } = require('../../middleware/auth');
 const { paginationMiddleware } = require('../../middleware/pagination');
 const { hateoasMiddleware } = require('../../middleware/hateoas');
@@ -59,10 +60,68 @@ router.delete('/:id',
   ReceitasController.excluir
 );
 
-// ===== ROTA DE EXPORTAÇÃO =====
+// ===== ROTAS DE EXPORTAÇÃO =====
 router.get('/exportar/json',
   checkScreenPermission('receitas', 'visualizar'),
   ReceitasController.exportarJSON
+);
+
+router.get('/exportar/xlsx',
+  checkScreenPermission('receitas', 'visualizar'),
+  commonValidations.search,
+  receitasValidations.filtros,
+  ReceitasController.exportarXLSX
+);
+
+router.get('/exportar/pdf',
+  checkScreenPermission('receitas', 'visualizar'),
+  commonValidations.search,
+  receitasValidations.filtros,
+  ReceitasController.exportarPDF
+);
+
+// ===== ROTA DE VERIFICAÇÃO =====
+router.post('/verificar-por-centro-custo-produtos',
+  checkScreenPermission('receitas', 'visualizar'),
+  ReceitasController.verificarReceitaPorCentroCustoEProdutos
+);
+
+// ===== ROTAS DE IMPORTAÇÃO =====
+router.get('/importar/modelo',
+  checkScreenPermission('receitas', 'criar'),
+  ReceitasController.baixarModelo
+);
+
+router.post('/importar',
+  checkScreenPermission('receitas', 'criar'),
+  ReceitasController.upload,
+  (err, req, res, next) => {
+    // Middleware para tratar erros do multer
+    if (err) {
+      if (err instanceof multer.MulterError) {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+          return res.status(400).json({
+            success: false,
+            message: 'Arquivo muito grande. Tamanho máximo: 10MB',
+            error: err.message
+          });
+        }
+        return res.status(400).json({
+          success: false,
+          message: 'Erro ao processar arquivo',
+          error: err.message
+        });
+      }
+      // Erro de validação do fileFilter
+      return res.status(400).json({
+        success: false,
+        message: err.message || 'Erro ao processar arquivo',
+        error: err.message
+      });
+    }
+    next();
+  },
+  ReceitasController.importar
 );
 
 module.exports = router;

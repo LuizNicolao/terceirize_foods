@@ -178,6 +178,33 @@ export const useReceitas = () => {
   }, [carregarReceitas]);
 
   /**
+   * Duplicar receita
+   */
+  const duplicarReceita = useCallback(async (receitaOriginal) => {
+    try {
+      // Buscar receita completa
+      const receitaCompleta = await receitasService.buscarPorId(receitaOriginal.id);
+      
+      if (!receitaCompleta.success || !receitaCompleta.data) {
+        toast.error('Erro ao carregar receita para duplicação');
+        return null;
+      }
+
+      // Retornar dados da receita para duplicação (sem o código e ID)
+      const receitaParaDuplicar = {
+        ...receitaCompleta.data,
+        receita_original_id: receitaOriginal.id, // Armazenar ID da receita original para validação
+        codigo: null // Código será gerado automaticamente
+      };
+
+      return receitaParaDuplicar;
+    } catch (err) {
+      toast.error('Erro ao duplicar receita');
+      return null;
+    }
+  }, []);
+
+  /**
    * Exportar receitas
    */
   const exportarReceitas = useCallback(async () => {
@@ -275,6 +302,7 @@ export const useReceitas = () => {
     criarReceita,
     atualizarReceita,
     excluirReceita,
+    duplicarReceita,
     exportarReceitas,
     
     // Utilitários
