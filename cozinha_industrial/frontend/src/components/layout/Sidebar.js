@@ -24,7 +24,8 @@ import {
   FaDollarSign,
   FaBook,
   FaUtensils,
-  FaListAlt
+  FaListAlt,
+  FaClock
 } from 'react-icons/fa';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePermissions } from '../../contexts/PermissionsContext';
@@ -57,6 +58,7 @@ const menuGroups = [
               { path: '/tipos-receitas', icon: FaListAlt, label: 'Tipos de Receitas', screen: 'tipos_receitas' },
               { path: '/tipos-pratos', icon: FaUtensils, label: 'Tipos de Pratos', screen: 'tipos_pratos' },
               { path: '/pratos', icon: FaClipboardList, label: 'Pratos', screen: 'pratos' },
+              { path: '/periodos-atendimento', icon: FaClock, label: 'Períodos de Atendimento', screen: 'periodos_atendimento' },
             ]
           },
   {

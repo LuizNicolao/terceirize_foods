@@ -31,7 +31,8 @@ const PermissoesForm = ({
       { key: 'receitas', label: 'Receitas' },
       { key: 'tipos_receitas', label: 'Tipos de Receitas' },
       { key: 'tipos_pratos', label: 'Tipos de Pratos' },
-      { key: 'pratos', label: 'Pratos' }
+      { key: 'pratos', label: 'Pratos' },
+      { key: 'periodos_atendimento', label: 'Períodos de Atendimento' }
     ],
     'Sistema': [
       { key: 'permissoes', label: 'Permissões' }

@@ -151,6 +151,7 @@ export const usePermissoes = () => {
         'tipos_receitas',
         'tipos_pratos',
         'pratos',
+        'periodos_atendimento',
         'permissoes'
       ];
       

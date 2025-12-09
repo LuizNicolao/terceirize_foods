@@ -24,6 +24,7 @@ import Receitas from './pages/receitas/Receitas';
 import TiposReceitas from './pages/tipos-receitas/TiposReceitas';
 import TiposPratos from './pages/tipos-pratos/TiposPratos';
 import Pratos from './pages/pratos/Pratos';
+import PeriodosAtendimento from './pages/periodos-atendimento/PeriodosAtendimento';
 
 // Componente para rotas protegidas com autenticação
 const AuthenticatedRoute = ({ children }) => {
@@ -230,6 +231,15 @@ function App() {
                 element={
                   <AuthenticatedRoute>
                     <Pratos />
+                  </AuthenticatedRoute>
+                }
+              />
+
+              <Route 
+                path="/periodos-atendimento" 
+                element={
+                  <AuthenticatedRoute>
+                    <PeriodosAtendimento />
                   </AuthenticatedRoute>
                 }
               />

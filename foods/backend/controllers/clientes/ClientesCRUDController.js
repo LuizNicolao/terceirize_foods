@@ -48,6 +48,18 @@ class ClientesCRUDController {
       return conflictResponse(res, 'Razão social já cadastrada');
     }
 
+    // Converter status de string para inteiro se necessário
+    let statusInt = 1; // padrão é ativo (1)
+    if (status !== undefined && status !== null) {
+      if (status === 'ativo' || status === '1' || status === 1) {
+        statusInt = 1;
+      } else if (status === 'inativo' || status === '0' || status === 0) {
+        statusInt = 0;
+      } else {
+        statusInt = status ? 1 : 0;
+      }
+    }
+
     // Inserir cliente
     const result = await executeQuery(
       `INSERT INTO clientes (cnpj, razao_social, nome_fantasia, logradouro, numero, bairro, 
@@ -65,7 +77,7 @@ class ClientesCRUDController {
         cep && cep.trim() ? cep.trim() : null,
         email && email.trim() ? email.trim() : null,
         telefone && telefone.trim() ? telefone.trim() : null,
-        status || 1
+        statusInt
       ]
     );
 
@@ -156,6 +168,18 @@ class ClientesCRUDController {
           value = value.trim();
           if (value === '') {
             value = null;
+          }
+        }
+        
+        // Tratamento específico para o campo status (converter 'ativo'/'inativo' para 1/0)
+        if (key === 'status') {
+          if (value === 'ativo' || value === '1' || value === 1) {
+            value = 1;
+          } else if (value === 'inativo' || value === '0' || value === 0) {
+            value = 0;
+          } else {
+            // Se não for um valor reconhecido, manter o valor atual ou usar 1 como padrão
+            value = value === true ? 1 : (value === false ? 0 : 1);
           }
         }
         
