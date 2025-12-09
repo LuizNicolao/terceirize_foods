@@ -207,6 +207,9 @@ const recebimentosLimiter = createEntityRateLimiter('recebimentos', 500, 15 * 60
 const permissoesLimiter = createEntityRateLimiter('permissoes', 100, 15 * 60 * 1000);
 const produtosLimiter = createEntityRateLimiter('produtos', 500, 15 * 60 * 1000);
 const receitasLimiter = createEntityRateLimiter('receitas', 500, 15 * 60 * 1000);
+const tiposReceitasLimiter = createEntityRateLimiter('tipos_receitas', 200, 15 * 60 * 1000);
+const tiposPratosLimiter = createEntityRateLimiter('tipos_pratos', 200, 15 * 60 * 1000);
+const pratosLimiter = createEntityRateLimiter('pratos', 200, 15 * 60 * 1000);
 
 module.exports = {
   // Rate limiters pré-configurados
@@ -230,6 +233,9 @@ module.exports = {
   permissoesLimiter,
   produtosLimiter,
   receitasLimiter,
+  tiposReceitasLimiter,
+  tiposPratosLimiter,
+  pratosLimiter,
   
   // Configurações
   RATE_LIMIT_CONFIG

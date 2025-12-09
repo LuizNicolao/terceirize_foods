@@ -28,13 +28,24 @@ module.exports = {
       }
 
       // Configurar modules para priorizar node_modules do implantacao
+      // e também incluir node_modules do foods-frontend
+      const foodsFrontendNodeModules = path.resolve(__dirname, '../../foods/frontend/node_modules');
+      const implantacaoNodeModules = path.resolve(__dirname, 'node_modules');
+      
       if (!webpackConfig.resolve.modules) {
-        webpackConfig.resolve.modules = ['node_modules', path.resolve(__dirname, 'node_modules')];
+        webpackConfig.resolve.modules = [
+          'node_modules',
+          implantacaoNodeModules,
+          foodsFrontendNodeModules
+        ];
       } else {
         // Garantir que node_modules do implantacao seja o primeiro
-        const implantacaoNodeModules = path.resolve(__dirname, 'node_modules');
         if (!webpackConfig.resolve.modules.includes(implantacaoNodeModules)) {
           webpackConfig.resolve.modules.unshift(implantacaoNodeModules);
+        }
+        // Adicionar node_modules do foods-frontend também
+        if (!webpackConfig.resolve.modules.includes(foodsFrontendNodeModules)) {
+          webpackConfig.resolve.modules.push(foodsFrontendNodeModules);
         }
       }
 

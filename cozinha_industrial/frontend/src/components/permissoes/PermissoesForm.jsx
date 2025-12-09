@@ -28,7 +28,10 @@ const PermissoesForm = ({
       { key: 'grupos', label: 'Grupos' },
       { key: 'subgrupos', label: 'Subgrupos' },
       { key: 'classes', label: 'Classes' },
-      { key: 'receitas', label: 'Receitas' }
+      { key: 'receitas', label: 'Receitas' },
+      { key: 'tipos_receitas', label: 'Tipos de Receitas' },
+      { key: 'tipos_pratos', label: 'Tipos de Pratos' },
+      { key: 'pratos', label: 'Pratos' }
     ],
     'Sistema': [
       { key: 'permissoes', label: 'Permissões' }

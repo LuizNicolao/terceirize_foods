@@ -18,7 +18,9 @@ class ReceitasCRUDController {
         filial_nome = null,
         centro_custo_id = null,
         centro_custo_nome = null,
-        tipo_receita = null,
+        tipo_receita_id = null,
+        tipo_receita_nome = null,
+        status = 1,
         produtos = []
       } = req.body;
 
@@ -47,12 +49,24 @@ class ReceitasCRUDController {
 
       const codigo = `R${proximoNumero.toString().padStart(3, '0')}`;
 
+      // Buscar nome do tipo de receita se apenas ID foi fornecido
+      let tipoReceitaNome = tipo_receita_nome;
+      if (tipo_receita_id && !tipoReceitaNome) {
+        const tipoReceita = await executeQuery(
+          'SELECT tipo_receita FROM tipos_receitas WHERE id = ?',
+          [tipo_receita_id]
+        );
+        if (tipoReceita.length > 0) {
+          tipoReceitaNome = tipoReceita[0].tipo_receita;
+        }
+      }
+
       // Inserir receita
       const result = await executeQuery(
         `INSERT INTO receitas (
-          codigo, nome, descricao, filial_id, filial_nome, centro_custo_id, centro_custo_nome, tipo_receita
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-        [codigo, nome, descricao, filial_id, filial_nome, centro_custo_id, centro_custo_nome, tipo_receita]
+          codigo, nome, descricao, filial_id, filial_nome, centro_custo_id, centro_custo_nome, tipo_receita_id, tipo_receita_nome, status
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [codigo, nome, descricao, filial_id, filial_nome, centro_custo_id, centro_custo_nome, tipo_receita_id, tipoReceitaNome, status]
       );
 
       const receitaId = result.insertId;
@@ -70,8 +84,10 @@ class ReceitasCRUDController {
             subgrupo_nome,
             classe_id,
             classe_nome,
+            unidade_medida_id,
+            unidade_medida_sigla,
             percapta_sugerida
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           params: [
             receitaId,
             produto.produto_origem || null, // Manter para compatibilidade
@@ -82,6 +98,8 @@ class ReceitasCRUDController {
             produto.subgrupo_nome || null,
             produto.classe_id || null,
             produto.classe_nome || null,
+            produto.unidade_medida_id || null,
+            produto.unidade_medida_sigla || null,
             produto.percapta_sugerida || null
           ]
         }));
@@ -139,7 +157,9 @@ class ReceitasCRUDController {
         filial_nome,
         centro_custo_id,
         centro_custo_nome,
-        tipo_receita,
+        tipo_receita_id,
+        tipo_receita_nome,
+        status,
         produtos
       } = req.body;
 
@@ -181,9 +201,26 @@ class ReceitasCRUDController {
         updateFields.push('centro_custo_nome = ?');
         updateValues.push(centro_custo_nome);
       }
-      if (tipo_receita !== undefined) {
-        updateFields.push('tipo_receita = ?');
-        updateValues.push(tipo_receita);
+      // Buscar nome do tipo de receita se apenas ID foi fornecido
+      if (tipo_receita_id !== undefined) {
+        let tipoReceitaNome = tipo_receita_nome;
+        if (tipo_receita_id && !tipoReceitaNome) {
+          const tipoReceita = await executeQuery(
+            'SELECT tipo_receita FROM tipos_receitas WHERE id = ?',
+            [tipo_receita_id]
+          );
+          if (tipoReceita.length > 0) {
+            tipoReceitaNome = tipoReceita[0].tipo_receita;
+          }
+        }
+        updateFields.push('tipo_receita_id = ?');
+        updateValues.push(tipo_receita_id);
+        updateFields.push('tipo_receita_nome = ?');
+        updateValues.push(tipoReceitaNome);
+      }
+      if (status !== undefined) {
+        updateFields.push('status = ?');
+        updateValues.push(status);
       }
 
       if (updateFields.length > 0) {
@@ -217,8 +254,10 @@ class ReceitasCRUDController {
               subgrupo_nome,
               classe_id,
               classe_nome,
+              unidade_medida_id,
+              unidade_medida_sigla,
               percapta_sugerida
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             params: [
               id,
               produto.produto_origem || null, // Manter para compatibilidade
@@ -229,6 +268,8 @@ class ReceitasCRUDController {
               produto.subgrupo_nome || null,
               produto.classe_id || null,
               produto.classe_nome || null,
+              produto.unidade_medida_id || null,
+              produto.unidade_medida_sigla || null,
               produto.percapta_sugerida || null
             ]
           }));
@@ -307,7 +348,9 @@ class ReceitasCRUDController {
         filial_nome,
         centro_custo_id,
         centro_custo_nome,
-        tipo_receita,
+        tipo_receita_id,
+        tipo_receita_nome,
+        status,
         data_cadastro,
         data_atualizacao
       FROM receitas
@@ -333,6 +376,8 @@ class ReceitasCRUDController {
         subgrupo_nome,
         classe_id,
         classe_nome,
+        unidade_medida_id,
+        unidade_medida_sigla,
         percapta_sugerida
       FROM receitas_produtos
       WHERE receita_id = ?

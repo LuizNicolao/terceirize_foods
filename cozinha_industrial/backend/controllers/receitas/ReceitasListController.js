@@ -30,7 +30,9 @@ class ReceitasListController {
         r.filial_nome as filial,
         r.centro_custo_id,
         r.centro_custo_nome as centro_custo,
-        r.tipo_receita,
+        r.tipo_receita_id,
+        r.tipo_receita_nome as tipo_receita,
+        r.status,
         r.data_cadastro,
         r.data_atualizacao,
         COUNT(rp.id) as total_produtos
@@ -60,8 +62,8 @@ class ReceitasListController {
     }
 
     if (tipo_receita) {
-      baseQuery += ' AND r.tipo_receita = ?';
-      params.push(tipo_receita);
+      baseQuery += ' AND r.tipo_receita_nome LIKE ?';
+      params.push(`%${tipo_receita}%`);
     }
 
     if (filial) {
@@ -79,7 +81,7 @@ class ReceitasListController {
     // Ordenação
     const sortBy = req.query.sortBy || 'data_cadastro';
     const sortOrder = req.query.sortOrder || 'DESC';
-    const allowedSortFields = ['id', 'codigo', 'nome', 'tipo_receita', 'filial', 'centro_custo', 'data_cadastro', 'data_atualizacao'];
+    const allowedSortFields = ['id', 'codigo', 'nome', 'tipo_receita_nome', 'filial', 'centro_custo', 'data_cadastro', 'data_atualizacao'];
     let finalSortBy = allowedSortFields.includes(sortBy) ? sortBy : 'data_cadastro';
     const finalSortOrder = sortOrder.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
     
@@ -88,6 +90,8 @@ class ReceitasListController {
       finalSortBy = 'r.filial_nome';
     } else if (finalSortBy === 'centro_custo') {
       finalSortBy = 'r.centro_custo_nome';
+    } else if (finalSortBy === 'tipo_receita_nome') {
+      finalSortBy = 'r.tipo_receita_nome';
     } else {
       finalSortBy = `r.${finalSortBy}`;
     }
@@ -138,8 +142,8 @@ class ReceitasListController {
     }
 
     if (tipo_receita) {
-      countQuery += ' AND r.tipo_receita = ?';
-      countParams.push(tipo_receita);
+      countQuery += ' AND r.tipo_receita_nome LIKE ?';
+      countParams.push(`%${tipo_receita}%`);
     }
 
     if (filial) {
@@ -207,6 +211,8 @@ class ReceitasListController {
           id,
           produto_origem,
           produto_origem_id,
+          unidade_medida_id,
+          unidade_medida_sigla,
           grupo_id,
           grupo_nome,
           subgrupo_id,

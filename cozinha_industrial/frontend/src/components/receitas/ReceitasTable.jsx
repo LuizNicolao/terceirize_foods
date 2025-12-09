@@ -101,6 +101,9 @@ const ReceitasTable = ({
                 align="left"
               />
               <th className="px-6 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Status
+              </th>
+              <th className="px-6 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Produtos
               </th>
               <th className="px-6 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -125,6 +128,15 @@ const ReceitasTable = ({
                 </td>
                 <td className="px-6 py-2 whitespace-nowrap text-sm text-gray-900">
                   {receita.centro_custo || '-'}
+                </td>
+                <td className="px-6 py-2 whitespace-nowrap text-center">
+                  <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
+                    receita.status === 1 || receita.status === true
+                      ? 'bg-green-100 text-green-800' 
+                      : 'bg-red-100 text-red-800'
+                  }`}>
+                    {receita.status === 1 || receita.status === true ? 'Ativo' : 'Inativo'}
+                  </span>
                 </td>
                 <td className="px-6 py-2 whitespace-nowrap text-center text-sm font-medium">
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">

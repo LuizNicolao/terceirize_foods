@@ -22,7 +22,9 @@ import {
   FaRegStar,
   FaWarehouse,
   FaDollarSign,
-  FaBook
+  FaBook,
+  FaUtensils,
+  FaListAlt
 } from 'react-icons/fa';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePermissions } from '../../contexts/PermissionsContext';
@@ -52,6 +54,9 @@ const menuGroups = [
               { path: '/subgrupos', icon: FaTags, label: 'Subgrupos', screen: 'subgrupos' },
               { path: '/classes', icon: FaList, label: 'Classes', screen: 'classes' },
               { path: '/receitas', icon: FaBook, label: 'Receitas', screen: 'receitas' },
+              { path: '/tipos-receitas', icon: FaListAlt, label: 'Tipos de Receitas', screen: 'tipos_receitas' },
+              { path: '/tipos-pratos', icon: FaUtensils, label: 'Tipos de Pratos', screen: 'tipos_pratos' },
+              { path: '/pratos', icon: FaClipboardList, label: 'Pratos', screen: 'pratos' },
             ]
           },
   {

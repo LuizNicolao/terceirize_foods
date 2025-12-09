@@ -58,10 +58,21 @@ const receitasValidations = {
       .isLength({ max: 255 })
       .withMessage('Centro de custo deve ter no máximo 255 caracteres'),
     
-    body('tipo_receita')
+    body('tipo_receita_id')
       .optional()
-      .isIn(['Acompanhamento', 'Prato Principal', 'Guarnição', 'Sobremesa', 'Bebida'])
-      .withMessage('Tipo de receita deve ser: Acompanhamento, Prato Principal, Guarnição, Sobremesa ou Bebida'),
+      .isInt({ min: 1 })
+      .withMessage('Tipo de receita ID deve ser um número inteiro válido'),
+    
+    body('tipo_receita_nome')
+      .optional()
+      .isString()
+      .isLength({ max: 255 })
+      .withMessage('Tipo de receita nome deve ter no máximo 255 caracteres'),
+    
+    body('status')
+      .optional()
+      .isInt({ min: 0, max: 1 })
+      .withMessage('Status deve ser 0 (Inativo) ou 1 (Ativo)'),
     
     body('produtos')
       .optional()
@@ -108,10 +119,21 @@ const receitasValidations = {
       .isLength({ max: 255 })
       .withMessage('Centro de custo deve ter no máximo 255 caracteres'),
     
-    body('tipo_receita')
+    body('tipo_receita_id')
       .optional()
-      .isIn(['Acompanhamento', 'Prato Principal', 'Guarnição', 'Sobremesa', 'Bebida'])
-      .withMessage('Tipo de receita deve ser: Acompanhamento, Prato Principal, Guarnição, Sobremesa ou Bebida'),
+      .isInt({ min: 1 })
+      .withMessage('Tipo de receita ID deve ser um número inteiro válido'),
+    
+    body('tipo_receita_nome')
+      .optional()
+      .isString()
+      .isLength({ max: 255 })
+      .withMessage('Tipo de receita nome deve ter no máximo 255 caracteres'),
+    
+    body('status')
+      .optional()
+      .isInt({ min: 0, max: 1 })
+      .withMessage('Status deve ser 0 (Inativo) ou 1 (Ativo)'),
     
     body('produtos')
       .optional()
@@ -136,8 +158,8 @@ const receitasValidations = {
   filtros: [
     query('tipo_receita')
       .optional()
-      .isIn(['Acompanhamento', 'Prato Principal', 'Guarnição', 'Sobremesa', 'Bebida'])
-      .withMessage('Tipo de receita inválido'),
+      .isString()
+      .withMessage('Tipo de receita deve ser uma string'),
     
     query('filial')
       .optional()

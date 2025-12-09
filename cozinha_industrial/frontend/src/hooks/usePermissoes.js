@@ -148,6 +148,9 @@ export const usePermissoes = () => {
         'subgrupos',
         'classes',
         'receitas',
+        'tipos_receitas',
+        'tipos_pratos',
+        'pratos',
         'permissoes'
       ];
       

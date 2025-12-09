@@ -3,8 +3,9 @@ import { FaPlus, FaQuestionCircle } from 'react-icons/fa';
 import { useReceitas } from '../../hooks/useReceitas';
 import { ReceitasStats, ReceitasTable, ReceitaModal } from '../../components/receitas';
 import { Button, Pagination, CadastroFilterBar } from '../../components/ui';
-import { ExportButtons } from '../../components/shared';
+import { ExportButtons, AuditModal } from '../../components/shared';
 import { ConfirmModal } from '../../components/ui';
+import { useAuditoria } from '../../hooks/common/useAuditoria';
 
 /**
  * Página de Cadastro de Receitas
@@ -138,6 +139,20 @@ const Receitas = () => {
     await exportarReceitas();
   };
 
+  // Hook de auditoria
+  const {
+    showAuditModal,
+    auditLogs,
+    auditLoading,
+    auditFilters,
+    handleOpenAuditModal,
+    handleCloseAuditModal,
+    handleApplyAuditFilters,
+    handleExportAuditXLSX,
+    handleExportAuditPDF,
+    setAuditFilters
+  } = useAuditoria('receitas');
+
   if (loading && receitas.length === 0) {
     return (
       <div className="flex justify-center items-center h-screen bg-gray-50">
@@ -166,14 +181,14 @@ const Receitas = () => {
             <span className="sm:hidden">Nova</span>
           </Button>
           <Button
-            onClick={recarregar}
+            onClick={handleOpenAuditModal}
             variant="ghost"
             size="sm"
             className="text-xs"
             disabled={loading}
           >
             <FaQuestionCircle className="mr-1 sm:mr-2" />
-            <span className="hidden sm:inline">Atualizar</span>
+            <span className="hidden sm:inline">Auditoria</span>
           </Button>
         </div>
       </div>
@@ -242,6 +257,20 @@ const Receitas = () => {
         confirmText="Excluir"
         cancelText="Cancelar"
         type="danger"
+      />
+
+      {/* Modal de Auditoria */}
+      <AuditModal
+        isOpen={showAuditModal}
+        onClose={handleCloseAuditModal}
+        title="Relatório de Auditoria - Receitas"
+        auditLogs={auditLogs}
+        auditLoading={auditLoading}
+        auditFilters={auditFilters}
+        onApplyFilters={handleApplyAuditFilters}
+        onExportXLSX={handleExportAuditXLSX}
+        onExportPDF={handleExportAuditPDF}
+        onFilterChange={(field, value) => setAuditFilters(prev => ({ ...prev, [field]: value }))}
       />
     </div>
   );

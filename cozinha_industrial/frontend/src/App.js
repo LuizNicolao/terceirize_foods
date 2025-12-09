@@ -21,6 +21,9 @@ import Grupos from './pages/grupos/Grupos';
 import Subgrupos from './pages/subgrupos/Subgrupos';
 import Classes from './pages/classes/Classes';
 import Receitas from './pages/receitas/Receitas';
+import TiposReceitas from './pages/tipos-receitas/TiposReceitas';
+import TiposPratos from './pages/tipos-pratos/TiposPratos';
+import Pratos from './pages/pratos/Pratos';
 
 // Componente para rotas protegidas com autenticação
 const AuthenticatedRoute = ({ children }) => {
@@ -204,6 +207,32 @@ function App() {
                 }
               />
 
+              <Route 
+                path="/tipos-receitas" 
+                element={
+                  <AuthenticatedRoute>
+                    <TiposReceitas />
+                  </AuthenticatedRoute>
+                }
+              />
+
+              <Route 
+                path="/tipos-pratos" 
+                element={
+                  <AuthenticatedRoute>
+                    <TiposPratos />
+                  </AuthenticatedRoute>
+                }
+              />
+
+              <Route 
+                path="/pratos" 
+                element={
+                  <AuthenticatedRoute>
+                    <Pratos />
+                  </AuthenticatedRoute>
+                }
+              />
 
       {/* Rota padrão */}
       <Route 

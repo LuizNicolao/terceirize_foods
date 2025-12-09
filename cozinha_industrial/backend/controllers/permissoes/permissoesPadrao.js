@@ -19,6 +19,9 @@ const PERMISSOES_PADRAO = {
       subgrupos: { visualizar: true, criar: false, editar: false, excluir: false },
       classes: { visualizar: true, criar: false, editar: false, excluir: false },
       receitas: { visualizar: true, criar: false, editar: false, excluir: false },
+      tipos_receitas: { visualizar: true, criar: false, editar: false, excluir: false },
+      tipos_pratos: { visualizar: true, criar: false, editar: false, excluir: false },
+      pratos: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -34,6 +37,9 @@ const PERMISSOES_PADRAO = {
       subgrupos: { visualizar: true, criar: false, editar: false, excluir: false },
       classes: { visualizar: true, criar: false, editar: false, excluir: false },
       receitas: { visualizar: true, criar: true, editar: true, excluir: false },
+      tipos_receitas: { visualizar: true, criar: true, editar: true, excluir: false },
+      tipos_pratos: { visualizar: true, criar: true, editar: true, excluir: false },
+      pratos: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -49,6 +55,9 @@ const PERMISSOES_PADRAO = {
       subgrupos: { visualizar: true, criar: false, editar: false, excluir: false },
       classes: { visualizar: true, criar: false, editar: false, excluir: false },
       receitas: { visualizar: true, criar: true, editar: true, excluir: true },
+      tipos_receitas: { visualizar: true, criar: true, editar: true, excluir: true },
+      tipos_pratos: { visualizar: true, criar: true, editar: true, excluir: true },
+      pratos: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: true, criar: true, editar: true, excluir: true }
     }
   },
@@ -66,6 +75,9 @@ const PERMISSOES_PADRAO = {
       subgrupos: { visualizar: true, criar: false, editar: false, excluir: false },
       classes: { visualizar: true, criar: false, editar: false, excluir: false },
       receitas: { visualizar: true, criar: false, editar: false, excluir: false },
+      tipos_receitas: { visualizar: true, criar: false, editar: false, excluir: false },
+      tipos_pratos: { visualizar: true, criar: false, editar: false, excluir: false },
+      pratos: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -81,6 +93,9 @@ const PERMISSOES_PADRAO = {
       subgrupos: { visualizar: true, criar: false, editar: false, excluir: false },
       classes: { visualizar: true, criar: false, editar: false, excluir: false },
       receitas: { visualizar: true, criar: true, editar: true, excluir: false },
+      tipos_receitas: { visualizar: true, criar: true, editar: true, excluir: false },
+      tipos_pratos: { visualizar: true, criar: true, editar: true, excluir: false },
+      pratos: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -96,6 +111,9 @@ const PERMISSOES_PADRAO = {
       subgrupos: { visualizar: true, criar: false, editar: false, excluir: false },
       classes: { visualizar: true, criar: false, editar: false, excluir: false },
       receitas: { visualizar: true, criar: true, editar: true, excluir: false },
+      tipos_receitas: { visualizar: true, criar: true, editar: true, excluir: false },
+      tipos_pratos: { visualizar: true, criar: true, editar: true, excluir: false },
+      pratos: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -113,6 +131,9 @@ const PERMISSOES_PADRAO = {
       subgrupos: { visualizar: true, criar: false, editar: false, excluir: false },
       classes: { visualizar: true, criar: false, editar: false, excluir: false },
       receitas: { visualizar: true, criar: false, editar: false, excluir: false },
+      tipos_receitas: { visualizar: true, criar: false, editar: false, excluir: false },
+      tipos_pratos: { visualizar: true, criar: false, editar: false, excluir: false },
+      pratos: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -128,6 +149,9 @@ const PERMISSOES_PADRAO = {
       subgrupos: { visualizar: true, criar: false, editar: false, excluir: false },
       classes: { visualizar: true, criar: false, editar: false, excluir: false },
       receitas: { visualizar: true, criar: false, editar: false, excluir: false },
+      tipos_receitas: { visualizar: true, criar: false, editar: false, excluir: false },
+      tipos_pratos: { visualizar: true, criar: false, editar: false, excluir: false },
+      pratos: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -143,6 +167,9 @@ const PERMISSOES_PADRAO = {
       subgrupos: { visualizar: true, criar: false, editar: false, excluir: false },
       classes: { visualizar: true, criar: false, editar: false, excluir: false },
       receitas: { visualizar: true, criar: true, editar: true, excluir: false },
+      tipos_receitas: { visualizar: true, criar: false, editar: false, excluir: false },
+      tipos_pratos: { visualizar: true, criar: false, editar: false, excluir: false },
+      pratos: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -160,6 +187,9 @@ const PERMISSOES_PADRAO = {
       subgrupos: { visualizar: true, criar: false, editar: false, excluir: false },
       classes: { visualizar: true, criar: false, editar: false, excluir: false },
       receitas: { visualizar: true, criar: false, editar: false, excluir: false },
+      tipos_receitas: { visualizar: true, criar: false, editar: false, excluir: false },
+      tipos_pratos: { visualizar: true, criar: false, editar: false, excluir: false },
+      pratos: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -175,6 +205,9 @@ const PERMISSOES_PADRAO = {
       subgrupos: { visualizar: true, criar: false, editar: false, excluir: false },
       classes: { visualizar: true, criar: false, editar: false, excluir: false },
       receitas: { visualizar: true, criar: true, editar: true, excluir: false },
+      tipos_receitas: { visualizar: true, criar: false, editar: false, excluir: false },
+      tipos_pratos: { visualizar: true, criar: false, editar: false, excluir: false },
+      pratos: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -190,6 +223,9 @@ const PERMISSOES_PADRAO = {
       subgrupos: { visualizar: true, criar: false, editar: false, excluir: false },
       classes: { visualizar: true, criar: false, editar: false, excluir: false },
       receitas: { visualizar: true, criar: true, editar: true, excluir: false },
+      tipos_receitas: { visualizar: true, criar: false, editar: false, excluir: false },
+      tipos_pratos: { visualizar: true, criar: false, editar: false, excluir: false },
+      pratos: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -207,6 +243,9 @@ const PERMISSOES_PADRAO = {
       subgrupos: { visualizar: true, criar: false, editar: false, excluir: false },
       classes: { visualizar: true, criar: false, editar: false, excluir: false },
       receitas: { visualizar: true, criar: false, editar: false, excluir: false },
+      tipos_receitas: { visualizar: true, criar: false, editar: false, excluir: false },
+      tipos_pratos: { visualizar: true, criar: false, editar: false, excluir: false },
+      pratos: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -222,6 +261,9 @@ const PERMISSOES_PADRAO = {
       subgrupos: { visualizar: true, criar: false, editar: false, excluir: false },
       classes: { visualizar: true, criar: false, editar: false, excluir: false },
       receitas: { visualizar: true, criar: true, editar: true, excluir: false },
+      tipos_receitas: { visualizar: true, criar: false, editar: false, excluir: false },
+      tipos_pratos: { visualizar: true, criar: false, editar: false, excluir: false },
+      pratos: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -237,6 +279,9 @@ const PERMISSOES_PADRAO = {
       subgrupos: { visualizar: true, criar: false, editar: false, excluir: false },
       classes: { visualizar: true, criar: false, editar: false, excluir: false },
       receitas: { visualizar: true, criar: true, editar: true, excluir: false },
+      tipos_receitas: { visualizar: true, criar: false, editar: false, excluir: false },
+      tipos_pratos: { visualizar: true, criar: false, editar: false, excluir: false },
+      pratos: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -254,6 +299,9 @@ const PERMISSOES_PADRAO = {
       subgrupos: { visualizar: true, criar: false, editar: false, excluir: false },
       classes: { visualizar: true, criar: false, editar: false, excluir: false },
       receitas: { visualizar: true, criar: false, editar: false, excluir: false },
+      tipos_receitas: { visualizar: true, criar: false, editar: false, excluir: false },
+      tipos_pratos: { visualizar: true, criar: false, editar: false, excluir: false },
+      pratos: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -269,6 +317,9 @@ const PERMISSOES_PADRAO = {
       subgrupos: { visualizar: true, criar: false, editar: false, excluir: false },
       classes: { visualizar: true, criar: false, editar: false, excluir: false },
       receitas: { visualizar: true, criar: true, editar: true, excluir: false },
+      tipos_receitas: { visualizar: true, criar: false, editar: false, excluir: false },
+      tipos_pratos: { visualizar: true, criar: false, editar: false, excluir: false },
+      pratos: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -284,6 +335,9 @@ const PERMISSOES_PADRAO = {
       subgrupos: { visualizar: true, criar: false, editar: false, excluir: false },
       classes: { visualizar: true, criar: false, editar: false, excluir: false },
       receitas: { visualizar: true, criar: true, editar: true, excluir: true },
+      tipos_receitas: { visualizar: true, criar: false, editar: false, excluir: false },
+      tipos_pratos: { visualizar: true, criar: false, editar: false, excluir: false },
+      pratos: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   }
@@ -305,7 +359,9 @@ const TODAS_TELAS = [
   'subgrupos',
   'classes',
   'receitas',
-  'rotas_nutricionistas',
+  'tipos_receitas',
+  'tipos_pratos',
+  'pratos',
   'permissoes'
 ];
 
@@ -342,7 +398,9 @@ const TELAS_COM_DESCRICOES = [
   { nome: 'subgrupos', descricao: 'Consulta de Subgrupos' },
   { nome: 'classes', descricao: 'Consulta de Classes' },
   { nome: 'receitas', descricao: 'Cadastro de Receitas' },
-  { nome: 'rotas_nutricionistas', descricao: 'Gerenciamento de Rotas Nutricionistas' },
+  { nome: 'tipos_receitas', descricao: 'Cadastro de Tipos de Receitas' },
+  { nome: 'tipos_pratos', descricao: 'Cadastro de Tipos de Pratos' },
+  { nome: 'pratos', descricao: 'Cadastro de Pratos' },
   { nome: 'permissoes', descricao: 'Gerenciamento de Permissões' }
 ];
 
