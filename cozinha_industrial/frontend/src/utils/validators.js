@@ -248,10 +248,10 @@ export const isValidObject = (value) => {
  * @returns {boolean} Per capita válido
  */
 export const isValidPerCapita = (value) => {
-  if (!isValidNumber(value, { min: 0, max: 999.9999 })) return false;
+  if (!isValidNumber(value, { min: 0, max: 999.999999 })) return false;
   
   const num = Number(value);
-  return num >= 0 && num <= 999.9999;
+  return num >= 0 && num <= 999.999999;
 };
 
 /**

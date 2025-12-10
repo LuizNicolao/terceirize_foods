@@ -20,34 +20,50 @@ const upload = multer({
   }
 });
 
-class RegistrosDiariosImportController {
+class QuantidadesServidasImportController {
   /**
    * Gerar e baixar modelo de planilha para importação
+   * Adaptado para períodos dinâmicos
    */
   static async baixarModelo(req, res) {
     try {
-      // Buscar algumas escolas para exemplo
-      const escolasQuery = `
+      // Buscar algumas unidades para exemplo
+      const unidadesQuery = `
         SELECT id, nome_escola 
         FROM foods_db.unidades_escolares 
         LIMIT 5
       `;
-      const escolas = await executeQuery(escolasQuery);
+      const unidades = await executeQuery(unidadesQuery);
+
+      // Buscar todos os períodos ativos para gerar colunas dinamicamente
+      const periodosQuery = `
+        SELECT id, nome, codigo 
+        FROM periodos_atendimento 
+        WHERE status = 'ativo' 
+        ORDER BY nome
+      `;
+      const periodos = await executeQuery(periodosQuery);
 
       // Criar workbook
       const workbook = new ExcelJS.Workbook();
-      const worksheet = workbook.addWorksheet('Registros Diários');
+      const worksheet = workbook.addWorksheet('Quantidades Servidas');
 
-      // Definir colunas
-      worksheet.columns = [
-        { header: 'Escola', key: 'escola', width: 30 },
-        { header: 'Data', key: 'data', width: 15 },
-        { header: 'Lanche Manhã', key: 'lanche_manha', width: 15 },
-        { header: 'Almoço', key: 'almoco', width: 15 },
-        { header: 'Lanche Tarde', key: 'lanche_tarde', width: 15 },
-        { header: 'Parcial', key: 'parcial', width: 15 },
-        { header: 'EJA', key: 'eja', width: 15 }
+      // Definir colunas dinamicamente: Unidade, Data, e depois cada período
+      const colunas = [
+        { header: 'Unidade', key: 'unidade', width: 30 },
+        { header: 'Data', key: 'data', width: 15 }
       ];
+      
+      // Adicionar coluna para cada período
+      periodos.forEach(periodo => {
+        colunas.push({
+          header: periodo.nome,
+          key: `periodo_${periodo.id}`,
+          width: 15
+        });
+      });
+
+      worksheet.columns = colunas;
 
       // Estilizar cabeçalho
       worksheet.getRow(1).font = { bold: true };
@@ -61,26 +77,19 @@ class RegistrosDiariosImportController {
       const dataAtual = new Date();
       const dataExemplo = dataAtual.toISOString().split('T')[0]; // YYYY-MM-DD
 
-      const exemplos = [
-        {
-          escola: escolas[0]?.nome_escola || 'EMEI João Silva',
-          data: dataExemplo,
-          lanche_manha: 150,
-          almoco: 200,
-          lanche_tarde: 120,
-          parcial: 0,
-          eja: 30
-        },
-        {
-          escola: escolas[1]?.nome_escola || 'EMEF Maria Santos',
-          data: dataExemplo,
-          lanche_manha: 300,
-          almoco: 400,
-          lanche_tarde: 250,
-          parcial: 50,
-          eja: 60
-        }
-      ];
+      const exemplos = unidades.slice(0, 2).map((unidade, index) => {
+        const exemplo = {
+          unidade: unidade.nome_escola,
+          data: dataExemplo
+        };
+        
+        // Adicionar valores de exemplo para cada período
+        periodos.forEach((periodo, pIndex) => {
+          exemplo[`periodo_${periodo.id}`] = (index + 1) * 100 + (pIndex + 1) * 10;
+        });
+        
+        return exemplo;
+      });
 
       exemplos.forEach(exemplo => {
         worksheet.addRow(exemplo);
@@ -88,7 +97,7 @@ class RegistrosDiariosImportController {
 
       // Configurar resposta
       res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-      res.setHeader('Content-Disposition', 'attachment; filename="modelo_registros_diarios.xlsx"');
+      res.setHeader('Content-Disposition', 'attachment; filename="modelo_quantidades_servidas.xlsx"');
 
       await workbook.xlsx.write(res);
       res.end();
@@ -100,7 +109,8 @@ class RegistrosDiariosImportController {
   }
 
   /**
-   * Importar registros diários via Excel
+   * Importar quantidades servidas via Excel
+   * Adaptado para períodos dinâmicos
    */
   static async importar(req, res) {
     try {
@@ -116,6 +126,29 @@ class RegistrosDiariosImportController {
         return errorResponse(res, 'Planilha não encontrada', 400);
       }
 
+      // Buscar todos os períodos ativos para mapear colunas
+      const periodosQuery = `
+        SELECT id, nome, codigo 
+        FROM periodos_atendimento 
+        WHERE status = 'ativo' 
+        ORDER BY nome
+      `;
+      const periodos = await executeQuery(periodosQuery);
+
+      // Mapear cabeçalhos da planilha para IDs de períodos
+      const headerRow = worksheet.getRow(1);
+      const headerMap = {};
+      headerRow.eachCell((cell, colNumber) => {
+        const headerValue = cell.value?.toString().trim();
+        if (headerValue && headerValue !== 'Unidade' && headerValue !== 'Data') {
+          // Buscar período pelo nome
+          const periodo = periodos.find(p => p.nome === headerValue);
+          if (periodo) {
+            headerMap[colNumber] = periodo.id;
+          }
+        }
+      });
+
       const registros = [];
       const erros = [];
       let linha = 2; // Começar da linha 2 (pular cabeçalho)
@@ -125,21 +158,26 @@ class RegistrosDiariosImportController {
         if (rowNumber === 1) return; // Pular cabeçalho
 
         const valores = row.values;
-        if (!valores || valores.length < 8) return;
+        if (!valores || valores.length < 3) return; // Mínimo: Unidade, Data, e pelo menos um período
 
         const registro = {
-          escola: valores[1]?.toString().trim(),
+          unidade: valores[1]?.toString().trim(),
           data: valores[2]?.toString().trim(),
-          lanche_manha: parseInt(valores[3]) || 0,
-          almoco: parseInt(valores[4]) || 0,
-          lanche_tarde: parseInt(valores[5]) || 0,
-          parcial: parseInt(valores[6]) || 0,
-          eja: parseInt(valores[7]) || 0
+          quantidades: {}
         };
 
+        // Extrair valores de cada período
+        Object.keys(headerMap).forEach(colNumber => {
+          const periodoId = headerMap[colNumber];
+          const valor = parseInt(valores[colNumber]) || 0;
+          if (valor > 0) {
+            registro.quantidades[periodoId] = valor;
+          }
+        });
+
         // Validações básicas
-        if (!registro.escola || !registro.data) {
-          erros.push(`Linha ${linha}: Escola e Data são obrigatórios`);
+        if (!registro.unidade || !registro.data) {
+          erros.push(`Linha ${linha}: Unidade e Data são obrigatórios`);
           linha++;
           return;
         }
@@ -153,9 +191,7 @@ class RegistrosDiariosImportController {
         }
 
         // Validar se pelo menos uma quantidade é maior que 0
-        const temQuantidade = Object.values(registro).some(valor => 
-          typeof valor === 'number' && valor > 0
-        );
+        const temQuantidade = Object.values(registro.quantidades).some(valor => valor > 0);
         if (!temQuantidade) {
           erros.push(`Linha ${linha}: Pelo menos uma quantidade deve ser maior que 0`);
           linha++;
@@ -180,83 +216,96 @@ class RegistrosDiariosImportController {
 
       for (const registro of registros) {
         try {
-          // Buscar escola pelo nome
-          const escolaQuery = `
+          // Buscar unidade pelo nome
+          const unidadeQuery = `
             SELECT id, nome_escola 
             FROM foods_db.unidades_escolares 
             WHERE nome_escola = ?
             LIMIT 1
           `;
-          const escolas = await executeQuery(escolaQuery, [registro.escola]);
+          const unidades = await executeQuery(unidadeQuery, [registro.unidade]);
           
-          if (escolas.length === 0) {
-            erros.push(`Escola "${registro.escola}" não encontrada`);
+          if (unidades.length === 0) {
+            erros.push(`Unidade "${registro.unidade}" não encontrada`);
             continue;
           }
 
-          const escola = escolas[0];
+          const unidade = unidades[0];
           const nutricionistaId = req.user?.id || 1; // Usar ID do usuário logado
 
-          // Processar cada tipo de refeição (cada linha gera 5 registros)
-          const tiposRefeicao = [
-            { tipo: 'lanche_manha', valor: registro.lanche_manha || 0 },
-            { tipo: 'almoco', valor: registro.almoco || 0 },
-            { tipo: 'lanche_tarde', valor: registro.lanche_tarde || 0 },
-            { tipo: 'parcial', valor: registro.parcial || 0 },
-            { tipo: 'eja', valor: registro.eja || 0 }
-          ];
+          // Buscar períodos vinculados a esta unidade
+          const periodosVinculadosQuery = `
+            SELECT pa.id, pa.nome, pa.codigo
+            FROM periodos_atendimento pa
+            INNER JOIN cozinha_industrial_periodos_atendimento cipa 
+              ON pa.id = cipa.periodo_atendimento_id
+            WHERE cipa.cozinha_industrial_id = ? 
+              AND cipa.status = 'ativo'
+              AND pa.status = 'ativo'
+          `;
+          const periodosVinculados = await executeQuery(periodosVinculadosQuery, [unidade.id]);
 
-          for (const tipoRefeicao of tiposRefeicao) {
-            // Verificar se já existe registro para esta escola/data/tipo_refeicao
+          // Processar cada período presente no registro
+          for (const periodoId of Object.keys(registro.quantidades)) {
+            const valor = registro.quantidades[periodoId];
+            
+            // Verificar se o período está vinculado à unidade
+            const periodoVinculado = periodosVinculados.find(p => p.id === parseInt(periodoId));
+            if (!periodoVinculado) {
+              erros.push(`Linha ${linha}: Período ID ${periodoId} não está vinculado à unidade "${registro.unidade}"`);
+              continue;
+            }
+
+            // Verificar se já existe registro para esta unidade/data/período
             const existeQuery = `
-              SELECT id FROM implantacao_db.registros_diarios 
-              WHERE escola_id = ? AND data = ? AND tipo_refeicao = ? AND ativo = 1
+              SELECT id FROM quantidades_servidas 
+              WHERE unidade_id = ? AND data = ? AND periodo_atendimento_id = ? AND ativo = 1
               LIMIT 1
             `;
             const existentes = await executeQuery(existeQuery, [
-              escola.id,
+              unidade.id,
               registro.data,
-              tipoRefeicao.tipo
+              periodoId
             ]);
 
             if (existentes.length > 0) {
-              // Atualizar registro existente
+              // Atualizar registro existente usando INSERT ... ON DUPLICATE KEY UPDATE
               const updateQuery = `
-                UPDATE implantacao_db.registros_diarios 
-                SET 
-                  valor = ?,
-                  data_atualizacao = NOW()
-                WHERE escola_id = ? AND data = ? AND tipo_refeicao = ? AND ativo = 1
+                INSERT INTO quantidades_servidas (
+                  unidade_id, unidade_nome, periodo_atendimento_id, nutricionista_id, data, valor, ativo
+                ) VALUES (?, ?, ?, ?, ?, ?, 1)
+                ON DUPLICATE KEY UPDATE
+                  valor = VALUES(valor),
+                  ativo = 1,
+                  atualizado_em = NOW()
               `;
               await executeQuery(updateQuery, [
-                tipoRefeicao.valor,
-                escola.id,
+                unidade.id,
+                unidade.nome_escola,
+                periodoId,
+                nutricionistaId,
                 registro.data,
-                tipoRefeicao.tipo
+                valor
               ]);
               atualizados++;
             } else {
               // Inserir novo registro
               const insertQuery = `
-                INSERT INTO implantacao_db.registros_diarios (
-                  escola_id, escola_nome, nutricionista_id, data, tipo_refeicao, valor, ativo
+                INSERT INTO quantidades_servidas (
+                  unidade_id, unidade_nome, periodo_atendimento_id, nutricionista_id, data, valor, ativo
                 ) VALUES (?, ?, ?, ?, ?, ?, 1)
               `;
               await executeQuery(insertQuery, [
-                escola.id,
-                escola.nome_escola,
+                unidade.id,
+                unidade.nome_escola,
+                periodoId,
                 nutricionistaId,
                 registro.data,
-                tipoRefeicao.tipo,
-                tipoRefeicao.valor
+                valor
               ]);
               importados++;
             }
           }
-
-          // TODO: Implementar procedimento CalcularMediaEscola quando necessário
-          // const calcularMediasQuery = `CALL CalcularMediaEscola(?)`;
-          // await executeQuery(calcularMediasQuery, [escola.id]);
 
         } catch (error) {
           console.error(`Erro ao processar registro da linha ${linha}:`, error);
@@ -279,6 +328,6 @@ class RegistrosDiariosImportController {
 }
 
 module.exports = {
-  QuantidadesServidasImportController: RegistrosDiariosImportController,
+  QuantidadesServidasImportController,
   upload
 };

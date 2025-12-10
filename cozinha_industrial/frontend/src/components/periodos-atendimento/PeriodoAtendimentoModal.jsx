@@ -455,6 +455,31 @@ const PeriodoAtendimentoModal = ({
     }
   }, [isViewMode, markDirty]);
 
+  const handleMarcarTodos = useCallback(() => {
+    // Usar unidades diretamente (unidadesExibidas é apenas um alias)
+    if (unidades.length === 0 || periodos.length === 0) return;
+    
+    setVinculosSelecionados(prev => {
+      const novo = { ...prev };
+      unidades.forEach(unidade => {
+        const unidadeIdStr = String(unidade.id);
+        const todosPeriodosIds = periodos.map(p => p.id === null ? `novo_${p.nome}` : p.id);
+        novo[unidadeIdStr] = todosPeriodosIds;
+      });
+      return novo;
+    });
+    if (!isViewMode) {
+      markDirty();
+    }
+  }, [unidades, periodos, isViewMode, markDirty]);
+
+  const handleDesmarcarTodos = useCallback(() => {
+    setVinculosSelecionados({});
+    if (!isViewMode) {
+      markDirty();
+    }
+  }, [isViewMode, markDirty]);
+
   const handleAdicionarPeriodo = () => {
     if (!novoPeriodoNome.trim()) {
       toast.error('Digite o nome do período');
@@ -1040,6 +1065,8 @@ const PeriodoAtendimentoModal = ({
                   isViewMode={isViewMode}
                   loading={loading}
                   onPeriodoToggle={handlePeriodoToggle}
+                  onMarcarTodos={handleMarcarTodos}
+                  onDesmarcarTodos={handleDesmarcarTodos}
                 />
               </div>
             </div>

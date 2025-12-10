@@ -82,8 +82,8 @@ export const VALIDATION_CONFIG = {
   },
   PER_CAPITA: {
     MIN: 0,
-    MAX: 999.9999,
-    DECIMALS: 4
+    MAX: 999.999999,
+    DECIMALS: 6
   }
 };
 

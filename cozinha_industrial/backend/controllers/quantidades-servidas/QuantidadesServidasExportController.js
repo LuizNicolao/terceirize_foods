@@ -73,12 +73,12 @@ const buildFilters = async (req) => {
   }
 
   if (data_inicio) {
-    whereClause += ' AND rd.data >= ?';
+    whereClause += ' AND qs.data >= ?';
     params.push(data_inicio);
   }
 
   if (data_fim) {
-    whereClause += ' AND rd.data <= ?';
+    whereClause += ' AND qs.data <= ?';
     params.push(data_fim);
   }
 
@@ -117,8 +117,24 @@ const buscarRegistros = async (req) => {
   const registros = await executeQuery(query, params);
   
   // Processar os registros para incluir informações dos períodos
-  // Por enquanto, retornamos os dados brutos - a exportação será adaptada depois
-  return registros;
+  // periodos_valores vem como string "1:150,2:200" - converter para objeto
+  const registrosProcessados = registros.map(registro => {
+    const quantidades = {};
+    if (registro.periodos_valores) {
+      registro.periodos_valores.split(',').forEach(item => {
+        const [periodoId, valor] = item.split(':');
+        if (periodoId && valor) {
+          quantidades[periodoId] = parseInt(valor) || 0;
+        }
+      });
+    }
+    return {
+      ...registro,
+      quantidades
+    };
+  });
+  
+  return registrosProcessados;
 };
 
 /**
@@ -183,7 +199,22 @@ const formatNumber = (value) => {
 };
 
 /**
- * Exporta registros diários em XLSX.
+ * Busca períodos ativos para exportação
+ */
+const buscarPeriodosParaExportacao = async (req) => {
+  // Buscar todos os períodos ativos
+  const periodosQuery = `
+    SELECT id, nome, codigo 
+    FROM periodos_atendimento 
+    WHERE status = 'ativo' 
+    ORDER BY nome
+  `;
+  return await executeQuery(periodosQuery);
+};
+
+/**
+ * Exporta quantidades servidas em XLSX.
+ * Adaptado para períodos dinâmicos
  */
 const exportarXLSX = async (req, res) => {
   try {
@@ -194,74 +225,102 @@ const exportarXLSX = async (req, res) => {
     if (tipo === 'medias') {
       dados = await buscarMedias(req);
       worksheetName = 'Médias';
-      filename = `medias_${new Date().toISOString().split('T')[0]}.xlsx`;
+      filename = `medias_quantidades_servidas_${new Date().toISOString().split('T')[0]}.xlsx`;
     } else {
       dados = await buscarRegistros(req);
-      worksheetName = 'Registros Diários';
-      filename = `registros_diarios_${new Date().toISOString().split('T')[0]}.xlsx`;
+      worksheetName = 'Quantidades Servidas';
+      filename = `quantidades_servidas_${new Date().toISOString().split('T')[0]}.xlsx`;
     }
 
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet(worksheetName);
 
     if (tipo === 'medias') {
-      // Colunas para médias
-      worksheet.columns = [
-        { header: 'Escola', key: 'escola', width: 40 },
-        { header: 'Lanche Manhã', key: 'lanche_manha', width: 18 },
-        { header: 'Parcial Manhã', key: 'parcial_manha', width: 18 },
-        { header: 'Almoço', key: 'almoco', width: 15 },
-        { header: 'Lanche Tarde', key: 'lanche_tarde', width: 18 },
-        { header: 'Parcial Tarde', key: 'parcial_tarde', width: 18 },
-        { header: 'EJA', key: 'eja', width: 10 },
-        { header: 'Atualizado em', key: 'data_atualizacao', width: 18 }
+      // Para médias, buscar períodos e criar colunas dinamicamente
+      const periodos = await buscarPeriodosParaExportacao(req);
+      
+      const colunas = [
+        { header: 'Unidade', key: 'unidade', width: 40 }
       ];
-
-      worksheet.getRow(1).font = { bold: true };
-
-      dados.forEach((media) => {
-        worksheet.addRow({
-          escola: media.unidade_nome || `Unidade ID ${media.unidade_id}`,
-          lanche_manha: formatNumber(media.lanche_manha),
-          parcial_manha: formatNumber(media.parcial_manha),
-          almoco: formatNumber(media.almoco),
-          lanche_tarde: formatNumber(media.lanche_tarde),
-          parcial_tarde: formatNumber(media.parcial_tarde),
-          eja: formatNumber(media.eja),
-          data_atualizacao: formatDate(media.data_atualizacao)
+      
+      periodos.forEach(periodo => {
+        colunas.push({
+          header: periodo.nome,
+          key: `periodo_${periodo.id}`,
+          width: 18
         });
       });
-    } else {
-      // Colunas para registros diários
-    worksheet.columns = [
-      { header: 'Escola', key: 'escola', width: 40 },
-      { header: 'Data', key: 'data', width: 15 },
-      { header: 'Lanche Manhã', key: 'lanche_manha', width: 18 },
-      { header: 'Parcial Manhã', key: 'parcial_manha', width: 18 },
-      { header: 'Almoço', key: 'almoco', width: 15 },
-      { header: 'Lanche Tarde', key: 'lanche_tarde', width: 18 },
-      { header: 'Parcial Tarde', key: 'parcial_tarde', width: 18 },
-      { header: 'EJA', key: 'eja', width: 10 },
-      { header: 'Cadastrado em', key: 'data_cadastro', width: 18 },
-      { header: 'Atualizado em', key: 'data_atualizacao', width: 18 }
-    ];
+      
+      colunas.push({ header: 'Atualizado em', key: 'data_atualizacao', width: 18 });
+      
+      worksheet.columns = colunas;
+      worksheet.getRow(1).font = { bold: true };
 
-    worksheet.getRow(1).font = { bold: true };
+      // Agrupar médias por unidade
+      const mediasPorUnidade = {};
+      dados.forEach(media => {
+        if (!mediasPorUnidade[media.unidade_id]) {
+          mediasPorUnidade[media.unidade_id] = {
+            unidade_id: media.unidade_id,
+            unidade_nome: media.unidade_nome,
+            periodos: {},
+            data_atualizacao: media.data_atualizacao
+          };
+        }
+        mediasPorUnidade[media.unidade_id].periodos[media.periodo_atendimento_id] = media.media;
+      });
+
+      Object.values(mediasPorUnidade).forEach(media => {
+        const row = {
+          unidade: media.unidade_nome || `Unidade ID ${media.unidade_id}`,
+          data_atualizacao: formatDate(media.data_atualizacao)
+        };
+        
+        periodos.forEach(periodo => {
+          row[`periodo_${periodo.id}`] = formatNumber(media.periodos[periodo.id]);
+        });
+        
+        worksheet.addRow(row);
+      });
+    } else {
+      // Para registros, buscar períodos e criar colunas dinamicamente
+      const periodos = await buscarPeriodosParaExportacao(req);
+      
+      const colunas = [
+        { header: 'Unidade', key: 'unidade', width: 40 },
+        { header: 'Data', key: 'data', width: 15 }
+      ];
+      
+      periodos.forEach(periodo => {
+        colunas.push({
+          header: periodo.nome,
+          key: `periodo_${periodo.id}`,
+          width: 18
+        });
+      });
+      
+      colunas.push(
+        { header: 'Cadastrado em', key: 'data_cadastro', width: 18 },
+        { header: 'Atualizado em', key: 'data_atualizacao', width: 18 }
+      );
+      
+      worksheet.columns = colunas;
+      worksheet.getRow(1).font = { bold: true };
 
       dados.forEach((registro) => {
-      worksheet.addRow({
-        escola: registro.unidade_nome || `Unidade ID ${registro.unidade_id}`,
-        data: formatDate(registro.data),
-        lanche_manha: formatNumber(registro.lanche_manha),
-        parcial_manha: formatNumber(registro.parcial_manha ?? registro.parcial),
-        almoco: formatNumber(registro.almoco),
-        lanche_tarde: formatNumber(registro.lanche_tarde),
-        parcial_tarde: formatNumber(registro.parcial_tarde),
-        eja: formatNumber(registro.eja),
-        data_cadastro: formatDate(registro.data_cadastro),
-        data_atualizacao: formatDate(registro.data_atualizacao)
+        const row = {
+          unidade: registro.unidade_nome || `Unidade ID ${registro.unidade_id}`,
+          data: formatDate(registro.data),
+          data_cadastro: formatDate(registro.data_cadastro),
+          data_atualizacao: formatDate(registro.data_atualizacao)
+        };
+        
+        periodos.forEach(periodo => {
+          row[`periodo_${periodo.id}`] = formatNumber(registro.quantidades[periodo.id]);
+        });
+        
+        worksheet.addRow(row);
       });
-    });
     }
 
     const buffer = await workbook.xlsx.writeBuffer();
@@ -279,7 +338,8 @@ const exportarXLSX = async (req, res) => {
 };
 
 /**
- * Exporta registros diários em PDF.
+ * Exporta quantidades servidas em PDF.
+ * Adaptado para períodos dinâmicos
  */
 const exportarPDF = async (req, res) => {
   try {
@@ -289,14 +349,17 @@ const exportarPDF = async (req, res) => {
     
     if (tipo === 'medias') {
       dados = await buscarMedias(req);
-      titulo = 'Relatório de Médias';
-      filename = `medias_${new Date().toISOString().split('T')[0]}.pdf`;
+      titulo = 'Relatório de Médias - Quantidades Servidas';
+      filename = `medias_quantidades_servidas_${new Date().toISOString().split('T')[0]}.pdf`;
     } else {
       dados = await buscarRegistros(req);
-      titulo = 'Relatório de Registros Diários';
-      filename = `registros_diarios_${new Date().toISOString().split('T')[0]}.pdf`;
+      titulo = 'Relatório de Quantidades Servidas';
+      filename = `quantidades_servidas_${new Date().toISOString().split('T')[0]}.pdf`;
     }
 
+    // Buscar períodos para layout dinâmico
+    const periodos = await buscarPeriodosParaExportacao(req);
+    
     const doc = new PDFDocument({ margin: 40, size: 'A4', layout: 'landscape' });
 
     res.setHeader('Content-Type', 'application/pdf');
@@ -309,137 +372,139 @@ const exportarPDF = async (req, res) => {
     doc.fontSize(10).text(`Gerado em: ${new Date().toLocaleString('pt-BR')}`, { align: 'center' });
     doc.moveDown(1.5);
 
-    if (tipo === 'medias') {
-      // Layout para médias
+    // Calcular posições das colunas dinamicamente
+    const calcularColunas = (periodos) => {
       const cols = {
-        escola: 40,
-        lancheManha: 200,
-        parcialManha: 280,
-        almoco: 360,
-        lancheTarde: 440,
-        parcialTarde: 520,
-        eja: 600,
-        atualizacao: 680
+        unidade: 40,
+        data: tipo === 'medias' ? null : 200
       };
+      
+      let xPos = tipo === 'medias' ? 200 : 280;
+      const colWidth = 70;
+      
+      periodos.forEach(periodo => {
+        cols[`periodo_${periodo.id}`] = xPos;
+        xPos += colWidth;
+      });
+      
+      if (tipo === 'medias') {
+        cols.atualizacao = xPos;
+      } else {
+        cols.cadastro = xPos;
+        cols.atualizacao = xPos + 80;
+      }
+      
+      return cols;
+    };
+
+    const cols = calcularColunas(periodos);
+    const maxWidth = tipo === 'medias' ? cols.atualizacao + 100 : cols.atualizacao + 100;
+
+    const renderHeader = (y) => {
+      doc.fontSize(9).font('Helvetica-Bold');
+      doc.text('Unidade', cols.unidade, y, { width: tipo === 'medias' ? 150 : 150 });
+      
+      if (tipo !== 'medias') {
+        doc.text('Data', cols.data, y, { width: 60 });
+      }
+      
+      periodos.forEach(periodo => {
+        const x = cols[`periodo_${periodo.id}`];
+        const nome = periodo.nome.length > 12 ? periodo.nome.substring(0, 12) : periodo.nome;
+        doc.text(nome, x, y, { width: 60 });
+      });
+      
+      if (tipo === 'medias') {
+        doc.text('Atualizado em', cols.atualizacao, y, { width: 100 });
+      } else {
+        doc.text('Cadastrado em', cols.cadastro, y, { width: 70 });
+        doc.text('Atualizado em', cols.atualizacao, y, { width: 70 });
+      }
+    };
+
+    if (tipo === 'medias') {
+      // Agrupar médias por unidade
+      const mediasPorUnidade = {};
+      dados.forEach(media => {
+        if (!mediasPorUnidade[media.unidade_id]) {
+          mediasPorUnidade[media.unidade_id] = {
+            unidade_id: media.unidade_id,
+            unidade_nome: media.unidade_nome,
+            periodos: {},
+            data_atualizacao: media.data_atualizacao
+          };
+        }
+        mediasPorUnidade[media.unidade_id].periodos[media.periodo_atendimento_id] = media.media;
+      });
 
       const headerY = doc.y;
-      doc.fontSize(9).font('Helvetica-Bold');
-      doc.text('Escola', cols.escola, headerY, { width: 150 });
-      doc.text('Lanche Manhã', cols.lancheManha, headerY, { width: 70 });
-      doc.text('Parcial Manhã', cols.parcialManha, headerY, { width: 70 });
-      doc.text('Almoço', cols.almoco, headerY, { width: 70 });
-      doc.text('Lanche Tarde', cols.lancheTarde, headerY, { width: 70 });
-      doc.text('Parcial Tarde', cols.parcialTarde, headerY, { width: 70 });
-      doc.text('EJA', cols.eja, headerY, { width: 50 });
-      doc.text('Atualizado em', cols.atualizacao, headerY, { width: 100 });
-
-      doc.moveTo(40, headerY + 14).lineTo(820, headerY + 14).stroke();
+      renderHeader(headerY);
+      doc.moveTo(40, headerY + 14).lineTo(maxWidth, headerY + 14).stroke();
       doc.y = headerY + 18;
       doc.font('Helvetica').fontSize(8);
 
-      dados.forEach((media) => {
+      Object.values(mediasPorUnidade).forEach((media) => {
         if (doc.y > 520) {
           doc.addPage({ size: 'A4', layout: 'landscape', margin: 40 });
-          doc.fontSize(9).font('Helvetica-Bold');
           const newHeaderY = doc.y;
-          doc.text('Escola', cols.escola, newHeaderY, { width: 150 });
-          doc.text('Lanche Manhã', cols.lancheManha, newHeaderY, { width: 70 });
-          doc.text('Parcial Manhã', cols.parcialManha, newHeaderY, { width: 70 });
-          doc.text('Almoço', cols.almoco, newHeaderY, { width: 70 });
-          doc.text('Lanche Tarde', cols.lancheTarde, newHeaderY, { width: 70 });
-          doc.text('Parcial Tarde', cols.parcialTarde, newHeaderY, { width: 70 });
-          doc.text('EJA', cols.eja, newHeaderY, { width: 50 });
-          doc.text('Atualizado em', cols.atualizacao, newHeaderY, { width: 100 });
-          doc.moveTo(40, newHeaderY + 14).lineTo(820, newHeaderY + 14).stroke();
+          renderHeader(newHeaderY);
+          doc.moveTo(40, newHeaderY + 14).lineTo(maxWidth, newHeaderY + 14).stroke();
           doc.y = newHeaderY + 18;
           doc.font('Helvetica').fontSize(8);
         }
 
-        doc.text((media.unidade_nome || `Unidade ID ${media.unidade_id}`).slice(0, 50), cols.escola, doc.y, { width: 150 });
-        doc.text(formatNumber(media.lanche_manha)?.toString() || '-', cols.lancheManha, doc.y, { width: 70 });
-        doc.text(formatNumber(media.parcial_manha)?.toString() || '-', cols.parcialManha, doc.y, { width: 70 });
-        doc.text(formatNumber(media.almoco)?.toString() || '-', cols.almoco, doc.y, { width: 70 });
-        doc.text(formatNumber(media.lanche_tarde)?.toString() || '-', cols.lancheTarde, doc.y, { width: 70 });
-        doc.text(formatNumber(media.parcial_tarde)?.toString() || '-', cols.parcialTarde, doc.y, { width: 70 });
-        doc.text(formatNumber(media.eja)?.toString() || '-', cols.eja, doc.y, { width: 50 });
+        doc.text((media.unidade_nome || `Unidade ID ${media.unidade_id}`).slice(0, 50), cols.unidade, doc.y, { width: 150 });
+        
+        periodos.forEach(periodo => {
+          const x = cols[`periodo_${periodo.id}`];
+          const valor = formatNumber(media.periodos[periodo.id])?.toString() || '-';
+          doc.text(valor, x, doc.y, { width: 60 });
+        });
+        
         doc.text(formatDate(media.data_atualizacao) || '-', cols.atualizacao, doc.y, { width: 100 });
 
-        doc.moveTo(40, doc.y + 12).lineTo(820, doc.y + 12).strokeColor('#E5E7EB');
+        doc.moveTo(40, doc.y + 12).lineTo(maxWidth, doc.y + 12).strokeColor('#E5E7EB');
         doc.strokeColor('#000000');
         doc.y += 16;
       });
 
       doc.fontSize(9).font('Helvetica-Oblique');
-      doc.text(`Total de escolas: ${dados.length}`, 40, doc.page.height - 40);
+      doc.text(`Total de unidades: ${Object.keys(mediasPorUnidade).length}`, 40, doc.page.height - 40);
     } else {
-      // Layout para registros diários
-    const cols = {
-      escola: 40,
-      data: 230,
-      lancheManha: 300,
-      parcialManha: 370,
-      almoco: 440,
-      lancheTarde: 510,
-      parcialTarde: 590,
-      eja: 660,
-      cadastro: 720,
-      atualizacao: 805
-    };
-
-    const headerY = doc.y;
-    doc.fontSize(9).font('Helvetica-Bold');
-    doc.text('Escola', cols.escola, headerY, { width: 180 });
-    doc.text('Data', cols.data, headerY, { width: 60 });
-    doc.text('Lanche Manhã', cols.lancheManha, headerY, { width: 60 });
-    doc.text('Parcial Manhã', cols.parcialManha, headerY, { width: 60 });
-    doc.text('Almoço', cols.almoco, headerY, { width: 60 });
-    doc.text('Lanche Tarde', cols.lancheTarde, headerY, { width: 60 });
-    doc.text('Parcial Tarde', cols.parcialTarde, headerY, { width: 60 });
-    doc.text('EJA', cols.eja, headerY, { width: 40 });
-    doc.text('Cadastrado em', cols.cadastro, headerY, { width: 70 });
-    doc.text('Atualizado em', cols.atualizacao, headerY, { width: 70 });
-
-    doc.moveTo(40, headerY + 14).lineTo(820, headerY + 14).stroke();
-    doc.y = headerY + 18;
-    doc.font('Helvetica').fontSize(8);
+      const headerY = doc.y;
+      renderHeader(headerY);
+      doc.moveTo(40, headerY + 14).lineTo(maxWidth, headerY + 14).stroke();
+      doc.y = headerY + 18;
+      doc.font('Helvetica').fontSize(8);
 
       dados.forEach((registro) => {
-      if (doc.y > 520) {
-        doc.addPage({ size: 'A4', layout: 'landscape', margin: 40 });
-        doc.fontSize(9).font('Helvetica-Bold');
-        const newHeaderY = doc.y;
-        doc.text('Escola', cols.escola, newHeaderY, { width: 180 });
-        doc.text('Data', cols.data, newHeaderY, { width: 60 });
-        doc.text('Lanche Manhã', cols.lancheManha, newHeaderY, { width: 60 });
-        doc.text('Parcial Manhã', cols.parcialManha, newHeaderY, { width: 60 });
-        doc.text('Almoço', cols.almoco, newHeaderY, { width: 60 });
-        doc.text('Lanche Tarde', cols.lancheTarde, newHeaderY, { width: 60 });
-        doc.text('Parcial Tarde', cols.parcialTarde, newHeaderY, { width: 60 });
-        doc.text('EJA', cols.eja, newHeaderY, { width: 40 });
-        doc.text('Cadastrado em', cols.cadastro, newHeaderY, { width: 70 });
-        doc.text('Atualizado em', cols.atualizacao, newHeaderY, { width: 70 });
-        doc.moveTo(40, newHeaderY + 14).lineTo(820, newHeaderY + 14).stroke();
-        doc.y = newHeaderY + 18;
-        doc.font('Helvetica').fontSize(8);
-      }
+        if (doc.y > 520) {
+          doc.addPage({ size: 'A4', layout: 'landscape', margin: 40 });
+          const newHeaderY = doc.y;
+          renderHeader(newHeaderY);
+          doc.moveTo(40, newHeaderY + 14).lineTo(maxWidth, newHeaderY + 14).stroke();
+          doc.y = newHeaderY + 18;
+          doc.font('Helvetica').fontSize(8);
+        }
 
-      doc.text((registro.unidade_nome || `Unidade ID ${registro.unidade_id}`).slice(0, 60), cols.escola, doc.y, { width: 180 });
-      doc.text(formatDate(registro.data), cols.data, doc.y, { width: 60 });
-      doc.text(formatNumber(registro.lanche_manha)?.toString() || '-', cols.lancheManha, doc.y, { width: 60 });
-      doc.text(formatNumber(registro.parcial_manha ?? registro.parcial)?.toString() || '-', cols.parcialManha, doc.y, { width: 60 });
-      doc.text(formatNumber(registro.almoco)?.toString() || '-', cols.almoco, doc.y, { width: 60 });
-      doc.text(formatNumber(registro.lanche_tarde)?.toString() || '-', cols.lancheTarde, doc.y, { width: 60 });
-      doc.text(formatNumber(registro.parcial_tarde)?.toString() || '-', cols.parcialTarde, doc.y, { width: 60 });
-      doc.text(formatNumber(registro.eja)?.toString() || '-', cols.eja, doc.y, { width: 40 });
-      doc.text(formatDate(registro.data_cadastro) || '-', cols.cadastro, doc.y, { width: 70 });
-      doc.text(formatDate(registro.data_atualizacao) || '-', cols.atualizacao, doc.y, { width: 70 });
+        doc.text((registro.unidade_nome || `Unidade ID ${registro.unidade_id}`).slice(0, 60), cols.unidade, doc.y, { width: 150 });
+        doc.text(formatDate(registro.data), cols.data, doc.y, { width: 60 });
+        
+        periodos.forEach(periodo => {
+          const x = cols[`periodo_${periodo.id}`];
+          const valor = formatNumber(registro.quantidades[periodo.id])?.toString() || '-';
+          doc.text(valor, x, doc.y, { width: 60 });
+        });
+        
+        doc.text(formatDate(registro.data_cadastro) || '-', cols.cadastro, doc.y, { width: 70 });
+        doc.text(formatDate(registro.data_atualizacao) || '-', cols.atualizacao, doc.y, { width: 70 });
 
-      doc.moveTo(40, doc.y + 12).lineTo(820, doc.y + 12).strokeColor('#E5E7EB');
-      doc.strokeColor('#000000');
-      doc.y += 16;
-    });
+        doc.moveTo(40, doc.y + 12).lineTo(maxWidth, doc.y + 12).strokeColor('#E5E7EB');
+        doc.strokeColor('#000000');
+        doc.y += 16;
+      });
 
-    doc.fontSize(9).font('Helvetica-Oblique');
+      doc.fontSize(9).font('Helvetica-Oblique');
       doc.text(`Total de registros: ${dados.length}`, 40, doc.page.height - 40);
     }
 

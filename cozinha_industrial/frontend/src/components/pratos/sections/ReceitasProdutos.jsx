@@ -320,9 +320,9 @@ const ReceitasProdutos = ({
         if (partes[0].length > 3) {
           partes[0] = partes[0].substring(0, 3);
         }
-        // Limitar parte decimal a 4 dígitos
-        if (partes[1] && partes[1].length > 4) {
-          partes[1] = partes[1].substring(0, 4);
+        // Limitar parte decimal a 6 dígitos
+        if (partes[1] && partes[1].length > 6) {
+          partes[1] = partes[1].substring(0, 6);
         }
         valorProcessado = `${partes[0]}.${partes[1] || ''}`;
       } else {
@@ -339,9 +339,9 @@ const ReceitasProdutos = ({
       if (isBlur) {
         // No blur, salvar o valor numérico válido
         if (!isNaN(valorNumerico) && valorNumerico >= 0) {
-          // Limitar valor máximo (999.9999)
-          if (valorNumerico > 999.9999) {
-            produtos[produtoIndex].percapta = 999.9999;
+          // Limitar valor máximo (999.999999)
+          if (valorNumerico > 999.999999) {
+            produtos[produtoIndex].percapta = 999.999999;
           } else {
             produtos[produtoIndex].percapta = valorNumerico;
           }
@@ -368,7 +368,7 @@ const ReceitasProdutos = ({
       } else {
         // Durante a digitação, apenas atualizar se for um número válido completo
         // Isso permite digitar valores parciais como "0," ou "1,"
-        if (!isNaN(valorNumerico) && valorNumerico >= 0 && valorNumerico <= 999.9999) {
+        if (!isNaN(valorNumerico) && valorNumerico >= 0 && valorNumerico <= 999.999999) {
           produtos[produtoIndex].percapta = valorNumerico;
           onInputChange('produtos', produtos);
         }
@@ -680,7 +680,7 @@ const ReceitasProdutos = ({
                             valorAtual = percaptaInputs[inputKey];
                           } else if (percaptaData && percaptaData.percapta !== null && percaptaData.percapta !== undefined) {
                             // Apenas formatar com 4 casas decimais quando não está digitando
-                            valorAtual = parseFloat(percaptaData.percapta).toFixed(4).replace('.', ',');
+                            valorAtual = parseFloat(percaptaData.percapta).toFixed(6).replace('.', ',');
                           }
                           
                           // Verificar se este campo tem erro (está vazio e é obrigatório)
@@ -758,7 +758,7 @@ const ReceitasProdutos = ({
                                     // Verificar valor máximo apenas se for um número válido completo
                                     const valorComPonto = novoValor.replace(',', '.');
                                     const valorNumerico = parseFloat(valorComPonto);
-                                    if (!isNaN(valorNumerico) && valorNumerico > 999.9999) {
+                                    if (!isNaN(valorNumerico) && valorNumerico > 999.999999) {
                                       novoValor = '999,9999';
                                     }
                                     
@@ -790,7 +790,7 @@ const ReceitasProdutos = ({
                                       true
                                     );
                                   }}
-                                  placeholder="0,0000"
+                                  placeholder="0,000000"
                                   required
                                   className={`w-20 px-2 py-1 border rounded text-sm ${
                                     temErro 
@@ -1088,7 +1088,7 @@ const ReceitasProdutos = ({
                             valorAtual = percaptaInputs[inputKey];
                           } else if (percaptaData && percaptaData.percapta !== null && percaptaData.percapta !== undefined) {
                             // Apenas formatar com 4 casas decimais quando não está digitando
-                            valorAtual = parseFloat(percaptaData.percapta).toFixed(4).replace('.', ',');
+                            valorAtual = parseFloat(percaptaData.percapta).toFixed(6).replace('.', ',');
                           }
                           
                           // Verificar se este campo tem erro (está vazio e é obrigatório)
@@ -1166,7 +1166,7 @@ const ReceitasProdutos = ({
                                     // Verificar valor máximo apenas se for um número válido completo
                                     const valorComPonto = novoValor.replace(',', '.');
                                     const valorNumerico = parseFloat(valorComPonto);
-                                    if (!isNaN(valorNumerico) && valorNumerico > 999.9999) {
+                                    if (!isNaN(valorNumerico) && valorNumerico > 999.999999) {
                                       novoValor = '999,9999';
                                     }
                                     
@@ -1198,7 +1198,7 @@ const ReceitasProdutos = ({
                                       true
                                     );
                                   }}
-                                  placeholder="0,0000"
+                                  placeholder="0,000000"
                                   required
                                   className={`w-20 px-2 py-1 border rounded text-sm ${
                                     temErro 

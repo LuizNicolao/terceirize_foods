@@ -11,7 +11,9 @@ const TabelaVinculos = ({
   vinculosSelecionados,
   isViewMode,
   loading,
-  onPeriodoToggle
+  onPeriodoToggle,
+  onMarcarTodos,
+  onDesmarcarTodos
 }) => {
   const isPeriodoSelecionado = (unidadeId, periodoIdRef) => {
     // Garantir que unidadeId seja string para consistência
@@ -20,7 +22,30 @@ const TabelaVinculos = ({
   };
 
   return (
-    <div className="overflow-x-auto">
+    <div className="space-y-4">
+      {/* Botões de seleção em massa */}
+      {!isViewMode && unidades.length > 0 && periodos.length > 0 && (
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={onMarcarTodos}
+            disabled={loading || loadingUnidades}
+            className="px-4 py-2 text-sm font-medium text-green-600 bg-white border-2 border-green-600 rounded-lg hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            Marcar Todos
+          </button>
+          <button
+            type="button"
+            onClick={onDesmarcarTodos}
+            disabled={loading || loadingUnidades}
+            className="px-4 py-2 text-sm font-medium text-red-600 bg-white border-2 border-red-600 rounded-lg hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            Desmarcar Todos
+          </button>
+        </div>
+      )}
+
+      <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
@@ -76,6 +101,7 @@ const TabelaVinculos = ({
             )}
           </tbody>
         </table>
+      </div>
     </div>
   );
 };

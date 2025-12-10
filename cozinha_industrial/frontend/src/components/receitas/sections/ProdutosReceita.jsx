@@ -120,9 +120,9 @@ const ProdutosReceita = ({
               </label>
               <Input
                 type="number"
-                step="0.0001"
+                step="0.000001"
                 min="0"
-                max="999.9999"
+                max="999.999999"
                 value={produtoForm.percapta_sugerida}
                 onChange={(e) => {
                   let valor = e.target.value;
@@ -134,23 +134,23 @@ const ProdutosReceita = ({
                   
                   // Verificar se é um número válido
                   if (!isNaN(parseFloat(valor)) && parseFloat(valor) >= 0) {
-                    // Limitar valor máximo (999.9999)
+                    // Limitar valor máximo (999.999999)
                     const valorNumerico = parseFloat(valor);
-                    if (valorNumerico > 999.9999) {
-                      onProdutoFormChange('percapta_sugerida', '999.9999');
+                    if (valorNumerico > 999.999999) {
+                      onProdutoFormChange('percapta_sugerida', '999.999999');
                       return;
                     }
                     
-                    // Limitar a 4 casas decimais
+                    // Limitar a 6 casas decimais
                     if (valor.includes('.')) {
                       const partes = valor.split('.');
                       // Limitar parte inteira a 3 dígitos (999)
                       if (partes[0].length > 3) {
                         partes[0] = partes[0].substring(0, 3);
                       }
-                      // Limitar parte decimal a 4 dígitos
-                      if (partes[1] && partes[1].length > 4) {
-                        partes[1] = partes[1].substring(0, 4);
+                      // Limitar parte decimal a 6 dígitos
+                      if (partes[1] && partes[1].length > 6) {
+                        partes[1] = partes[1].substring(0, 6);
                       }
                       valor = `${partes[0]}.${partes[1] || ''}`;
                     } else {
@@ -163,8 +163,8 @@ const ProdutosReceita = ({
                     // Também verificar vírgula (formato brasileiro)
                     if (valor.includes(',')) {
                       const partes = valor.split(',');
-                      if (partes[1] && partes[1].length > 4) {
-                        valor = `${partes[0]}.${partes[1].substring(0, 4)}`;
+                      if (partes[1] && partes[1].length > 6) {
+                        valor = `${partes[0]}.${partes[1].substring(0, 6)}`;
                       } else {
                         valor = valor.replace(',', '.');
                       }
@@ -172,7 +172,7 @@ const ProdutosReceita = ({
                     
                     // Verificar novamente o valor máximo após limitação
                     const valorFinal = parseFloat(valor);
-                    if (!isNaN(valorFinal) && valorFinal <= 999.9999) {
+                    if (!isNaN(valorFinal) && valorFinal <= 999.999999) {
                       onProdutoFormChange('percapta_sugerida', valor);
                     }
                   }
@@ -237,19 +237,19 @@ const ProdutosReceita = ({
                   <td className="px-4 py-3 text-sm text-gray-600">
                     {isViewMode ? (
                       produto.percapta_sugerida 
-                        ? `${Number(produto.percapta_sugerida).toFixed(3).replace('.', ',')}` 
+                        ? `${Number(produto.percapta_sugerida).toFixed(6).replace('.', ',')}` 
                         : '-'
                     ) : (
                       <div>
                         <input
                           type="number"
-                          step="0.0001"
+                          step="0.000001"
                           min="0"
                           max="999.9999"
                           value={produto.percapta_sugerida !== null && produto.percapta_sugerida !== undefined 
                             ? (typeof produto.percapta_sugerida === 'number' 
-                                ? parseFloat(produto.percapta_sugerida.toFixed(4)) 
-                                : parseFloat(parseFloat(produto.percapta_sugerida).toFixed(4))
+                                ? parseFloat(produto.percapta_sugerida.toFixed(6)) 
+                                : parseFloat(parseFloat(produto.percapta_sugerida).toFixed(6))
                               )
                             : ''}
                           onChange={(e) => {
@@ -262,14 +262,14 @@ const ProdutosReceita = ({
                             
                             // Verificar se é um número válido
                             if (!isNaN(parseFloat(valor)) && parseFloat(valor) >= 0) {
-                              // Limitar valor máximo (999.9999)
+                              // Limitar valor máximo (999.999999)
                               const valorNumerico = parseFloat(valor);
-                              if (valorNumerico > 999.9999) {
-                                onUpdateProdutoPercapta(index, '999.9999');
+                              if (valorNumerico > 999.999999) {
+                                onUpdateProdutoPercapta(index, '999.999999');
                                 return;
                               }
                               
-                              // Limitar a 4 casas decimais e parte inteira a 3 dígitos
+                              // Limitar a 6 casas decimais e parte inteira a 3 dígitos
                               let valorLimitado = valor;
                               if (valorLimitado.includes('.')) {
                                 const partes = valorLimitado.split('.');
@@ -277,9 +277,9 @@ const ProdutosReceita = ({
                                 if (partes[0].length > 3) {
                                   partes[0] = partes[0].substring(0, 3);
                                 }
-                                // Limitar parte decimal a 4 dígitos
-                                if (partes[1] && partes[1].length > 4) {
-                                  partes[1] = partes[1].substring(0, 4);
+                                // Limitar parte decimal a 6 dígitos
+                                if (partes[1] && partes[1].length > 6) {
+                                  partes[1] = partes[1].substring(0, 6);
                                 }
                                 valorLimitado = `${partes[0]}.${partes[1] || ''}`;
                               } else {
@@ -291,7 +291,7 @@ const ProdutosReceita = ({
                               
                               // Verificar novamente o valor máximo após limitação
                               const valorFinal = parseFloat(valorLimitado);
-                              if (!isNaN(valorFinal) && valorFinal <= 999.9999) {
+                              if (!isNaN(valorFinal) && valorFinal <= 999.999999) {
                                 onUpdateProdutoPercapta(index, valorLimitado);
                               }
                             }

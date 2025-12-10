@@ -422,6 +422,17 @@ const ContratoModal = ({
     markDirty();
   };
 
+  const handleSelecionarTodasUnidades = () => {
+    const todasUnidadesIds = unidades.map(u => u.id);
+    setUnidadesSelecionadas(todasUnidadesIds);
+    markDirty();
+  };
+
+  const handleDesmarcarTodasUnidades = () => {
+    setUnidadesSelecionadas([]);
+    markDirty();
+  };
+
   const handleAdicionarProduto = () => {
     setProdutosSelecionados(prev => [
       ...prev,
@@ -612,6 +623,8 @@ const ContratoModal = ({
                     onBuscaUnidadeChange={setBuscaUnidade}
                     onBuscaUnidadeSubmit={carregarUnidades}
                     onUnidadeToggle={handleUnidadeToggle}
+                    onSelecionarTodas={handleSelecionarTodasUnidades}
+                    onDesmarcarTodas={handleDesmarcarTodasUnidades}
                   />
                 </div>
               )}

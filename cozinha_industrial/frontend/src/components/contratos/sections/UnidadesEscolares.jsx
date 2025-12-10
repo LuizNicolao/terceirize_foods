@@ -14,7 +14,9 @@ const UnidadesEscolares = ({
   saving,
   onBuscaUnidadeChange,
   onBuscaUnidadeSubmit,
-  onUnidadeToggle
+  onUnidadeToggle,
+  onSelecionarTodas,
+  onDesmarcarTodas
 }) => {
   if (!filialId) {
     return (
@@ -52,6 +54,32 @@ const UnidadesEscolares = ({
           Buscar
         </Button>
       </div>
+
+      {/* Botões de seleção em massa */}
+      {!isViewMode && unidades.length > 0 && (
+        <div className="flex gap-2">
+          <Button
+            type="button"
+            onClick={onSelecionarTodas}
+            disabled={loadingUnidades || saving}
+            size="sm"
+            variant="outline"
+            className="!text-green-600 !border-green-600 hover:!bg-green-50 focus:!ring-green-500"
+          >
+            Selecionar Todas
+          </Button>
+          <Button
+            type="button"
+            onClick={onDesmarcarTodas}
+            disabled={loadingUnidades || saving}
+            size="sm"
+            variant="outline"
+            className="!text-red-600 !border-red-600 hover:!bg-red-50 focus:!ring-red-500"
+          >
+            Desmarcar Todas
+          </Button>
+        </div>
+      )}
 
       <div className="border border-gray-200 rounded-lg overflow-hidden">
         <div className="max-h-96 overflow-y-auto">

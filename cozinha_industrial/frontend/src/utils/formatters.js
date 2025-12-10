@@ -97,13 +97,13 @@ export const formatNumber = (value, decimals = 2) => {
  * @returns {string} Per capita formatado
  */
 export const formatPerCapita = (value) => {
-  if (value === null || value === undefined || isNaN(value) || value === 0) return '0,0000';
+  if (value === null || value === undefined || isNaN(value) || value === 0) return '0,000000';
   
   try {
-    return parseFloat(value).toFixed(4).replace('.', ',');
+    return parseFloat(value).toFixed(6).replace('.', ',');
   } catch (error) {
     console.error('Erro ao formatar per capita:', error);
-    return '0,0000';
+    return '0,000000';
   }
 };
 

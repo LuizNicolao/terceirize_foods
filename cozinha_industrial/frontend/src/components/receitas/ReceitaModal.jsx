@@ -204,7 +204,7 @@ const ReceitaModal = ({
           if (!isNaN(valorNumerico)) {
             return {
               ...produto,
-              percapta_sugerida: parseFloat(valorNumerico.toFixed(4))
+              percapta_sugerida: parseFloat(valorNumerico.toFixed(6))
             };
           }
         }
@@ -348,7 +348,7 @@ const ReceitaModal = ({
   };
 
   const handleUpdateProdutoPercapta = (index, percapta) => {
-    // Validar e limitar a 4 casas decimais
+    // Validar e limitar a 6 casas decimais
     let valor = percapta;
     
     // Se for string vazia ou '0', permitir
@@ -367,19 +367,19 @@ const ReceitaModal = ({
     // Converter para string para processar
     const valorStr = valor.toString();
     
-    // Limitar a 4 casas decimais
+    // Limitar a 6 casas decimais
     if (valorStr.includes('.')) {
       const partes = valorStr.split('.');
-      if (partes[1] && partes[1].length > 4) {
-        valor = `${partes[0]}.${partes[1].substring(0, 4)}`;
+      if (partes[1] && partes[1].length > 6) {
+        valor = `${partes[0]}.${partes[1].substring(0, 6)}`;
       }
     }
     
     // Também verificar se tem vírgula (formato brasileiro)
     if (valorStr.includes(',')) {
       const partes = valorStr.split(',');
-      if (partes[1] && partes[1].length > 4) {
-        valor = `${partes[0]}.${partes[1].substring(0, 4)}`;
+      if (partes[1] && partes[1].length > 6) {
+        valor = `${partes[0]}.${partes[1].substring(0, 6)}`;
       } else {
         valor = valorStr.replace(',', '.');
       }
