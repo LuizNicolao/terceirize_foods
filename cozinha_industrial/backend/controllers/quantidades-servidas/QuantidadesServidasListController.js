@@ -188,8 +188,7 @@ class QuantidadesServidasListController {
         rd.data,
         MAX(rd.nutricionista_id) as nutricionista_id,
         MIN(rd.criado_em) as data_cadastro,
-        MAX(rd.atualizado_em) as data_atualizacao,
-        ${pivotColumns}
+        MAX(rd.atualizado_em) as data_atualizacao${pivotColumns ? ',\n        ' + pivotColumns : ''}
       FROM quantidades_servidas rd
       INNER JOIN (
         SELECT unidade_id, MAX(data) as max_data
