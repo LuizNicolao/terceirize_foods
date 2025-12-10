@@ -14,7 +14,9 @@ const TabelaVinculos = ({
   onPeriodoToggle
 }) => {
   const isPeriodoSelecionado = (unidadeId, periodoIdRef) => {
-    return vinculosSelecionados[unidadeId]?.includes(periodoIdRef) || false;
+    // Garantir que unidadeId seja string para consistência
+    const unidadeIdStr = String(unidadeId);
+    return vinculosSelecionados[unidadeIdStr]?.includes(periodoIdRef) || false;
   };
 
   return (

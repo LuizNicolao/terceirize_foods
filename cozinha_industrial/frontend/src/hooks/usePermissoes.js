@@ -152,6 +152,8 @@ export const usePermissoes = () => {
         'tipos_pratos',
         'pratos',
         'periodos_atendimento',
+        'contratos',
+        'quantidades_servidas',
         'permissoes'
       ];
       

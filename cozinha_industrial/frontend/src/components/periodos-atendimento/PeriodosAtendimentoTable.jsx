@@ -44,90 +44,135 @@ const PeriodosAtendimentoTable = ({
     );
   }
 
-  // Normalizar sortDirection para 'asc' ou 'desc'
-  const normalizedSortDirection = sortDirection === 'ASC' ? 'asc' : sortDirection === 'DESC' ? 'desc' : null;
-  
-  // Handler para ordenação compatível com SortableTableHeader
-  const handleSort = (field) => {
-    if (onSort) {
-      onSort(field);
+  // Agrupar dados por filial (se já vierem agrupados do backend)
+  // Se não vierem agrupados, manter compatibilidade com formato antigo
+  const dadosAgrupados = periodosAtendimento.length > 0 && periodosAtendimento[0].filial_nome 
+    ? periodosAtendimento 
+    : [];
+
+  // Se não houver dados agrupados, retornar empty state
+  if (dadosAgrupados.length === 0 && periodosAtendimento.length === 0) {
+    return (
+      <EmptyState
+        title="Nenhum período de atendimento encontrado"
+        description="Não há períodos de atendimento cadastrados ou os filtros aplicados não retornaram resultados"
+        icon="clock"
+      />
+    );
+  }
+
+  // Formatar lista de períodos
+  const formatarListaPeriodos = (periodos = []) => {
+    if (!Array.isArray(periodos) || periodos.length === 0) {
+      return '-';
     }
+    return periodos
+      .map(periodo => periodo.nome || periodo.codigo || `ID ${periodo.id}`)
+      .join(', ');
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead className="bg-gray-50">
-            <tr>
-              <SortableTableHeader
-                label="Código"
-                field="codigo"
-                currentSort={sortField}
-                currentDirection={normalizedSortDirection}
-                onSort={handleSort}
-                align="left"
-              />
-              <SortableTableHeader
-                label="Nome"
-                field="nome"
-                currentSort={sortField}
-                currentDirection={normalizedSortDirection}
-                onSort={handleSort}
-                align="left"
-              />
-              <th className="px-6 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Unidades
-              </th>
-              <th className="px-6 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Status
-              </th>
-              <th className="px-6 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Ações
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {periodosAtendimento.map((periodo) => (
-              <tr key={periodo.id} className="hover:bg-gray-50">
-                <td className="px-6 py-2 whitespace-nowrap text-sm text-gray-900 font-mono">
-                  {periodo.codigo || '-'}
-                </td>
-                <td className="px-6 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {periodo.nome || '-'}
-                </td>
-                <td className="px-6 py-2 whitespace-nowrap text-center">
-                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                    {periodo.total_unidades_vinculadas || 0}
-                  </span>
-                </td>
-                <td className="px-6 py-2 whitespace-nowrap text-center">
-                  <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
-                    periodo.status === 'ativo'
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-red-100 text-red-800'
-                  }`}>
-                    {periodo.status === 'ativo' ? 'Ativo' : 'Inativo'}
-                  </span>
-                </td>
-                <td className="px-6 py-2 whitespace-nowrap text-center">
-                  <div className="flex items-center justify-center">
-                    <ActionButtons
-                      canView={canView}
-                      canEdit={canEdit}
-                      canDelete={canDelete}
-                      onView={() => onView && onView(periodo)}
-                      onEdit={() => onEdit && onEdit(periodo)}
-                      onDelete={() => onDelete && onDelete(periodo)}
-                    />
-                  </div>
-                </td>
+    <>
+      {/* Versão Desktop - Tabela completa */}
+      <div className="hidden xl:block bg-white rounded-lg shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Filial
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Unidades com atendimento
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Períodos de Atendimento
+                </th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Ações
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {dadosAgrupados
+                .sort((a, b) => (a.filial_nome || '').localeCompare(b.filial_nome || ''))
+                .map((item) => (
+                <tr key={`${item.filial_id ?? 'sem'}-${item.primaryRecord?.id || 'sem-id'}`} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm font-medium text-gray-900">
+                      {item.filial_nome || '-'}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm font-medium text-gray-900">
+                      {item.total_unidades || 0}
+                      {item.total_unidades === 1 ? ' UNIDADE' : ' UNIDADES'}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="text-sm text-gray-900">
+                      {formatarListaPeriodos(item.periodos)}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                    {item.primaryRecord && (
+                      <ActionButtons
+                        canView={canView}
+                        canEdit={canEdit}
+                        canDelete={canDelete}
+                        onView={() => onView && onView(item.primaryRecord)}
+                        onEdit={() => onEdit && onEdit(item.primaryRecord)}
+                        onDelete={() => onDelete && onDelete(item.primaryRecord)}
+                        item={item.primaryRecord}
+                        size="sm"
+                      />
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
+
+      {/* Versão Mobile/Tablet - Cards */}
+      <div className="xl:hidden space-y-4">
+        {dadosAgrupados
+          .sort((a, b) => (a.filial_nome || '').localeCompare(b.filial_nome || ''))
+          .map((item) => (
+          <div key={`${item.filial_id ?? 'sem'}-${item.primaryRecord?.id || 'sem-id'}`} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <div className="flex justify-between items-start mb-3">
+              <div className="flex-1">
+                <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">
+                  {item.filial_nome || 'Filial não informada'}
+                </p>
+                <h3 className="text-sm font-medium text-gray-900 mb-1">
+                  {item.total_unidades || 0}
+                  {item.total_unidades === 1 ? ' UNIDADE COM ATENDIMENTO' : ' UNIDADES COM ATENDIMENTO'}
+                </h3>
+                <p className="text-xs text-gray-500 mb-1">
+                  {formatarListaPeriodos(item.periodos)}
+                </p>
+              </div>
+            </div>
+            <div className="flex justify-end space-x-2">
+              {item.primaryRecord && (
+                <ActionButtons
+                  canView={canView}
+                  canEdit={canEdit}
+                  canDelete={canDelete}
+                  onView={() => onView && onView(item.primaryRecord)}
+                  onEdit={() => onEdit && onEdit(item.primaryRecord)}
+                  onDelete={() => onDelete && onDelete(item.primaryRecord)}
+                  item={item.primaryRecord}
+                  size="sm"
+                />
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </>
   );
 };
 

@@ -39,33 +39,33 @@ const produtosPerCapitaValidations = {
     
     body('per_capita_lanche_manha')
       .optional()
-      .isDecimal({ decimal_digits: '0,3' })
-      .isFloat({ min: 0, max: 999.999 })
-      .withMessage('Per capita lanche manhã deve ser um número decimal entre 0 e 999.999'),
+      .isDecimal({ decimal_digits: '0,4' })
+      .isFloat({ min: 0, max: 999.9999 })
+      .withMessage('Per capita lanche manhã deve ser um número decimal entre 0 e 999.9999'),
     
     body('per_capita_almoco')
       .optional()
-      .isDecimal({ decimal_digits: '0,3' })
-      .isFloat({ min: 0, max: 999.999 })
-      .withMessage('Per capita almoço deve ser um número decimal entre 0 e 999.999'),
+      .isDecimal({ decimal_digits: '0,4' })
+      .isFloat({ min: 0, max: 999.9999 })
+      .withMessage('Per capita almoço deve ser um número decimal entre 0 e 999.9999'),
     
     body('per_capita_lanche_tarde')
       .optional()
-      .isDecimal({ decimal_digits: '0,3' })
-      .isFloat({ min: 0, max: 999.999 })
-      .withMessage('Per capita lanche tarde deve ser um número decimal entre 0 e 999.999'),
+      .isDecimal({ decimal_digits: '0,4' })
+      .isFloat({ min: 0, max: 999.9999 })
+      .withMessage('Per capita lanche tarde deve ser um número decimal entre 0 e 999.9999'),
     
     body('per_capita_parcial')
       .optional()
-      .isDecimal({ decimal_digits: '0,3' })
-      .isFloat({ min: 0, max: 999.999 })
-      .withMessage('Per capita parcial deve ser um número decimal entre 0 e 999.999'),
+      .isDecimal({ decimal_digits: '0,4' })
+      .isFloat({ min: 0, max: 999.9999 })
+      .withMessage('Per capita parcial deve ser um número decimal entre 0 e 999.9999'),
     
     body('per_capita_eja')
       .optional()
-      .isDecimal({ decimal_digits: '0,3' })
-      .isFloat({ min: 0, max: 999.999 })
-      .withMessage('Per capita EJA deve ser um número decimal entre 0 e 999.999'),
+      .isDecimal({ decimal_digits: '0,4' })
+      .isFloat({ min: 0, max: 999.9999 })
+      .withMessage('Per capita EJA deve ser um número decimal entre 0 e 999.9999'),
     
     body('ativo')
       .optional()
@@ -89,33 +89,33 @@ const produtosPerCapitaValidations = {
     
     body('per_capita_lanche_manha')
       .optional()
-      .isDecimal({ decimal_digits: '0,3' })
-      .isFloat({ min: 0, max: 999.999 })
-      .withMessage('Per capita lanche manhã deve ser um número decimal entre 0 e 999.999'),
+      .isDecimal({ decimal_digits: '0,4' })
+      .isFloat({ min: 0, max: 999.9999 })
+      .withMessage('Per capita lanche manhã deve ser um número decimal entre 0 e 999.9999'),
     
     body('per_capita_almoco')
       .optional()
-      .isDecimal({ decimal_digits: '0,3' })
-      .isFloat({ min: 0, max: 999.999 })
-      .withMessage('Per capita almoço deve ser um número decimal entre 0 e 999.999'),
+      .isDecimal({ decimal_digits: '0,4' })
+      .isFloat({ min: 0, max: 999.9999 })
+      .withMessage('Per capita almoço deve ser um número decimal entre 0 e 999.9999'),
     
     body('per_capita_lanche_tarde')
       .optional()
-      .isDecimal({ decimal_digits: '0,3' })
-      .isFloat({ min: 0, max: 999.999 })
-      .withMessage('Per capita lanche tarde deve ser um número decimal entre 0 e 999.999'),
+      .isDecimal({ decimal_digits: '0,4' })
+      .isFloat({ min: 0, max: 999.9999 })
+      .withMessage('Per capita lanche tarde deve ser um número decimal entre 0 e 999.9999'),
     
     body('per_capita_parcial')
       .optional()
-      .isDecimal({ decimal_digits: '0,3' })
-      .isFloat({ min: 0, max: 999.999 })
-      .withMessage('Per capita parcial deve ser um número decimal entre 0 e 999.999'),
+      .isDecimal({ decimal_digits: '0,4' })
+      .isFloat({ min: 0, max: 999.9999 })
+      .withMessage('Per capita parcial deve ser um número decimal entre 0 e 999.9999'),
     
     body('per_capita_eja')
       .optional()
-      .isDecimal({ decimal_digits: '0,3' })
-      .isFloat({ min: 0, max: 999.999 })
-      .withMessage('Per capita EJA deve ser um número decimal entre 0 e 999.999'),
+      .isDecimal({ decimal_digits: '0,4' })
+      .isFloat({ min: 0, max: 999.9999 })
+      .withMessage('Per capita EJA deve ser um número decimal entre 0 e 999.9999'),
     
     body('ativo')
       .optional()

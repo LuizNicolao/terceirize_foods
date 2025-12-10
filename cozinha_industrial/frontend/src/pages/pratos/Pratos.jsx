@@ -252,16 +252,16 @@ const Pratos = () => {
                 <span className="hidden sm:inline">Importar</span>
                 <span className="sm:hidden">Importar</span>
               </Button>
-              <Button
-                onClick={handleAddPrato}
-                variant="primary"
-                size="sm"
-                className="text-xs"
-              >
-                <FaPlus className="mr-1 sm:mr-2" />
-                <span className="hidden sm:inline">Novo Prato</span>
-                <span className="sm:hidden">Novo</span>
-              </Button>
+            <Button
+              onClick={handleAddPrato}
+              variant="primary"
+              size="sm"
+              className="text-xs"
+            >
+              <FaPlus className="mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Novo Prato</span>
+              <span className="sm:hidden">Novo</span>
+            </Button>
             </>
           )}
           {canViewPratos && (

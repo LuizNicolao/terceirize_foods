@@ -307,35 +307,78 @@ const ReceitasProdutos = ({
     }
 
     if (valor !== '' && valor !== null && valor !== undefined) {
-      // Permitir digitar 0 antes da vírgula
-      if (valor === '0' || valor === '0,') {
-        produtos[produtoIndex].percapta = 0;
-        onInputChange('produtos', produtos);
-        // Limpar input local quando salvar
-        const inputKey = `${receitaId}_${produtoOrigemId}_${centroCustoId}`;
-        setPercaptaInputs(prev => {
-          const newInputs = { ...prev };
-          delete newInputs[inputKey];
-          return newInputs;
-        });
-        return;
+      // Converter vírgula para ponto para processamento interno
+      let valorProcessado = valor.toString();
+      if (valorProcessado.includes(',')) {
+        valorProcessado = valorProcessado.replace(',', '.');
       }
       
-      if (valor.toString().includes(',')) {
-        valor = valor.toString().replace(',', '.');
-      }
-      if (valor.toString().includes('.')) {
-        const partes = valor.toString().split('.');
-        if (partes[1] && partes[1].length > 3) {
-          valor = `${partes[0]}.${partes[1].substring(0, 3)}`;
+      // Validar e limitar durante a digitação
+      if (valorProcessado.includes('.')) {
+        const partes = valorProcessado.split('.');
+        // Limitar parte inteira a 3 dígitos (999)
+        if (partes[0].length > 3) {
+          partes[0] = partes[0].substring(0, 3);
+        }
+        // Limitar parte decimal a 4 dígitos
+        if (partes[1] && partes[1].length > 4) {
+          partes[1] = partes[1].substring(0, 4);
+        }
+        valorProcessado = `${partes[0]}.${partes[1] || ''}`;
+      } else {
+        // Limitar parte inteira a 3 dígitos (999)
+        if (valorProcessado.length > 3) {
+          valorProcessado = valorProcessado.substring(0, 3);
         }
       }
       
-      const valorNumerico = parseFloat(valor);
-      produtos[produtoIndex].percapta = !isNaN(valorNumerico) ? valorNumerico : null;
-      onInputChange('produtos', produtos);
+      const valorNumerico = parseFloat(valorProcessado);
       
-      // Se for blur, limpar o input local para que use o valor formatado do formData
+      // Se for blur, validar e salvar o valor numérico
+      // Se não for blur, apenas permitir digitação sem salvar ainda (mantém no input local)
+      if (isBlur) {
+        // No blur, salvar o valor numérico válido
+        if (!isNaN(valorNumerico) && valorNumerico >= 0) {
+          // Limitar valor máximo (999.9999)
+          if (valorNumerico > 999.9999) {
+            produtos[produtoIndex].percapta = 999.9999;
+          } else {
+            produtos[produtoIndex].percapta = valorNumerico;
+          }
+          onInputChange('produtos', produtos);
+          
+          // Limpar input local para usar valor formatado do formData
+          const inputKey = `${receitaId}_${produtoOrigemId}_${centroCustoId}`;
+          setPercaptaInputs(prev => {
+            const newInputs = { ...prev };
+            delete newInputs[inputKey];
+            return newInputs;
+          });
+        } else {
+          // Se não for válido no blur, limpar
+          produtos[produtoIndex].percapta = null;
+          onInputChange('produtos', produtos);
+          const inputKey = `${receitaId}_${produtoOrigemId}_${centroCustoId}`;
+          setPercaptaInputs(prev => {
+            const newInputs = { ...prev };
+            delete newInputs[inputKey];
+            return newInputs;
+          });
+        }
+      } else {
+        // Durante a digitação, apenas atualizar se for um número válido completo
+        // Isso permite digitar valores parciais como "0," ou "1,"
+        if (!isNaN(valorNumerico) && valorNumerico >= 0 && valorNumerico <= 999.9999) {
+          produtos[produtoIndex].percapta = valorNumerico;
+          onInputChange('produtos', produtos);
+        }
+        // Não limpar input local durante a digitação
+      }
+    } else {
+      // Campo vazio
+      produtos[produtoIndex].percapta = null;
+      onInputChange('produtos', produtos);
+      // Limpar input local apenas no blur
       if (isBlur) {
         const inputKey = `${receitaId}_${produtoOrigemId}_${centroCustoId}`;
         setPercaptaInputs(prev => {
@@ -344,16 +387,6 @@ const ReceitasProdutos = ({
           return newInputs;
         });
       }
-    } else {
-      produtos[produtoIndex].percapta = null;
-      onInputChange('produtos', produtos);
-      // Limpar input local quando salvar
-      const inputKey = `${receitaId}_${produtoOrigemId}_${centroCustoId}`;
-      setPercaptaInputs(prev => {
-        const newInputs = { ...prev };
-        delete newInputs[inputKey];
-        return newInputs;
-      });
     }
   };
 
@@ -637,17 +670,17 @@ const ReceitasProdutos = ({
                           {produtoAgrupado.unidade_medida_sigla}
                         </td>
                         {centrosCustoUnicos.map((centroCusto) => {
-                          const percaptaData = produtoAgrupado.percaptasPorCentroCusto[centroCusto.id];
+                          const percaptaData = produtoAgrupado.percaptasPorCentroCusto?.[centroCusto.id];
                           const inputKey = `${produtoAgrupado.receita_id}_${produtoAgrupado.produto_origem_id}_${centroCusto.id}`;
                           
                           // Se há valor no input local (usuário está digitando), usar ele
                           // Caso contrário, usar o valor formatado do formData
                           let valorAtual = '';
-                          if (percaptaInputs[inputKey] !== undefined) {
+                          if (percaptaInputs && percaptaInputs[inputKey] !== undefined) {
                             valorAtual = percaptaInputs[inputKey];
                           } else if (percaptaData && percaptaData.percapta !== null && percaptaData.percapta !== undefined) {
-                            // Apenas formatar com 3 casas decimais quando não está digitando
-                            valorAtual = parseFloat(percaptaData.percapta).toFixed(3).replace('.', ',');
+                            // Apenas formatar com 4 casas decimais quando não está digitando
+                            valorAtual = parseFloat(percaptaData.percapta).toFixed(4).replace('.', ',');
                           }
                           
                           // Verificar se este campo tem erro (está vazio e é obrigatório)
@@ -662,7 +695,7 @@ const ReceitasProdutos = ({
                               {isViewMode ? (
                                 <span className="text-gray-900">
                                   {percaptaData && percaptaData.percapta !== null && percaptaData.percapta !== undefined
-                                    ? parseFloat(percaptaData.percapta).toFixed(3).replace('.', ',')
+                                    ? parseFloat(percaptaData.percapta).toFixed(4).replace('.', ',')
                                     : '-'}
                                 </span>
                               ) : (
@@ -670,21 +703,81 @@ const ReceitasProdutos = ({
                                   type="text"
                                   value={valorAtual}
                                   onChange={(e) => {
-                                    const novoValor = e.target.value;
-                                    // Salvar no estado local para não formatar enquanto digita
+                                    let novoValor = e.target.value;
+                                    
+                                    // Permitir campo vazio
+                                    if (novoValor === '') {
+                                      setPercaptaInputs(prev => ({
+                                        ...prev,
+                                        [inputKey]: novoValor
+                                      }));
+                                      handleUpdatePercapta(
+                                        produtoAgrupado.receita_id,
+                                        produtoAgrupado.produto_origem_id,
+                                        centroCusto.id,
+                                        produtoAgrupado,
+                                        novoValor,
+                                        false
+                                      );
+                                      return;
+                                    }
+                                    
+                                    // Permitir apenas números, vírgula e ponto
+                                    const valorLimpo = novoValor.replace(/[^0-9,.]/g, '');
+                                    if (valorLimpo !== novoValor) {
+                                      return; // Não atualizar se contém caracteres inválidos
+                                    }
+                                    
+                                    // Verificar se tem mais de uma vírgula ou ponto
+                                    const virgulas = (novoValor.match(/,/g) || []).length;
+                                    const pontos = (novoValor.match(/\./g) || []).length;
+                                    if (virgulas > 1 || pontos > 1 || (virgulas > 0 && pontos > 0)) {
+                                      return; // Não permitir múltiplos separadores
+                                    }
+                                    
+                                    // Limitar a 4 casas decimais e parte inteira a 3 dígitos
+                                    if (novoValor.includes(',') || novoValor.includes('.')) {
+                                      const separador = novoValor.includes(',') ? ',' : '.';
+                                      const partes = novoValor.split(separador);
+                                      // Limitar parte inteira a 3 dígitos (999)
+                                      if (partes[0].length > 3) {
+                                        partes[0] = partes[0].substring(0, 3);
+                                      }
+                                      // Limitar parte decimal a 4 dígitos
+                                      if (partes[1] && partes[1].length > 4) {
+                                        partes[1] = partes[1].substring(0, 4);
+                                      }
+                                      novoValor = `${partes[0]}${separador}${partes[1] || ''}`;
+                                    } else {
+                                      // Limitar parte inteira a 3 dígitos (999)
+                                      if (novoValor.length > 3) {
+                                        novoValor = novoValor.substring(0, 3);
+                                      }
+                                    }
+                                    
+                                    // Verificar valor máximo apenas se for um número válido completo
+                                    const valorComPonto = novoValor.replace(',', '.');
+                                    const valorNumerico = parseFloat(valorComPonto);
+                                    if (!isNaN(valorNumerico) && valorNumerico > 999.9999) {
+                                      novoValor = '999,9999';
+                                    }
+                                    
+                                    // Salvar no estado local
                                     setPercaptaInputs(prev => ({
                                       ...prev,
                                       [inputKey]: novoValor
                                     }));
-                                    // Atualizar formData sem formatar
-                                    handleUpdatePercapta(
-                                      produtoAgrupado.receita_id,
-                                      produtoAgrupado.produto_origem_id,
-                                      centroCusto.id,
-                                      produtoAgrupado,
-                                      novoValor,
-                                      false
-                                    );
+                                    // Atualizar formData apenas se for um número válido
+                                    if (novoValor === '' || !isNaN(valorNumerico)) {
+                                      handleUpdatePercapta(
+                                        produtoAgrupado.receita_id,
+                                        produtoAgrupado.produto_origem_id,
+                                        centroCusto.id,
+                                        produtoAgrupado,
+                                        novoValor,
+                                        false
+                                      );
+                                    }
                                   }}
                                   onBlur={(e) => {
                                     const valor = e.target.value.replace(',', '.');
@@ -697,7 +790,7 @@ const ReceitasProdutos = ({
                                       true
                                     );
                                   }}
-                                  placeholder="0,000"
+                                  placeholder="0,0000"
                                   required
                                   className={`w-20 px-2 py-1 border rounded text-sm ${
                                     temErro 
@@ -985,17 +1078,17 @@ const ReceitasProdutos = ({
                           {produtoAgrupado.unidade_medida_sigla}
                         </td>
                         {centrosCustoUnicos.map((centroCusto) => {
-                          const percaptaData = produtoAgrupado.percaptasPorCentroCusto[centroCusto.id];
+                          const percaptaData = produtoAgrupado.percaptasPorCentroCusto?.[centroCusto.id];
                           const inputKey = `${produtoAgrupado.receita_id}_${produtoAgrupado.produto_origem_id}_${centroCusto.id}`;
                           
                           // Se há valor no input local (usuário está digitando), usar ele
                           // Caso contrário, usar o valor formatado do formData
                           let valorAtual = '';
-                          if (percaptaInputs[inputKey] !== undefined) {
+                          if (percaptaInputs && percaptaInputs[inputKey] !== undefined) {
                             valorAtual = percaptaInputs[inputKey];
                           } else if (percaptaData && percaptaData.percapta !== null && percaptaData.percapta !== undefined) {
-                            // Apenas formatar com 3 casas decimais quando não está digitando
-                            valorAtual = parseFloat(percaptaData.percapta).toFixed(3).replace('.', ',');
+                            // Apenas formatar com 4 casas decimais quando não está digitando
+                            valorAtual = parseFloat(percaptaData.percapta).toFixed(4).replace('.', ',');
                           }
                           
                           // Verificar se este campo tem erro (está vazio e é obrigatório)
@@ -1010,7 +1103,7 @@ const ReceitasProdutos = ({
                               {isViewMode ? (
                                 <span className="text-gray-900">
                                   {percaptaData && percaptaData.percapta !== null && percaptaData.percapta !== undefined
-                                    ? parseFloat(percaptaData.percapta).toFixed(3).replace('.', ',')
+                                    ? parseFloat(percaptaData.percapta).toFixed(4).replace('.', ',')
                                     : '-'}
                                 </span>
                               ) : (
@@ -1018,21 +1111,81 @@ const ReceitasProdutos = ({
                                   type="text"
                                   value={valorAtual}
                                   onChange={(e) => {
-                                    const novoValor = e.target.value;
-                                    // Salvar no estado local para não formatar enquanto digita
+                                    let novoValor = e.target.value;
+                                    
+                                    // Permitir campo vazio
+                                    if (novoValor === '') {
+                                      setPercaptaInputs(prev => ({
+                                        ...prev,
+                                        [inputKey]: novoValor
+                                      }));
+                                      handleUpdatePercapta(
+                                        produtoAgrupado.receita_id,
+                                        produtoAgrupado.produto_origem_id,
+                                        centroCusto.id,
+                                        produtoAgrupado,
+                                        novoValor,
+                                        false
+                                      );
+                                      return;
+                                    }
+                                    
+                                    // Permitir apenas números, vírgula e ponto
+                                    const valorLimpo = novoValor.replace(/[^0-9,.]/g, '');
+                                    if (valorLimpo !== novoValor) {
+                                      return; // Não atualizar se contém caracteres inválidos
+                                    }
+                                    
+                                    // Verificar se tem mais de uma vírgula ou ponto
+                                    const virgulas = (novoValor.match(/,/g) || []).length;
+                                    const pontos = (novoValor.match(/\./g) || []).length;
+                                    if (virgulas > 1 || pontos > 1 || (virgulas > 0 && pontos > 0)) {
+                                      return; // Não permitir múltiplos separadores
+                                    }
+                                    
+                                    // Limitar a 4 casas decimais e parte inteira a 3 dígitos
+                                    if (novoValor.includes(',') || novoValor.includes('.')) {
+                                      const separador = novoValor.includes(',') ? ',' : '.';
+                                      const partes = novoValor.split(separador);
+                                      // Limitar parte inteira a 3 dígitos (999)
+                                      if (partes[0].length > 3) {
+                                        partes[0] = partes[0].substring(0, 3);
+                                      }
+                                      // Limitar parte decimal a 4 dígitos
+                                      if (partes[1] && partes[1].length > 4) {
+                                        partes[1] = partes[1].substring(0, 4);
+                                      }
+                                      novoValor = `${partes[0]}${separador}${partes[1] || ''}`;
+                                    } else {
+                                      // Limitar parte inteira a 3 dígitos (999)
+                                      if (novoValor.length > 3) {
+                                        novoValor = novoValor.substring(0, 3);
+                                      }
+                                    }
+                                    
+                                    // Verificar valor máximo apenas se for um número válido completo
+                                    const valorComPonto = novoValor.replace(',', '.');
+                                    const valorNumerico = parseFloat(valorComPonto);
+                                    if (!isNaN(valorNumerico) && valorNumerico > 999.9999) {
+                                      novoValor = '999,9999';
+                                    }
+                                    
+                                    // Salvar no estado local
                                     setPercaptaInputs(prev => ({
                                       ...prev,
                                       [inputKey]: novoValor
                                     }));
-                                    // Atualizar formData sem formatar
-                                    handleUpdatePercapta(
-                                      produtoAgrupado.receita_id,
-                                      produtoAgrupado.produto_origem_id,
-                                      centroCusto.id,
-                                      produtoAgrupado,
-                                      novoValor,
-                                      false
-                                    );
+                                    // Atualizar formData apenas se for um número válido
+                                    if (novoValor === '' || !isNaN(valorNumerico)) {
+                                      handleUpdatePercapta(
+                                        produtoAgrupado.receita_id,
+                                        produtoAgrupado.produto_origem_id,
+                                        centroCusto.id,
+                                        produtoAgrupado,
+                                        novoValor,
+                                        false
+                                      );
+                                    }
                                   }}
                                   onBlur={(e) => {
                                     const valor = e.target.value.replace(',', '.');
@@ -1045,7 +1198,7 @@ const ReceitasProdutos = ({
                                       true
                                     );
                                   }}
-                                  placeholder="0,000"
+                                  placeholder="0,0000"
                                   required
                                   className={`w-20 px-2 py-1 border rounded text-sm ${
                                     temErro 

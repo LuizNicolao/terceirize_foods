@@ -86,15 +86,17 @@ const periodosAtendimentoValidations = {
 
   vincularUnidades: [
     body('cozinha_industrial_ids')
-      .notEmpty()
-      .withMessage('Deve informar pelo menos uma unidade escolar')
-      .isArray({ min: 1 })
-      .withMessage('cozinha_industrial_ids deve ser um array com pelo menos um elemento')
+      .isArray()
+      .withMessage('cozinha_industrial_ids deve ser um array')
       .custom((value) => {
-        if (!Array.isArray(value) || value.length === 0) {
-          throw new Error('Deve informar pelo menos uma unidade escolar');
+        if (!Array.isArray(value)) {
+          throw new Error('cozinha_industrial_ids deve ser um array');
         }
-        // Verificar se todos os elementos são números inteiros positivos
+        // Permitir array vazio para remover todos os vínculos
+        if (value.length === 0) {
+          return true;
+        }
+        // Se o array não estiver vazio, verificar se todos os elementos são números inteiros positivos
         const allValid = value.every(id => {
           const numId = typeof id === 'string' ? parseInt(id, 10) : id;
           return Number.isInteger(numId) && numId > 0;

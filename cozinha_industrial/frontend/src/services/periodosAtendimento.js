@@ -74,9 +74,13 @@ const periodosAtendimentoService = {
   /**
    * Buscar unidades vinculadas a um período
    */
-  async buscarUnidadesVinculadas(id) {
+  async buscarUnidadesVinculadas(id, includeInactive = false) {
     try {
-      const response = await api.get(`/periodos-atendimento/${id}/unidades`);
+      const response = await api.get(`/periodos-atendimento/${id}/unidades`, {
+        params: {
+          include_inactive: includeInactive ? 'true' : 'false'
+        }
+      });
       return {
         success: true,
         data: response.data?.data || response.data || []
@@ -87,6 +91,52 @@ const periodosAtendimentoService = {
         success: false,
         error: error.response?.data?.message || 'Erro ao buscar unidades vinculadas',
         data: []
+      };
+    }
+  },
+
+  /**
+   * Buscar todos os períodos vinculados a uma lista de unidades
+   */
+  async buscarPeriodosPorUnidades(unidadesIds, includeInactive = false) {
+    try {
+      // Garantir que seja um array
+      const idsArray = Array.isArray(unidadesIds) ? unidadesIds : [unidadesIds];
+      
+      // Converter para números e filtrar inválidos
+      const idsNumericos = idsArray.map(id => parseInt(id)).filter(id => !isNaN(id) && id > 0);
+      
+      if (idsNumericos.length === 0) {
+        return {
+          success: false,
+          error: 'Nenhum ID de unidade válido fornecido',
+          data: { vinculos: {}, periodos: [] }
+        };
+      }
+      
+      // Enviar como array no formato que o backend espera
+      const response = await api.get('/periodos-atendimento/periodos-por-unidades', {
+        params: {
+          unidades_ids: idsNumericos,
+          include_inactive: includeInactive ? 'true' : 'false'
+        },
+        paramsSerializer: {
+          indexes: null // Envia como unidades_ids=1&unidades_ids=2&unidades_ids=3
+        }
+      });
+      
+      const responseData = response.data?.data || response.data || {};
+      
+      return {
+        success: true,
+        data: responseData
+      };
+    } catch (error) {
+      console.error('Erro ao buscar períodos por unidades:', error);
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao buscar períodos por unidades',
+        data: { vinculos: {}, periodos: [] }
       };
     }
   },
@@ -147,13 +197,8 @@ const periodosAtendimentoService = {
         ? cozinha_industrial_ids.map(id => parseInt(id, 10)).filter(id => !isNaN(id) && id > 0)
         : [];
       
-      if (idsArray.length === 0) {
-        return {
-          success: false,
-          error: 'Deve informar pelo menos uma unidade escolar válida',
-          data: null
-        };
-      }
+      // Permitir array vazio para remover todos os vínculos
+      // O backend agora aceita array vazio e remove todos os vínculos
       
       const response = await api.post(`/periodos-atendimento/${id}/vincular-unidades`, {
         cozinha_industrial_ids: idsArray
@@ -161,7 +206,7 @@ const periodosAtendimentoService = {
       return {
         success: true,
         data: response.data?.data || response.data || null,
-        message: response.data?.message || 'Unidades vinculadas com sucesso'
+        message: response.data?.message || (idsArray.length === 0 ? 'Vínculos removidos com sucesso' : 'Unidades vinculadas com sucesso')
       };
     } catch (error) {
       console.error('Erro ao vincular unidades:', error);

@@ -17,7 +17,7 @@ class GruposListController {
    * Listar grupos com paginação, busca e HATEOAS
    */
   static listarGrupos = asyncHandler(async (req, res) => {
-    const { search = '', status } = req.query;
+    const { search = '', status, tipo } = req.query;
     const pagination = req.pagination;
 
     // Query base com contagem de subgrupos
@@ -50,6 +50,11 @@ class GruposListController {
       params.push(status === 1 || status === '1' ? 'ativo' : 'inativo');
     }
 
+    if (tipo) {
+      baseQuery += ' AND g.tipo = ?';
+      params.push(tipo);
+    }
+
     baseQuery += ' GROUP BY g.id, g.nome, g.codigo, g.descricao, g.tipo, g.status, g.data_cadastro, g.data_atualizacao ORDER BY g.nome ASC';
 
     // Aplicar paginação manualmente
@@ -61,10 +66,13 @@ class GruposListController {
     const grupos = await executeQuery(query, params);
 
     // Contar total de registros
-    const countQuery = `SELECT COUNT(DISTINCT g.id) as total FROM grupos g WHERE 1=1${search ? ' AND (g.nome LIKE ? OR g.codigo LIKE ? OR g.descricao LIKE ?)' : ''}${status !== undefined ? ' AND g.status = ?' : ''}`;
+    const countQuery = `SELECT COUNT(DISTINCT g.id) as total FROM grupos g WHERE 1=1${search ? ' AND (g.nome LIKE ? OR g.codigo LIKE ? OR g.descricao LIKE ?)' : ''}${status !== undefined ? ' AND g.status = ?' : ''}${tipo ? ' AND g.tipo = ?' : ''}`;
     const countParams = search ? [`%${search}%`, `%${search}%`, `%${search}%`] : [];
     if (status !== undefined) {
       countParams.push(status === 1 || status === '1' ? 'ativo' : 'inativo');
+    }
+    if (tipo) {
+      countParams.push(tipo);
     }
     const totalResult = await executeQuery(countQuery, countParams);
     const totalItems = totalResult[0].total;
@@ -74,10 +82,13 @@ class GruposListController {
       COUNT(*) as total,
       SUM(CASE WHEN g.status = 'ativo' THEN 1 ELSE 0 END) as ativos,
       SUM(CASE WHEN g.status = 'inativo' THEN 1 ELSE 0 END) as inativos
-      FROM grupos g WHERE 1=1${search ? ' AND (g.nome LIKE ? OR g.codigo LIKE ? OR g.descricao LIKE ?)' : ''}${status !== undefined ? ' AND g.status = ?' : ''}`;
+      FROM grupos g WHERE 1=1${search ? ' AND (g.nome LIKE ? OR g.codigo LIKE ? OR g.descricao LIKE ?)' : ''}${status !== undefined ? ' AND g.status = ?' : ''}${tipo ? ' AND g.tipo = ?' : ''}`;
     const statsParams = search ? [`%${search}%`, `%${search}%`, `%${search}%`] : [];
     if (status !== undefined) {
       statsParams.push(status === 1 || status === '1' ? 'ativo' : 'inativo');
+    }
+    if (tipo) {
+      statsParams.push(tipo);
     }
     const statsResult = await executeQuery(statsQuery, statsParams);
     const statistics = statsResult[0];

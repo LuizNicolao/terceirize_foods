@@ -59,12 +59,26 @@ const PeriodoAtendimentoModal = ({
     confirmMessage
   } = useUnsavedChangesPrompt();
 
-  // Carregar filiais (apenas CD TOLEDO)
+  // Carregar filiais (apenas CD TOLEDO) e limpar dados quando modal fechar
   useEffect(() => {
     if (isOpen) {
       carregarFiliais();
+    } else {
+      // Limpar tudo quando modal fechar
+      setPeriodos([]);
+      setVinculosSelecionados({});
+      setFilialId('');
+      setBuscaUnidade('');
+      setUnidadesPage(1);
+      setUnidades([]);
+      setUnidadesTotalItems(0);
+      setUnidadesTotalPages(1);
+      setNovoPeriodoNome('');
+      setMostrarFormNovoPeriodo(false);
+      setErrors({});
+      resetDirty();
     }
-  }, [isOpen]);
+  }, [isOpen, resetDirty]);
 
   // Carregar unidades quando filial mudar
   useEffect(() => {
@@ -90,8 +104,9 @@ const PeriodoAtendimentoModal = ({
     if (isEditing && periodoAtendimento) {
       carregarDadosEdicao();
     } else {
-      // Modo criação: carregar períodos existentes
-      carregarPeriodosExistentes();
+      // Modo criação: limpar tudo e começar com períodos vazios
+      // Não carregar períodos existentes - o usuário deve adicionar os períodos que quer vincular
+      setPeriodos([]);
       setVinculosSelecionados({});
       setFilialId('');
       setBuscaUnidade('');
@@ -99,6 +114,8 @@ const PeriodoAtendimentoModal = ({
       setUnidades([]);
       setUnidadesTotalItems(0);
       setUnidadesTotalPages(1);
+      setNovoPeriodoNome('');
+      setMostrarFormNovoPeriodo(false);
     }
   }, [isOpen, isEditing, periodoAtendimento]);
 
@@ -173,49 +190,93 @@ const PeriodoAtendimentoModal = ({
 
   const carregarDadosEdicao = async () => {
     try {
-      // Carregar períodos existentes
-      await carregarPeriodosExistentes();
+      // Carregar filiais e selecionar CD TOLEDO primeiro
+      await carregarFiliais();
       
-      // Garantir que o período atual está na lista
+      // Buscar unidades vinculadas ao período (incluindo inativas para edição)
       if (periodoAtendimento?.id) {
-        setPeriodos(prev => {
-          const periodoExiste = prev.find(p => p.id === periodoAtendimento.id);
-          if (!periodoExiste) {
-            return [{
+        const response = await periodosAtendimentoService.buscarUnidadesVinculadas(periodoAtendimento.id, true);
+        
+        if (response.success && response.data && response.data.length > 0) {
+          // Coletar todos os IDs de unidades vinculadas
+          const unidadesIds = new Set();
+          response.data.forEach(vinculo => {
+            unidadesIds.add(parseInt(vinculo.cozinha_industrial_id));
+          });
+          
+          // Buscar TODOS os períodos vinculados a essas unidades usando o novo endpoint
+          // Incluir inativos para mostrar no modal de edição
+          try {
+            const unidadesIdsArray = Array.from(unidadesIds);
+            const periodosPorUnidadesResponse = await periodosAtendimentoService.buscarPeriodosPorUnidades(unidadesIdsArray, true);
+            
+            if (periodosPorUnidadesResponse.success && periodosPorUnidadesResponse.data) {
+              const { vinculos: vinculosPorUnidade, periodos: periodosVinculados } = periodosPorUnidadesResponse.data;
+              
+              // Definir os períodos vinculados diretamente (sem merge com períodos existentes)
+              if (periodosVinculados && periodosVinculados.length > 0) {
+                const periodosFormatados = periodosVinculados.map(p => ({
+                  id: p.id,
+                  nome: p.nome,
+                  codigo: p.codigo,
+                  status: p.status || 'ativo'
+                }));
+                
+                // Ordenar por nome para melhor visualização
+                periodosFormatados.sort((a, b) => a.nome.localeCompare(b.nome));
+                
+                setPeriodos(periodosFormatados);
+              } else {
+                // Se não encontrou períodos vinculados, usar apenas o período atual
+                setPeriodos([{
+                  id: periodoAtendimento.id,
+                  nome: periodoAtendimento.nome,
+                  codigo: periodoAtendimento.codigo,
+                  status: periodoAtendimento.status || 'ativo'
+                }]);
+              }
+              
+              // Usar os vínculos retornados
+              setVinculosSelecionados(vinculosPorUnidade || {});
+            } else {
+              // Fallback: usar apenas o período atual
+              setPeriodos([{
+                id: periodoAtendimento.id,
+                nome: periodoAtendimento.nome,
+                codigo: periodoAtendimento.codigo,
+                status: periodoAtendimento.status || 'ativo'
+              }]);
+              
+              const vinculos = {};
+              response.data.forEach(vinculo => {
+                const unidadeId = String(vinculo.cozinha_industrial_id);
+                if (!vinculos[unidadeId]) {
+                  vinculos[unidadeId] = [];
+                }
+                vinculos[unidadeId].push(periodoAtendimento.id);
+              });
+              setVinculosSelecionados(vinculos);
+            }
+          } catch (error) {
+            console.error('Erro ao buscar períodos por unidades:', error);
+            // Fallback: usar apenas o período atual
+            setPeriodos([{
               id: periodoAtendimento.id,
               nome: periodoAtendimento.nome,
               codigo: periodoAtendimento.codigo,
               status: periodoAtendimento.status || 'ativo'
-            }, ...prev];
-          }
-          return prev;
-        });
-      }
-      
-      // Carregar filiais e selecionar CD TOLEDO
-      await carregarFiliais();
-      
-      // Buscar unidades vinculadas ao período
-      if (periodoAtendimento?.id) {
-        const response = await periodosAtendimentoService.buscarUnidadesVinculadas(periodoAtendimento.id);
-        
-        if (response.success && response.data && response.data.length > 0) {
-          // Mapear vínculos para o formato esperado: { unidade_id: [periodo1, periodo2, ...] }
-          const vinculos = {};
-          const unidadesIds = new Set();
-          
-          response.data.forEach(vinculo => {
-            const unidadeId = String(vinculo.cozinha_industrial_id);
-            const periodoId = periodoAtendimento.id;
+            }]);
             
-            if (!vinculos[unidadeId]) {
-              vinculos[unidadeId] = [];
-            }
-            vinculos[unidadeId].push(periodoId);
-            unidadesIds.add(parseInt(unidadeId));
-          });
-          
-          setVinculosSelecionados(vinculos);
+            const vinculos = {};
+            response.data.forEach(vinculo => {
+              const unidadeId = String(vinculo.cozinha_industrial_id);
+              if (!vinculos[unidadeId]) {
+                vinculos[unidadeId] = [];
+              }
+              vinculos[unidadeId].push(periodoAtendimento.id);
+            });
+            setVinculosSelecionados(vinculos);
+          }
           
           // Buscar informações completas das unidades vinculadas
           const unidadesFiltradas = [];
@@ -369,15 +430,25 @@ const PeriodoAtendimentoModal = ({
 
   const handlePeriodoToggle = useCallback((unidadeId, periodoId) => {
     setVinculosSelecionados(prev => {
-      const unidadeVinculos = prev[unidadeId] || [];
+      // Garantir que unidadeId seja string para consistência
+      const unidadeIdStr = String(unidadeId);
+      const unidadeVinculos = prev[unidadeIdStr] || [];
+      
+      // Toggle: se já está selecionado, remove; se não está, adiciona
       const novosVinculos = unidadeVinculos.includes(periodoId)
         ? unidadeVinculos.filter(p => p !== periodoId)
         : [...unidadeVinculos, periodoId];
 
-      return {
-        ...prev,
-        [unidadeId]: novosVinculos.length > 0 ? novosVinculos : undefined
-      };
+      // Criar novo objeto sem a chave se não houver mais vínculos
+      const novo = { ...prev };
+      if (novosVinculos.length > 0) {
+        novo[unidadeIdStr] = novosVinculos;
+      } else {
+        // Remover a chave completamente se não houver mais vínculos
+        delete novo[unidadeIdStr];
+      }
+      
+      return novo;
     });
     if (!isViewMode) {
       markDirty();
@@ -779,7 +850,21 @@ const PeriodoAtendimentoModal = ({
     
 
     // Agrupar vínculos por período para criar/atualizar
+    // IMPORTANTE: Processar TODOS os períodos, mesmo os que não têm vínculos selecionados
+    // Isso garante que períodos desmarcados tenham seus vínculos removidos
     const vinculosPorPeriodo = {};
+    
+    // Inicializar todos os períodos com arrays vazios
+    periodos.forEach(periodo => {
+      const periodoIdReal = periodo.id === null 
+        ? periodoIdMap.get(`novo_${periodo.nome}`)
+        : periodo.id;
+      if (periodoIdReal) {
+        vinculosPorPeriodo[periodoIdReal] = [];
+      }
+    });
+    
+    // Adicionar os vínculos selecionados
     vinculosParaSalvar.forEach(vinculo => {
       if (!vinculosPorPeriodo[vinculo.periodo_atendimento_id]) {
         vinculosPorPeriodo[vinculo.periodo_atendimento_id] = [];
@@ -787,9 +872,12 @@ const PeriodoAtendimentoModal = ({
       vinculosPorPeriodo[vinculo.periodo_atendimento_id].push(vinculo.cozinha_industrial_id);
     });
 
-    // Criar/atualizar vínculos
+    // Criar/atualizar vínculos para TODOS os períodos
+    // Períodos com array vazio terão todos os vínculos removidos pelo backend
     for (const [periodoId, unidadeIds] of Object.entries(vinculosPorPeriodo)) {
       try {
+        // O backend remove todos os vínculos e adiciona os novos
+        // Se unidadeIds estiver vazio, todos os vínculos serão removidos
         const result = await periodosAtendimentoService.vincularUnidades(parseInt(periodoId), unidadeIds);
         if (!result.success) {
           toast.error(result.error || `Erro ao vincular unidades ao período ${periodoId}`, { duration: 6000 });

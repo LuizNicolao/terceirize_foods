@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useState, useEffect, useMemo } from 'react';
 import toast from 'react-hot-toast';
 import GruposService from '../services/grupos';
 import { useBaseEntity } from './common/useBaseEntity';
@@ -48,12 +48,44 @@ export const useGrupos = () => {
     // Estatísticas são gerenciadas automaticamente pelo baseEntity
   }, [baseEntity]);
 
+  // Estado para filtro de tipo
+  const [tipoFilter, setTipoFilter] = useState('');
+
+  // Carregar dados quando tipoFilter mudar (usando ref para evitar dependência circular)
+  useEffect(() => {
+    if (baseEntity.loadData) {
+      const params = {
+        tipo: tipoFilter || undefined
+      };
+      // Usar setTimeout para garantir que a mudança seja processada corretamente
+      const timeoutId = setTimeout(() => {
+        baseEntity.loadData(params);
+      }, 0);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [tipoFilter]);
+
+  // Extrair tipos únicos dos grupos
+  const tiposDisponiveis = useMemo(() => {
+    const tipos = new Set();
+    baseEntity.items.forEach(grupo => {
+      if (grupo.tipo) {
+        tipos.add(grupo.tipo);
+      }
+    });
+    return Array.from(tipos).sort().map(tipo => ({
+      value: tipo,
+      label: tipo
+    }));
+  }, [baseEntity.items]);
+
   /**
    * Funções auxiliares
    */
   const handleClearFilters = useCallback(() => {
     baseEntity.clearSearch();
     baseEntity.setStatusFilter('todos');
+    setTipoFilter('');
     baseEntity.handlePageChange(1);
   }, [baseEntity]);
 
@@ -153,6 +185,9 @@ export const useGrupos = () => {
     // Estados de filtros
     searchTerm: baseEntity.searchTerm,
     statusFilter: baseEntity.statusFilter,
+    tipoFilter,
+    setTipoFilter,
+    tiposDisponiveis,
     
     // Estados de validação (do hook base)
     validationErrors: baseEntity.validationErrors,

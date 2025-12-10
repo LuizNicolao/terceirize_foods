@@ -54,6 +54,11 @@ export const useNecessidadesData = () => {
         paramsComPaginacao.data = filtros.data;
       }
       
+      // Filtrar por status se selecionado
+      if (filtros.status) {
+        paramsComPaginacao.status = filtros.status;
+      }
+      
       // Adicionar parâmetros de paginação
       const paginationParams = pagination.getPaginationParams();
       paramsComPaginacao.page = paginationParams.page;

@@ -3,7 +3,7 @@ const { buscarEscolasIdsDaNutricionista } = require('./utils/ajusteUtils');
 
 const listar = async (req, res) => {
   try {
-    const { page = 1, limit = 10, search, escola, grupo, data, semana_abastecimento } = req.query;
+    const { page = 1, limit = 10, search, escola, grupo, data, semana_abastecimento, status } = req.query;
     const userType = req.user.tipo_de_acesso;
     const isNutricionista = userType === 'nutricionista';
 
@@ -59,6 +59,12 @@ const listar = async (req, res) => {
       // Para semana de abastecimento, filtrar por semana_abastecimento
       whereClause += ' AND n.semana_abastecimento = ?';
       params.push(semana_abastecimento);
+    }
+
+    if (status) {
+      // Filtrar por status
+      whereClause += ' AND n.status = ?';
+      params.push(status);
     }
 
     // Calcular paginação com validação

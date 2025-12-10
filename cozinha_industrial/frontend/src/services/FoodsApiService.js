@@ -68,6 +68,95 @@ class FoodsApiService {
   }
 
   /**
+   * ==================== CLIENTES ====================
+   */
+  
+  /**
+   * Consultar clientes do sistema Foods
+   */
+  static async getClientes(params = {}) {
+    try {
+      const response = await foodsApi.get('/clientes', { params });
+      
+      let clientesData = response.data.data || response.data;
+      if (clientesData && clientesData.items && Array.isArray(clientesData.items)) {
+        clientesData = clientesData.items;
+      }
+      
+      const arrayData = Array.isArray(clientesData) ? clientesData : [];
+      
+      return {
+        success: true,
+        data: arrayData,
+        pagination: response.data.pagination || response.data._meta?.pagination || null,
+        message: 'Clientes consultados com sucesso'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        data: [],
+        pagination: null,
+        message: error.response?.data?.message || 'Erro ao consultar clientes',
+        error: error.response?.data || error.message
+      };
+    }
+  }
+
+  /**
+   * Buscar cliente por ID
+   */
+  static async getClienteById(id) {
+    try {
+      const response = await foodsApi.get(`/clientes/${id}`);
+      return {
+        success: true,
+        data: response.data.data || response.data,
+        message: 'Cliente consultado com sucesso'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        data: null,
+        message: error.response?.data?.message || 'Erro ao consultar cliente',
+        error: error.response?.data || error.message
+      };
+    }
+  }
+
+  /**
+   * Buscar clientes ativos
+   */
+  static async getClientesAtivos(params = {}) {
+    try {
+      const response = await foodsApi.get('/clientes', { 
+        params: { ...params, status: 1 } 
+      });
+      
+      let clientesData = response.data.data || response.data;
+      if (clientesData && clientesData.items && Array.isArray(clientesData.items)) {
+        clientesData = clientesData.items;
+      }
+      
+      const arrayData = Array.isArray(clientesData) ? clientesData : [];
+      
+      return {
+        success: true,
+        data: arrayData,
+        pagination: response.data.pagination || response.data._meta?.pagination || null,
+        message: 'Clientes ativos consultados com sucesso'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        data: [],
+        pagination: null,
+        message: error.response?.data?.message || 'Erro ao consultar clientes ativos',
+        error: error.response?.data || error.message
+      };
+    }
+  }
+
+  /**
    * ==================== FORNECEDORES ====================
    */
   

@@ -9,6 +9,36 @@ const StatusBadge = ({ status }) => {
           className: 'bg-blue-100 text-blue-800',
           icon: '📝'
         };
+      case 'NEC NUTRI':
+        return {
+          label: 'Necessidade Nutricionista',
+          className: 'bg-blue-200 text-blue-900',
+          icon: '👩‍⚕️'
+        };
+      case 'CONF NUTRI':
+        return {
+          label: 'Confirmada Nutricionista',
+          className: 'bg-green-200 text-green-900',
+          icon: '✅'
+        };
+      case 'NEC COORD':
+        return {
+          label: 'Necessidade Coordenação',
+          className: 'bg-orange-100 text-orange-800',
+          icon: '👔'
+        };
+      case 'CONF COORD':
+        return {
+          label: 'Confirmada Coordenação',
+          className: 'bg-green-300 text-green-900',
+          icon: '✅'
+        };
+      case 'NEC LOG':
+        return {
+          label: 'Necessidade Logística',
+          className: 'bg-purple-100 text-purple-800',
+          icon: '🚚'
+        };
       case 'APROVADA':
         return {
           label: 'Aprovada',

@@ -10,6 +10,7 @@ export const useNecessidadesFilters = () => {
     data: '', // Semana de consumo (será inicializada com semana atual apenas na primeira vez)
     search: '',
     semana_abastecimento: '',
+    status: '',
     ativo: true
   });
   const [inicializado, setInicializado] = useState(false);
@@ -42,6 +43,7 @@ export const useNecessidadesFilters = () => {
       data: '', // Limpar completamente a semana de consumo
       search: '',
       semana_abastecimento: '',
+      status: '',
       ativo: true
     });
     // Marcar como inicializado para não re-preencer automaticamente após limpar

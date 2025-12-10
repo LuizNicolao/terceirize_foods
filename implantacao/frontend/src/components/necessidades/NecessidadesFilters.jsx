@@ -204,7 +204,25 @@ const NecessidadesFilters = ({
     // Não permitir mudança manual - apenas informativo
   };
 
-  const hasActiveFilters = filtros.escola || filtros.grupo || filtros.data || filtros.search || filtros.semana_abastecimento;
+  const handleStatusChange = (status) => {
+    onFilterChange({ status });
+  };
+
+  // Opções de status disponíveis
+  const opcoesStatus = [
+    { value: '', label: 'Todos os Status' },
+    { value: 'NEC', label: 'NEC - Criada pela Nutricionista' },
+    { value: 'NEC NUTRI', label: 'NEC NUTRI - Necessidade Nutricionista' },
+    { value: 'CONF NUTRI', label: 'CONF NUTRI - Confirmada Nutricionista' },
+    { value: 'NEC COORD', label: 'NEC COORD - Necessidade Coordenação' },
+    { value: 'CONF COORD', label: 'CONF COORD - Confirmada Coordenação' },
+    { value: 'NEC LOG', label: 'NEC LOG - Necessidade Logística' },
+    { value: 'APROVADA', label: 'APROVADA' },
+    { value: 'REJEITADA', label: 'REJEITADA' },
+    { value: 'EM_ANALISE', label: 'EM_ANALISE - Em Análise' }
+  ];
+
+  const hasActiveFilters = filtros.escola || filtros.grupo || filtros.data || filtros.search || filtros.semana_abastecimento || filtros.status;
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -223,7 +241,7 @@ const NecessidadesFilters = ({
         )}
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
         {/* Selecionar Escola */}
         <div>
           <SearchableSelect
@@ -309,6 +327,19 @@ const NecessidadesFilters = ({
                 : "Selecione primeiro a semana de consumo"
             }
             disabled={true}
+            usePortal={false}
+          />
+        </div>
+
+        {/* Status */}
+        <div>
+          <SearchableSelect
+            label="Status"
+            value={filtros.status || ''}
+            onChange={handleStatusChange}
+            options={opcoesStatus}
+            placeholder="Selecione o status..."
+            disabled={loading}
             usePortal={false}
           />
         </div>

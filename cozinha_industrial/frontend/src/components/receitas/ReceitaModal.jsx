@@ -197,14 +197,14 @@ const ReceitaModal = ({
   // Preencher dados quando receita é fornecida
   useEffect(() => {
     if (isOpen && receita) {
-      // Formatar percapita dos produtos para 3 casas decimais
+      // Formatar percapita dos produtos para 4 casas decimais
       const produtosFormatados = (receita.produtos || []).map(produto => {
         if (produto.percapta_sugerida !== null && produto.percapta_sugerida !== undefined) {
           const valorNumerico = parseFloat(produto.percapta_sugerida);
           if (!isNaN(valorNumerico)) {
             return {
               ...produto,
-              percapta_sugerida: parseFloat(valorNumerico.toFixed(3))
+              percapta_sugerida: parseFloat(valorNumerico.toFixed(4))
             };
           }
         }
@@ -348,36 +348,52 @@ const ReceitaModal = ({
   };
 
   const handleUpdateProdutoPercapta = (index, percapta) => {
-    // Validar e limitar a 3 casas decimais
+    // Validar e limitar a 4 casas decimais
     let valor = percapta;
-    if (valor !== '' && valor !== null && valor !== undefined) {
-      if (valor.toString().includes('.')) {
-        const partes = valor.toString().split('.');
-        if (partes[1] && partes[1].length > 3) {
-          valor = `${partes[0]}.${partes[1].substring(0, 3)}`;
-        }
-      }
-      
-      const valorNumerico = parseFloat(valor);
+    
+    // Se for string vazia ou '0', permitir
+    if (valor === '' || valor === '0' || valor === null || valor === undefined) {
       setFormData(prev => ({
         ...prev,
         produtos: prev.produtos.map((produto, i) => 
           i === index 
-            ? { ...produto, percapta_sugerida: !isNaN(valorNumerico) ? valorNumerico : null }
+            ? { ...produto, percapta_sugerida: valor === '' || valor === null || valor === undefined ? null : 0 }
             : produto
         )
       }));
-    } else {
-      // Permitir campo vazio
-      setFormData(prev => ({
-        ...prev,
-        produtos: prev.produtos.map((produto, i) => 
-          i === index 
-            ? { ...produto, percapta_sugerida: null }
-            : produto
-        )
-      }));
+      return;
     }
+    
+    // Converter para string para processar
+    const valorStr = valor.toString();
+    
+    // Limitar a 4 casas decimais
+    if (valorStr.includes('.')) {
+      const partes = valorStr.split('.');
+      if (partes[1] && partes[1].length > 4) {
+        valor = `${partes[0]}.${partes[1].substring(0, 4)}`;
+      }
+    }
+    
+    // Também verificar se tem vírgula (formato brasileiro)
+    if (valorStr.includes(',')) {
+      const partes = valorStr.split(',');
+      if (partes[1] && partes[1].length > 4) {
+        valor = `${partes[0]}.${partes[1].substring(0, 4)}`;
+      } else {
+        valor = valorStr.replace(',', '.');
+      }
+    }
+    
+    const valorNumerico = parseFloat(valor);
+    setFormData(prev => ({
+      ...prev,
+      produtos: prev.produtos.map((produto, i) => 
+        i === index 
+          ? { ...produto, percapta_sugerida: !isNaN(valorNumerico) ? valorNumerico : null }
+          : produto
+      )
+    }));
   };
 
   const handleSubmit = (e) => {

@@ -248,8 +248,27 @@ class PeriodosAtendimentoCRUDController {
       }
 
       // Validar que cozinha_industrial_ids é um array
-      if (!Array.isArray(cozinha_industrial_ids) || cozinha_industrial_ids.length === 0) {
-        return errorResponse(res, 'Deve informar pelo menos uma unidade escolar', STATUS_CODES.BAD_REQUEST);
+      if (!Array.isArray(cozinha_industrial_ids)) {
+        return errorResponse(res, 'cozinha_industrial_ids deve ser um array', STATUS_CODES.BAD_REQUEST);
+      }
+      
+      // Permitir array vazio para desativar todos os vínculos (soft delete)
+      if (cozinha_industrial_ids.length === 0) {
+        // Marcar todos os vínculos existentes como inativos (soft delete)
+        await executeQuery(
+          'UPDATE cozinha_industrial_periodos_atendimento SET status = ?, usuario_atualizador_id = ?, atualizado_em = CURRENT_TIMESTAMP WHERE periodo_atendimento_id = ?',
+          ['inativo', usuarioId, id]
+        );
+        
+        const periodoAtualizado = await PeriodosAtendimentoCRUDController.buscarPeriodoCompleto(id);
+        periodoAtualizado.unidades_vinculadas = [];
+        
+        return successResponse(
+          res,
+          periodoAtualizado,
+          'Todos os vínculos foram desativados com sucesso',
+          STATUS_CODES.OK
+        );
       }
 
       // Buscar unidades escolares do foods_db para validar
@@ -303,13 +322,7 @@ class PeriodosAtendimentoCRUDController {
         console.warn(`Algumas unidades não foram encontradas ou não pertencem à filial CD TOLEDO: ${unidadesNaoEncontradas.join(', ')}`);
       }
 
-      // Remover vínculos existentes para este período
-      await executeQuery(
-        'DELETE FROM cozinha_industrial_periodos_atendimento WHERE periodo_atendimento_id = ?',
-        [id]
-      );
-
-      // Buscar nomes das unidades do Foods API antes de inserir
+      // Buscar nomes das unidades do Foods API antes de inserir/atualizar
       const foodsApiUrl = process.env.FOODS_API_URL || 'http://localhost:3001';
       const authToken = req.headers.authorization;
       
@@ -347,8 +360,14 @@ class PeriodosAtendimentoCRUDController {
         });
       }
 
-      // Inserir novos vínculos com nomes das unidades
-      // Usar executeTransaction como em outras partes do código para múltiplas inserções
+      // Primeiro, marcar todos os vínculos existentes deste período como inativos
+      await executeQuery(
+        'UPDATE cozinha_industrial_periodos_atendimento SET status = ?, usuario_atualizador_id = ?, atualizado_em = CURRENT_TIMESTAMP WHERE periodo_atendimento_id = ?',
+        ['inativo', usuarioId, id]
+      );
+
+      // Depois, inserir/atualizar vínculos selecionados como ativos
+      // Usar INSERT ... ON DUPLICATE KEY UPDATE para atualizar vínculos existentes
       if (unidadesValidas.length > 0) {
         const vinculosQueries = unidadesValidas.map(unidadeId => {
           const unidadeFoods = unidadesMap.get(parseInt(unidadeId));
@@ -357,7 +376,12 @@ class PeriodosAtendimentoCRUDController {
           return {
             sql: `INSERT INTO cozinha_industrial_periodos_atendimento 
               (cozinha_industrial_id, unidade_nome, periodo_atendimento_id, status, usuario_criador_id, usuario_atualizador_id) 
-              VALUES (?, ?, ?, ?, ?, ?)`,
+              VALUES (?, ?, ?, ?, ?, ?)
+              ON DUPLICATE KEY UPDATE
+                status = 'ativo',
+                unidade_nome = VALUES(unidade_nome),
+                usuario_atualizador_id = VALUES(usuario_atualizador_id),
+                atualizado_em = CURRENT_TIMESTAMP`,
             params: [parseInt(unidadeId), unidadeNome, parseInt(id), 'ativo', usuarioId, usuarioId]
           };
         });

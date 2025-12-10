@@ -120,19 +120,62 @@ const ProdutosReceita = ({
               </label>
               <Input
                 type="number"
-                step="0.001"
+                step="0.0001"
                 min="0"
+                max="999.9999"
                 value={produtoForm.percapta_sugerida}
                 onChange={(e) => {
                   let valor = e.target.value;
-                  // Validar e limitar a 3 casas decimais
-                  if (valor && valor.includes('.')) {
-                    const partes = valor.split('.');
-                    if (partes[1] && partes[1].length > 3) {
-                      valor = `${partes[0]}.${partes[1].substring(0, 3)}`;
+                  // Validar e limitar a 4 casas decimais durante a digitação
+                  if (valor === '' || valor === '0') {
+                    onProdutoFormChange('percapta_sugerida', valor);
+                    return;
+                  }
+                  
+                  // Verificar se é um número válido
+                  if (!isNaN(parseFloat(valor)) && parseFloat(valor) >= 0) {
+                    // Limitar valor máximo (999.9999)
+                    const valorNumerico = parseFloat(valor);
+                    if (valorNumerico > 999.9999) {
+                      onProdutoFormChange('percapta_sugerida', '999.9999');
+                      return;
+                    }
+                    
+                    // Limitar a 4 casas decimais
+                    if (valor.includes('.')) {
+                      const partes = valor.split('.');
+                      // Limitar parte inteira a 3 dígitos (999)
+                      if (partes[0].length > 3) {
+                        partes[0] = partes[0].substring(0, 3);
+                      }
+                      // Limitar parte decimal a 4 dígitos
+                      if (partes[1] && partes[1].length > 4) {
+                        partes[1] = partes[1].substring(0, 4);
+                      }
+                      valor = `${partes[0]}.${partes[1] || ''}`;
+                    } else {
+                      // Limitar parte inteira a 3 dígitos (999)
+                      if (valor.length > 3) {
+                        valor = valor.substring(0, 3);
+                      }
+                    }
+                    
+                    // Também verificar vírgula (formato brasileiro)
+                    if (valor.includes(',')) {
+                      const partes = valor.split(',');
+                      if (partes[1] && partes[1].length > 4) {
+                        valor = `${partes[0]}.${partes[1].substring(0, 4)}`;
+                      } else {
+                        valor = valor.replace(',', '.');
+                      }
+                    }
+                    
+                    // Verificar novamente o valor máximo após limitação
+                    const valorFinal = parseFloat(valor);
+                    if (!isNaN(valorFinal) && valorFinal <= 999.9999) {
+                      onProdutoFormChange('percapta_sugerida', valor);
                     }
                   }
-                  onProdutoFormChange('percapta_sugerida', valor);
                 }}
                 placeholder="Percapta"
                 className="w-full"
@@ -200,28 +243,66 @@ const ProdutosReceita = ({
                       <div>
                         <input
                           type="number"
-                          step="0.001"
+                          step="0.0001"
                           min="0"
+                          max="999.9999"
                           value={produto.percapta_sugerida !== null && produto.percapta_sugerida !== undefined 
                             ? (typeof produto.percapta_sugerida === 'number' 
-                                ? parseFloat(produto.percapta_sugerida.toFixed(3)) 
-                                : parseFloat(parseFloat(produto.percapta_sugerida).toFixed(3))
+                                ? parseFloat(produto.percapta_sugerida.toFixed(4)) 
+                                : parseFloat(parseFloat(produto.percapta_sugerida).toFixed(4))
                               )
                             : ''}
                           onChange={(e) => {
                             const valor = e.target.value;
-                            // Permitir digitar 0 ou valores decimais
-                            if (valor === '' || valor === '0' || (!isNaN(parseFloat(valor)) && parseFloat(valor) >= 0)) {
+                            // Validar e limitar a 4 casas decimais durante a digitação
+                            if (valor === '' || valor === '0') {
                               onUpdateProdutoPercapta(index, valor);
+                              return;
+                            }
+                            
+                            // Verificar se é um número válido
+                            if (!isNaN(parseFloat(valor)) && parseFloat(valor) >= 0) {
+                              // Limitar valor máximo (999.9999)
+                              const valorNumerico = parseFloat(valor);
+                              if (valorNumerico > 999.9999) {
+                                onUpdateProdutoPercapta(index, '999.9999');
+                                return;
+                              }
+                              
+                              // Limitar a 4 casas decimais e parte inteira a 3 dígitos
+                              let valorLimitado = valor;
+                              if (valorLimitado.includes('.')) {
+                                const partes = valorLimitado.split('.');
+                                // Limitar parte inteira a 3 dígitos (999)
+                                if (partes[0].length > 3) {
+                                  partes[0] = partes[0].substring(0, 3);
+                                }
+                                // Limitar parte decimal a 4 dígitos
+                                if (partes[1] && partes[1].length > 4) {
+                                  partes[1] = partes[1].substring(0, 4);
+                                }
+                                valorLimitado = `${partes[0]}.${partes[1] || ''}`;
+                              } else {
+                                // Limitar parte inteira a 3 dígitos (999)
+                                if (valorLimitado.length > 3) {
+                                  valorLimitado = valorLimitado.substring(0, 3);
+                                }
+                              }
+                              
+                              // Verificar novamente o valor máximo após limitação
+                              const valorFinal = parseFloat(valorLimitado);
+                              if (!isNaN(valorFinal) && valorFinal <= 999.9999) {
+                                onUpdateProdutoPercapta(index, valorLimitado);
+                              }
                             }
                           }}
                           onBlur={(e) => {
-                            // Garantir que tenha no máximo 3 casas decimais ao perder o foco
+                            // Garantir que tenha no máximo 4 casas decimais ao perder o foco
                             const valor = e.target.value;
                             if (valor && valor !== '0' && valor.includes('.')) {
                               const partes = valor.split('.');
-                              if (partes[1] && partes[1].length > 3) {
-                                const novoValor = `${partes[0]}.${partes[1].substring(0, 3)}`;
+                              if (partes[1] && partes[1].length > 4) {
+                                const novoValor = `${partes[0]}.${partes[1].substring(0, 4)}`;
                                 onUpdateProdutoPercapta(index, novoValor);
                               }
                             }

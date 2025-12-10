@@ -39,6 +39,14 @@ router.get(
   PeriodosAtendimentoListController.exportarJSON
 );
 
+// GET /periodos-atendimento/periodos-por-unidades - Buscar todos os períodos vinculados a uma lista de unidades
+// IMPORTANTE: Esta rota deve vir ANTES de /:id para evitar conflito de roteamento
+router.get(
+  '/periodos-por-unidades',
+  checkScreenPermission('periodos_atendimento', 'visualizar'),
+  PeriodosAtendimentoListController.buscarPeriodosPorUnidades
+);
+
 // GET /periodos-atendimento/:id - Buscar período de atendimento por ID
 router.get(
   '/:id',

@@ -23,6 +23,8 @@ const PERMISSOES_PADRAO = {
       tipos_pratos: { visualizar: true, criar: false, editar: false, excluir: false },
       pratos: { visualizar: true, criar: false, editar: false, excluir: false },
       periodos_atendimento: { visualizar: true, criar: false, editar: false, excluir: false },
+      contratos: { visualizar: true, criar: false, editar: false, excluir: false },
+      quantidades_servidas: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -42,6 +44,8 @@ const PERMISSOES_PADRAO = {
       tipos_pratos: { visualizar: true, criar: true, editar: true, excluir: false },
       pratos: { visualizar: true, criar: true, editar: true, excluir: false },
       periodos_atendimento: { visualizar: true, criar: true, editar: true, excluir: false },
+      contratos: { visualizar: true, criar: true, editar: true, excluir: false },
+      quantidades_servidas: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -61,6 +65,8 @@ const PERMISSOES_PADRAO = {
       tipos_pratos: { visualizar: true, criar: true, editar: true, excluir: true },
       pratos: { visualizar: true, criar: true, editar: true, excluir: true },
       periodos_atendimento: { visualizar: true, criar: true, editar: true, excluir: true },
+      contratos: { visualizar: true, criar: true, editar: true, excluir: true },
+      quantidades_servidas: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: true, criar: true, editar: true, excluir: true }
     }
   },
@@ -82,6 +88,8 @@ const PERMISSOES_PADRAO = {
       tipos_pratos: { visualizar: true, criar: false, editar: false, excluir: false },
       pratos: { visualizar: true, criar: false, editar: false, excluir: false },
       periodos_atendimento: { visualizar: true, criar: false, editar: false, excluir: false },
+      contratos: { visualizar: true, criar: false, editar: false, excluir: false },
+      quantidades_servidas: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -101,6 +109,8 @@ const PERMISSOES_PADRAO = {
       tipos_pratos: { visualizar: true, criar: true, editar: true, excluir: false },
       pratos: { visualizar: true, criar: true, editar: true, excluir: false },
       periodos_atendimento: { visualizar: true, criar: true, editar: true, excluir: false },
+      contratos: { visualizar: true, criar: true, editar: true, excluir: false },
+      quantidades_servidas: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -120,6 +130,8 @@ const PERMISSOES_PADRAO = {
       tipos_pratos: { visualizar: true, criar: true, editar: true, excluir: false },
       pratos: { visualizar: true, criar: true, editar: true, excluir: false },
       periodos_atendimento: { visualizar: true, criar: true, editar: true, excluir: false },
+      contratos: { visualizar: true, criar: true, editar: true, excluir: false },
+      quantidades_servidas: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -141,6 +153,8 @@ const PERMISSOES_PADRAO = {
       tipos_pratos: { visualizar: true, criar: false, editar: false, excluir: false },
       pratos: { visualizar: true, criar: false, editar: false, excluir: false },
       periodos_atendimento: { visualizar: true, criar: false, editar: false, excluir: false },
+      contratos: { visualizar: true, criar: false, editar: false, excluir: false },
+      quantidades_servidas: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -160,6 +174,8 @@ const PERMISSOES_PADRAO = {
       tipos_pratos: { visualizar: true, criar: false, editar: false, excluir: false },
       pratos: { visualizar: true, criar: false, editar: false, excluir: false },
       periodos_atendimento: { visualizar: true, criar: false, editar: false, excluir: false },
+      contratos: { visualizar: true, criar: false, editar: false, excluir: false },
+      quantidades_servidas: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -179,6 +195,8 @@ const PERMISSOES_PADRAO = {
       tipos_pratos: { visualizar: true, criar: false, editar: false, excluir: false },
       pratos: { visualizar: true, criar: true, editar: true, excluir: false },
       periodos_atendimento: { visualizar: true, criar: true, editar: true, excluir: false },
+      contratos: { visualizar: true, criar: true, editar: true, excluir: false },
+      quantidades_servidas: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -200,6 +218,8 @@ const PERMISSOES_PADRAO = {
       tipos_pratos: { visualizar: true, criar: false, editar: false, excluir: false },
       pratos: { visualizar: true, criar: false, editar: false, excluir: false },
       periodos_atendimento: { visualizar: true, criar: false, editar: false, excluir: false },
+      contratos: { visualizar: true, criar: false, editar: false, excluir: false },
+      quantidades_servidas: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -219,6 +239,8 @@ const PERMISSOES_PADRAO = {
       tipos_pratos: { visualizar: true, criar: false, editar: false, excluir: false },
       pratos: { visualizar: true, criar: true, editar: true, excluir: false },
       periodos_atendimento: { visualizar: true, criar: true, editar: true, excluir: false },
+      contratos: { visualizar: true, criar: true, editar: true, excluir: false },
+      quantidades_servidas: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -238,6 +260,8 @@ const PERMISSOES_PADRAO = {
       tipos_pratos: { visualizar: true, criar: false, editar: false, excluir: false },
       pratos: { visualizar: true, criar: true, editar: true, excluir: false },
       periodos_atendimento: { visualizar: true, criar: true, editar: true, excluir: false },
+      contratos: { visualizar: true, criar: true, editar: true, excluir: false },
+      quantidades_servidas: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -259,6 +283,8 @@ const PERMISSOES_PADRAO = {
       tipos_pratos: { visualizar: true, criar: false, editar: false, excluir: false },
       pratos: { visualizar: true, criar: false, editar: false, excluir: false },
       periodos_atendimento: { visualizar: true, criar: false, editar: false, excluir: false },
+      contratos: { visualizar: true, criar: false, editar: false, excluir: false },
+      quantidades_servidas: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -278,6 +304,8 @@ const PERMISSOES_PADRAO = {
       tipos_pratos: { visualizar: true, criar: false, editar: false, excluir: false },
       pratos: { visualizar: true, criar: true, editar: true, excluir: false },
       periodos_atendimento: { visualizar: true, criar: true, editar: true, excluir: false },
+      contratos: { visualizar: true, criar: true, editar: true, excluir: false },
+      quantidades_servidas: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -297,6 +325,8 @@ const PERMISSOES_PADRAO = {
       tipos_pratos: { visualizar: true, criar: false, editar: false, excluir: false },
       pratos: { visualizar: true, criar: true, editar: true, excluir: false },
       periodos_atendimento: { visualizar: true, criar: true, editar: true, excluir: false },
+      contratos: { visualizar: true, criar: true, editar: true, excluir: false },
+      quantidades_servidas: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -318,6 +348,8 @@ const PERMISSOES_PADRAO = {
       tipos_pratos: { visualizar: true, criar: false, editar: false, excluir: false },
       pratos: { visualizar: true, criar: false, editar: false, excluir: false },
       periodos_atendimento: { visualizar: true, criar: false, editar: false, excluir: false },
+      contratos: { visualizar: true, criar: false, editar: false, excluir: false },
+      quantidades_servidas: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -337,6 +369,8 @@ const PERMISSOES_PADRAO = {
       tipos_pratos: { visualizar: true, criar: false, editar: false, excluir: false },
       pratos: { visualizar: true, criar: true, editar: true, excluir: false },
       periodos_atendimento: { visualizar: true, criar: true, editar: true, excluir: false },
+      contratos: { visualizar: true, criar: true, editar: true, excluir: false },
+      quantidades_servidas: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -356,6 +390,8 @@ const PERMISSOES_PADRAO = {
       tipos_pratos: { visualizar: true, criar: false, editar: false, excluir: false },
       pratos: { visualizar: true, criar: true, editar: true, excluir: true },
       periodos_atendimento: { visualizar: true, criar: true, editar: true, excluir: true },
+      contratos: { visualizar: true, criar: true, editar: true, excluir: true },
+      quantidades_servidas: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   }
@@ -381,6 +417,8 @@ const TODAS_TELAS = [
   'tipos_pratos',
   'pratos',
   'periodos_atendimento',
+  'contratos',
+  'quantidades_servidas',
   'permissoes'
 ];
 
@@ -421,6 +459,8 @@ const TELAS_COM_DESCRICOES = [
   { nome: 'tipos_pratos', descricao: 'Cadastro de Tipos de Pratos' },
   { nome: 'pratos', descricao: 'Cadastro de Pratos' },
   { nome: 'periodos_atendimento', descricao: 'Cadastro de Períodos de Atendimento' },
+  { nome: 'contratos', descricao: 'Cadastro de Contratos' },
+  { nome: 'quantidades_servidas', descricao: 'Registro de Quantidades Servidas' },
   { nome: 'permissoes', descricao: 'Gerenciamento de Permissões' }
 ];
 

@@ -48,6 +48,9 @@ const Grupos = () => {
     setSearchTerm,
     handleKeyPress,
     setStatusFilter,
+    tipoFilter,
+    setTipoFilter,
+    tiposDisponiveis,
     handleClearFilters,
     formatDate,
     getStatusLabel
@@ -124,6 +127,17 @@ const Grupos = () => {
         onClear={handleClearFilters}
         placeholder="Buscar por nome, código ou descrição..."
         useSearchableSelect={false}
+        additionalFilters={[
+          {
+            label: 'Tipo',
+            value: tipoFilter,
+            onChange: setTipoFilter,
+            options: [
+              { value: '', label: 'Todos os tipos' },
+              ...tiposDisponiveis
+            ]
+          }
+        ]}
       />
 
       {/* Ações de Exportação */}

@@ -321,9 +321,9 @@ const ProdutoPerCapitaModal = ({
                   </label>
                   <Input
                     type="number"
-                    step="0.001"
+                    step="0.0001"
                     min="0"
-                    max="999.999"
+                    max="999.9999"
                     value={formData[periodo.key]}
                     onChange={(e) => handleInputChange(periodo.key, parseFloat(e.target.value) || 0)}
                     placeholder={periodo.placeholder}

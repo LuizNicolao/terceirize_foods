@@ -146,7 +146,7 @@ const GerenciarPeriodos = ({
                           <span className="ml-2 text-xs text-gray-500">(novo)</span>
                         )}
                       </div>
-                      {!isViewMode && periodo.id === null && (
+                      {!isViewMode && (
                         <>
                           <Button
                             type="button"

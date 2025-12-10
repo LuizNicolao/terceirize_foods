@@ -9,7 +9,8 @@ import {
   NecessidadesStats,
   NecessidadesFilters,
   NecessidadeModal,
-  ImportNecessidadesModal
+  ImportNecessidadesModal,
+  StatusBadge
 } from '../../components/necessidades';
 import { ActionButtons, Modal, Pagination } from '../../components/ui';
 import { ExportButtons } from '../../components/shared';
@@ -258,8 +259,8 @@ const Necessidades = () => {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Semana Abastecimento
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Data Criação
+                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
                   </th>
                   <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Ações
@@ -282,6 +283,7 @@ const Necessidades = () => {
                         data_consumo: necessidade.semana_consumo,
                         data_abastecimento: necessidade.semana_abastecimento,
                         data_preenchimento: necessidade.data_preenchimento,
+                        status: necessidade.status,
                         produtos: []
                       };
                     }
@@ -322,8 +324,8 @@ const Necessidades = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {grupo.data_abastecimento || '-'}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {grupo.data_preenchimento ? new Date(grupo.data_preenchimento).toLocaleDateString('pt-BR') : '-'}
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        <StatusBadge status={grupo.status || grupo.produtos[0]?.status || 'NEC'} />
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                         <ActionButtons
