@@ -393,52 +393,62 @@ export const useAcoesNecessidades = ({
           mensagem: 'Enviando registros para Confirmação Nutri (CONF NUTRI)...'
         });
 
-        // Processar sequencialmente (uma por vez) para evitar deadlocks
-        // Com delay entre cada requisição para reduzir conflitos e evitar rate limit
-        const resultados = [];
-        const delayEntreRequisicoes = 200; // 200ms entre cada requisição (aumentado para evitar rate limit)
+        // Processar em blocos para melhor performance
+        // Aumentar tamanho do bloco para grandes volumes (4k+ linhas)
+        const totalRegistros = registrosSelecionados.length;
+        const TAMANHO_BLOCO = totalRegistros > 2000 ? 100 : 50; // Blocos maiores para grandes volumes
+        const necessidadeIds = registrosSelecionados.map(r => r.necessidade_id);
+        let totalSucessos = 0;
+        let totalErros = 0;
+        let processados = 0;
+        const totalBlocos = Math.ceil(necessidadeIds.length / TAMANHO_BLOCO);
         
-        for (let i = 0; i < registrosSelecionados.length; i++) {
-          const registro = registrosSelecionados[i];
+        // Processar em blocos com delay entre eles para não sobrecarregar
+        for (let i = 0; i < necessidadeIds.length; i += TAMANHO_BLOCO) {
+          const bloco = necessidadeIds.slice(i, i + TAMANHO_BLOCO);
+          const blocoAtual = Math.floor(i / TAMANHO_BLOCO) + 1;
           
           try {
-            // Passar skipLoading=true para evitar que o loading dispare e cause flickering
-            // O modal de progresso já controla a visualização do progresso
+            // Atualizar mensagem de progresso com informações do bloco
+            setProgressoModal(prev => ({
+              ...prev,
+              mensagem: `Processando bloco ${blocoAtual} de ${totalBlocos} (${processados}/${totalRegistros} registros)...`
+            }));
+            
+            // Enviar bloco inteiro de uma vez
             const resultado = await enviarParaNutricionista({
-              necessidade_id: registro.necessidade_id,
-              escola_id: registro.escola_id
+              necessidade_ids: bloco
             }, true); // skipLoading = true para não piscar o filtro
-            resultados.push(resultado);
+            
+            totalSucessos += (resultado.sucessos || 0);
+            totalErros += (resultado.erros || 0);
+            processados += bloco.length;
           } catch (error) {
-            resultados.push({
-              success: false,
-              error: error?.message || 'Erro desconhecido'
-            });
+            console.error(`Erro ao processar bloco ${blocoAtual}:`, error);
+            totalErros += bloco.length;
+            processados += bloco.length;
           }
           
           // Atualizar progresso
           setProgressoModal(prev => ({
             ...prev,
-            progresso: i + 1
+            progresso: processados
           }));
           
-          // Delay entre requisições (exceto na última)
-          if (i < registrosSelecionados.length - 1) {
-            await new Promise(resolve => setTimeout(resolve, delayEntreRequisicoes));
+          // Pequeno delay entre blocos para não sobrecarregar o servidor (exceto no último bloco)
+          if (i + TAMANHO_BLOCO < necessidadeIds.length) {
+            await new Promise(resolve => setTimeout(resolve, 100)); // 100ms entre blocos
           }
         }
         
         // Fechar modal de progresso
         setProgressoModal(prev => ({ ...prev, isOpen: false }));
         
-        const sucessos = resultados.filter(r => r.success).length;
-        const erros = resultados.filter(r => !r.success).length;
-        
         resultado = {
-          success: sucessos > 0,
-          data: { sucessos, erros },
-          sucessos,
-          erros
+          success: totalSucessos > 0,
+          data: { sucessos: totalSucessos, erros: totalErros },
+          sucessos: totalSucessos,
+          erros: totalErros
         };
       } else {
         // Coordenação: NEC COORD -> NEC LOG; CONF COORD -> CONF
@@ -525,8 +535,9 @@ export const useAcoesNecessidades = ({
           }
         }
         
-        // Se houver muitos registros (mais de 10), usar modal de progresso e processar individualmente
-        const usarModalProgresso = idsParaEnviar.length > 10;
+        // Sempre usar modal de progresso para mostrar o andamento
+        // Processar em blocos para melhor performance
+        const usarModalProgresso = idsParaEnviar.length > 0;
         
         if (usarModalProgresso) {
           // Abrir modal de progresso
@@ -539,61 +550,72 @@ export const useAcoesNecessidades = ({
               : 'Confirmando registros (CONF)...'
           });
 
-          // Processar sequencialmente (uma por vez) para evitar deadlocks
-          // Com delay entre cada requisição para reduzir conflitos e evitar rate limit
-          const resultados = [];
-          const delayEntreRequisicoes = 200; // 200ms entre cada requisição
+          // Processar em blocos para melhor performance
+          // Aumentar tamanho do bloco para grandes volumes (4k+ linhas)
+          const totalRegistros = idsParaEnviar.length;
+          const TAMANHO_BLOCO = totalRegistros > 2000 ? 100 : 50; // Blocos maiores para grandes volumes
+          let totalSucessos = 0;
+          let totalErros = 0;
+          let processados = 0;
+          const totalBlocos = Math.ceil(idsParaEnviar.length / TAMANHO_BLOCO);
           
-          for (let i = 0; i < idsParaEnviar.length; i++) {
-            const necessidadeId = idsParaEnviar[i];
+          // Processar em blocos com delay entre eles para não sobrecarregar
+          for (let i = 0; i < idsParaEnviar.length; i += TAMANHO_BLOCO) {
+            const bloco = idsParaEnviar.slice(i, i + TAMANHO_BLOCO);
+            const blocoAtual = Math.floor(i / TAMANHO_BLOCO) + 1;
             
             try {
-              let resultadoItem;
+              // Atualizar mensagem de progresso com informações do bloco
+              setProgressoModal(prev => ({
+                ...prev,
+                mensagem: status === 'NEC COORD' 
+                  ? `Processando bloco ${blocoAtual} de ${totalBlocos} (${processados}/${totalRegistros} registros)...`
+                  : `Confirmando bloco ${blocoAtual} de ${totalBlocos} (${processados}/${totalRegistros} registros)...`
+              }));
+              
+              let resultadoBloco;
               if (status === 'NEC COORD') {
-                resultadoItem = await liberarParaLogistica([necessidadeId]);
+                resultadoBloco = await liberarParaLogistica(bloco);
               } else if (status === 'CONF COORD') {
-                resultadoItem = await confirmarFinal([necessidadeId]);
+                resultadoBloco = await confirmarFinal(bloco);
               }
-              resultados.push({ success: resultadoItem === true || (resultadoItem?.success === true) });
+              
+              totalSucessos += (resultadoBloco?.sucessos || resultadoBloco?.data?.sucessos || 0);
+              totalErros += (resultadoBloco?.erros || resultadoBloco?.data?.erros || 0);
+              processados += bloco.length;
             } catch (error) {
-              resultados.push({
-                success: false,
-                error: error?.message || 'Erro desconhecido'
-              });
+              console.error(`Erro ao processar bloco ${blocoAtual}:`, error);
+              totalErros += bloco.length;
+              processados += bloco.length;
             }
             
             // Atualizar progresso
             setProgressoModal(prev => ({
               ...prev,
-              progresso: i + 1
+              progresso: processados
             }));
             
-            // Delay entre requisições (exceto na última)
-            if (i < idsParaEnviar.length - 1) {
-              await new Promise(resolve => setTimeout(resolve, delayEntreRequisicoes));
+            // Pequeno delay entre blocos para não sobrecarregar o servidor (exceto no último bloco)
+            if (i + TAMANHO_BLOCO < idsParaEnviar.length) {
+              await new Promise(resolve => setTimeout(resolve, 100)); // 100ms entre blocos
             }
           }
           
           // Fechar modal de progresso
           setProgressoModal(prev => ({ ...prev, isOpen: false }));
           
-          const sucessos = resultados.filter(r => r.success).length;
-          const erros = resultados.filter(r => !r.success).length;
-          
           resultado = {
-            success: sucessos > 0,
-            data: { sucessos, erros },
-            sucessos,
-            erros
+            success: totalSucessos > 0,
+            data: { sucessos: totalSucessos, erros: totalErros },
+            sucessos: totalSucessos,
+            erros: totalErros
           };
         } else {
-          // Se houver poucos registros, processar normalmente (batch)
-        if (status === 'NEC COORD') {
-          // NEC COORD vai para NEC LOG (não mais para CONF NUTRI)
-          resultado = await liberarParaLogistica(idsParaEnviar);
-        } else if (status === 'CONF COORD') {
-          resultado = await confirmarFinal(idsParaEnviar);
-          }
+          // Se não houver registros, retornar erro
+          resultado = {
+            success: false,
+            message: 'Nenhum registro para processar'
+          };
         }
       }
       

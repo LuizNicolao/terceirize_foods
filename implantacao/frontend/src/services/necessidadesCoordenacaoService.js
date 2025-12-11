@@ -36,8 +36,16 @@ const necessidadesCoordenacaoService = {
   // Liberar para logística
   async liberarParaLogistica(necessidadeIds) {
     try {
+      // Calcular timeout baseado no tamanho do bloco (mais tempo para blocos maiores)
+      const quantidadeIds = Array.isArray(necessidadeIds) ? necessidadeIds.length : 1;
+      const timeoutBase = 120000; // 120 segundos base
+      const timeoutPorItem = 2000; // 2 segundos por item
+      const timeout = Math.min(timeoutBase + (quantidadeIds * timeoutPorItem), 300000); // Máximo 5 minutos
+      
       const response = await api.post('/necessidades/coordenacao/liberar-logistica', {
         necessidade_ids: necessidadeIds
+      }, {
+        timeout: timeout
       });
       return response.data;
     } catch (error) {
@@ -70,8 +78,16 @@ const necessidadesCoordenacaoService = {
   // Novo: confirmação final (CONF) a partir de CONF COORD
   async confirmarFinal(necessidadeIds) {
     try {
+      // Calcular timeout baseado no tamanho do bloco (mais tempo para blocos maiores)
+      const quantidadeIds = Array.isArray(necessidadeIds) ? necessidadeIds.length : 1;
+      const timeoutBase = 120000; // 120 segundos base
+      const timeoutPorItem = 2000; // 2 segundos por item
+      const timeout = Math.min(timeoutBase + (quantidadeIds * timeoutPorItem), 300000); // Máximo 5 minutos
+      
       const response = await api.post('/necessidades/coordenacao/confirmar-final', {
         necessidade_ids: necessidadeIds
+      }, {
+        timeout: timeout
       });
       return response.data;
     } catch (error) {

@@ -214,17 +214,37 @@ class NecessidadesLogisticaController {
 
   // Enviar para confirmação da nutricionista (mudar status para CONF NUTRI)
   static async enviarParaNutricionista(req, res) {
-    const { necessidade_id, escola_id } = req.body;
-
-    if (!necessidade_id) {
+    // Aceitar tanto necessidade_id único quanto array de necessidade_ids
+    const { necessidade_id, necessidade_ids, escola_id } = req.body;
+    
+    // Normalizar para array
+    let idsParaProcessar = [];
+    if (necessidade_ids && Array.isArray(necessidade_ids)) {
+      idsParaProcessar = necessidade_ids;
+    } else if (necessidade_id) {
+      idsParaProcessar = [necessidade_id];
+    } else {
       return res.status(400).json({
         success: false,
-        message: 'necessidade_id é obrigatório'
+        message: 'necessidade_id ou necessidade_ids é obrigatório'
       });
     }
 
-    // Função auxiliar para executar com retry em caso de deadlock
-    const executarComRetry = async (maxTentativas = 5) => {
+    if (idsParaProcessar.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Nenhum ID de necessidade fornecido'
+      });
+    }
+
+    // Processar em blocos para evitar sobrecarga
+    const TAMANHO_BLOCO = 50;
+    let sucessos = 0;
+    let erros = 0;
+    const errosDetalhes = [];
+
+    // Função auxiliar para processar um bloco de IDs
+    const processarBloco = async (idsBloco, maxTentativas = 5) => {
       let ultimoErro = null;
       const { pool } = require('../../config/database');
       
@@ -237,20 +257,23 @@ class NecessidadesLogisticaController {
           
           await connection.beginTransaction();
 
+          // Criar placeholders para o IN clause
+          const placeholders = idsBloco.map(() => '?').join(',');
+          
           // Usar SELECT FOR UPDATE para lockar os registros em ordem consistente
           // Isso evita deadlocks ao garantir que todos os processos lockem na mesma ordem
           const [rows] = await connection.execute(`
             SELECT id, necessidade_id, ajuste_logistica, ajuste_coordenacao, ajuste_nutricionista, ajuste
             FROM necessidades
-            WHERE necessidade_id = ? AND status = 'NEC LOG'
+            WHERE necessidade_id IN (${placeholders}) AND status = 'NEC LOG'
             ORDER BY id ASC
             FOR UPDATE
-          `, [necessidade_id]);
+          `, idsBloco);
 
           if (rows.length === 0) {
             await connection.rollback();
             connection.release();
-            throw new Error('Nenhuma necessidade encontrada com os critérios especificados');
+            return { sucessos: 0, erros: idsBloco.length };
           }
 
           // Primeiro: se ajuste_logistica estiver NULL, copiar ajuste_coordenacao
@@ -259,9 +282,9 @@ class NecessidadesLogisticaController {
           await connection.execute(`
             UPDATE necessidades
             SET ajuste_logistica = COALESCE(ajuste_logistica, ajuste_coordenacao, ajuste_nutricionista, ajuste)
-            WHERE necessidade_id = ? AND status = 'NEC LOG'
+            WHERE necessidade_id IN (${placeholders}) AND status = 'NEC LOG'
               AND (ajuste_logistica IS NULL OR ajuste_logistica = 0)
-          `, [necessidade_id]);
+          `, idsBloco);
 
           // Segundo: atualizar status para CONF NUTRI
           // NÃO copiar para ajuste_conf_nutri aqui - isso será feito quando nutri confirmar
@@ -269,13 +292,13 @@ class NecessidadesLogisticaController {
             UPDATE necessidades 
             SET status = 'CONF NUTRI',
                 data_atualizacao = NOW()
-            WHERE necessidade_id = ? AND status = 'NEC LOG'
-          `, [necessidade_id]);
+            WHERE necessidade_id IN (${placeholders}) AND status = 'NEC LOG'
+          `, idsBloco);
 
           await connection.commit();
           connection.release();
           
-          return result;
+          return { sucessos: result.affectedRows, erros: idsBloco.length - result.affectedRows };
         } catch (error) {
           try {
             await connection.rollback();
@@ -308,11 +331,30 @@ class NecessidadesLogisticaController {
     };
 
     try {
-      await executarComRetry();
+      // Processar em blocos
+      for (let i = 0; i < idsParaProcessar.length; i += TAMANHO_BLOCO) {
+        const bloco = idsParaProcessar.slice(i, i + TAMANHO_BLOCO);
+        
+        try {
+          const resultado = await processarBloco(bloco);
+          sucessos += resultado.sucessos;
+          erros += resultado.erros;
+        } catch (error) {
+          console.error(`Erro ao processar bloco de IDs:`, error);
+          erros += bloco.length;
+          errosDetalhes.push({
+            bloco: bloco,
+            erro: error.message
+          });
+        }
+      }
 
       res.json({
-        success: true,
-        message: 'Necessidade enviada para confirmação da nutricionista'
+        success: sucessos > 0,
+        message: `${sucessos} necessidade(s) enviada(s) para confirmação da nutricionista${erros > 0 ? `, ${erros} erro(s)` : ''}`,
+        sucessos,
+        erros,
+        total: idsParaProcessar.length
       });
 
     } catch (error) {
@@ -323,14 +365,18 @@ class NecessidadesLogisticaController {
         return res.status(409).json({
           success: false,
           message: 'Conflito ao processar. Por favor, tente novamente em alguns instantes.',
-          error: 'Deadlock detectado - operação pode ser tentada novamente'
+          error: 'Deadlock detectado - operação pode ser tentada novamente',
+          sucessos,
+          erros
         });
       }
       
       res.status(500).json({
         success: false,
         message: 'Erro interno do servidor',
-        error: error.message
+        error: error.message,
+        sucessos,
+        erros
       });
     }
   }

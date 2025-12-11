@@ -37,9 +37,18 @@ const necessidadesLogisticaService = {
   },
 
   // Enviar para confirmação da nutricionista
+  // Aceita tanto necessidade_id único quanto array de necessidade_ids
   async enviarParaNutricionista(dados) {
     try {
-      const response = await api.post('/necessidades/logistica/enviar-nutri', dados);
+      // Calcular timeout baseado no tamanho do bloco (mais tempo para blocos maiores)
+      const quantidadeIds = Array.isArray(dados.necessidade_ids) ? dados.necessidade_ids.length : 1;
+      const timeoutBase = 120000; // 120 segundos base
+      const timeoutPorItem = 2000; // 2 segundos por item
+      const timeout = Math.min(timeoutBase + (quantidadeIds * timeoutPorItem), 300000); // Máximo 5 minutos
+      
+      const response = await api.post('/necessidades/logistica/enviar-nutri', dados, {
+        timeout: timeout
+      });
       return response.data;
     } catch (error) {
       console.error('Erro ao enviar para nutricionista:', error);

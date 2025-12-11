@@ -213,48 +213,61 @@ class NecessidadesCoordenacaoController {
         });
       }
 
+      if (necessidade_ids.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Nenhum ID de necessidade fornecido'
+        });
+      }
+
+      // Processar em blocos para evitar sobrecarga
+      const TAMANHO_BLOCO = 50;
       let sucessos = 0;
       let erros = 0;
 
-      for (const necessidade_id of necessidade_ids) {
+      // Processar em blocos
+      for (let i = 0; i < necessidade_ids.length; i += TAMANHO_BLOCO) {
+        const bloco = necessidade_ids.slice(i, i + TAMANHO_BLOCO);
+        
         try {
+          // Criar placeholders para o IN clause
+          const placeholders = bloco.map(() => '?').join(',');
+          
           // Primeiro: copiar ajuste_nutricionista para ajuste_coordenacao quando status = 'NEC COORD'
           // (só se ajuste_coordenacao estiver NULL)
           await executeQuery(`
             UPDATE necessidades 
             SET ajuste_coordenacao = COALESCE(ajuste_nutricionista, ajuste)
-            WHERE necessidade_id = ? 
+            WHERE necessidade_id IN (${placeholders})
               AND status = 'NEC COORD'
               AND (ajuste_coordenacao IS NULL OR ajuste_coordenacao = 0)
-          `, [necessidade_id]);
+          `, bloco);
 
           // Segundo: atualizar status para NEC LOG
           const updateQuery = `
             UPDATE necessidades 
             SET status = 'NEC LOG', 
                 data_atualizacao = NOW()
-            WHERE necessidade_id = ? AND status = 'NEC COORD'
+            WHERE necessidade_id IN (${placeholders}) AND status = 'NEC COORD'
           `;
           
-          const result = await executeQuery(updateQuery, [necessidade_id]);
+          const result = await executeQuery(updateQuery, bloco);
           
-          if (result.affectedRows > 0) {
-            sucessos++;
-          } else {
-            erros++;
-          }
+          sucessos += result.affectedRows;
+          erros += (bloco.length - result.affectedRows);
 
         } catch (error) {
-          console.error(`Erro ao liberar necessidade ${necessidade_id}:`, error);
-          erros++;
+          console.error(`Erro ao processar bloco de necessidades:`, error);
+          erros += bloco.length;
         }
       }
 
       res.json({
-        success: true,
+        success: sucessos > 0,
         message: `Necessidades liberadas: ${sucessos} sucessos, ${erros} erros`,
         sucessos,
-        erros
+        erros,
+        total: necessidade_ids.length
       });
 
     } catch (error) {
@@ -717,31 +730,58 @@ NecessidadesCoordenacaoController.confirmarFinal = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Lista de IDs de necessidade é obrigatória' });
     }
 
+    if (necessidade_ids.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Nenhum ID de necessidade fornecido'
+      });
+    }
+
+    // Processar em blocos para evitar sobrecarga
+    const TAMANHO_BLOCO = 50;
     let sucessos = 0;
     let erros = 0;
-    for (const necessidade_id of necessidade_ids) {
+
+    // Processar em blocos
+    for (let i = 0; i < necessidade_ids.length; i += TAMANHO_BLOCO) {
+      const bloco = necessidade_ids.slice(i, i + TAMANHO_BLOCO);
+      
       try {
+        // Criar placeholders para o IN clause
+        const placeholders = bloco.map(() => '?').join(',');
+        
         // Primeiro: copiar ajuste_conf_nutri para ajuste_conf_coord quando status = 'CONF COORD'
         // (só se ajuste_conf_coord estiver NULL)
         await executeQuery(`
           UPDATE necessidades
           SET ajuste_conf_coord = COALESCE(ajuste_conf_nutri, ajuste_logistica, ajuste_coordenacao, ajuste_nutricionista, ajuste)
-          WHERE necessidade_id = ? 
+          WHERE necessidade_id IN (${placeholders})
             AND status = 'CONF COORD'
             AND (ajuste_conf_coord IS NULL OR ajuste_conf_coord = 0)
-        `, [necessidade_id]);
+        `, bloco);
 
         // Segundo: atualizar status para CONF
         const result = await executeQuery(`
           UPDATE necessidades
           SET status = 'CONF', data_atualizacao = NOW()
-          WHERE necessidade_id = ? AND status = 'CONF COORD'
-        `, [necessidade_id]);
-        if (result.affectedRows > 0) sucessos++; else erros++;
-      } catch (e) { erros++; }
+          WHERE necessidade_id IN (${placeholders}) AND status = 'CONF COORD'
+        `, bloco);
+        
+        sucessos += result.affectedRows;
+        erros += (bloco.length - result.affectedRows);
+      } catch (error) {
+        console.error(`Erro ao processar bloco de necessidades:`, error);
+        erros += bloco.length;
+      }
     }
 
-    return res.json({ success: true, message: `Confirmadas: ${sucessos} sucesso(s), ${erros} erro(s)`, sucessos, erros });
+    return res.json({ 
+      success: sucessos > 0, 
+      message: `Confirmadas: ${sucessos} sucesso(s), ${erros} erro(s)`, 
+      sucessos, 
+      erros,
+      total: necessidade_ids.length
+    });
   } catch (error) {
     console.error('Erro ao confirmar final:', error);
     return res.status(500).json({ success: false, message: 'Erro interno do servidor', error: error.message });

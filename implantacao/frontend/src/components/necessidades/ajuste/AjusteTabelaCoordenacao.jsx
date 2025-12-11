@@ -442,7 +442,7 @@ const AjusteTabelaCoordenacao = ({
             onClick={() => setModoVisualizacao('individual')}
             className={`px-4 py-2 text-sm font-medium rounded-md transition-colors flex items-center gap-2 ${
               modoVisualizacao === 'individual'
-                ? 'bg-white text-blue-600 shadow-sm'
+                ? 'bg-white text-green-600 shadow-sm'
                 : 'text-gray-600 hover:text-gray-900'
             }`}
             title="Visualização Individual"
@@ -454,7 +454,7 @@ const AjusteTabelaCoordenacao = ({
             onClick={() => setModoVisualizacao('consolidado')}
             className={`px-4 py-2 text-sm font-medium rounded-md transition-colors flex items-center gap-2 ${
               modoVisualizacao === 'consolidado'
-                ? 'bg-white text-blue-600 shadow-sm'
+                ? 'bg-white text-green-600 shadow-sm'
                 : 'text-gray-600 hover:text-gray-900'
             }`}
             title="Visualização Consolidada"
