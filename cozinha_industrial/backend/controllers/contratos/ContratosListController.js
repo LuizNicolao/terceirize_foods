@@ -10,7 +10,7 @@ class ContratosListController {
    * Listar contratos com filtros e paginação
    */
   static listar = asyncHandler(async (req, res) => {
-    const { search, status } = req.query;
+    const { search, status, centro_custo_id, filial_id } = req.query;
     const pagination = req.pagination;
 
     let baseQuery = `
@@ -51,6 +51,16 @@ class ContratosListController {
     if (status) {
       baseQuery += ` AND status = ?`;
       params.push(status);
+    }
+
+    if (centro_custo_id) {
+      baseQuery += ` AND centro_custo_id = ?`;
+      params.push(centro_custo_id);
+    }
+
+    if (filial_id) {
+      baseQuery += ` AND filial_id = ?`;
+      params.push(filial_id);
     }
 
     // Ordenação

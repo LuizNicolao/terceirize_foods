@@ -38,7 +38,8 @@ const logAction = async (userId, action, resource, details = null, ip = null) =>
 };
 
 // Middleware para auditoria automática
-const auditMiddleware = (action, resource) => {
+// Aceita (resource, action) para manter compatibilidade com chamadas existentes
+const auditMiddleware = (resource, action) => {
   return async (req, res, next) => {
     const originalSend = res.send;
     

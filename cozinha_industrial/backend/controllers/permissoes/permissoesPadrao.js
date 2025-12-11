@@ -25,6 +25,9 @@ const PERMISSOES_PADRAO = {
       periodos_atendimento: { visualizar: true, criar: false, editar: false, excluir: false },
       contratos: { visualizar: true, criar: false, editar: false, excluir: false },
       quantidades_servidas: { visualizar: true, criar: false, editar: false, excluir: false },
+      calendario: { visualizar: true, criar: false, editar: false, excluir: false },
+      cardapios: { visualizar: true, criar: false, editar: false, excluir: false },
+      necessidades: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -46,6 +49,9 @@ const PERMISSOES_PADRAO = {
       periodos_atendimento: { visualizar: true, criar: true, editar: true, excluir: false },
       contratos: { visualizar: true, criar: true, editar: true, excluir: false },
       quantidades_servidas: { visualizar: true, criar: true, editar: true, excluir: false },
+      calendario: { visualizar: true, criar: true, editar: true, excluir: false },
+      cardapios: { visualizar: true, criar: true, editar: true, excluir: true },
+      necessidades: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -67,6 +73,9 @@ const PERMISSOES_PADRAO = {
       periodos_atendimento: { visualizar: true, criar: true, editar: true, excluir: true },
       contratos: { visualizar: true, criar: true, editar: true, excluir: true },
       quantidades_servidas: { visualizar: true, criar: true, editar: true, excluir: true },
+      calendario: { visualizar: true, criar: true, editar: true, excluir: true },
+      cardapios: { visualizar: true, criar: true, editar: true, excluir: true },
+      necessidades: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: true, criar: true, editar: true, excluir: true }
     }
   },
@@ -90,6 +99,9 @@ const PERMISSOES_PADRAO = {
       periodos_atendimento: { visualizar: true, criar: false, editar: false, excluir: false },
       contratos: { visualizar: true, criar: false, editar: false, excluir: false },
       quantidades_servidas: { visualizar: true, criar: false, editar: false, excluir: false },
+      calendario: { visualizar: true, criar: false, editar: false, excluir: false },
+      cardapios: { visualizar: true, criar: false, editar: false, excluir: false },
+      necessidades: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -111,6 +123,9 @@ const PERMISSOES_PADRAO = {
       periodos_atendimento: { visualizar: true, criar: true, editar: true, excluir: false },
       contratos: { visualizar: true, criar: true, editar: true, excluir: false },
       quantidades_servidas: { visualizar: true, criar: true, editar: true, excluir: false },
+      calendario: { visualizar: true, criar: true, editar: true, excluir: false },
+      cardapios: { visualizar: true, criar: true, editar: true, excluir: true },
+      necessidades: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -132,6 +147,9 @@ const PERMISSOES_PADRAO = {
       periodos_atendimento: { visualizar: true, criar: true, editar: true, excluir: false },
       contratos: { visualizar: true, criar: true, editar: true, excluir: false },
       quantidades_servidas: { visualizar: true, criar: true, editar: true, excluir: false },
+      calendario: { visualizar: true, criar: true, editar: true, excluir: false },
+      cardapios: { visualizar: true, criar: true, editar: true, excluir: true },
+      necessidades: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -155,6 +173,9 @@ const PERMISSOES_PADRAO = {
       periodos_atendimento: { visualizar: true, criar: false, editar: false, excluir: false },
       contratos: { visualizar: true, criar: false, editar: false, excluir: false },
       quantidades_servidas: { visualizar: true, criar: false, editar: false, excluir: false },
+      calendario: { visualizar: true, criar: false, editar: false, excluir: false },
+      cardapios: { visualizar: true, criar: false, editar: false, excluir: false },
+      necessidades: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -176,6 +197,9 @@ const PERMISSOES_PADRAO = {
       periodos_atendimento: { visualizar: true, criar: false, editar: false, excluir: false },
       contratos: { visualizar: true, criar: false, editar: false, excluir: false },
       quantidades_servidas: { visualizar: true, criar: false, editar: false, excluir: false },
+      calendario: { visualizar: true, criar: false, editar: false, excluir: false },
+      cardapios: { visualizar: true, criar: false, editar: false, excluir: false },
+      necessidades: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -197,6 +221,9 @@ const PERMISSOES_PADRAO = {
       periodos_atendimento: { visualizar: true, criar: true, editar: true, excluir: false },
       contratos: { visualizar: true, criar: true, editar: true, excluir: false },
       quantidades_servidas: { visualizar: true, criar: true, editar: true, excluir: false },
+      calendario: { visualizar: true, criar: true, editar: true, excluir: false },
+      cardapios: { visualizar: true, criar: true, editar: true, excluir: true },
+      necessidades: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -220,6 +247,9 @@ const PERMISSOES_PADRAO = {
       periodos_atendimento: { visualizar: true, criar: false, editar: false, excluir: false },
       contratos: { visualizar: true, criar: false, editar: false, excluir: false },
       quantidades_servidas: { visualizar: true, criar: false, editar: false, excluir: false },
+      calendario: { visualizar: true, criar: false, editar: false, excluir: false },
+      cardapios: { visualizar: true, criar: false, editar: false, excluir: false },
+      necessidades: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -241,6 +271,9 @@ const PERMISSOES_PADRAO = {
       periodos_atendimento: { visualizar: true, criar: true, editar: true, excluir: false },
       contratos: { visualizar: true, criar: true, editar: true, excluir: false },
       quantidades_servidas: { visualizar: true, criar: true, editar: true, excluir: false },
+      calendario: { visualizar: true, criar: true, editar: true, excluir: false },
+      cardapios: { visualizar: true, criar: true, editar: true, excluir: true },
+      necessidades: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -262,6 +295,9 @@ const PERMISSOES_PADRAO = {
       periodos_atendimento: { visualizar: true, criar: true, editar: true, excluir: false },
       contratos: { visualizar: true, criar: true, editar: true, excluir: false },
       quantidades_servidas: { visualizar: true, criar: true, editar: true, excluir: false },
+      calendario: { visualizar: true, criar: true, editar: true, excluir: false },
+      cardapios: { visualizar: true, criar: true, editar: true, excluir: true },
+      necessidades: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -285,6 +321,9 @@ const PERMISSOES_PADRAO = {
       periodos_atendimento: { visualizar: true, criar: false, editar: false, excluir: false },
       contratos: { visualizar: true, criar: false, editar: false, excluir: false },
       quantidades_servidas: { visualizar: true, criar: false, editar: false, excluir: false },
+      calendario: { visualizar: true, criar: false, editar: false, excluir: false },
+      cardapios: { visualizar: true, criar: false, editar: false, excluir: false },
+      necessidades: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -306,6 +345,9 @@ const PERMISSOES_PADRAO = {
       periodos_atendimento: { visualizar: true, criar: true, editar: true, excluir: false },
       contratos: { visualizar: true, criar: true, editar: true, excluir: false },
       quantidades_servidas: { visualizar: true, criar: true, editar: true, excluir: false },
+      calendario: { visualizar: true, criar: true, editar: true, excluir: false },
+      cardapios: { visualizar: true, criar: true, editar: true, excluir: true },
+      necessidades: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -327,6 +369,9 @@ const PERMISSOES_PADRAO = {
       periodos_atendimento: { visualizar: true, criar: true, editar: true, excluir: false },
       contratos: { visualizar: true, criar: true, editar: true, excluir: false },
       quantidades_servidas: { visualizar: true, criar: true, editar: true, excluir: false },
+      calendario: { visualizar: true, criar: true, editar: true, excluir: false },
+      cardapios: { visualizar: true, criar: true, editar: true, excluir: true },
+      necessidades: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -350,6 +395,9 @@ const PERMISSOES_PADRAO = {
       periodos_atendimento: { visualizar: true, criar: false, editar: false, excluir: false },
       contratos: { visualizar: true, criar: false, editar: false, excluir: false },
       quantidades_servidas: { visualizar: true, criar: false, editar: false, excluir: false },
+      calendario: { visualizar: true, criar: false, editar: false, excluir: false },
+      cardapios: { visualizar: true, criar: false, editar: false, excluir: false },
+      necessidades: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -371,6 +419,9 @@ const PERMISSOES_PADRAO = {
       periodos_atendimento: { visualizar: true, criar: true, editar: true, excluir: false },
       contratos: { visualizar: true, criar: true, editar: true, excluir: false },
       quantidades_servidas: { visualizar: true, criar: true, editar: true, excluir: false },
+      calendario: { visualizar: true, criar: true, editar: true, excluir: false },
+      cardapios: { visualizar: true, criar: true, editar: true, excluir: true },
+      necessidades: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -392,6 +443,9 @@ const PERMISSOES_PADRAO = {
       periodos_atendimento: { visualizar: true, criar: true, editar: true, excluir: true },
       contratos: { visualizar: true, criar: true, editar: true, excluir: true },
       quantidades_servidas: { visualizar: true, criar: true, editar: true, excluir: true },
+      calendario: { visualizar: true, criar: true, editar: true, excluir: true },
+      cardapios: { visualizar: true, criar: true, editar: true, excluir: true },
+      necessidades: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   }
@@ -419,6 +473,9 @@ const TODAS_TELAS = [
   'periodos_atendimento',
   'contratos',
   'quantidades_servidas',
+  'calendario',
+  'cardapios',
+  'necessidades',
   'permissoes'
 ];
 
@@ -461,6 +518,9 @@ const TELAS_COM_DESCRICOES = [
   { nome: 'periodos_atendimento', descricao: 'Cadastro de Períodos de Atendimento' },
   { nome: 'contratos', descricao: 'Cadastro de Contratos' },
   { nome: 'quantidades_servidas', descricao: 'Registro de Quantidades Servidas' },
+  { nome: 'calendario', descricao: 'Gerenciamento de Calendário' },
+  { nome: 'cardapios', descricao: 'Gerenciamento de Cardápios' },
+  { nome: 'necessidades', descricao: 'Geração de Necessidades' },
   { nome: 'permissoes', descricao: 'Gerenciamento de Permissões' }
 ];
 

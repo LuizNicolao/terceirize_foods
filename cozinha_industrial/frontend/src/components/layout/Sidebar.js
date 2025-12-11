@@ -27,7 +27,8 @@ import {
   FaListAlt,
   FaClock,
   FaFileContract,
-  FaChartBar
+  FaChartBar,
+  FaCalendarAlt
 } from 'react-icons/fa';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePermissions } from '../../contexts/PermissionsContext';
@@ -63,6 +64,9 @@ const menuGroups = [
               { path: '/periodos-atendimento', icon: FaClock, label: 'Períodos de Atendimento', screen: 'periodos_atendimento' },
               { path: '/contratos', icon: FaFileContract, label: 'Contratos', screen: 'contratos' },
               { path: '/quantidades-servidas', icon: FaChartBar, label: 'Quantidades Servidas', screen: 'quantidades_servidas' },
+              { path: '/cardapios', icon: FaClipboardList, label: 'Cardápios', screen: 'cardapios' },
+              { path: '/necessidades', icon: FaClipboardList, label: 'Necessidades', screen: 'necessidades' },
+              { path: '/calendario', icon: FaCalendarAlt, label: 'Calendário', screen: 'calendario' },
             ]
           },
   {

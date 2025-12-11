@@ -27,6 +27,12 @@ import Pratos from './pages/pratos/Pratos';
 import PeriodosAtendimento from './pages/periodos-atendimento/PeriodosAtendimento';
 import Contratos from './pages/contratos/Contratos';
 import QuantidadesServidas from './pages/quantidades-servidas/QuantidadesServidas';
+import Cardapios from './pages/cardapios/Cardapios';
+import Necessidades from './pages/necessidades/Necessidades';
+import CalendarioVisualizacao from './pages/calendario/CalendarioVisualizacao';
+import CalendarioConfiguracao from './pages/calendario/CalendarioConfiguracao';
+import CalendarioDashboard from './pages/calendario/CalendarioDashboard';
+import CalendarioRelatorios from './pages/calendario/CalendarioRelatorios';
 
 // Componente para rotas protegidas com autenticação
 const AuthenticatedRoute = ({ children }) => {
@@ -260,6 +266,96 @@ function App() {
                 element={
                   <AuthenticatedRoute>
                     <QuantidadesServidas />
+                  </AuthenticatedRoute>
+                }
+              />
+
+              <Route 
+                path="/cardapios" 
+                element={
+                  <AuthenticatedRoute>
+                    <Cardapios />
+                  </AuthenticatedRoute>
+                }
+              />
+
+              <Route 
+                path="/necessidades" 
+                element={
+                  <AuthenticatedRoute>
+                    <Necessidades />
+                  </AuthenticatedRoute>
+                }
+              />
+
+              <Route 
+                path="/calendario" 
+                element={
+                  <AuthenticatedRoute>
+                    <CalendarioDashboard />
+                  </AuthenticatedRoute>
+                }
+              />
+
+              <Route 
+                path="/foods/calendario" 
+                element={
+                  <AuthenticatedRoute>
+                    <CalendarioDashboard />
+                  </AuthenticatedRoute>
+                }
+              />
+
+              <Route 
+                path="/calendario/visualizacao" 
+                element={
+                  <AuthenticatedRoute>
+                    <CalendarioVisualizacao />
+                  </AuthenticatedRoute>
+                }
+              />
+
+              <Route 
+                path="/foods/calendario/visualizacao" 
+                element={
+                  <AuthenticatedRoute>
+                    <CalendarioVisualizacao />
+                  </AuthenticatedRoute>
+                }
+              />
+
+              <Route 
+                path="/calendario/configuracao" 
+                element={
+                  <AuthenticatedRoute>
+                    <CalendarioConfiguracao />
+                  </AuthenticatedRoute>
+                }
+              />
+
+              <Route 
+                path="/foods/calendario/configuracao" 
+                element={
+                  <AuthenticatedRoute>
+                    <CalendarioConfiguracao />
+                  </AuthenticatedRoute>
+                }
+              />
+
+              <Route 
+                path="/calendario/relatorios" 
+                element={
+                  <AuthenticatedRoute>
+                    <CalendarioRelatorios />
+                  </AuthenticatedRoute>
+                }
+              />
+
+              <Route 
+                path="/foods/calendario/relatorios" 
+                element={
+                  <AuthenticatedRoute>
+                    <CalendarioRelatorios />
                   </AuthenticatedRoute>
                 }
               />

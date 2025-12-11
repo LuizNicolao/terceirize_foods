@@ -34,7 +34,10 @@ const PermissoesForm = ({
       { key: 'pratos', label: 'Pratos' },
       { key: 'periodos_atendimento', label: 'Períodos de Atendimento' },
       { key: 'contratos', label: 'Contratos' },
-      { key: 'quantidades_servidas', label: 'Quantidades Servidas' }
+      { key: 'quantidades_servidas', label: 'Quantidades Servidas' },
+      { key: 'calendario', label: 'Calendário' },
+      { key: 'cardapios', label: 'Cardápios' },
+      { key: 'necessidades', label: 'Necessidades' }
     ],
     'Sistema': [
       { key: 'permissoes', label: 'Permissões' }

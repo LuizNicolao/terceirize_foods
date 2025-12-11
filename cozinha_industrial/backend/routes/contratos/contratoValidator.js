@@ -21,7 +21,7 @@ const commonValidations = {
   
   pagination: [
     query('page').optional().isInt({ min: 1 }).withMessage('Página deve ser um número inteiro positivo'),
-    query('limit').optional().isInt({ min: 1, max: 100 }).withMessage('Limite deve ser entre 1 e 100')
+    query('limit').optional().isInt({ min: 1, max: 1000 }).withMessage('Limite deve ser entre 1 e 1000')
   ],
   
   sort: [
@@ -148,6 +148,8 @@ const contratosValidations = {
   
   filtros: [
     query('status').optional().isIn(['ativo', 'inativo']).withMessage('Status deve ser "ativo" ou "inativo"'),
+    query('centro_custo_id').optional().isInt({ min: 1 }).withMessage('centro_custo_id deve ser um número inteiro positivo'),
+    query('filial_id').optional().isInt({ min: 1 }).withMessage('filial_id deve ser um número inteiro positivo'),
     handleValidationErrors
   ]
 };

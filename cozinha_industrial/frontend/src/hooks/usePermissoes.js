@@ -154,6 +154,9 @@ export const usePermissoes = () => {
         'periodos_atendimento',
         'contratos',
         'quantidades_servidas',
+        'calendario',
+        'cardapios',
+        'necessidades',
         'permissoes'
       ];
       
