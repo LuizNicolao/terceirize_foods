@@ -5,7 +5,6 @@ import { Button, Input, Modal, MaskedFormInput } from '../ui';
 import EfetivosContent from './EfetivosContent';
 import TiposCardapioContent from './TiposCardapioContent';
 import PeriodosRefeicaoContent from './PeriodosRefeicaoContent';
-import PeriodicidadeContent from './PeriodicidadeContent';
 import { PatrimoniosList } from '../patrimonios';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import centroCustoService from '../../services/centroCusto';
@@ -26,7 +25,7 @@ const UnidadeEscolarModal = ({
   
   // Watch do CEP para garantir sincronização
   const cepValue = watch('cep');
-  const [activeTab, setActiveTab] = useState('info'); // 'info', 'efetivos', 'patrimonios', 'tipos-cardapio', 'periodos-refeicao' ou 'periodicidade'
+  const [activeTab, setActiveTab] = useState('info'); // 'info', 'efetivos', 'patrimonios', 'tipos-cardapio', 'periodos-refeicao'
   const { canView, canEdit, canDelete, canMovimentar } = usePermissions();
   const [centrosCusto, setCentrosCusto] = useState([]);
   const [carregandoCentrosCusto, setCarregandoCentrosCusto] = useState(false);
@@ -267,19 +266,6 @@ const UnidadeEscolarModal = ({
             >
               <FaUtensils />
               Períodos de Refeição
-            </button>
-          )}
-          {unidade && (
-            <button
-              onClick={() => setActiveTab('periodicidade')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${
-                activeTab === 'periodicidade'
-                  ? 'border-green-500 text-green-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              <FaCalendarAlt />
-              Periodicidade
             </button>
           )}
         </nav>
@@ -689,15 +675,6 @@ const UnidadeEscolarModal = ({
         </div>
       )}
 
-      {/* Aba de Periodicidade */}
-      {activeTab === 'periodicidade' && unidade && (
-        <div className="max-h-[75vh] overflow-y-auto">
-          <PeriodicidadeContent
-            unidadeEscolarId={unidade.id}
-            viewMode={isViewMode}
-          />
-        </div>
-      )}
     </Modal>
   );
 };

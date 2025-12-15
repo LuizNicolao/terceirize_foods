@@ -35,8 +35,18 @@ const ModalValidacaoExclusao = ({
         response.data.forEach(registro => {
           const data = registro.data; // Formato YYYY-MM-DD
           
-          // Se já existe, mantém os valores; se não, cria novo
+          // Se já existe, somar os valores; se não, cria novo
           if (!diasMap.has(data)) {
+            // Calcular total de refeições a partir dos valores (estrutura nova com períodos dinâmicos)
+            let totalRefeicoes = 0;
+            if (registro.valores && typeof registro.valores === 'object') {
+              Object.values(registro.valores).forEach(periodoData => {
+                const valorObj = typeof periodoData === 'object' && periodoData !== null ? periodoData : { valor: periodoData };
+                const valor = Number(valorObj.valor) || 0;
+                totalRefeicoes += valor;
+              });
+            }
+            
             diasMap.set(data, {
               data: data,
               dataFormatada: new Date(data + 'T00:00:00').toLocaleDateString('pt-BR', {
@@ -44,12 +54,19 @@ const ModalValidacaoExclusao = ({
                 month: '2-digit',
                 year: 'numeric'
               }),
-              lanche_manha: Number(registro.lanche_manha) || 0,
-              almoco: Number(registro.almoco) || 0,
-              lanche_tarde: Number(registro.lanche_tarde) || 0,
-              parcial: Number(registro.parcial) || 0,
-              eja: Number(registro.eja) || 0
+              valores: registro.valores || {}, // Estrutura com períodos dinâmicos
+              totalRefeicoes: totalRefeicoes
             });
+          } else {
+            // Se já existe, somar os valores adicionais
+            const diaExistente = diasMap.get(data);
+            if (registro.valores && typeof registro.valores === 'object') {
+              Object.values(registro.valores).forEach(periodoData => {
+                const valorObj = typeof periodoData === 'object' && periodoData !== null ? periodoData : { valor: periodoData };
+                const valor = Number(valorObj.valor) || 0;
+                diaExistente.totalRefeicoes += valor;
+              });
+            }
           }
         });
         
@@ -135,14 +152,23 @@ const ModalValidacaoExclusao = ({
   };
 
   const calcularTotalRefeicoes = (dia) => {
-    // Garantir que os valores sejam números
-    const lanche_manha = Number(dia.lanche_manha) || 0;
-    const almoco = Number(dia.almoco) || 0;
-    const lanche_tarde = Number(dia.lanche_tarde) || 0;
-    const parcial = Number(dia.parcial) || 0;
-    const eja = Number(dia.eja) || 0;
+    // Se já tiver o total calculado, usar ele
+    if (dia.totalRefeicoes !== undefined) {
+      return dia.totalRefeicoes;
+    }
     
-    return lanche_manha + almoco + lanche_tarde + parcial + eja;
+    // Caso contrário, calcular a partir dos valores (estrutura nova com períodos dinâmicos)
+    if (dia.valores && typeof dia.valores === 'object') {
+      let total = 0;
+      Object.values(dia.valores).forEach(periodoData => {
+        const valorObj = typeof periodoData === 'object' && periodoData !== null ? periodoData : { valor: periodoData };
+        const valor = Number(valorObj.valor) || 0;
+        total += valor;
+      });
+      return total;
+    }
+    
+    return 0;
   };
 
   return (
@@ -227,34 +253,36 @@ const ModalValidacaoExclusao = ({
                       </div>
                       
                       <div className="flex items-center space-x-2">
-                        {/* Detalhes das refeições */}
-                        <div className="flex space-x-1 text-xs">
-                          {dia.lanche_manha > 0 && (
-                            <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded">
-                              LM: {dia.lanche_manha}
-                            </span>
-                          )}
-                          {dia.almoco > 0 && (
-                            <span className="bg-green-100 text-green-800 px-2 py-1 rounded">
-                              AL: {dia.almoco}
-                            </span>
-                          )}
-                          {dia.lanche_tarde > 0 && (
-                            <span className="bg-orange-100 text-orange-800 px-2 py-1 rounded">
-                              LT: {dia.lanche_tarde}
-                            </span>
-                          )}
-                          {dia.parcial > 0 && (
-                            <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                              PC: {dia.parcial}
-                            </span>
-                          )}
-                          {dia.eja > 0 && (
-                            <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded">
-                              EJA: {dia.eja}
-                            </span>
-                          )}
-                        </div>
+                        {/* Detalhes das refeições por período */}
+                        {dia.valores && typeof dia.valores === 'object' && Object.keys(dia.valores).length > 0 && (
+                          <div className="flex flex-wrap gap-1 text-xs">
+                            {Object.entries(dia.valores).map(([periodoId, periodoData]) => {
+                              const valorObj = typeof periodoData === 'object' && periodoData !== null ? periodoData : { valor: periodoData };
+                              const valor = Number(valorObj.valor) || 0;
+                              
+                              if (valor <= 0) return null;
+                              
+                              const periodoNome = valorObj.periodo_nome || valorObj.periodo_codigo || `P${periodoId}`;
+                              const cores = [
+                                'bg-blue-100 text-blue-800',
+                                'bg-green-100 text-green-800',
+                                'bg-purple-100 text-purple-800',
+                                'bg-orange-100 text-orange-800',
+                                'bg-rose-100 text-rose-800',
+                                'bg-yellow-100 text-yellow-800',
+                                'bg-indigo-100 text-indigo-800',
+                                'bg-pink-100 text-pink-800'
+                              ];
+                              const corIndex = parseInt(periodoId) % cores.length;
+                              
+                              return (
+                                <span key={periodoId} className={`${cores[corIndex]} px-2 py-1 rounded`}>
+                                  {periodoNome}: {valor}
+                                </span>
+                              );
+                            })}
+                          </div>
+                        )}
                         
                         {isSelecionado && (
                           <FaCheck className="text-red-600" />

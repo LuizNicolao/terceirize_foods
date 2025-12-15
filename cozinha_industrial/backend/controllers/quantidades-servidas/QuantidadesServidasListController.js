@@ -178,27 +178,32 @@ class QuantidadesServidasListController {
     // Criar whereClause para subquery (substituir rd. por alias correto)
     const subqueryWhere = whereClause.replace(/rd\./g, 'quantidades_servidas.');
     
-    // Query principal: buscar apenas o registro mais recente de cada unidade
-    // Usar INNER JOIN com subquery para pegar apenas a data máxima de cada unidade
-    // Similar ao sistema de implantação
+    // Query principal: buscar apenas o registro mais recente de cada unidade + tipo_cardapio
+    // Usar INNER JOIN com subquery para pegar apenas a data máxima de cada unidade + tipo_cardapio
+    // Agrupar por unidade_id + tipo_cardapio_id + data
     const query = `
       SELECT 
         rd.unidade_id,
         MAX(rd.unidade_nome) as unidade_nome,
+        COALESCE(MAX(rd.tipo_cardapio_id), 0) as tipo_cardapio_id,
+        COALESCE(MAX(tc.filial_nome), 'N/A') as tipo_cardapio_info,
         rd.data,
         MAX(rd.nutricionista_id) as nutricionista_id,
         MIN(rd.criado_em) as data_cadastro,
         MAX(rd.atualizado_em) as data_atualizacao${pivotColumns ? ',\n        ' + pivotColumns : ''}
       FROM quantidades_servidas rd
+      LEFT JOIN tipos_cardapio tc ON rd.tipo_cardapio_id = tc.id
       INNER JOIN (
-        SELECT unidade_id, MAX(data) as max_data
+        SELECT unidade_id, COALESCE(tipo_cardapio_id, 0) as tipo_cardapio_id, MAX(data) as max_data
         FROM quantidades_servidas
         ${subqueryWhere}
-        GROUP BY unidade_id
-      ) rd_recente ON rd.unidade_id = rd_recente.unidade_id AND rd.data = rd_recente.max_data
+        GROUP BY unidade_id, COALESCE(tipo_cardapio_id, 0)
+      ) rd_recente ON rd.unidade_id = rd_recente.unidade_id 
+        AND COALESCE(rd.tipo_cardapio_id, 0) = rd_recente.tipo_cardapio_id
+        AND rd.data = rd_recente.max_data
       ${whereClause}
-      GROUP BY rd.unidade_id, rd.data
-      ORDER BY rd.data DESC, rd.unidade_id ASC
+      GROUP BY rd.unidade_id, COALESCE(rd.tipo_cardapio_id, 0), rd.data
+      ORDER BY rd.data DESC, rd.unidade_id ASC, COALESCE(rd.tipo_cardapio_id, 0) ASC
       LIMIT ${limitInt} OFFSET ${offsetInt}
     `;
     
@@ -218,11 +223,13 @@ class QuantidadesServidasListController {
       });
       
       // Remover as colunas de pivot do objeto registro
-      const { unidade_id, unidade_nome, data, nutricionista_id, data_cadastro, data_atualizacao } = registro;
+      const { unidade_id, unidade_nome, tipo_cardapio_id, tipo_cardapio_info, data, nutricionista_id, data_cadastro, data_atualizacao } = registro;
       
       return {
         unidade_id,
         unidade_nome,
+        tipo_cardapio_id: tipo_cardapio_id === 0 ? null : tipo_cardapio_id,
+        tipo_cardapio_info: tipo_cardapio_info || 'Sem Tipo de Cardápio',
         data,
         nutricionista_id,
         data_cadastro,
@@ -237,27 +244,30 @@ class QuantidadesServidasListController {
     });
     
     // Garantir que não há duplicatas no resultado final (por segurança)
+    // Chave agora inclui tipo_cardapio_id para diferenciar registros
     const registrosFinaisMap = new Map();
     registrosCompletos.forEach(registro => {
-      const chave = `${registro.unidade_id}-${registro.data}`;
+      const chave = `${registro.unidade_id}-${registro.tipo_cardapio_id || 0}-${registro.data}`;
       if (!registrosFinaisMap.has(chave)) {
         registrosFinaisMap.set(chave, registro);
       }
     });
     const registrosFinais = Array.from(registrosFinaisMap.values());
     
-    // Contar total (apenas unidades únicas, não registros)
-    // Usar a mesma lógica da query principal: apenas o mais recente de cada unidade
+    // Contar total (unidade + tipo_cardapio únicos, não registros)
+    // Usar a mesma lógica da query principal: apenas o mais recente de cada unidade + tipo_cardapio
     const countSubqueryWhere = whereClause.replace(/rd\./g, 'quantidades_servidas.');
     const countQuery = `
-      SELECT COUNT(DISTINCT rd.unidade_id) as total
+      SELECT COUNT(DISTINCT CONCAT(rd.unidade_id, '-', COALESCE(rd.tipo_cardapio_id, 0))) as total
       FROM quantidades_servidas rd
       INNER JOIN (
-        SELECT unidade_id, MAX(data) as max_data
+        SELECT unidade_id, COALESCE(tipo_cardapio_id, 0) as tipo_cardapio_id, MAX(data) as max_data
         FROM quantidades_servidas
         ${countSubqueryWhere}
-        GROUP BY unidade_id
-      ) rd_recente ON rd.unidade_id = rd_recente.unidade_id AND rd.data = rd_recente.max_data
+        GROUP BY unidade_id, COALESCE(tipo_cardapio_id, 0)
+      ) rd_recente ON rd.unidade_id = rd_recente.unidade_id 
+        AND COALESCE(rd.tipo_cardapio_id, 0) = rd_recente.tipo_cardapio_id
+        AND rd.data = rd_recente.max_data
       ${whereClause}
     `;
     const countResult = await executeQuery(countQuery, params.concat(params));
@@ -303,27 +313,48 @@ class QuantidadesServidasListController {
       `SELECT 
         mup.*,
         pa.nome as periodo_nome,
-        pa.codigo as periodo_codigo
+        pa.codigo as periodo_codigo,
+        tc.filial_nome as tipo_cardapio_filial_nome,
+        tc.contrato_nome as tipo_cardapio_contrato_nome
       FROM medias_quantidades_servidas mup
       INNER JOIN periodos_atendimento pa ON mup.periodo_atendimento_id = pa.id
+      LEFT JOIN tipos_cardapio tc ON mup.tipo_cardapio_id = tc.id
       ${whereClause} 
-      ORDER BY mup.unidade_id ASC, pa.nome ASC`,
+      ORDER BY mup.unidade_id ASC, COALESCE(mup.tipo_cardapio_id, 0) ASC, COALESCE(mup.produto_comercial_id, 0) ASC, pa.nome ASC`,
       params
     );
     
-    // Agrupar por unidade
+    // Agrupar por unidade, tipo de cardápio e produto comercial
     const mediasPorUnidade = {};
     medias.forEach(media => {
-      if (!mediasPorUnidade[media.unidade_id]) {
-        mediasPorUnidade[media.unidade_id] = {
+      const unidadeKey = media.unidade_id;
+      if (!mediasPorUnidade[unidadeKey]) {
+        mediasPorUnidade[unidadeKey] = {
           unidade_id: media.unidade_id,
           unidade_nome: media.unidade_nome,
+          tipos_cardapio: {}
+        };
+      }
+      
+      // Criar chave para tipo de cardápio e produto
+      const tipoCardapioKey = media.tipo_cardapio_id || 'sem-tipo';
+      const produtoKey = media.produto_comercial_id || 'sem-produto';
+      const tipoProdutoKey = `${tipoCardapioKey}-${produtoKey}`;
+      
+      if (!mediasPorUnidade[unidadeKey].tipos_cardapio[tipoProdutoKey]) {
+        mediasPorUnidade[unidadeKey].tipos_cardapio[tipoProdutoKey] = {
+          tipo_cardapio_id: media.tipo_cardapio_id,
+          tipo_cardapio_nome: media.tipo_cardapio_filial_nome && media.tipo_cardapio_contrato_nome
+            ? `${media.tipo_cardapio_filial_nome} - ${media.tipo_cardapio_contrato_nome}`
+            : null,
+          produto_comercial_id: media.produto_comercial_id,
           periodos: []
         };
       }
-      mediasPorUnidade[media.unidade_id].periodos.push({
+      
+      mediasPorUnidade[unidadeKey].tipos_cardapio[tipoProdutoKey].periodos.push({
         periodo_atendimento_id: media.periodo_atendimento_id,
-        periodo_nome: media.periodo_nome || media.periodo_nome,
+        periodo_nome: media.periodo_nome || media.periodo_codigo,
         periodo_codigo: media.periodo_codigo,
         media: parseFloat(media.media) || 0,
         quantidade_lancamentos: media.quantidade_lancamentos || 0,
@@ -331,9 +362,19 @@ class QuantidadesServidasListController {
       });
     });
     
+    // Transformar em array e achatizar a estrutura para compatibilidade com o frontend
+    const mediasFormatadas = Object.values(mediasPorUnidade).map(unidade => {
+      const tiposCardapioArray = Object.values(unidade.tipos_cardapio);
+      return {
+        unidade_id: unidade.unidade_id,
+        unidade_nome: unidade.unidade_nome,
+        tipos_cardapio: tiposCardapioArray
+      };
+    });
+    
     return successResponse(
       res,
-      Object.values(mediasPorUnidade),
+      mediasFormatadas,
       'Médias listadas com sucesso',
       STATUS_CODES.OK
     );
@@ -357,43 +398,82 @@ class QuantidadesServidasListController {
       `SELECT 
         rd.unidade_id,
         MAX(rd.unidade_nome) as unidade_nome,
+        COALESCE(MAX(rd.tipo_cardapio_id), 0) as tipo_cardapio_id,
+        COALESCE(MAX(rd.produto_comercial_id), 0) as produto_comercial_id,
+        COALESCE(MAX(tc.filial_nome), 'N/A') as tipo_cardapio_info,
         rd.data,
-        rd.nutricionista_id,
+        MAX(rd.nutricionista_id) as nutricionista_id,
         MIN(rd.criado_em) as data_cadastro,
         MAX(rd.atualizado_em) as data_atualizacao
       FROM quantidades_servidas rd
+      LEFT JOIN tipos_cardapio tc ON rd.tipo_cardapio_id = tc.id
       WHERE rd.unidade_id = ? AND rd.ativo = 1
-      GROUP BY rd.unidade_id, rd.data, rd.nutricionista_id
-      ORDER BY rd.data DESC`,
+      GROUP BY rd.unidade_id, COALESCE(rd.tipo_cardapio_id, 0), COALESCE(rd.produto_comercial_id, 0), rd.data
+      ORDER BY rd.data DESC, COALESCE(rd.tipo_cardapio_id, 0) ASC, COALESCE(rd.produto_comercial_id, 0) ASC`,
       [unidade_id]
     );
     
     // Para cada registro histórico, buscar valores por período
     const historicoCompleto = await Promise.all(
       historico.map(async (item) => {
+        let whereClause = 'WHERE rd.unidade_id = ? AND rd.data = ? AND rd.ativo = 1';
+        const params = [item.unidade_id, item.data];
+        
+        if (item.tipo_cardapio_id) {
+          whereClause += ' AND COALESCE(rd.tipo_cardapio_id, 0) = ?';
+          params.push(item.tipo_cardapio_id);
+        } else {
+          whereClause += ' AND rd.tipo_cardapio_id IS NULL';
+        }
+        
+        if (item.produto_comercial_id) {
+          whereClause += ' AND COALESCE(rd.produto_comercial_id, 0) = ?';
+          params.push(item.produto_comercial_id);
+        } else {
+          whereClause += ' AND rd.produto_comercial_id IS NULL';
+        }
+        
         const registrosDetalhes = await executeQuery(
           `SELECT 
             rd.periodo_atendimento_id,
+            rd.tipo_cardapio_id,
+            rd.produto_comercial_id,
             rd.valor,
             pa.nome as periodo_nome,
             pa.codigo as periodo_codigo
           FROM quantidades_servidas rd
           INNER JOIN periodos_atendimento pa ON rd.periodo_atendimento_id = pa.id
-          WHERE rd.unidade_id = ? AND rd.data = ? AND rd.ativo = 1`,
-          [item.unidade_id, item.data]
+          ${whereClause}`,
+          params
         );
         
         const valores = {};
         registrosDetalhes.forEach(reg => {
-          valores[reg.periodo_atendimento_id] = {
+          // Criar chave única considerando tipo_cardapio_id e produto_comercial_id
+          const chave = reg.tipo_cardapio_id && reg.produto_comercial_id
+            ? `${reg.tipo_cardapio_id}-${reg.produto_comercial_id}-${reg.periodo_atendimento_id}`
+            : reg.tipo_cardapio_id
+              ? `${reg.tipo_cardapio_id}-sem-produto-${reg.periodo_atendimento_id}`
+              : `sem-tipo-${reg.produto_comercial_id || 'sem-produto'}-${reg.periodo_atendimento_id}`;
+          
+          valores[chave] = {
             valor: reg.valor,
+            periodo_atendimento_id: reg.periodo_atendimento_id,
             periodo_nome: reg.periodo_nome,
-            periodo_codigo: reg.periodo_codigo
+            periodo_codigo: reg.periodo_codigo,
+            tipo_cardapio_id: reg.tipo_cardapio_id || null,
+            produto_comercial_id: reg.produto_comercial_id || null
           };
         });
         
+        // Buscar o primeiro produto_comercial_id dos valores para identificar o produto
+        const primeiroProdutoId = Object.values(valores).find(v => v.produto_comercial_id)?.produto_comercial_id || item.produto_comercial_id;
+        
         return {
           ...item,
+          tipo_cardapio_id: item.tipo_cardapio_id === 0 ? null : item.tipo_cardapio_id,
+          produto_comercial_id: item.produto_comercial_id === 0 ? null : item.produto_comercial_id,
+          tipo_cardapio_info: item.tipo_cardapio_info || 'Sem Tipo de Cardápio',
           valores: valores
         };
       })

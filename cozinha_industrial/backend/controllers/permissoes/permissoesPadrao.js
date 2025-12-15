@@ -27,6 +27,7 @@ const PERMISSOES_PADRAO = {
       quantidades_servidas: { visualizar: true, criar: false, editar: false, excluir: false },
       calendario: { visualizar: true, criar: false, editar: false, excluir: false },
       cardapios: { visualizar: true, criar: false, editar: false, excluir: false },
+      tipos_cardapio: { visualizar: true, criar: false, editar: false, excluir: false },
       necessidades: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
@@ -51,6 +52,7 @@ const PERMISSOES_PADRAO = {
       quantidades_servidas: { visualizar: true, criar: true, editar: true, excluir: false },
       calendario: { visualizar: true, criar: true, editar: true, excluir: false },
       cardapios: { visualizar: true, criar: true, editar: true, excluir: true },
+      tipos_cardapio: { visualizar: true, criar: true, editar: true, excluir: true },
       necessidades: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
@@ -75,6 +77,7 @@ const PERMISSOES_PADRAO = {
       quantidades_servidas: { visualizar: true, criar: true, editar: true, excluir: true },
       calendario: { visualizar: true, criar: true, editar: true, excluir: true },
       cardapios: { visualizar: true, criar: true, editar: true, excluir: true },
+      tipos_cardapio: { visualizar: true, criar: true, editar: true, excluir: true },
       necessidades: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: true, criar: true, editar: true, excluir: true }
     }
@@ -101,6 +104,7 @@ const PERMISSOES_PADRAO = {
       quantidades_servidas: { visualizar: true, criar: false, editar: false, excluir: false },
       calendario: { visualizar: true, criar: false, editar: false, excluir: false },
       cardapios: { visualizar: true, criar: false, editar: false, excluir: false },
+      tipos_cardapio: { visualizar: true, criar: false, editar: false, excluir: false },
       necessidades: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
@@ -125,6 +129,7 @@ const PERMISSOES_PADRAO = {
       quantidades_servidas: { visualizar: true, criar: true, editar: true, excluir: false },
       calendario: { visualizar: true, criar: true, editar: true, excluir: false },
       cardapios: { visualizar: true, criar: true, editar: true, excluir: true },
+      tipos_cardapio: { visualizar: true, criar: true, editar: true, excluir: true },
       necessidades: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
@@ -149,6 +154,7 @@ const PERMISSOES_PADRAO = {
       quantidades_servidas: { visualizar: true, criar: true, editar: true, excluir: false },
       calendario: { visualizar: true, criar: true, editar: true, excluir: false },
       cardapios: { visualizar: true, criar: true, editar: true, excluir: true },
+      tipos_cardapio: { visualizar: true, criar: true, editar: true, excluir: true },
       necessidades: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
@@ -175,6 +181,7 @@ const PERMISSOES_PADRAO = {
       quantidades_servidas: { visualizar: true, criar: false, editar: false, excluir: false },
       calendario: { visualizar: true, criar: false, editar: false, excluir: false },
       cardapios: { visualizar: true, criar: false, editar: false, excluir: false },
+      tipos_cardapio: { visualizar: true, criar: false, editar: false, excluir: false },
       necessidades: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
@@ -199,6 +206,7 @@ const PERMISSOES_PADRAO = {
       quantidades_servidas: { visualizar: true, criar: false, editar: false, excluir: false },
       calendario: { visualizar: true, criar: false, editar: false, excluir: false },
       cardapios: { visualizar: true, criar: false, editar: false, excluir: false },
+      tipos_cardapio: { visualizar: true, criar: false, editar: false, excluir: false },
       necessidades: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
@@ -223,6 +231,7 @@ const PERMISSOES_PADRAO = {
       quantidades_servidas: { visualizar: true, criar: true, editar: true, excluir: false },
       calendario: { visualizar: true, criar: true, editar: true, excluir: false },
       cardapios: { visualizar: true, criar: true, editar: true, excluir: true },
+      tipos_cardapio: { visualizar: true, criar: true, editar: true, excluir: true },
       necessidades: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
@@ -249,6 +258,7 @@ const PERMISSOES_PADRAO = {
       quantidades_servidas: { visualizar: true, criar: false, editar: false, excluir: false },
       calendario: { visualizar: true, criar: false, editar: false, excluir: false },
       cardapios: { visualizar: true, criar: false, editar: false, excluir: false },
+      tipos_cardapio: { visualizar: true, criar: false, editar: false, excluir: false },
       necessidades: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
@@ -273,6 +283,7 @@ const PERMISSOES_PADRAO = {
       quantidades_servidas: { visualizar: true, criar: true, editar: true, excluir: false },
       calendario: { visualizar: true, criar: true, editar: true, excluir: false },
       cardapios: { visualizar: true, criar: true, editar: true, excluir: true },
+      tipos_cardapio: { visualizar: true, criar: true, editar: true, excluir: true },
       necessidades: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
@@ -297,6 +308,7 @@ const PERMISSOES_PADRAO = {
       quantidades_servidas: { visualizar: true, criar: true, editar: true, excluir: false },
       calendario: { visualizar: true, criar: true, editar: true, excluir: false },
       cardapios: { visualizar: true, criar: true, editar: true, excluir: true },
+      tipos_cardapio: { visualizar: true, criar: true, editar: true, excluir: true },
       necessidades: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
@@ -323,6 +335,7 @@ const PERMISSOES_PADRAO = {
       quantidades_servidas: { visualizar: true, criar: false, editar: false, excluir: false },
       calendario: { visualizar: true, criar: false, editar: false, excluir: false },
       cardapios: { visualizar: true, criar: false, editar: false, excluir: false },
+      tipos_cardapio: { visualizar: true, criar: false, editar: false, excluir: false },
       necessidades: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
@@ -347,6 +360,7 @@ const PERMISSOES_PADRAO = {
       quantidades_servidas: { visualizar: true, criar: true, editar: true, excluir: false },
       calendario: { visualizar: true, criar: true, editar: true, excluir: false },
       cardapios: { visualizar: true, criar: true, editar: true, excluir: true },
+      tipos_cardapio: { visualizar: true, criar: true, editar: true, excluir: true },
       necessidades: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
@@ -371,6 +385,7 @@ const PERMISSOES_PADRAO = {
       quantidades_servidas: { visualizar: true, criar: true, editar: true, excluir: false },
       calendario: { visualizar: true, criar: true, editar: true, excluir: false },
       cardapios: { visualizar: true, criar: true, editar: true, excluir: true },
+      tipos_cardapio: { visualizar: true, criar: true, editar: true, excluir: true },
       necessidades: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
@@ -397,6 +412,7 @@ const PERMISSOES_PADRAO = {
       quantidades_servidas: { visualizar: true, criar: false, editar: false, excluir: false },
       calendario: { visualizar: true, criar: false, editar: false, excluir: false },
       cardapios: { visualizar: true, criar: false, editar: false, excluir: false },
+      tipos_cardapio: { visualizar: true, criar: false, editar: false, excluir: false },
       necessidades: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
@@ -421,6 +437,7 @@ const PERMISSOES_PADRAO = {
       quantidades_servidas: { visualizar: true, criar: true, editar: true, excluir: false },
       calendario: { visualizar: true, criar: true, editar: true, excluir: false },
       cardapios: { visualizar: true, criar: true, editar: true, excluir: true },
+      tipos_cardapio: { visualizar: true, criar: true, editar: true, excluir: true },
       necessidades: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
@@ -445,6 +462,7 @@ const PERMISSOES_PADRAO = {
       quantidades_servidas: { visualizar: true, criar: true, editar: true, excluir: true },
       calendario: { visualizar: true, criar: true, editar: true, excluir: true },
       cardapios: { visualizar: true, criar: true, editar: true, excluir: true },
+      tipos_cardapio: { visualizar: true, criar: true, editar: true, excluir: true },
       necessidades: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
@@ -475,6 +493,7 @@ const TODAS_TELAS = [
   'quantidades_servidas',
   'calendario',
   'cardapios',
+  'tipos_cardapio',
   'necessidades',
   'permissoes'
 ];
@@ -520,6 +539,7 @@ const TELAS_COM_DESCRICOES = [
   { nome: 'quantidades_servidas', descricao: 'Registro de Quantidades Servidas' },
   { nome: 'calendario', descricao: 'Gerenciamento de Calendário' },
   { nome: 'cardapios', descricao: 'Gerenciamento de Cardápios' },
+  { nome: 'tipos_cardapio', descricao: 'Gerenciamento de Tipos de Cardápio' },
   { nome: 'necessidades', descricao: 'Geração de Necessidades' },
   { nome: 'permissoes', descricao: 'Gerenciamento de Permissões' }
 ];

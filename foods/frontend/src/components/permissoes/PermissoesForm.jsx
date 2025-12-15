@@ -40,7 +40,6 @@ const PermissoesForm = ({
       { key: 'rotas_nutricionistas', label: 'Rotas Nutricionistas' },
       { key: 'tipos_cardapio', label: 'Tipos de Cardápio' },
       { key: 'periodos_refeicao', label: 'Períodos de Refeição' },
-      { key: 'periodicidade', label: 'Períodicidade' },
       { key: 'faturamento', label: 'Faturamento' },
       { key: 'receitas', label: 'Receitas' },
       { key: 'necessidades_merenda', label: 'Necessidades da Merenda' },

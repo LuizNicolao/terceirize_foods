@@ -112,9 +112,11 @@ const ImportRegistrosModal = ({ isOpen, onClose, onImportSuccess }) => {
             <li>Preencha os dados conforme o exemplo fornecido</li>
             <li>Use o <strong>nome exato da escola</strong> conforme cadastrado no sistema</li>
             <li>A <strong>data</strong> deve estar no formato YYYY-MM-DD (ex: 2025-01-15)</li>
+            <li><strong>Tipo de Cardápio</strong> é opcional (deixe em branco se não aplicável)</li>
+            <li>Use o <strong>nome exato do tipo de cardápio</strong> conforme cadastrado no sistema</li>
             <li>As <strong>quantidades</strong> devem ser números inteiros (ex: 150, 200)</li>
             <li>Deixe <strong>0</strong> para refeições não servidas</li>
-            <li>Registros duplicados (mesma escola/data) serão atualizados</li>
+            <li>Registros duplicados (mesma escola/data/período/produto) serão atualizados</li>
           </ul>
         </div>
 

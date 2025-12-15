@@ -13,7 +13,7 @@ class QuantidadesServidasCRUDController {
    * @param {Object} req.body - { unidade_id, nutricionista_id, data, quantidades: { periodo_id: valor }, unidade_nome }
    */
   static criar = asyncHandler(async (req, res) => {
-    const { unidade_id, nutricionista_id, data, quantidades = {}, unidade_nome } = req.body;
+    const { unidade_id, nutricionista_id, data, quantidades = {}, unidade_nome, tipo_cardapio_id, tipos_cardapio_quantidades = {} } = req.body;
     const usuarioId = req.user?.id;
     
     if (!unidade_id || !data) {
@@ -34,7 +34,34 @@ class QuantidadesServidasCRUDController {
         quantidadesNormalizadas[periodoIdNum] = valor;
       }
     });
+    
+    // Normalizar tipos_cardapio_quantidades: esperamos um objeto { "tipo_cardapio_id-produto_id-periodo_id": { tipo_cardapio_id, produto_comercial_id, periodo_atendimento_id, valor } }
+    const tiposCardapioQuantidadesNormalizadas = {};
+    Object.keys(tipos_cardapio_quantidades).forEach(chave => {
+      const item = tipos_cardapio_quantidades[chave];
+      if (item && typeof item === 'object' && item.tipo_cardapio_id && item.periodo_atendimento_id) {
+        tiposCardapioQuantidadesNormalizadas[chave] = {
+          tipo_cardapio_id: parseInt(item.tipo_cardapio_id),
+          produto_comercial_id: item.produto_comercial_id ? parseInt(item.produto_comercial_id) : null,
+          periodo_atendimento_id: parseInt(item.periodo_atendimento_id),
+          valor: Number(item.valor) || 0
+        };
+      }
+    });
 
+    // Verificar se é um novo registro (não existe nenhum registro para essa unidade/data)
+    // Considerar tanto quantidades quanto tipos_cardapio_quantidades
+    const temQuantidades = Object.keys(quantidadesNormalizadas).length > 0;
+    const temTiposCardapioQuantidades = Object.keys(tiposCardapioQuantidadesNormalizadas).length > 0;
+    
+    if (!temQuantidades && !temTiposCardapioQuantidades) {
+      return errorResponse(
+        res,
+        'É necessário informar pelo menos uma quantidade maior que zero',
+        STATUS_CODES.BAD_REQUEST
+      );
+    }
+    
     // Verificar se é um novo registro (não existe nenhum registro para essa unidade/data)
     const registrosExistentes = await executeQuery(
       'SELECT id FROM quantidades_servidas WHERE unidade_id = ? AND data = ? AND ativo = 1 LIMIT 1',
@@ -45,8 +72,10 @@ class QuantidadesServidasCRUDController {
 
     // Validação: não permitir criar novo registro com todos os valores zero
     if (isNovoRegistro) {
-      const valores = Object.values(quantidadesNormalizadas);
-      const temValorMaiorQueZero = valores.some(valor => Number(valor) > 0);
+      const valoresPeriodos = Object.values(quantidadesNormalizadas);
+      const valoresTiposCardapio = Object.values(tiposCardapioQuantidadesNormalizadas).map(item => item.valor);
+      const todosValores = [...valoresPeriodos, ...valoresTiposCardapio];
+      const temValorMaiorQueZero = todosValores.some(valor => Number(valor) > 0);
       
       if (!temValorMaiorQueZero) {
         return errorResponse(
@@ -80,7 +109,7 @@ class QuantidadesServidasCRUDController {
 
     const registrosInseridos = [];
     
-    // Processar cada período de atendimento
+    // Processar cada período de atendimento (sem tipo de cardápio)
     for (const [periodoIdStr, valor] of Object.entries(quantidadesNormalizadas)) {
       const periodoId = parseInt(periodoIdStr);
       const valorNum = Number(valor) || 0;
@@ -89,15 +118,16 @@ class QuantidadesServidasCRUDController {
       // Isso garante que se já existir um registro (ativo ou inativo), ele será atualizado
       const result = await executeQuery(
         `INSERT INTO quantidades_servidas 
-         (unidade_id, unidade_nome, periodo_atendimento_id, nutricionista_id, data, valor, ativo) 
-         VALUES (?, ?, ?, ?, ?, ?, 1)
+         (unidade_id, unidade_nome, periodo_atendimento_id, nutricionista_id, data, valor, tipo_cardapio_id, ativo) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, 1)
          ON DUPLICATE KEY UPDATE
            valor = VALUES(valor),
            nutricionista_id = VALUES(nutricionista_id),
            unidade_nome = VALUES(unidade_nome),
+           tipo_cardapio_id = VALUES(tipo_cardapio_id),
            ativo = 1,
            atualizado_em = NOW()`,
-        [unidade_id, unidade_nome, periodoId, nutricionista_id, data, valorNum]
+        [unidade_id, unidade_nome, periodoId, nutricionista_id, data, valorNum, null]
       );
       
       // Verificar se foi inserção ou atualização
@@ -108,7 +138,7 @@ class QuantidadesServidasCRUDController {
       let idFinal = registroId;
       if (registroId === 0) {
         const registroAtualizado = await executeQuery(
-          'SELECT id FROM quantidades_servidas WHERE unidade_id = ? AND data = ? AND periodo_atendimento_id = ? LIMIT 1',
+          'SELECT id FROM quantidades_servidas WHERE unidade_id = ? AND data = ? AND periodo_atendimento_id = ? AND tipo_cardapio_id IS NULL LIMIT 1',
           [unidade_id, data, periodoId]
         );
         idFinal = registroAtualizado[0]?.id || 0;
@@ -117,6 +147,52 @@ class QuantidadesServidasCRUDController {
       registrosInseridos.push({ 
         id: idFinal, 
         periodo_atendimento_id: periodoId, 
+        valor: valorNum, 
+        acao: registroId === 0 ? 'atualizado' : 'criado'
+      });
+    }
+    
+    // Processar cada tipo de cardápio com produto comercial
+    for (const [chave, item] of Object.entries(tiposCardapioQuantidadesNormalizadas)) {
+      const { tipo_cardapio_id, produto_comercial_id, periodo_atendimento_id, valor } = item;
+      const valorNum = Number(valor) || 0;
+      
+      // Usar INSERT ... ON DUPLICATE KEY UPDATE para evitar erro de chave duplicada
+      // Isso garante que se já existir um registro (ativo ou inativo), ele será atualizado
+      const result = await executeQuery(
+        `INSERT INTO quantidades_servidas 
+         (unidade_id, unidade_nome, periodo_atendimento_id, nutricionista_id, data, valor, tipo_cardapio_id, produto_comercial_id, ativo) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
+         ON DUPLICATE KEY UPDATE
+           valor = VALUES(valor),
+           nutricionista_id = VALUES(nutricionista_id),
+           unidade_nome = VALUES(unidade_nome),
+           tipo_cardapio_id = VALUES(tipo_cardapio_id),
+           produto_comercial_id = VALUES(produto_comercial_id),
+           ativo = 1,
+           atualizado_em = NOW()`,
+        [unidade_id, unidade_nome, periodo_atendimento_id, nutricionista_id, data, valorNum, tipo_cardapio_id, produto_comercial_id || null]
+      );
+      
+      // Verificar se foi inserção ou atualização
+      const registroId = result.insertId || 0;
+      
+      // Se insertId é 0, significa que foi uma atualização (ON DUPLICATE KEY UPDATE)
+      // Nesse caso, precisamos buscar o ID do registro atualizado
+      let idFinal = registroId;
+      if (registroId === 0) {
+        const registroAtualizado = await executeQuery(
+          'SELECT id FROM quantidades_servidas WHERE unidade_id = ? AND data = ? AND periodo_atendimento_id = ? AND tipo_cardapio_id = ? AND COALESCE(produto_comercial_id, 0) = COALESCE(?, 0) LIMIT 1',
+          [unidade_id, data, periodo_atendimento_id, tipo_cardapio_id, produto_comercial_id || null]
+        );
+        idFinal = registroAtualizado[0]?.id || 0;
+      }
+      
+      registrosInseridos.push({ 
+        id: idFinal, 
+        tipo_cardapio_id,
+        produto_comercial_id,
+        periodo_atendimento_id, 
         valor: valorNum, 
         acao: registroId === 0 ? 'atualizado' : 'criado'
       });
@@ -154,24 +230,51 @@ class QuantidadesServidasCRUDController {
       );
     }
     
+    // Buscar TODOS os registros da unidade na data (incluindo todos os tipos de cardápio e produtos)
+    let whereClause = 'WHERE rd.unidade_id = ? AND rd.data = ? AND rd.ativo = 1';
+    const params = [unidade_id, data];
+    
     const registros = await executeQuery(
       `SELECT 
-        rd.*,
+        rd.id,
+        rd.unidade_id,
+        rd.unidade_nome,
+        rd.nutricionista_id,
+        rd.data,
+        rd.periodo_atendimento_id,
+        rd.tipo_cardapio_id,
+        rd.produto_comercial_id,
+        rd.valor,
+        rd.ativo,
+        rd.criado_em,
+        rd.atualizado_em,
         pa.nome as periodo_nome,
         pa.codigo as periodo_codigo
       FROM quantidades_servidas rd
       INNER JOIN periodos_atendimento pa ON rd.periodo_atendimento_id = pa.id
-      WHERE rd.unidade_id = ? AND rd.data = ? AND rd.ativo = 1
+      ${whereClause}
       ORDER BY pa.nome`,
-      [unidade_id, data]
+      params
     );
     
-    // Transformar em objeto com chaves por periodo_atendimento_id
+    // Transformar em objeto com chaves por tipo_cardapio_id-produto_comercial_id-periodo_atendimento_id
+    // Isso permite diferenciar produtos comerciais diferentes do mesmo tipo de cardápio
     const quantidades = {};
     
     registros.forEach(reg => {
-      quantidades[reg.periodo_atendimento_id] = {
-        periodo_atendimento_id: reg.periodo_atendimento_id,
+      const tipoCardapioId = reg.tipo_cardapio_id || null;
+      const produtoComercialId = reg.produto_comercial_id || null;
+      const periodoId = reg.periodo_atendimento_id;
+      
+      // Criar chave única: tipo_cardapio_id-produto_comercial_id-periodo_atendimento_id
+      const chave = tipoCardapioId 
+        ? `${tipoCardapioId}-${produtoComercialId || 'sem-produto'}-${periodoId}`
+        : `sem-tipo-${produtoComercialId || 'sem-produto'}-${periodoId}`;
+      
+      quantidades[chave] = {
+        tipo_cardapio_id: tipoCardapioId,
+        produto_comercial_id: produtoComercialId,
+        periodo_atendimento_id: periodoId,
         periodo_nome: reg.periodo_nome,
         periodo_codigo: reg.periodo_codigo,
         valor: reg.valor
@@ -193,7 +296,7 @@ class QuantidadesServidasCRUDController {
    * Excluir registros de uma data específica
    */
   static excluir = asyncHandler(async (req, res) => {
-    const { unidade_id, data } = req.body;
+    const { unidade_id, data, tipo_cardapio_id } = req.body;
     
     if (!unidade_id || !data) {
       return errorResponse(
@@ -204,11 +307,22 @@ class QuantidadesServidasCRUDController {
     }
     
     // Soft delete: marcar como inativo
+    // Considerar tipo_cardapio_id se fornecido
+    let whereClause = 'WHERE unidade_id = ? AND data = ?';
+    const params = [unidade_id, data];
+    
+    if (tipo_cardapio_id !== undefined && tipo_cardapio_id !== null) {
+      whereClause += ' AND COALESCE(tipo_cardapio_id, 0) = ?';
+      params.push(parseInt(tipo_cardapio_id));
+    } else {
+      whereClause += ' AND tipo_cardapio_id IS NULL';
+    }
+    
     await executeQuery(
       `UPDATE quantidades_servidas 
        SET ativo = 0, atualizado_em = NOW() 
-       WHERE unidade_id = ? AND data = ?`,
-      [unidade_id, data]
+       ${whereClause}`,
+      params
     );
     
     return successResponse(

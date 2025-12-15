@@ -1,11 +1,57 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { FaCalendarAlt, FaSchool, FaUser, FaClock, FaEdit, FaTrash, FaPlus } from 'react-icons/fa';
 import { EmptyState, Button } from '../ui';
 import { formatarDataParaExibicao } from '../../utils/recebimentos/recebimentosUtils';
+import FoodsApiService from '../../services/FoodsApiService';
 
 const HistoricoTab = ({ historico, loading, onEdit }) => {
   const [dataInicial, setDataInicial] = useState('');
   const [dataFinal, setDataFinal] = useState('');
+  const [produtosMap, setProdutosMap] = useState({}); // { produto_id: nome }
+
+  // Buscar nomes dos produtos comerciais
+  useEffect(() => {
+    const buscarProdutos = async () => {
+      if (!historico || historico.length === 0) return;
+
+      const produtosIds = new Set();
+      historico.forEach(item => {
+        if (item.produto_comercial_id) {
+          produtosIds.add(item.produto_comercial_id);
+        }
+        // Também verificar nos valores
+        if (item.valores) {
+          Object.values(item.valores).forEach(valorObj => {
+            const valor = typeof valorObj === 'object' && valorObj !== null ? valorObj : {};
+            if (valor.produto_comercial_id) {
+              produtosIds.add(valor.produto_comercial_id);
+            }
+          });
+        }
+      });
+
+      if (produtosIds.size === 0) {
+        setProdutosMap({});
+        return;
+      }
+
+      const produtosMapTemp = {};
+      for (const produtoId of produtosIds) {
+        try {
+          const response = await FoodsApiService.getProdutoComercialById(produtoId);
+          if (response.success && response.data) {
+            produtosMapTemp[produtoId] = response.data.nome_comercial || response.data.nome || `Produto ${produtoId}`;
+          }
+        } catch (error) {
+          console.error(`Erro ao buscar produto ${produtoId}:`, error);
+          produtosMapTemp[produtoId] = `Produto ${produtoId}`;
+        }
+      }
+      setProdutosMap(produtosMapTemp);
+    };
+
+    buscarProdutos();
+  }, [historico]);
 
   const formatarDataHora = (valor) => {
     if (!valor) return '';
@@ -236,18 +282,35 @@ const HistoricoTab = ({ historico, loading, onEdit }) => {
                       <span className="ml-2">{item.usuario_nome || `ID ${item.nutricionista_id || 'N/A'}`}</span>
                     </div>
 
-                    {item.valores && Object.keys(item.valores).length > 0 && (
+                    {/* Tipo de Cardápio / Produto Comercial (quando disponível) */}
+                    {(item.tipo_cardapio_nome || item.produto_comercial_id) && (
+                      <div className="flex items-center text-gray-600">
+                        <span className="font-medium">Tipo de Cardápio:</span>
+                        <span className="ml-2">
+                          {item.produto_comercial_id && produtosMap[item.produto_comercial_id]
+                            ? produtosMap[item.produto_comercial_id]
+                            : item.tipo_cardapio_nome || `Produto ID ${item.produto_comercial_id}`}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Valores das Quantidades Servidas */}
+                    {item.valores && Object.keys(item.valores).length > 0 ? (
                       <div className="md:col-span-2">
                         <div className="flex flex-wrap gap-2 mt-2">
                           {Object.entries(item.valores).map(([periodoId, periodoData]) => {
-                            // Suportar tanto objeto { valor, periodo_nome } quanto valor direto (compatibilidade)
+                            // Suportar tanto objeto { valor, periodo_nome, produto_comercial_nome } quanto valor direto (compatibilidade)
                             const valorObj = typeof periodoData === 'object' && periodoData !== null ? periodoData : { valor: periodoData };
                             const numero = Number(valorObj.valor);
-                            if (Number.isNaN(numero) || numero <= 0) {
+                            
+                            // Exibir valores mesmo se forem zero (mas não se for NaN)
+                            if (Number.isNaN(numero)) {
                               return null;
                             }
 
                             const periodoNome = valorObj.periodo_nome || valorObj.periodo_codigo || `Período ${periodoId}`;
+                            const produtoNome = valorObj.produto_comercial_nome;
+                            const label = produtoNome ? `${produtoNome} - ${periodoNome}` : periodoNome;
 
                             // Cores alternadas para períodos
                             const cores = [
@@ -264,11 +327,15 @@ const HistoricoTab = ({ historico, loading, onEdit }) => {
 
                             return (
                               <span key={periodoId} className={`px-2 py-1 rounded text-xs ${cores[corIndex]}`}>
-                                {periodoNome}: {numero}
+                                {label}: {numero}
                               </span>
                             );
                           })}
                         </div>
+                      </div>
+                    ) : (
+                      <div className="md:col-span-2 text-sm text-gray-500 italic">
+                        Nenhuma quantidade registrada
                       </div>
                     )}
                   </div>

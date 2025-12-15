@@ -28,6 +28,7 @@ import PeriodosAtendimento from './pages/periodos-atendimento/PeriodosAtendiment
 import Contratos from './pages/contratos/Contratos';
 import QuantidadesServidas from './pages/quantidades-servidas/QuantidadesServidas';
 import Cardapios from './pages/cardapios/Cardapios';
+import TiposCardapio from './pages/tipos-cardapio/TiposCardapio';
 import Necessidades from './pages/necessidades/Necessidades';
 import CalendarioVisualizacao from './pages/calendario/CalendarioVisualizacao';
 import CalendarioConfiguracao from './pages/calendario/CalendarioConfiguracao';
@@ -275,6 +276,15 @@ function App() {
                 element={
                   <AuthenticatedRoute>
                     <Cardapios />
+                  </AuthenticatedRoute>
+                }
+              />
+
+              <Route 
+                path="/tipos-cardapio" 
+                element={
+                  <AuthenticatedRoute>
+                    <TiposCardapio />
                   </AuthenticatedRoute>
                 }
               />

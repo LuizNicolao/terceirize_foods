@@ -52,6 +52,7 @@ const QuantidadesServidasTable = ({
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Unidade</th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Tipo de Cardápio</th>
                 <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Data</th>
                 {periodosDisponiveis.map(periodo => (
                   <th key={periodo.id} className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">
@@ -65,8 +66,13 @@ const QuantidadesServidasTable = ({
               {registros.map((registro) => {
                 const quantidades = registro.quantidades || {};
                 return (
-                  <tr key={`${registro.unidade_id}-${registro.data}`} className="hover:bg-gray-50">
+                  <tr key={`${registro.unidade_id}-${registro.tipo_cardapio_id || 0}-${registro.data}`} className="hover:bg-gray-50">
                     <td className="px-6 py-4 text-sm text-gray-900">{registro.unidade_nome || `Unidade ID ${registro.unidade_id}`}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600 text-center">
+                      <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">
+                        {registro.tipo_cardapio_info || 'Sem Tipo de Cardápio'}
+                      </span>
+                    </td>
                     <td className="px-6 py-4 text-sm text-gray-900 text-center">
                       {formatarDataParaExibicao(registro.data)}
                     </td>
@@ -100,7 +106,7 @@ const QuantidadesServidasTable = ({
                         canDelete={canDelete}
                         onView={() => onView(registro)}
                         onEdit={() => onEdit(registro)}
-                        onDelete={() => onDelete(registro.unidade_id, registro.data, registro.unidade_nome)}
+                        onDelete={() => onDelete(registro.unidade_id, registro.data, registro.unidade_nome, registro.tipo_cardapio_id)}
                         item={registro}
                         size="xs"
                       />
@@ -118,11 +124,18 @@ const QuantidadesServidasTable = ({
         {registros.map((registro) => {
           const quantidades = registro.quantidades || {};
           return (
-            <div key={`${registro.unidade_id}-${registro.data}`} className="bg-white rounded-lg shadow-sm p-4 border">
+            <div key={`${registro.unidade_id}-${registro.tipo_cardapio_id || 0}-${registro.data}`} className="bg-white rounded-lg shadow-sm p-4 border">
               <div className="flex justify-between items-start mb-3">
                 <div className="flex-1">
                   <h3 className="font-semibold text-gray-900 text-sm">{registro.unidade_nome || `Unidade ID ${registro.unidade_id}`}</h3>
-                  <p className="text-gray-600 text-xs">{formatarDataParaExibicao(registro.data)}</p>
+                  <p className="text-gray-600 text-xs">
+                    {formatarDataParaExibicao(registro.data)}
+                    {registro.tipo_cardapio_info && (
+                      <span className="ml-2 px-2 py-0.5 bg-gray-100 text-gray-700 rounded text-xs">
+                        {registro.tipo_cardapio_info}
+                      </span>
+                    )}
+                  </p>
                 </div>
                 <ActionButtons
                   canView={canView}
@@ -130,7 +143,7 @@ const QuantidadesServidasTable = ({
                   canDelete={canDelete}
                   onView={() => onView(registro)}
                   onEdit={() => onEdit(registro)}
-                  onDelete={() => onDelete(registro.unidade_id, registro.data, registro.unidade_nome)}
+                  onDelete={() => onDelete(registro.unidade_id, registro.data, registro.unidade_nome, registro.tipo_cardapio_id)}
                   item={registro}
                   size="xs"
                   className="p-2"

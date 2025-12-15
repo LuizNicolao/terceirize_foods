@@ -134,9 +134,9 @@ export const useQuantidadesServidas = () => {
   };
   
   // Excluir registro
-  const handleDeleteRegistro = async (unidade_id, data) => {
+  const handleDeleteRegistro = async (unidade_id, data, tipo_cardapio_id = undefined) => {
     try {
-      const result = await quantidadesServidasService.excluir(unidade_id, data);
+      const result = await quantidadesServidasService.excluir(unidade_id, data, tipo_cardapio_id);
       
       if (result.success) {
         toast.success('Registros excluídos com sucesso!');

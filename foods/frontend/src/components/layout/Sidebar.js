@@ -110,7 +110,6 @@ const menuGroups = [
       { path: '/foods/rotas-nutricionistas', icon: FaBuilding, label: 'Rotas Nutricionistas', screen: 'rotas_nutricionistas' },
       { path: '/foods/tipos-cardapio', icon: FaClipboardList, label: 'Tipos de Cardápio', screen: 'tipos_cardapio' },
       { path: '/foods/periodos-refeicao', icon: FaUtensils, label: 'Períodos de Refeição', screen: 'periodos_refeicao' },
-      { path: '/foods/periodicidade', icon: FaCalendarAlt, label: 'Períodicidade', screen: 'periodicidade' },
       { path: '/foods/faturamento', icon: FaFileInvoice, label: 'Faturamento', screen: 'faturamento' },
       { path: '/foods/receitas', icon: FaUtensils, label: 'Receitas', screen: 'receitas' },
       { path: '/foods/necessidades-merenda', icon: FaShoppingCart, label: 'Necessidades da Merenda', screen: 'necessidades_merenda' },

@@ -24,6 +24,7 @@ const quantidadesServidasRoute = require('./routes/quantidades-servidas');
 const calendarioRoute = require('./routes/calendario');
 const cardapiosRoute = require('./routes/cardapios/cardapioRoute');
 const necessidadesRoute = require('./routes/necessidades');
+const tiposCardapioRoute = require('./routes/tipos-cardapio');
 
 // Definir rotas com seus middlewares
 const routes = [
@@ -49,7 +50,8 @@ const routes = [
   { path: '/quantidades-servidas', router: quantidadesServidasRoute },
   { path: '/calendario', router: calendarioRoute },
   { path: '/cardapios', router: cardapiosRoute },
-  { path: '/necessidades', router: necessidadesRoute }
+  { path: '/necessidades', router: necessidadesRoute },
+  { path: '/tipos-cardapio', router: tiposCardapioRoute }
 ];
 
 // Aplicar rotas com prefixos para desenvolvimento e produção
@@ -84,7 +86,8 @@ app.get('/', (req, res) => {
       quantidadesServidas: `${basePath}/quantidades-servidas`,
       calendario: `${basePath}/calendario`,
       cardapios: `${basePath}/cardapios`,
-      necessidades: `${basePath}/necessidades`
+      necessidades: `${basePath}/necessidades`,
+      tiposCardapio: `${basePath}/tipos-cardapio`
     }
   });
 });

@@ -156,6 +156,7 @@ export const usePermissoes = () => {
         'quantidades_servidas',
         'calendario',
         'cardapios',
+        'tipos_cardapio',
         'necessidades',
         'permissoes'
       ];

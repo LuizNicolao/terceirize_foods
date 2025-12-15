@@ -86,11 +86,13 @@ class QuantidadesServidasService {
   /**
    * Buscar registros de uma unidade em uma data específica
    */
-  static async buscarPorUnidadeData(unidadeId, data) {
+  static async buscarPorUnidadeData(unidadeId, data, tipoCardapioId = undefined) {
     try {
-      const response = await api.get('/quantidades-servidas/buscar', {
-        params: { unidade_id: unidadeId, data }
-      });
+      const params = { unidade_id: unidadeId, data };
+      if (tipoCardapioId) {
+        params.tipo_cardapio_id = tipoCardapioId;
+      }
+      const response = await api.get('/quantidades-servidas/buscar', { params });
       return {
         success: true,
         data: response.data.data || null
@@ -127,10 +129,14 @@ class QuantidadesServidasService {
   /**
    * Excluir registros de uma data
    */
-  static async excluir(unidadeId, data) {
+  static async excluir(unidadeId, data, tipoCardapioId = undefined) {
     try {
+      const body = { unidade_id: unidadeId, data };
+      if (tipoCardapioId !== undefined && tipoCardapioId !== null) {
+        body.tipo_cardapio_id = tipoCardapioId;
+      }
       const response = await api.delete('/quantidades-servidas', {
-        data: { unidade_id: unidadeId, data }
+        data: body
       });
       return {
         success: true,

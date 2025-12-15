@@ -35,16 +35,6 @@ export { useFiliais } from './useFiliais';
 // Hooks de funcionalidades
 export { useIntolerancias } from './useIntolerancias';
 export { useDashboard } from './useDashboard';
-export { usePeriodicidade } from './usePeriodicidade';
-
-// Hooks de periodicidade
-export {
-  usePeriodicidadeForm,
-  useCalendar,
-  useDeliverySchedule,
-  useGruposProdutos,
-  useUnidadesEscolares as useUnidadesEscolaresPeriodicidade
-} from './periodicidade';
 
 // Hooks base/comuns (inclui utilidades)
 export { 

@@ -1,14 +1,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Modal, Button, Input, SearchableSelect, ConfirmModal } from '../ui';
-import { FaList, FaChartLine, FaHistory, FaSchool } from 'react-icons/fa';
+import { Modal, Button, ConfirmModal } from '../ui';
+import { FaList, FaChartLine, FaHistory } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import FoodsApiService from '../../services/FoodsApiService';
 import { useAuth } from '../../contexts/AuthContext';
 import quantidadesServidasService from '../../services/quantidadesServidas';
 import periodosAtendimentoService from '../../services/periodosAtendimento';
+import tiposCardapioService from '../../services/tiposCardapio';
 import MediasCalculadasTab from './MediasCalculadasTab';
 import HistoricoTab from './HistoricoTab';
 import useUnsavedChangesPrompt from '../../hooks/useUnsavedChangesPrompt';
+import { SelecaoUnidadeData, TabelaQuantidades } from './sections';
 
 const QuantidadesServidasModal = ({ 
   isOpen, 
@@ -50,11 +52,14 @@ const QuantidadesServidasModal = ({
     unidade_id: '',
     nutricionista_id: user?.id || '',
     data: getDataAtual(),
-    quantidades: {} // Objeto dinâmico: { periodo_id: valor }
+    quantidades: {} // Objeto dinâmico: { "tipo_cardapio_id-periodo_id": valor }
   }), [user]);
 
   const [periodosVinculados, setPeriodosVinculados] = useState([]);
   const [loadingPeriodos, setLoadingPeriodos] = useState(false);
+  const [tiposCardapio, setTiposCardapio] = useState([]);
+  const [loadingTiposCardapio, setLoadingTiposCardapio] = useState(false);
+  const [produtosPorTipoCardapio, setProdutosPorTipoCardapio] = useState({}); // { tipo_cardapio_id: [produtos] }
 
   const [formData, setFormData] = useState(criarEstadoInicial());
   
@@ -125,38 +130,34 @@ const QuantidadesServidasModal = ({
   
   // Estado para controlar se já carregou os dados iniciais
   const [dadosIniciaisCarregados, setDadosIniciaisCarregados] = useState(false);
+  // Flag para controlar se já buscou os dados completos quando está editando
+  const [dadosCompletosBuscados, setDadosCompletosBuscados] = useState(false);
 
   // Carregar dados do registro ao editar
   useEffect(() => {
     if (registro && isOpen) {
-      // Processar quantidades: pode vir como objeto simples { periodo_id: valor } 
-      // ou como objeto aninhado { periodo_id: { valor: ..., periodo_atendimento_id: ... } }
-      const quantidadesProcessadas = {};
-      if (registro.quantidades) {
-        Object.keys(registro.quantidades).forEach(periodoId => {
-          const valorPeriodo = registro.quantidades[periodoId];
-          if (valorPeriodo && typeof valorPeriodo === 'object' && valorPeriodo.valor !== undefined) {
-            // Se for objeto aninhado: { valor: 1, periodo_atendimento_id: 24, ... }
-            quantidadesProcessadas[periodoId] = String(valorPeriodo.valor || '');
-          } else {
-            // Se for valor direto
-            quantidadesProcessadas[periodoId] = valorPeriodo != null ? String(valorPeriodo) : '';
-          }
-        });
-      }
-      
+      // Quando há um registro, definir apenas os dados básicos
+      // As quantidades serão carregadas pelo carregarRegistrosExistentes
+      // que busca os dados completos do backend (incluindo produto_comercial_id)
       setFormData({
         unidade_id: registro.unidade_id || '',
         nutricionista_id: registro.nutricionista_id || user?.id || '',
         data: registro.data || new Date().toISOString().split('T')[0],
-        quantidades: quantidadesProcessadas
+        tipo_cardapio_id: registro.tipo_cardapio_id || '',
+        quantidades: {} // Será preenchido pelo carregarRegistrosExistentes
       });
+      setUnidadeInicial(registro.unidade_id);
+      setDataInicial(registro.data);
       setDadosIniciaisCarregados(true);
+      setDadosCompletosBuscados(false); // Resetar flag para permitir busca dos dados completos
       resetDirty();
     } else if (!registro && isOpen) {
       // Resetar para novo registro com data atual
       setFormData(criarEstadoInicial());
+      setUnidadeInicial(null);
+      setDataInicial(null);
       setDadosIniciaisCarregados(false);
+      setDadosCompletosBuscados(false);
       resetDirty();
     }
   }, [registro, isOpen, user, resetDirty]);
@@ -165,16 +166,71 @@ const QuantidadesServidasModal = ({
   const [unidadeInicial, setUnidadeInicial] = useState(null);
   const [dataInicial, setDataInicial] = useState(null);
 
-  // Atualizar valores iniciais quando registro carregar
+  // Carregar tipos de cardápio vinculados à unidade quando unidade mudar
   useEffect(() => {
-    if (registro && isOpen) {
-      setUnidadeInicial(registro.unidade_id);
-      setDataInicial(registro.data);
+    const buscarTiposCardapioPorUnidade = async () => {
+      if (!isOpen || !formData.unidade_id) {
+        setTiposCardapio([]);
+        return;
+      }
+
+      try {
+        setLoadingTiposCardapio(true);
+        // Buscar tipos de cardápio vinculados à unidade
+        const response = await tiposCardapioService.buscarTiposCardapioPorUnidades([formData.unidade_id]);
+        
+        if (response.success && response.data) {
+          // Verificar diferentes formatos de resposta
+          let tiposCardapioData = [];
+          if (response.data.tipos_cardapio && Array.isArray(response.data.tipos_cardapio)) {
+            tiposCardapioData = response.data.tipos_cardapio;
+          } else if (Array.isArray(response.data)) {
+            tiposCardapioData = response.data;
+          }
+          
+          if (tiposCardapioData.length > 0) {
+            // Ordenar tipos de cardápio por nome
+            const tiposOrdenados = [...tiposCardapioData].sort((a, b) => 
+              (a.nome || '').localeCompare(b.nome || '')
+            );
+            setTiposCardapio(tiposOrdenados);
+            
+            // Buscar produtos comerciais vinculados a cada tipo de cardápio
+            const produtosMap = {};
+            for (const tipoCardapio of tiposOrdenados) {
+              try {
+                const produtosResponse = await tiposCardapioService.buscarProdutosVinculados(tipoCardapio.id);
+                if (produtosResponse.success && produtosResponse.data) {
+                  produtosMap[tipoCardapio.id] = produtosResponse.data.map(p => ({
+                    id: p.produto_comercial_id,
+                    nome: p.produto_comercial_nome || `Produto ${p.produto_comercial_id}`
+                  }));
+                } else {
+                  produtosMap[tipoCardapio.id] = [];
+                }
+              } catch (error) {
+                console.error(`Erro ao buscar produtos do tipo de cardápio ${tipoCardapio.id}:`, error);
+                produtosMap[tipoCardapio.id] = [];
+              }
+            }
+            setProdutosPorTipoCardapio(produtosMap);
+          } else {
+            setTiposCardapio([]);
+            setProdutosPorTipoCardapio({});
+          }
     } else {
-      setUnidadeInicial(null);
-      setDataInicial(null);
+          setTiposCardapio([]);
+        }
+      } catch (error) {
+        console.error('Erro ao buscar tipos de cardápio:', error);
+        setTiposCardapio([]);
+      } finally {
+        setLoadingTiposCardapio(false);
     }
-  }, [registro, isOpen]);
+    };
+
+    buscarTiposCardapioPorUnidade();
+  }, [isOpen, formData.unidade_id]);
 
   // Carregar períodos de atendimento vinculados à unidade quando unidade mudar
   useEffect(() => {
@@ -232,15 +288,34 @@ const QuantidadesServidasModal = ({
       const estaEditando = Boolean(registro);
 
       if (estaEditando) {
+        // Se está editando, sempre buscar os dados completos do backend
+        // para garantir que temos produto_comercial_id nas quantidades
+        // Mas aguardar que os dados iniciais sejam carregados primeiro
         if (!dadosIniciaisCarregados || unidadeInicial === null || dataInicial === null) {
           return;
         }
 
+        // Se já buscou os dados completos e unidade/data não mudaram, não buscar novamente
+        if (dadosCompletosBuscados) {
+          const unidadeMudou = formData.unidade_id !== unidadeInicial;
+          const dataMudou = formData.data !== dataInicial;
+          
+          if (!unidadeMudou && !dataMudou) {
+            return;
+          } else {
+            // Se unidade ou data mudaram, resetar flag para permitir nova busca
+            setDadosCompletosBuscados(false);
+          }
+        }
+      } else {
+        // Se não está editando, verificar se unidade ou data mudaram
+        if (unidadeInicial !== null && dataInicial !== null) {
         const unidadeMudou = formData.unidade_id !== unidadeInicial;
         const dataMudou = formData.data !== dataInicial;
         
         if (!unidadeMudou && !dataMudou) {
           return;
+          }
         }
       }
 
@@ -251,22 +326,33 @@ const QuantidadesServidasModal = ({
           
           if (result.success && result.data?.quantidades) {
             const quantidades = result.data.quantidades;
-            // Normalizar quantidades: converter valores para string e usar periodo_id como chave
+        
+        // O backend já retorna as chaves no formato correto: tipo_cardapio_id-produto_id-periodo_id
+        // Apenas converter os valores para string
             const quantidadesNormalizadas = {};
-            Object.keys(quantidades).forEach(periodoId => {
-              const valor = quantidades[periodoId];
+        Object.keys(quantidades).forEach(chave => {
+          const valor = quantidades[chave];
+          
               if (valor && typeof valor === 'object' && valor.valor !== undefined) {
-                // Se for objeto com estrutura { periodo_atendimento_id, valor, ... }
-                quantidadesNormalizadas[valor.periodo_atendimento_id || periodoId] = String(valor.valor || '');
-              } else {
-                // Se for valor direto
-                quantidadesNormalizadas[periodoId] = valor != null ? String(valor) : '';
+            // O backend já retornou a chave correta, apenas extrair o valor
+            // A chave já está no formato: tipo_cardapio_id-produto_id-periodo_id
+            quantidadesNormalizadas[chave] = String(valor.valor || '');
+          } else if (typeof valor === 'number' || typeof valor === 'string') {
+            // Se for valor direto (compatibilidade com formato antigo)
+            quantidadesNormalizadas[chave] = valor != null ? String(valor) : '';
               }
             });
+        
             setFormData(prev => ({
               ...prev,
-              quantidades: quantidadesNormalizadas
+          quantidades: quantidadesNormalizadas,
+          tipos_cardapio_quantidades: prev.tipos_cardapio_quantidades || {}
             }));
+            
+            // Marcar que os dados completos foram buscados
+            if (estaEditando) {
+              setDadosCompletosBuscados(true);
+            }
       }
     };
     
@@ -314,13 +400,18 @@ const QuantidadesServidasModal = ({
             const historicoFormatado = result.data.map((reg, index) => ({
               acao: index === 0 ? 'criacao' : 'edicao',
               data_acao: reg.data_atualizacao || reg.data_cadastro,
+              data_cadastro: reg.data_cadastro,
+              data_atualizacao: reg.data_atualizacao,
               unidade_id: reg.unidade_id,
               unidade_nome: reg.unidade_nome,
               data: reg.data,
               nutricionista_id: reg.nutricionista_id,
               id: reg.id,
               usuario_nome: user?.nome,
-              valores: reg.quantidades || {} // Objeto dinâmico com periodo_id como chave
+              tipo_cardapio_id: reg.tipo_cardapio_id,
+              tipo_cardapio_nome: reg.tipo_cardapio_info !== 'N/A' ? reg.tipo_cardapio_info : null,
+              produto_comercial_id: reg.produto_comercial_id,
+              valores: reg.valores || {} // Objeto dinâmico com periodo_id como chave: { periodo_id: { valor, periodo_nome, periodo_codigo } }
             }));
             setHistorico(historicoFormatado);
           } else {
@@ -352,14 +443,15 @@ const QuantidadesServidasModal = ({
     }
   };
   
-  const handleQuantidadeChange = (tipo, value) => {
+  const handleQuantidadeChange = (tipoCardapioId, produtoId, periodoId, value) => {
     const valorNormalizado = value === '' ? '' : String(Math.max(0, parseInt(value, 10) || 0));
+    const chave = `${tipoCardapioId || 'sem-tipo'}-${produtoId || 'sem-produto'}-${periodoId}`;
 
     setFormData(prev => ({
       ...prev,
       quantidades: {
         ...prev.quantidades,
-        [tipo]: valorNormalizado
+        [chave]: valorNormalizado
       }
     }));
     if (!isViewMode) {
@@ -386,19 +478,30 @@ const QuantidadesServidasModal = ({
     const unidade_nome = unidadeSelecionada ? unidadeSelecionada.nome_escola : `Unidade ID ${formData.unidade_id}`;
     
     // Adicionar nome da escola aos dados
-    // Filtrar apenas períodos vinculados e converter valores para números
-    const quantidadesFiltradas = {};
+    // Filtrar apenas valores válidos e converter para números
+    // Estrutura: { "tipo_cardapio_id-produto_id-periodo_id": valor }
+    const tiposCardapioQuantidadesFiltradas = {};
+    tiposCardapio.forEach(tipoCardapio => {
+      const produtos = produtosPorTipoCardapio[tipoCardapio.id] || [];
+      produtos.forEach(produto => {
     periodosVinculados.forEach(periodo => {
-      const periodoId = periodo.id;
-      const valor = formData.quantidades[periodoId];
+          const chave = `${tipoCardapio.id}-${produto.id}-${periodo.id}`;
+          const valor = formData.quantidades[chave];
       if (valor !== undefined && valor !== null && valor !== '') {
-        quantidadesFiltradas[periodoId] = Number(valor) || 0;
+            tiposCardapioQuantidadesFiltradas[chave] = {
+              tipo_cardapio_id: tipoCardapio.id,
+              produto_comercial_id: produto.id,
+              periodo_atendimento_id: periodo.id,
+              valor: Number(valor) || 0
+            };
       }
+        });
+      });
     });
 
     // Validação: não permitir criar novo registro com todos os valores zero ou vazios
     if (!registro) {
-      const valores = Object.values(quantidadesFiltradas);
+      const valores = Object.values(tiposCardapioQuantidadesFiltradas).map(q => q.valor);
       const temValorMaiorQueZero = valores.some(valor => Number(valor) > 0);
       
       if (!temValorMaiorQueZero) {
@@ -410,7 +513,8 @@ const QuantidadesServidasModal = ({
     const resultado = await onSave({
       ...formData,
       unidade_nome,
-      quantidades: quantidadesFiltradas
+      quantidades: {}, // Períodos sem tipo de cardápio (compatibilidade com registros antigos)
+      tipos_cardapio_quantidades: tiposCardapioQuantidadesFiltradas
     }, !registro); // Manter modal aberto se for novo registro (não edição)
     
     // Se o registro foi salvo com sucesso e deve manter o modal aberto (novo registro)
@@ -428,12 +532,43 @@ const QuantidadesServidasModal = ({
     setAbaAtiva('detalhes');
 
     if (typeof onRequestEdit === 'function') {
-      // Adaptar valores para estrutura dinâmica
+      // Adaptar valores para estrutura dinâmica com tipo_cardapio_id e produto_comercial_id
       const quantidades = {};
       if (item.valores) {
-        // Se valores já está no formato { periodo_id: valor }
         Object.keys(item.valores).forEach(periodoId => {
-          quantidades[periodoId] = item.valores[periodoId] ?? 0;
+          const valorPeriodo = item.valores[periodoId];
+          
+          if (valorPeriodo && typeof valorPeriodo === 'object' && valorPeriodo.valor !== undefined) {
+            // Se for objeto com estrutura completa
+            const tipoCardapioId = valorPeriodo.tipo_cardapio_id || item.tipo_cardapio_id || null;
+            const produtoId = valorPeriodo.produto_comercial_id || null;
+            const periodoIdNum = valorPeriodo.periodo_atendimento_id || parseInt(periodoId);
+            
+            const chave = tipoCardapioId 
+              ? `${tipoCardapioId}-${produtoId || 'sem-produto'}-${periodoIdNum}` 
+              : `sem-tipo-${produtoId || 'sem-produto'}-${periodoIdNum}`;
+            
+            quantidades[chave] = {
+              tipo_cardapio_id: tipoCardapioId,
+              produto_comercial_id: produtoId,
+              periodo_atendimento_id: periodoIdNum,
+              valor: valorPeriodo.valor ?? 0
+            };
+          } else {
+            // Se for valor direto (formato antigo)
+            const valorNum = typeof valorPeriodo === 'object' ? (valorPeriodo.valor ?? 0) : (valorPeriodo ?? 0);
+            const tipoCardapioId = item.tipo_cardapio_id || null;
+            const chave = tipoCardapioId 
+              ? `${tipoCardapioId}-sem-produto-${periodoId}` 
+              : `sem-tipo-sem-produto-${periodoId}`;
+            
+            quantidades[chave] = {
+              tipo_cardapio_id: tipoCardapioId,
+              produto_comercial_id: null,
+              periodo_atendimento_id: parseInt(periodoId),
+              valor: valorNum
+            };
+          }
         });
       }
       
@@ -442,6 +577,7 @@ const QuantidadesServidasModal = ({
         unidade_nome: item.unidade_nome,
         data: item.data,
         nutricionista_id: item.nutricionista_id,
+        tipo_cardapio_id: item.tipo_cardapio_id || '',
         quantidades: quantidades
       };
 
@@ -519,191 +655,48 @@ const QuantidadesServidasModal = ({
       {/* Formulário (modo criar/editar ou aba detalhes em visualização) */}
       {(!isViewMode || abaAtiva === 'detalhes') && (
         <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Seleção de Escola e Data */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <SearchableSelect
-              label="Escola"
-              value={formData.unidade_id}
-              onChange={(value) => handleInputChange('unidade_id', value)}
-              options={unidadesEscolares.map(escola => ({
-                value: escola.id,
-                label: escola.nome_escola,
-                description: `${escola.cidade} - ${escola.rota_nome || 'Sem rota'}`
-              }))}
-              placeholder="Selecione uma escola..."
-              disabled={isViewMode || loadingEscolas}
-              required
-              usePortal={false}
-              renderOption={(option) => (
-                <div className="flex flex-col">
-                  <span className="font-medium text-gray-900">{option.label}</span>
-                  {option.description && (
-                    <span className="text-xs text-gray-500 mt-1">{option.description}</span>
-                  )}
-                </div>
-              )}
+          {/* Seção: Seleção de Unidade e Data */}
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">
+              Informações Básicas
+            </h3>
+            <SelecaoUnidadeData
+              formData={formData}
+              unidadesEscolares={unidadesEscolares}
+              loadingEscolas={loadingEscolas}
+              isViewMode={isViewMode}
+              onInputChange={handleInputChange}
             />
           </div>
           
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Data <span className="text-red-500">*</span>
-            </label>
-            <Input
-              type="date"
-              value={formData.data}
-              onChange={(e) => handleInputChange('data', e.target.value)}
-              disabled={isViewMode}
-              required
-            />
-          </div>
-        </div>
-        
-        {/* Tabela de Quantidades - Layout igual ao de Médias Calculadas */}
+          {/* Seção: Tabela de Quantidades */}
         <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+              <div className="flex justify-between items-center">
             <h3 className="text-sm font-semibold text-gray-700">
               Quantidade de Refeições Servidas
             </h3>
-          </div>
-          
-          {loadingPeriodos ? (
-            <div className="flex justify-center items-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
-              <span className="ml-3 text-gray-600">Carregando períodos...</span>
-            </div>
-          ) : periodosVinculados.length === 0 ? (
-            <div className="text-center py-12 text-sm text-gray-500">
-              {formData.unidade_id 
-                ? 'Nenhum período de atendimento vinculado a esta unidade. Vá em "Períodos de Atendimento" para vincular períodos.'
-                : 'Selecione uma unidade para ver os períodos de atendimento disponíveis.'}
-            </div>
-          ) : (
-            <>
-              {/* Desktop - Tabela */}
-              <div className="hidden xl:block overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Unidade</th>
-                      {periodosVinculados.map(periodo => (
-                        <th key={periodo.id} className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">
-                          {periodo.nome || periodo.codigo || `Período ${periodo.id}`}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    <tr className="hover:bg-gray-50">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center">
-                          <FaSchool className="text-green-600 mr-2" />
-                          <span className="text-sm font-medium text-gray-900">
-                            {formData.unidade_id 
-                              ? unidadesEscolares.find(u => u.id === parseInt(formData.unidade_id))?.nome_escola || 
-                                unidadesEscolares.find(u => u.id === parseInt(formData.unidade_id))?.nome || 
-                                `Unidade ID ${formData.unidade_id}`
-                              : 'Selecione uma unidade'}
-                          </span>
+                {(tiposCardapio.length > 0 || periodosVinculados.length > 0) && (
+                  <div className="text-xs text-gray-500">
+                    {periodosVinculados.length} período(s) • {tiposCardapio.length} tipo(s) de cardápio
                         </div>
-                      </td>
-                      {periodosVinculados.map(periodo => {
-                        const valor = formData.quantidades[periodo.id] || '';
-                        const corIndex = periodo.id % 8;
-                        const cores = [
-                          'bg-blue-100 text-blue-800',
-                          'bg-green-100 text-green-800',
-                          'bg-purple-100 text-purple-800',
-                          'bg-orange-100 text-orange-800',
-                          'bg-rose-100 text-rose-800',
-                          'bg-yellow-100 text-yellow-800',
-                          'bg-indigo-100 text-indigo-800',
-                          'bg-pink-100 text-pink-800'
-                        ];
-                        
-                        return (
-                          <td key={periodo.id} className="px-6 py-4 text-center">
-                            {isViewMode ? (
-                              <span className={`inline-flex items-center px-3 py-1 ${cores[corIndex]} rounded-full text-sm font-medium`}>
-                                {valor || '0'}
-                              </span>
-                            ) : (
-                              <Input
-                                type="number"
-                                min="0"
-                                step="1"
-                                value={valor}
-                                onChange={(e) => handleQuantidadeChange(periodo.id, e.target.value)}
-                                className="w-24 text-center mx-auto"
-                                placeholder="0"
-                              />
-                            )}
-                          </td>
-                        );
-                      })}
-                    </tr>
-                  </tbody>
-                </table>
+                )}
               </div>
-              
-              {/* Mobile - Cards */}
-              <div className="xl:hidden p-4 space-y-3">
-                <div className="bg-white rounded-lg shadow-sm p-4 border">
-                  <div className="flex items-center mb-3">
-                    <FaSchool className="text-green-600 mr-2" />
-                    <h3 className="font-semibold text-gray-900 text-sm">
-                      {formData.unidade_id 
-                        ? unidadesEscolares.find(u => u.id === parseInt(formData.unidade_id))?.nome_escola || 
-                          unidadesEscolares.find(u => u.id === parseInt(formData.unidade_id))?.nome || 
-                          `Unidade ID ${formData.unidade_id}`
-                        : 'Selecione uma unidade'}
-                    </h3>
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-2 text-xs">
-                    {periodosVinculados.map(periodo => {
-                      const valor = formData.quantidades[periodo.id] || '';
-                      const corIndex = periodo.id % 8;
-                      const cores = [
-                        'bg-blue-100 text-blue-800',
-                        'bg-green-100 text-green-800',
-                        'bg-purple-100 text-purple-800',
-                        'bg-orange-100 text-orange-800',
-                        'bg-rose-100 text-rose-800',
-                        'bg-yellow-100 text-yellow-800',
-                        'bg-indigo-100 text-indigo-800',
-                        'bg-pink-100 text-pink-800'
-                      ];
-                      
-                      return (
-                        <div key={periodo.id} className="flex justify-between items-center">
-                          <span className="text-gray-500">
-                            {periodo.nome || periodo.codigo || `Período ${periodo.id}`}:
-                          </span>
-                          {isViewMode ? (
-                            <span className={`px-2 py-0.5 ${cores[corIndex]} rounded-full font-medium`}>
-                              {valor || '0'}
-                            </span>
-                          ) : (
-                            <Input
-                              type="number"
-                              min="0"
-                              step="1"
-                              value={valor}
-                              onChange={(e) => handleQuantidadeChange(periodo.id, e.target.value)}
-                              className="w-20 text-center text-xs"
-                              placeholder="0"
-                            />
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
+            <div className="p-4">
+              <TabelaQuantidades
+                formData={formData}
+                unidadesEscolares={unidadesEscolares}
+                periodosVinculados={periodosVinculados}
+                tiposCardapio={tiposCardapio}
+                produtosPorTipoCardapio={produtosPorTipoCardapio}
+                loadingPeriodos={loadingPeriodos}
+                loadingTiposCardapio={loadingTiposCardapio}
+                isViewMode={isViewMode}
+                onQuantidadeChange={handleQuantidadeChange}
+              />
                 </div>
-              </div>
-            </>
-          )}
         </div>
         
         {/* Botões */}

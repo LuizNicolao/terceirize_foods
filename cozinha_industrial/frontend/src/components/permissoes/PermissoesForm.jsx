@@ -37,6 +37,7 @@ const PermissoesForm = ({
       { key: 'quantidades_servidas', label: 'Quantidades Servidas' },
       { key: 'calendario', label: 'Calendário' },
       { key: 'cardapios', label: 'Cardápios' },
+      { key: 'tipos_cardapio', label: 'Tipos de Cardápio' },
       { key: 'necessidades', label: 'Necessidades' }
     ],
     'Sistema': [
@@ -306,3 +307,4 @@ const PermissoesForm = ({
 };
 
 export default PermissoesForm;
+  

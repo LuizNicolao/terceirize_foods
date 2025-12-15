@@ -48,10 +48,21 @@ class QuantidadesServidasImportController {
       const workbook = new ExcelJS.Workbook();
       const worksheet = workbook.addWorksheet('Quantidades Servidas');
 
-      // Definir colunas dinamicamente: Unidade, Data, e depois cada período
+      // Buscar produtos comerciais para exemplo
+      const produtosQuery = `
+        SELECT DISTINCT
+          tcp.produto_comercial_id as id,
+          tcp.produto_comercial_nome as nome
+        FROM tipos_cardapio_produtos tcp
+        LIMIT 5
+      `;
+      const produtosComerciais = await executeQuery(produtosQuery);
+
+      // Definir colunas dinamicamente: Unidade, Data, Tipo de Cardápio, e depois cada período
       const colunas = [
         { header: 'Unidade', key: 'unidade', width: 30 },
-        { header: 'Data', key: 'data', width: 15 }
+        { header: 'Data', key: 'data', width: 15 },
+        { header: 'Tipo de Cardápio', key: 'produto_comercial', width: 30 }
       ];
       
       // Adicionar coluna para cada período
@@ -80,7 +91,8 @@ class QuantidadesServidasImportController {
       const exemplos = unidades.slice(0, 2).map((unidade, index) => {
         const exemplo = {
           unidade: unidade.nome_escola,
-          data: dataExemplo
+          data: dataExemplo,
+          produto_comercial: produtosComerciais[index]?.nome || (produtosComerciais[0]?.nome || '')
         };
         
         // Adicionar valores de exemplo para cada período
@@ -135,16 +147,30 @@ class QuantidadesServidasImportController {
       `;
       const periodos = await executeQuery(periodosQuery);
 
-      // Mapear cabeçalhos da planilha para IDs de períodos
+      // Mapear cabeçalhos da planilha
       const headerRow = worksheet.getRow(1);
-      const headerMap = {};
+      const headerMap = {
+        unidade: null,
+        data: null,
+        produto_comercial: null,
+        periodos: {}
+      };
+      
       headerRow.eachCell((cell, colNumber) => {
         const headerValue = cell.value?.toString().trim();
-        if (headerValue && headerValue !== 'Unidade' && headerValue !== 'Data') {
+        if (!headerValue) return;
+        
+        if (headerValue === 'Unidade') {
+          headerMap.unidade = colNumber;
+        } else if (headerValue === 'Data') {
+          headerMap.data = colNumber;
+        } else if (headerValue === 'Tipo de Cardápio') {
+          headerMap.produto_comercial = colNumber;
+        } else {
           // Buscar período pelo nome
           const periodo = periodos.find(p => p.nome === headerValue);
           if (periodo) {
-            headerMap[colNumber] = periodo.id;
+            headerMap.periodos[colNumber] = periodo.id;
           }
         }
       });
@@ -161,14 +187,15 @@ class QuantidadesServidasImportController {
         if (!valores || valores.length < 3) return; // Mínimo: Unidade, Data, e pelo menos um período
 
         const registro = {
-          unidade: valores[1]?.toString().trim(),
-          data: valores[2]?.toString().trim(),
+          unidade: valores[headerMap.unidade]?.toString().trim(),
+          data: valores[headerMap.data]?.toString().trim(),
+          produto_comercial: headerMap.produto_comercial ? valores[headerMap.produto_comercial]?.toString().trim() : null,
           quantidades: {}
         };
 
         // Extrair valores de cada período
-        Object.keys(headerMap).forEach(colNumber => {
-          const periodoId = headerMap[colNumber];
+        Object.keys(headerMap.periodos).forEach(colNumber => {
+          const periodoId = headerMap.periodos[colNumber];
           const valor = parseInt(valores[colNumber]) || 0;
           if (valor > 0) {
             registro.quantidades[periodoId] = valor;
@@ -213,6 +240,7 @@ class QuantidadesServidasImportController {
       // Processar cada registro
       let importados = 0;
       let atualizados = 0;
+      const unidadesProcessadas = new Set(); // Para rastrear unidades que precisam recalcular médias
 
       for (const registro of registros) {
         try {
@@ -233,6 +261,77 @@ class QuantidadesServidasImportController {
           const unidade = unidades[0];
           const nutricionistaId = req.user?.id || 1; // Usar ID do usuário logado
 
+          // Buscar produto comercial e tipo de cardápio se informado
+          let produtoComercialId = null;
+          let tipoCardapioId = null;
+          
+          if (registro.produto_comercial) {
+            // Buscar produto comercial e verificar se está vinculado à unidade através de algum tipo de cardápio
+            try {
+              const produtoVinculadoQuery = `
+                SELECT 
+                  tcp.produto_comercial_id,
+                  tcp.tipo_cardapio_id
+                FROM tipos_cardapio_produtos tcp
+                INNER JOIN cozinha_industrial_tipos_cardapio ctc 
+                  ON tcp.tipo_cardapio_id = ctc.tipo_cardapio_id
+                WHERE tcp.produto_comercial_nome = ?
+                  AND ctc.cozinha_industrial_id = ?
+                  AND ctc.status = 'ativo'
+                LIMIT 1
+              `;
+              const produtos = await executeQuery(produtoVinculadoQuery, [registro.produto_comercial, unidade.id]);
+              
+              if (produtos.length > 0) {
+                produtoComercialId = produtos[0].produto_comercial_id;
+                tipoCardapioId = produtos[0].tipo_cardapio_id;
+              } else {
+                // Tentar buscar o produto sem verificar vínculo (para dar mensagem mais específica)
+                const produtoQuery = `
+                  SELECT 
+                    tcp.produto_comercial_id,
+                    tcp.tipo_cardapio_id
+                  FROM tipos_cardapio_produtos tcp
+                  WHERE tcp.produto_comercial_nome = ?
+                  LIMIT 1
+                `;
+                const produtoSemVinculo = await executeQuery(produtoQuery, [registro.produto_comercial]);
+                
+                if (produtoSemVinculo.length > 0) {
+                  erros.push(`Linha ${linha}: Tipo de Cardápio "${registro.produto_comercial}" não está vinculado à unidade "${registro.unidade}"`);
+                } else {
+                  erros.push(`Linha ${linha}: Tipo de Cardápio "${registro.produto_comercial}" não encontrado`);
+                }
+                // Limpar os IDs para não processar este registro
+                produtoComercialId = null;
+                tipoCardapioId = null;
+              }
+            } catch (error) {
+              // Se a tabela não existir ainda, apenas logar um aviso mas continuar
+              if (error.code === 'ER_NO_SUCH_TABLE' && error.sqlMessage?.includes('cozinha_industrial_tipos_cardapio')) {
+                console.warn('Tabela cozinha_industrial_tipos_cardapio não existe ainda. Validação de vínculo ignorada.');
+                // Se a tabela não existe, buscar apenas o produto sem verificar vínculo
+                const produtoQuery = `
+                  SELECT 
+                    tcp.produto_comercial_id,
+                    tcp.tipo_cardapio_id
+                  FROM tipos_cardapio_produtos tcp
+                  WHERE tcp.produto_comercial_nome = ?
+                  LIMIT 1
+                `;
+                const produtos = await executeQuery(produtoQuery, [registro.produto_comercial]);
+                if (produtos.length > 0) {
+                  produtoComercialId = produtos[0].produto_comercial_id;
+                  tipoCardapioId = produtos[0].tipo_cardapio_id;
+                } else {
+                  erros.push(`Linha ${linha}: Tipo de Cardápio "${registro.produto_comercial}" não encontrado`);
+                }
+              } else {
+                throw error;
+              }
+            }
+          }
+
           // Buscar períodos vinculados a esta unidade
           const periodosVinculadosQuery = `
             SELECT pa.id, pa.nome, pa.codigo
@@ -245,6 +344,11 @@ class QuantidadesServidasImportController {
           `;
           const periodosVinculados = await executeQuery(periodosVinculadosQuery, [unidade.id]);
 
+          // Se o tipo de cardápio não está vinculado, pular o processamento dos períodos
+          if (registro.produto_comercial && !tipoCardapioId) {
+            continue;
+          }
+
           // Processar cada período presente no registro
           for (const periodoId of Object.keys(registro.quantidades)) {
             const valor = registro.quantidades[periodoId];
@@ -256,24 +360,31 @@ class QuantidadesServidasImportController {
               continue;
             }
 
-            // Verificar se já existe registro para esta unidade/data/período
+            // Verificar se já existe registro para esta unidade/data/período/tipo_cardapio/produto_comercial
             const existeQuery = `
               SELECT id FROM quantidades_servidas 
-              WHERE unidade_id = ? AND data = ? AND periodo_atendimento_id = ? AND ativo = 1
+              WHERE unidade_id = ? 
+                AND data = ? 
+                AND periodo_atendimento_id = ? 
+                AND COALESCE(tipo_cardapio_id, 0) = COALESCE(?, 0)
+                AND COALESCE(produto_comercial_id, 0) = COALESCE(?, 0)
+                AND ativo = 1
               LIMIT 1
             `;
             const existentes = await executeQuery(existeQuery, [
               unidade.id,
               registro.data,
-              periodoId
+              periodoId,
+              tipoCardapioId,
+              produtoComercialId
             ]);
 
             if (existentes.length > 0) {
               // Atualizar registro existente usando INSERT ... ON DUPLICATE KEY UPDATE
               const updateQuery = `
                 INSERT INTO quantidades_servidas (
-                  unidade_id, unidade_nome, periodo_atendimento_id, nutricionista_id, data, valor, ativo
-                ) VALUES (?, ?, ?, ?, ?, ?, 1)
+                  unidade_id, unidade_nome, periodo_atendimento_id, tipo_cardapio_id, produto_comercial_id, nutricionista_id, data, valor, ativo
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
                 ON DUPLICATE KEY UPDATE
                   valor = VALUES(valor),
                   ativo = 1,
@@ -283,6 +394,8 @@ class QuantidadesServidasImportController {
                 unidade.id,
                 unidade.nome_escola,
                 periodoId,
+                tipoCardapioId,
+                produtoComercialId,
                 nutricionistaId,
                 registro.data,
                 valor
@@ -292,24 +405,41 @@ class QuantidadesServidasImportController {
               // Inserir novo registro
               const insertQuery = `
                 INSERT INTO quantidades_servidas (
-                  unidade_id, unidade_nome, periodo_atendimento_id, nutricionista_id, data, valor, ativo
-                ) VALUES (?, ?, ?, ?, ?, ?, 1)
+                  unidade_id, unidade_nome, periodo_atendimento_id, tipo_cardapio_id, produto_comercial_id, nutricionista_id, data, valor, ativo
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
               `;
               await executeQuery(insertQuery, [
                 unidade.id,
                 unidade.nome_escola,
                 periodoId,
+                tipoCardapioId,
+                produtoComercialId,
                 nutricionistaId,
                 registro.data,
                 valor
               ]);
               importados++;
             }
+            
+            // Adicionar unidade à lista de unidades que precisam recalcular médias
+            unidadesProcessadas.add(unidade.id);
           }
 
         } catch (error) {
           console.error(`Erro ao processar registro da linha ${linha}:`, error);
           erros.push(`Linha ${linha}: Erro interno - ${error.message}`);
+        }
+      }
+
+      // Recalcular médias para todas as unidades processadas
+      // Isso garante que as médias sejam atualizadas mesmo se os triggers não estiverem configurados
+      for (const unidadeId of unidadesProcessadas) {
+        try {
+          await executeQuery('CALL recalcular_media_quantidades_servidas(?)', [unidadeId]);
+        } catch (error) {
+          // Se a procedure não existir ou houver erro, apenas logar (não falhar a importação)
+          console.warn(`Erro ao recalcular média para unidade ${unidadeId}:`, error.message);
+          // Não adicionar ao array de erros para não confundir o usuário
         }
       }
 

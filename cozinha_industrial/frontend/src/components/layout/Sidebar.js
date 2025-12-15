@@ -65,6 +65,7 @@ const menuGroups = [
               { path: '/contratos', icon: FaFileContract, label: 'Contratos', screen: 'contratos' },
               { path: '/quantidades-servidas', icon: FaChartBar, label: 'Quantidades Servidas', screen: 'quantidades_servidas' },
               { path: '/cardapios', icon: FaClipboardList, label: 'Cardápios', screen: 'cardapios' },
+              { path: '/tipos-cardapio', icon: FaUtensils, label: 'Tipos de Cardápio', screen: 'tipos_cardapio' },
               { path: '/necessidades', icon: FaClipboardList, label: 'Necessidades', screen: 'necessidades' },
               { path: '/calendario', icon: FaCalendarAlt, label: 'Calendário', screen: 'calendario' },
             ]

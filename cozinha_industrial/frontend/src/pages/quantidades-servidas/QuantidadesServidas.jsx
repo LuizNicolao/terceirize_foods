@@ -57,9 +57,9 @@ const QuantidadesServidas = () => {
   const [showExportModal, setShowExportModal] = useState(false);
   const [tipoFormatoExport, setTipoFormatoExport] = useState(null); // 'xlsx' ou 'pdf'
   
-  const handleDeleteClick = (unidadeId, data, unidadeNome) => {
+  const handleDeleteClick = (unidadeId, data, unidadeNome, tipoCardapioId = undefined) => {
     // Usar o novo modal de validação em vez do modal simples
-    setUnidadeParaExclusao({ id: unidadeId, nome: unidadeNome });
+    setUnidadeParaExclusao({ id: unidadeId, nome: unidadeNome, tipo_cardapio_id: tipoCardapioId });
     setShowValidacaoExclusao(true);
   };
   
