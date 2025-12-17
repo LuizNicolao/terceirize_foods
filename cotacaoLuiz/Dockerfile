@@ -28,6 +28,13 @@ RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf
 RUN echo 'PassEnv DB_HOST DB_PORT DB_NAME DB_USER DB_PASSWORD' >> /etc/apache2/conf-available/docker-env.conf
 RUN a2enconf docker-env
 
+# Aumentar limites do PHP para upload de arquivos grandes
+RUN echo 'upload_max_filesize = 100M' >> /usr/local/etc/php/conf.d/uploads.ini
+RUN echo 'post_max_size = 100M' >> /usr/local/etc/php/conf.d/uploads.ini
+RUN echo 'memory_limit = 256M' >> /usr/local/etc/php/conf.d/uploads.ini
+RUN echo 'max_execution_time = 300' >> /usr/local/etc/php/conf.d/uploads.ini
+RUN echo 'max_input_time = 300' >> /usr/local/etc/php/conf.d/uploads.ini
+
 # Definir o diretório de trabalho
 WORKDIR /var/www/html
 

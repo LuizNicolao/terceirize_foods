@@ -40,6 +40,9 @@ services:
     environment:
       - PMA_HOST=${DB_HOST:-db}
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-cotacao_root_password_2024}
+      - UPLOAD_LIMIT=100M
+      - MAX_EXECUTION_TIME=300
+      - MEMORY_LIMIT=256M
     depends_on:
       - db
     networks:
