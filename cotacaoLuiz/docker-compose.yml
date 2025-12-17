@@ -27,8 +27,6 @@ services:
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-cotacao_root_password_2024}
       - MYSQL_DATABASE=${DB_NAME:-cotacao_db}
-      - MYSQL_USER=${DB_USER:-root}
-      - MYSQL_PASSWORD=${DB_PASSWORD:-cotacao_root_password_2024}
     volumes:
       - mysql_data:/var/lib/mysql
     networks:
