@@ -314,6 +314,8 @@ class QuantidadesServidasImportController {
       let importados = 0;
       let atualizados = 0;
       const unidadesProcessadas = new Set(); // Para rastrear unidades que precisam recalcular médias
+      // Rastrear combinações específicas importadas: unidade_id + periodo_id + tipo_cardapio_id + produto_comercial_id
+      const combinacoesImportadas = new Set(); // Formato: "unidade_id|periodo_id|tipo_cardapio_id|produto_comercial_id"
       let totalErros = 0;
 
       console.log(`Iniciando processamento de ${registros.length} registros em blocos de ${TAMANHO_BLOCO}`);
@@ -516,6 +518,10 @@ class QuantidadesServidasImportController {
           
           // Adicionar unidade à lista de unidades que precisam recalcular médias
           unidadesProcessadas.add(unidade.id);
+          
+          // Rastrear combinação específica importada para recalcular média apenas para essa combinação
+          const combinacaoKey = `${unidade.id}|${registro.periodo_id}|${tipoCardapioId || 'null'}|${produtoComercialId || 'null'}`;
+          combinacoesImportadas.add(combinacaoKey);
 
         } catch (error) {
           totalErros++;
@@ -544,90 +550,95 @@ class QuantidadesServidasImportController {
       
       console.log(`Processamento concluído. Total: ${importados} importados, ${atualizados} atualizados, ${totalErros} erros`);
 
-      // Recalcular médias para todas as unidades processadas
-      // Considerando apenas os últimos 20 registros por unidade/período, ordenados por data (mais recentes primeiro)
+      // Recalcular médias apenas para as combinações específicas que foram importadas
+      // Considerando apenas os últimos 20 registros por combinação unidade/período/tipo_cardapio/produto_comercial
       let errosRecalculo = 0;
       let mediasRecalculadas = 0;
       const nutricionistaId = req.user?.id || 1; // Usar ID do usuário logado
-      console.log(`Iniciando recálculo de médias para ${unidadesProcessadas.size} unidades (últimos 20 registros por período)`);
+      console.log(`Iniciando recálculo de médias para ${combinacoesImportadas.size} combinações importadas (últimos 20 registros por combinação)`);
       
-      for (const unidadeId of unidadesProcessadas) {
+      // Processar cada combinação importada
+      for (const combinacaoKey of combinacoesImportadas) {
         try {
-          // Buscar todos os períodos únicos para esta unidade
-          const periodosQuery = `
-            SELECT DISTINCT periodo_atendimento_id
-            FROM quantidades_servidas
-            WHERE unidade_id = ? AND ativo = 1
-          `;
-          const periodos = await executeQuery(periodosQuery, [unidadeId]);
+          // Separar a chave da combinação
+          const [unidadeId, periodoId, tipoCardapioIdStr, produtoComercialIdStr] = combinacaoKey.split('|');
+          const tipoCardapioId = tipoCardapioIdStr === 'null' ? null : parseInt(tipoCardapioIdStr);
+          const produtoComercialId = produtoComercialIdStr === 'null' ? null : parseInt(produtoComercialIdStr);
           
-          // Para cada período, calcular a média dos últimos 20 registros
-          for (const periodo of periodos) {
-            const periodoId = periodo.periodo_atendimento_id;
+          // Buscar os últimos 20 registros desta combinação específica, ordenados por data DESC
+          const ultimosRegistrosQuery = `
+            SELECT valor, data
+            FROM quantidades_servidas
+            WHERE unidade_id = ? 
+              AND periodo_atendimento_id = ?
+              AND COALESCE(tipo_cardapio_id, 0) = COALESCE(?, 0)
+              AND COALESCE(produto_comercial_id, 0) = COALESCE(?, 0)
+              AND ativo = 1
+            ORDER BY data DESC, id DESC
+            LIMIT 20
+          `;
+          const registros = await executeQuery(ultimosRegistrosQuery, [
+            unidadeId, 
+            periodoId, 
+            tipoCardapioId, 
+            produtoComercialId
+          ]);
+          
+          if (registros.length > 0) {
+            // Calcular a média dos valores
+            const soma = registros.reduce((acc, reg) => acc + (parseFloat(reg.valor) || 0), 0);
+            const media = soma / registros.length;
+            const quantidadeLancamentos = registros.length;
             
-            // Buscar os últimos 20 registros deste período para esta unidade, ordenados por data DESC
-            const ultimosRegistrosQuery = `
-              SELECT valor, data
-              FROM quantidades_servidas
-              WHERE unidade_id = ? 
-                AND periodo_atendimento_id = ?
-                AND ativo = 1
-              ORDER BY data DESC, id DESC
-              LIMIT 20
+            // Buscar nome da unidade
+            const unidadeQuery = `
+              SELECT nome_escola
+              FROM foods_db.unidades_escolares
+              WHERE id = ?
+              LIMIT 1
             `;
-            const registros = await executeQuery(ultimosRegistrosQuery, [unidadeId, periodoId]);
+            const unidades = await executeQuery(unidadeQuery, [unidadeId]);
+            const unidadeNome = unidades.length > 0 ? unidades[0].nome_escola : 'Unidade Desconhecida';
             
-            if (registros.length > 0) {
-              // Calcular a média dos valores
-              const soma = registros.reduce((acc, reg) => acc + (parseFloat(reg.valor) || 0), 0);
-              const media = soma / registros.length;
-              const quantidadeLancamentos = registros.length;
-              
-              // Buscar nome da unidade
-              const unidadeQuery = `
-                SELECT nome_escola
-                FROM foods_db.unidades_escolares
-                WHERE id = ?
-                LIMIT 1
-              `;
-              const unidades = await executeQuery(unidadeQuery, [unidadeId]);
-              const unidadeNome = unidades.length > 0 ? unidades[0].nome_escola : 'Unidade Desconhecida';
-              
-              // Atualizar ou inserir média na tabela medias_quantidades_servidas
-              const upsertMediaQuery = `
-                INSERT INTO medias_quantidades_servidas (
-                  unidade_id,
-                  unidade_nome,
-                  periodo_atendimento_id,
-                  media,
-                  quantidade_lancamentos,
-                  data_calculo,
-                  nutricionista_id
-                ) VALUES (?, ?, ?, ?, ?, NOW(), ?)
-                ON DUPLICATE KEY UPDATE
-                  unidade_nome = VALUES(unidade_nome),
-                  media = VALUES(media),
-                  quantidade_lancamentos = VALUES(quantidade_lancamentos),
-                  data_calculo = NOW(),
-                  nutricionista_id = VALUES(nutricionista_id)
-              `;
-              
-              await executeQuery(upsertMediaQuery, [
-                unidadeId,
-                unidadeNome,
-                periodoId,
+            // Atualizar ou inserir média na tabela medias_quantidades_servidas
+            // Incluindo tipo_cardapio_id e produto_comercial_id para diferenciar combinações
+            const upsertMediaQuery = `
+              INSERT INTO medias_quantidades_servidas (
+                unidade_id,
+                unidade_nome,
+                periodo_atendimento_id,
+                tipo_cardapio_id,
+                produto_comercial_id,
                 media,
-                quantidadeLancamentos,
-                nutricionistaId
-              ]);
-              
-              mediasRecalculadas++;
-            }
+                quantidade_lancamentos,
+                data_calculo,
+                nutricionista_id
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), ?)
+              ON DUPLICATE KEY UPDATE
+                unidade_nome = VALUES(unidade_nome),
+                media = VALUES(media),
+                quantidade_lancamentos = VALUES(quantidade_lancamentos),
+                data_calculo = NOW(),
+                nutricionista_id = VALUES(nutricionista_id)
+            `;
+            
+            await executeQuery(upsertMediaQuery, [
+              unidadeId,
+              unidadeNome,
+              periodoId,
+              tipoCardapioId,
+              produtoComercialId,
+              media,
+              quantidadeLancamentos,
+              nutricionistaId
+            ]);
+            
+            mediasRecalculadas++;
           }
         } catch (error) {
           // Se houver erro, apenas logar (não falhar a importação)
           errosRecalculo++;
-          console.warn(`Erro ao recalcular média para unidade ${unidadeId}:`, error.message);
+          console.warn(`Erro ao recalcular média para combinação ${combinacaoKey}:`, error.message);
           // Não adicionar ao array de erros para não confundir o usuário
         }
       }
