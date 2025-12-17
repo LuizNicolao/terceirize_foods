@@ -179,7 +179,7 @@ const ModalValidacaoExclusao = ({
       size="4xl"
     >
       <div className="space-y-6">
-        {/* Informações da Escola */}
+        {/* Informações da Cozinha Industrial */}
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <div className="flex items-center">
             <FaCalendarAlt className="text-blue-600 mr-2" />
@@ -217,7 +217,7 @@ const ModalValidacaoExclusao = ({
         ) : diasComRegistros.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
             <FaCalendarAlt className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-            <p>Nenhum registro encontrado para esta escola</p>
+            <p>Nenhum registro encontrado para esta cozinha industrial</p>
           </div>
         ) : (
           <div className="max-h-96 overflow-y-auto border border-gray-200 rounded-lg">

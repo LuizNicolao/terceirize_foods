@@ -92,36 +92,28 @@ const NecessidadeGeracaoModal = ({
   const carregarFiliais = async () => {
     setLoadingFiliais(true);
     try {
-      let allFiliaisData = [];
-      let page = 1;
-      const limit = 100;
-      let hasMore = true;
+      // Buscar apenas filiais que possuem vínculos com cardápios
+      const result = await cardapiosService.buscarFiliaisComCardapios();
       
-      while (hasMore && page <= 50) {
-        const result = await FoodsApiService.getFiliais({ page, limit });
-        
-        if (result.success && result.data) {
-          let items = [];
-          if (result.data.items) {
-            items = result.data.items;
-          } else if (Array.isArray(result.data)) {
-            items = result.data;
-          } else if (result.data.data) {
-            items = result.data.data;
-          }
-          
-          allFiliaisData = [...allFiliaisData, ...items];
-          hasMore = items.length === limit;
-          page++;
-        } else {
-          hasMore = false;
+      if (result.success && result.data) {
+        let items = [];
+        if (Array.isArray(result.data)) {
+          items = result.data;
+        } else if (result.data.items && Array.isArray(result.data.items)) {
+          items = result.data.items;
+        } else if (result.data.data && Array.isArray(result.data.data)) {
+          items = result.data.data;
         }
+        
+        setFiliais(items);
+      } else {
+        setFiliais([]);
+        toast.error(result.error || 'Erro ao carregar filiais com cardápios');
       }
-      
-      setFiliais(allFiliaisData);
     } catch (error) {
       console.error('Erro ao carregar filiais:', error);
       toast.error('Erro ao carregar filiais');
+      setFiliais([]);
     } finally {
       setLoadingFiliais(false);
     }
@@ -257,8 +249,14 @@ const NecessidadeGeracaoModal = ({
           if (responseSobrescrever.success) {
             resetForm();
             onClose();
+          } else if (responseSobrescrever.mediasFaltantes) {
+            setMediasFaltantes(responseSobrescrever.mediasFaltantes);
+            toast.error(responseSobrescrever.error || 'Erro ao gerar necessidade');
           }
         }
+      } else if (response.mediasFaltantes) {
+        setMediasFaltantes(response.mediasFaltantes);
+        toast.error(response.error || 'Erro ao gerar necessidade');
       }
     } catch (error) {
       console.error('Erro ao gerar necessidade:', error);
@@ -270,7 +268,7 @@ const NecessidadeGeracaoModal = ({
 
   const filiaisOptions = filiais.map(f => ({
     value: f.id,
-    label: f.filial || f.nome || f.razao_social || ''
+    label: f.filial || f.nome || f.razao_social || `Filial ${f.id}` || ''
   }));
 
   const centrosCustoOptions = centrosCusto.map(cc => ({
@@ -375,12 +373,15 @@ const NecessidadeGeracaoModal = ({
                     Médias de Efetivos Faltantes
                   </h3>
                   <p className="text-sm text-yellow-700 mb-2">
-                    As seguintes combinações de cozinha/período não possuem média cadastrada:
+                    As seguintes combinações de cozinha/período/tipo de cardápio não possuem média cadastrada:
                   </p>
                   <ul className="list-disc list-inside text-sm text-yellow-700 space-y-1">
                     {mediasFaltantes.map((item, index) => (
                       <li key={index}>
-                        {item.cozinha_industrial_nome} - {item.periodo_nome}
+                        <strong>{item.cozinha_industrial_nome}</strong> - {item.periodo_nome}
+                        {item.tipo_de_cardapio && (
+                          <span> - <strong>Tipo de Cardápio:</strong> {item.tipo_de_cardapio}</span>
+                        )}
                       </li>
                     ))}
                   </ul>

@@ -38,6 +38,13 @@ router.get(
   CardapiosListController.exportarJSON
 );
 
+// GET /cardapios/filiais - Buscar filiais com vínculos de cardápios
+router.get(
+  '/filiais',
+  checkScreenPermission('cardapios', 'visualizar'),
+  CardapiosListController.buscarFiliaisComCardapios
+);
+
 // POST /cardapios/gerar-necessidade - Gerar necessidade de cardápio
 router.post(
   '/gerar-necessidade',

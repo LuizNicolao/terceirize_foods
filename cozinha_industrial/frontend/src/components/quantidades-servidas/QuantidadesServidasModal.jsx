@@ -23,6 +23,9 @@ const QuantidadesServidasModal = ({
   const { user } = useAuth();
   const [unidadesEscolares, setUnidadesEscolares] = useState([]);
   const [loadingEscolas, setLoadingEscolas] = useState(false);
+  const [filiais, setFiliais] = useState([]);
+  const [loadingFiliais, setLoadingFiliais] = useState(false);
+  const [filialId, setFilialId] = useState('');
   const [abaAtiva, setAbaAtiva] = useState('detalhes');
   const [medias, setMedias] = useState([]);
   const [loadingMedias, setLoadingMedias] = useState(false);
@@ -49,6 +52,7 @@ const QuantidadesServidasModal = ({
   };
   
   const criarEstadoInicial = useCallback(() => ({
+    filial_id: '',
     unidade_id: '',
     nutricionista_id: user?.id || '',
     data: getDataAtual(),
@@ -75,13 +79,82 @@ const QuantidadesServidasModal = ({
       setDadosIniciaisCarregados(false);
       setUnidadeInicial(null);
       setDataInicial(null);
+      setFilialId('');
+      setUnidadesEscolares([]);
     }
   }, [isOpen, criarEstadoInicial]);
-  
-  // Carregar TODAS as escolas quando modal abrir
+
+  // Carregar filiais quando modal abrir
   useEffect(() => {
-    const carregarTodasEscolas = async () => {
+    const carregarFiliais = async () => {
       if (!isOpen) return;
+      
+      try {
+        setLoadingFiliais(true);
+        let allFiliaisData = [];
+        let page = 1;
+        const limit = 100;
+        let hasMore = true;
+        
+        // Buscar todas as filiais fazendo múltiplas requisições (paginação)
+        while (hasMore && page <= 50) {
+          const result = await FoodsApiService.getFiliais({
+            page,
+            limit
+          });
+          
+          if (result.success && result.data) {
+            // Verificar se é uma resposta HATEOAS ou direta
+            let items = [];
+            if (result.data.items && Array.isArray(result.data.items)) {
+              items = result.data.items;
+            } else if (Array.isArray(result.data)) {
+              items = result.data;
+            } else if (result.data.data && Array.isArray(result.data.data)) {
+              items = result.data.data;
+            }
+            
+            if (items.length > 0) {
+              allFiliaisData = [...allFiliaisData, ...items];
+            }
+            
+            // Verificar se há mais páginas
+            if (items.length < limit) {
+              hasMore = false;
+            } else {
+              page++;
+            }
+          } else {
+            hasMore = false;
+          }
+        }
+        
+        // Filtrar apenas filiais ativas (status pode ser 1, 'ativo', ou true)
+        const filiaisAtivas = allFiliaisData.filter(filial => {
+          const status = filial.status;
+          return status === 1 || status === 'ativo' || status === true || status === '1';
+        });
+        
+        setFiliais(filiaisAtivas);
+      } catch (error) {
+        console.error('Erro ao carregar filiais:', error);
+        toast.error('Erro ao carregar filiais. Verifique a conexão com o sistema Foods.');
+        setFiliais([]);
+      } finally {
+        setLoadingFiliais(false);
+      }
+    };
+    
+    carregarFiliais();
+  }, [isOpen]);
+
+  // Carregar unidades escolares quando filial for selecionada
+  useEffect(() => {
+    const carregarUnidadesPorFilial = async () => {
+      if (!isOpen || !filialId) {
+        setUnidadesEscolares([]);
+        return;
+      }
       
       try {
         setLoadingEscolas(true);
@@ -90,7 +163,7 @@ const QuantidadesServidasModal = ({
         let hasMore = true;
         const limit = 100;
         
-        // Buscar todas as escolas fazendo múltiplas requisições
+        // Buscar todas as unidades fazendo múltiplas requisições
         while (hasMore) {
           const result = await FoodsApiService.getUnidadesEscolares({
             page,
@@ -116,17 +189,25 @@ const QuantidadesServidasModal = ({
           }
         }
         
-        setUnidadesEscolares(todasEscolas);
+        // Filtrar apenas unidades da filial selecionada
+        const unidadesFiltradas = todasEscolas.filter(unidade => {
+          if (unidade.filial_id) {
+            return parseInt(unidade.filial_id) === parseInt(filialId);
+          }
+          return false;
+        });
+        
+        setUnidadesEscolares(unidadesFiltradas);
       } catch (error) {
-        console.error('Erro ao carregar escolas:', error);
+        console.error('Erro ao carregar unidades escolares:', error);
         setUnidadesEscolares([]);
       } finally {
         setLoadingEscolas(false);
       }
     };
     
-    carregarTodasEscolas();
-  }, [isOpen]);
+    carregarUnidadesPorFilial();
+  }, [isOpen, filialId]);
   
   // Estado para controlar se já carregou os dados iniciais
   const [dadosIniciaisCarregados, setDadosIniciaisCarregados] = useState(false);
@@ -140,12 +221,18 @@ const QuantidadesServidasModal = ({
       // As quantidades serão carregadas pelo carregarRegistrosExistentes
       // que busca os dados completos do backend (incluindo produto_comercial_id)
       setFormData({
+        filial_id: registro.filial_id || '',
         unidade_id: registro.unidade_id || '',
         nutricionista_id: registro.nutricionista_id || user?.id || '',
         data: registro.data || new Date().toISOString().split('T')[0],
         tipo_cardapio_id: registro.tipo_cardapio_id || '',
         quantidades: {} // Será preenchido pelo carregarRegistrosExistentes
       });
+      
+      // Atualizar filialId para preencher o select de filiais
+      if (registro.filial_id) {
+        setFilialId(String(registro.filial_id));
+      }
       setUnidadeInicial(registro.unidade_id);
       setDataInicial(registro.data);
       setDadosIniciaisCarregados(true);
@@ -326,6 +413,8 @@ const QuantidadesServidasModal = ({
           
           if (result.success && result.data?.quantidades) {
             const quantidades = result.data.quantidades;
+            const filialId = result.data.filial_id;
+            const filialNome = result.data.filial_nome;
         
         // O backend já retorna as chaves no formato correto: tipo_cardapio_id-produto_id-periodo_id
         // Apenas converter os valores para string
@@ -345,9 +434,15 @@ const QuantidadesServidasModal = ({
         
             setFormData(prev => ({
               ...prev,
+              filial_id: filialId || prev.filial_id || '',
           quantidades: quantidadesNormalizadas,
           tipos_cardapio_quantidades: prev.tipos_cardapio_quantidades || {}
             }));
+            
+            // Atualizar filialId para preencher o select de filiais
+            if (filialId) {
+              setFilialId(String(filialId));
+            }
             
             // Marcar que os dados completos foram buscados
             if (estaEditando) {
@@ -436,6 +531,19 @@ const QuantidadesServidasModal = ({
     }
   }, [isOpen]);
   
+  const handleFilialChange = (value) => {
+    setFilialId(value || '');
+    // Limpar seleção de unidade quando filial mudar
+    setFormData(prev => ({
+      ...prev,
+      filial_id: value || '',
+      unidade_id: ''
+    }));
+    if (!isViewMode) {
+      markDirty();
+    }
+  };
+
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (!isViewMode) {
@@ -464,7 +572,7 @@ const QuantidadesServidasModal = ({
     
     // Validação básica
     if (!formData.unidade_id) {
-      toast.error('Selecione uma escola');
+      toast.error('Selecione uma cozinha industrial');
       return;
     }
     
@@ -477,7 +585,13 @@ const QuantidadesServidasModal = ({
     const unidadeSelecionada = unidadesEscolares.find(e => e.id === formData.unidade_id);
     const unidade_nome = unidadeSelecionada ? unidadeSelecionada.nome_escola : `Unidade ID ${formData.unidade_id}`;
     
-    // Adicionar nome da escola aos dados
+    // Buscar nome da filial selecionada
+    const filialSelecionada = filiais.find(f => String(f.id) === String(filialId));
+    const filial_nome = filialSelecionada 
+      ? (filialSelecionada.filial || filialSelecionada.nome || `Filial ${filialSelecionada.id}`)
+      : null;
+    
+    // Adicionar nome da escola e filial aos dados
     // Filtrar apenas valores válidos e converter para números
     // Estrutura: { "tipo_cardapio_id-produto_id-periodo_id": valor }
     const tiposCardapioQuantidadesFiltradas = {};
@@ -513,6 +627,8 @@ const QuantidadesServidasModal = ({
     const resultado = await onSave({
       ...formData,
       unidade_nome,
+      filial_id: filialId ? parseInt(filialId) : null,
+      filial_nome,
       quantidades: {}, // Períodos sem tipo de cardápio (compatibilidade com registros antigos)
       tipos_cardapio_quantidades: tiposCardapioQuantidadesFiltradas
     }, !registro); // Manter modal aberto se for novo registro (não edição)
@@ -662,9 +778,13 @@ const QuantidadesServidasModal = ({
             </h3>
             <SelecaoUnidadeData
               formData={formData}
+              filiais={filiais}
+              filialId={filialId}
+              loadingFiliais={loadingFiliais}
               unidadesEscolares={unidadesEscolares}
               loadingEscolas={loadingEscolas}
               isViewMode={isViewMode}
+              onFilialChange={handleFilialChange}
               onInputChange={handleInputChange}
             />
           </div>

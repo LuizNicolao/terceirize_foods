@@ -43,7 +43,6 @@ class NecessidadesGeracaoController {
       });
 
     } catch (error) {
-      console.error('Erro ao pré-visualizar necessidade:', error);
       return errorResponse(
         res, 
         error.message || 'Erro ao pré-visualizar necessidade', 
@@ -281,7 +280,6 @@ class NecessidadesGeracaoController {
 
     } catch (error) {
       await connection.rollback();
-      console.error('Erro ao gerar necessidade:', error);
       return errorResponse(
         res, 
         'Erro ao gerar necessidade: ' + error.message, 
@@ -448,7 +446,6 @@ class NecessidadesGeracaoController {
 
     } catch (error) {
       await connection.rollback();
-      console.error('Erro ao recalcular necessidade:', error);
       return errorResponse(
         res, 
         'Erro ao recalcular necessidade: ' + error.message, 
@@ -555,8 +552,8 @@ class NecessidadesGeracaoController {
         };
       }
 
-      // 2. Buscar TODOS os tipos de cardápio (produtos comerciais) vinculados ao cardápio
-      const [produtosComerciais] = await connection.execute(
+      // 2. Buscar tipos de cardápio (produtos comerciais) vinculados ao cardápio
+      const [produtosComerciaisCardapio] = await connection.execute(
         `SELECT DISTINCT 
           produto_comercial_id,
           nome_comercial 
@@ -565,13 +562,12 @@ class NecessidadesGeracaoController {
         [cardapioId]
       );
 
-      if (produtosComerciais.length === 0) {
+      if (produtosComerciaisCardapio.length === 0) {
         throw {
           message: 'Nenhum produto comercial (tipo de cardápio) vinculado ao cardápio',
           statusCode: STATUS_CODES.BAD_REQUEST
         };
       }
-
 
       // 3. Processar cada unidade
       const itens = [];
@@ -610,30 +606,73 @@ class NecessidadesGeracaoController {
           continue;
         }
 
-        for (const periodo of periodosValidos) {
-          // Verificar média de efetivos
-          const [medias] = await connection.execute(
-            `SELECT media 
-             FROM medias_quantidades_servidas 
-             WHERE unidade_id = ? 
-               AND periodo_atendimento_id = ?`,
-            [unidade.unidade_id, periodo.periodo_id]
+        // Buscar tipos de cardápio vinculados à unidade (cozinha)
+        const [tiposCardapioCozinha] = await connection.execute(
+          `SELECT 
+            tipo_cardapio_id
+           FROM cozinha_industrial_tipos_cardapio
+           WHERE cozinha_industrial_id = ?
+             AND status = 'ativo'`,
+          [unidade.unidade_id]
+        );
+
+        // Buscar produtos comerciais dos tipos de cardápio vinculados à unidade
+        const tiposCardapioIds = tiposCardapioCozinha.map(tc => tc.tipo_cardapio_id);
+        let produtosComerciaisCozinha = [];
+        
+        if (tiposCardapioIds.length > 0) {
+          const placeholders = tiposCardapioIds.map(() => '?').join(',');
+          const [produtosCozinha] = await connection.execute(
+            `SELECT DISTINCT
+              tcp.tipo_cardapio_id,
+              tcp.produto_comercial_id,
+              tcp.produto_comercial_nome
+             FROM tipos_cardapio_produtos tcp
+             WHERE tcp.tipo_cardapio_id IN (${placeholders})`,
+            tiposCardapioIds
           );
+          produtosComerciaisCozinha = produtosCozinha;
+        }
 
-          if (medias.length === 0 || !medias[0].media) {
-            mediasFaltantes.push({
-              cozinha_industrial_id: unidade.unidade_id,
-              cozinha_industrial_nome: unidade.unidade_nome,
-              periodo_atendimento_id: periodo.periodo_id,
-              periodo_nome: periodo.periodo_nome
-            });
-            continue;
+        // Criar mapa de produtos comerciais da cozinha por tipo_cardapio_id
+        const produtosPorTipoCardapio = {};
+        produtosComerciaisCozinha.forEach(prod => {
+          if (!produtosPorTipoCardapio[prod.tipo_cardapio_id]) {
+            produtosPorTipoCardapio[prod.tipo_cardapio_id] = [];
           }
+          produtosPorTipoCardapio[prod.tipo_cardapio_id].push({
+            produto_comercial_id: prod.produto_comercial_id,
+            produto_comercial_nome: prod.produto_comercial_nome
+          });
+        });
 
-          const mediaEfetivos = medias[0].media;
+        // Filtrar produtos comerciais válidos (que estão no cardápio E vinculados à unidade)
+        const produtosComerciaisValidos = [];
+        const produtosCardapioIds = produtosComerciaisCardapio.map(p => p.produto_comercial_id);
+        
+        produtosComerciaisCozinha.forEach(prodCozinha => {
+          if (produtosCardapioIds.includes(prodCozinha.produto_comercial_id)) {
+            // Verificar se já não foi adicionado
+            const jaExiste = produtosComerciaisValidos.some(
+              p => p.produto_comercial_id === prodCozinha.produto_comercial_id && 
+                   p.tipo_cardapio_id === prodCozinha.tipo_cardapio_id
+            );
+            if (!jaExiste) {
+              produtosComerciaisValidos.push({
+                tipo_cardapio_id: prodCozinha.tipo_cardapio_id,
+                produto_comercial_id: prodCozinha.produto_comercial_id,
+                produto_comercial_nome: prodCozinha.produto_comercial_nome
+              });
+            }
+          }
+        });
 
-          // Buscar TODOS os pratos do cardápio (independente do produto_comercial_id)
-          // Os pratos serão usados para TODOS os produtos comerciais vinculados ao cardápio
+        if (produtosComerciaisValidos.length === 0) {
+          continue;
+        }
+
+        for (const periodo of periodosValidos) {
+          // Buscar TODOS os pratos do cardápio
           const [todosPratos] = await connection.execute(
             `SELECT 
               cp.data,
@@ -652,10 +691,40 @@ class NecessidadesGeracaoController {
             continue;
           }
 
-          // Processar cada produto comercial (tipo de cardápio) vinculado ao cardápio
-          // Cada produto comercial usará TODOS os pratos do cardápio
-          for (const produtoComercial of produtosComerciais) {
-            const tipoDeCardapio = produtoComercial.nome_comercial;
+          // Processar cada produto comercial válido (tipo de cardápio vinculado à unidade E ao cardápio)
+          for (const produtoValido of produtosComerciaisValidos) {
+            const tipoDeCardapio = produtoValido.produto_comercial_nome;
+
+            // Verificar média de efetivos considerando tipo_cardapio_id e produto_comercial_id
+            const [medias] = await connection.execute(
+              `SELECT media 
+               FROM medias_quantidades_servidas 
+               WHERE unidade_id = ? 
+                 AND periodo_atendimento_id = ?
+                 AND tipo_cardapio_id = ?
+                 AND produto_comercial_id = ?`,
+              [
+                unidade.unidade_id, 
+                periodo.periodo_id,
+                produtoValido.tipo_cardapio_id,
+                produtoValido.produto_comercial_id
+              ]
+            );
+
+            if (medias.length === 0 || !medias[0].media) {
+              mediasFaltantes.push({
+                cozinha_industrial_id: unidade.unidade_id,
+                cozinha_industrial_nome: unidade.unidade_nome,
+                periodo_atendimento_id: periodo.periodo_id,
+                periodo_nome: periodo.periodo_nome,
+                tipo_cardapio_id: produtoValido.tipo_cardapio_id,
+                produto_comercial_id: produtoValido.produto_comercial_id,
+                tipo_de_cardapio: tipoDeCardapio
+              });
+              continue;
+            }
+
+            const mediaEfetivos = medias[0].media;
 
             // Usar TODOS os pratos do cardápio para este produto comercial
             for (const prato of todosPratos) {
@@ -720,8 +789,14 @@ class NecessidadesGeracaoController {
           await connection.rollback();
           connection.release();
         }
+        
+        // Construir mensagem detalhada com as médias faltantes
+        const detalhesMedias = mediasFaltantes.map((media, index) => {
+          return `${index + 1}. ${media.cozinha_industrial_nome} - ${media.periodo_nome} - ${media.tipo_de_cardapio || 'Tipo de Cardápio ID: ' + media.tipo_cardapio_id}`;
+        }).join('\n');
+        
         throw {
-          message: 'Existem médias de efetivos faltantes. A necessidade não pode ser gerada.',
+          message: `Existem médias de efetivos faltantes. A necessidade não pode ser gerada.\n\nMédias faltantes:\n${detalhesMedias}`,
           statusCode: STATUS_CODES.BAD_REQUEST,
           medias_faltantes: mediasFaltantes
         };

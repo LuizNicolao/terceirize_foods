@@ -21,7 +21,11 @@ const QuantidadesServidasTable = ({
     if (!Number.isFinite(numero) || numero <= 0) {
       return '-';
     }
-    return numero;
+    // Formatar número com vírgula como separador decimal (formato brasileiro)
+    return numero.toLocaleString('pt-BR', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2
+    });
   };
 
   if (loading) {

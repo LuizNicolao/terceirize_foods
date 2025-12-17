@@ -24,6 +24,21 @@ const TabelaQuantidades = ({
     'bg-pink-100 text-pink-800'
   ];
 
+  const formatQuantidade = (valor) => {
+    if (!valor || valor === '' || valor === '0') {
+      return '0';
+    }
+    const numero = Number(valor);
+    if (!Number.isFinite(numero)) {
+      return '0';
+    }
+    // Formatar número com vírgula como separador decimal (formato brasileiro)
+    return numero.toLocaleString('pt-BR', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2
+    });
+  };
+
   const getUnidadeNome = () => {
     if (!formData.unidade_id) return 'Selecione uma unidade';
     const unidade = unidadesEscolares.find(u => u.id === parseInt(formData.unidade_id));
@@ -61,7 +76,7 @@ const TabelaQuantidades = ({
             <td key={periodo.id} className="px-6 py-4 text-center">
               {isViewMode ? (
                 <span className={`inline-flex items-center px-3 py-1 ${cores[corIndex]} rounded-full text-sm font-medium`}>
-                  {valor || '0'}
+                  {formatQuantidade(valor)}
                 </span>
               ) : (
                 <Input
@@ -119,7 +134,7 @@ const TabelaQuantidades = ({
                 </span>
                 {isViewMode ? (
                   <span className={`px-2 py-0.5 ${cores[corIndex]} rounded-full font-medium`}>
-                    {valor || '0'}
+                    {formatQuantidade(valor)}
                   </span>
                 ) : (
                   <Input

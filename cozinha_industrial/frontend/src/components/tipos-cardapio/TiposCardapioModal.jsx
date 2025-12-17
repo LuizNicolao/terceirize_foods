@@ -90,25 +90,25 @@ const TiposCardapioModal = ({
     }
   }, [isOpen, isEditing, tipoCardapio, resetDirty]);
 
-  // Carregar centros de custo quando filial mudar (apenas se não estiver editando)
+  // Carregar centros de custo quando filial mudar
   useEffect(() => {
-    if (filialId && !isEditing) {
+    if (filialId) {
       carregarCentrosCusto(filialId);
     } else if (!filialId) {
       setCentrosCusto([]);
       setCentroCustoId('');
     }
-  }, [filialId, isEditing]);
+  }, [filialId]);
 
-  // Carregar contratos quando centro de custo mudar (apenas se não estiver editando)
+  // Carregar contratos quando centro de custo mudar
   useEffect(() => {
-    if (centroCustoId && !isEditing) {
+    if (centroCustoId) {
       carregarContratos(centroCustoId);
     } else if (!centroCustoId) {
       setContratos([]);
       setContratoId('');
     }
-  }, [centroCustoId, isEditing]);
+  }, [centroCustoId]);
 
   // Carregar unidades quando filial mudar
   useEffect(() => {
@@ -341,14 +341,13 @@ const TiposCardapioModal = ({
   };
 
   const handleFilialChange = (value) => {
-    if (isEditing) {
-      return;
-    }
     setFilialId(value || '');
     setCentroCustoId('');
     setContratoId('');
     setUnidadesPage(1);
-    setVinculosSelecionados({});
+    if (!isEditing) {
+      setVinculosSelecionados({});
+    }
     setErrors(prev => ({ ...prev, filial_id: undefined }));
     if (!isViewMode) {
       markDirty();
@@ -356,9 +355,6 @@ const TiposCardapioModal = ({
   };
 
   const handleCentroCustoChange = (value) => {
-    if (isEditing) {
-      return;
-    }
     setCentroCustoId(value || '');
     setContratoId('');
     setErrors(prev => ({ ...prev, centro_custo_id: undefined }));
@@ -368,9 +364,6 @@ const TiposCardapioModal = ({
   };
 
   const handleContratoChange = (value) => {
-    if (isEditing) {
-      return;
-    }
     setContratoId(value || '');
     setErrors(prev => ({ ...prev, contrato_id: undefined }));
     if (!isViewMode) {

@@ -153,7 +153,7 @@ const ModalExportRegistros = ({
                   <span className="font-medium text-gray-900">Médias</span>
                 </div>
                 <p className="text-sm text-gray-500 mt-1">
-                  Exporta as médias calculadas por escola (valores médios das refeições)
+                  Exporta as médias calculadas por cozinha industrial (valores médios das refeições)
                 </p>
               </div>
             </label>

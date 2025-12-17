@@ -13,7 +13,7 @@ class QuantidadesServidasCRUDController {
    * @param {Object} req.body - { unidade_id, nutricionista_id, data, quantidades: { periodo_id: valor }, unidade_nome }
    */
   static criar = asyncHandler(async (req, res) => {
-    const { unidade_id, nutricionista_id, data, quantidades = {}, unidade_nome, tipo_cardapio_id, tipos_cardapio_quantidades = {} } = req.body;
+    const { unidade_id, nutricionista_id, data, quantidades = {}, unidade_nome, tipo_cardapio_id, tipos_cardapio_quantidades = {}, filial_id, filial_nome } = req.body;
     const usuarioId = req.user?.id;
     
     if (!unidade_id || !data) {
@@ -61,7 +61,7 @@ class QuantidadesServidasCRUDController {
         STATUS_CODES.BAD_REQUEST
       );
     }
-    
+
     // Verificar se é um novo registro (não existe nenhum registro para essa unidade/data)
     const registrosExistentes = await executeQuery(
       'SELECT id FROM quantidades_servidas WHERE unidade_id = ? AND data = ? AND ativo = 1 LIMIT 1',
@@ -118,16 +118,18 @@ class QuantidadesServidasCRUDController {
       // Isso garante que se já existir um registro (ativo ou inativo), ele será atualizado
       const result = await executeQuery(
         `INSERT INTO quantidades_servidas 
-         (unidade_id, unidade_nome, periodo_atendimento_id, nutricionista_id, data, valor, tipo_cardapio_id, ativo) 
-         VALUES (?, ?, ?, ?, ?, ?, ?, 1)
+         (unidade_id, filial_id, filial_nome, unidade_nome, periodo_atendimento_id, nutricionista_id, data, valor, tipo_cardapio_id, ativo) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
          ON DUPLICATE KEY UPDATE
            valor = VALUES(valor),
            nutricionista_id = VALUES(nutricionista_id),
            unidade_nome = VALUES(unidade_nome),
+           filial_id = VALUES(filial_id),
+           filial_nome = VALUES(filial_nome),
            tipo_cardapio_id = VALUES(tipo_cardapio_id),
            ativo = 1,
            atualizado_em = NOW()`,
-        [unidade_id, unidade_nome, periodoId, nutricionista_id, data, valorNum, null]
+        [unidade_id, filial_id || null, filial_nome || null, unidade_nome, periodoId, nutricionista_id, data, valorNum, null]
       );
       
       // Verificar se foi inserção ou atualização
@@ -161,17 +163,19 @@ class QuantidadesServidasCRUDController {
       // Isso garante que se já existir um registro (ativo ou inativo), ele será atualizado
       const result = await executeQuery(
         `INSERT INTO quantidades_servidas 
-         (unidade_id, unidade_nome, periodo_atendimento_id, nutricionista_id, data, valor, tipo_cardapio_id, produto_comercial_id, ativo) 
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
+         (unidade_id, filial_id, filial_nome, unidade_nome, periodo_atendimento_id, nutricionista_id, data, valor, tipo_cardapio_id, produto_comercial_id, ativo) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
          ON DUPLICATE KEY UPDATE
            valor = VALUES(valor),
            nutricionista_id = VALUES(nutricionista_id),
            unidade_nome = VALUES(unidade_nome),
+           filial_id = VALUES(filial_id),
+           filial_nome = VALUES(filial_nome),
            tipo_cardapio_id = VALUES(tipo_cardapio_id),
            produto_comercial_id = VALUES(produto_comercial_id),
            ativo = 1,
            atualizado_em = NOW()`,
-        [unidade_id, unidade_nome, periodo_atendimento_id, nutricionista_id, data, valorNum, tipo_cardapio_id, produto_comercial_id || null]
+        [unidade_id, filial_id || null, filial_nome || null, unidade_nome, periodo_atendimento_id, nutricionista_id, data, valorNum, tipo_cardapio_id, produto_comercial_id || null]
       );
       
       // Verificar se foi inserção ou atualização
@@ -238,6 +242,8 @@ class QuantidadesServidasCRUDController {
       `SELECT 
         rd.id,
         rd.unidade_id,
+        rd.filial_id,
+        rd.filial_nome,
         rd.unidade_nome,
         rd.nutricionista_id,
         rd.data,
@@ -281,11 +287,17 @@ class QuantidadesServidasCRUDController {
       };
     });
     
+    // Extrair filial_id e filial_nome do primeiro registro (todos devem ter os mesmos valores)
+    const filialId = registros.length > 0 ? registros[0].filial_id : null;
+    const filialNome = registros.length > 0 ? registros[0].filial_nome : null;
+    
     return successResponse(
       res,
       {
         registros: registros,
-        quantidades: quantidades
+        quantidades: quantidades,
+        filial_id: filialId,
+        filial_nome: filialNome
       },
       'Registros encontrados com sucesso',
       STATUS_CODES.OK

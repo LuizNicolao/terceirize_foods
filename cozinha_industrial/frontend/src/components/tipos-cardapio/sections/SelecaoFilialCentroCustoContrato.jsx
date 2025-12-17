@@ -36,8 +36,8 @@ const SelecaoFilialCentroCustoContrato = ({
             label: f.filial || f.nome || `Filial ${f.id}`
           }))}
           placeholder="Selecione uma filial..."
-          disabled={loadingFiliais || isViewMode || isEditing}
-          required={!isEditing}
+          disabled={loadingFiliais || isViewMode}
+          required
           error={errors.filial_id}
           usePortal={false}
         />
@@ -56,8 +56,8 @@ const SelecaoFilialCentroCustoContrato = ({
             label: c.nome || `Centro de Custo ${c.id}`
           }))}
           placeholder={!filialId ? 'Selecione primeiro uma filial' : loadingCentrosCusto ? 'Carregando...' : 'Selecione um centro de custo'}
-          disabled={loadingCentrosCusto || isViewMode || isEditing || !filialId}
-          required={!isEditing}
+          disabled={loadingCentrosCusto || isViewMode || !filialId}
+          required
           error={errors.centro_custo_id}
           usePortal={false}
         />
@@ -76,8 +76,8 @@ const SelecaoFilialCentroCustoContrato = ({
             label: c.nome || `Contrato ${c.id}`
           }))}
           placeholder={!centroCustoId ? 'Selecione primeiro um centro de custo' : loadingContratos ? 'Carregando...' : 'Selecione um contrato'}
-          disabled={loadingContratos || isViewMode || isEditing || !centroCustoId}
-          required={!isEditing}
+          disabled={loadingContratos || isViewMode || !centroCustoId}
+          required
           error={errors.contrato_id}
           usePortal={false}
         />

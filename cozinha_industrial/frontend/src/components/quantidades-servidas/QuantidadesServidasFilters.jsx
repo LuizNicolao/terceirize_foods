@@ -85,21 +85,21 @@ const QuantidadesServidasFilters = ({ onFilter, onClear }) => {
   return (
     <div className="bg-white p-4 rounded-lg shadow-sm border mb-6">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        {/* Escola */}
+        {/* Cozinha Industrial */}
         <div>
           <SearchableSelect
-            label="Escola"
+            label="Cozinha Industrial"
             value={filters.escola_id}
             onChange={(value) => handleFilterChange('escola_id', value)}
             options={[
-              { value: '', label: 'Todas as escolas' },
+              { value: '', label: 'Todas as cozinhas industriais' },
               ...escolas.map(escola => ({
                 value: escola.id,
                 label: escola.nome_escola,
                 description: `${escola.cidade} - ${escola.rota_nome || 'Sem rota'}`
               }))
             ]}
-            placeholder="Selecione uma escola..."
+            placeholder="Selecione uma cozinha industrial..."
             disabled={loadingEscolas}
             usePortal={false}
             renderOption={(option) => (

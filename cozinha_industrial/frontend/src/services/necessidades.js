@@ -108,7 +108,8 @@ const necessidadesService = {
         error: error.response?.data?.message || 'Erro ao gerar necessidade',
         data: null,
         necessidadeExistente: error.response?.data?.necessidade_existente || null,
-        conflict: error.response?.status === 409
+        conflict: error.response?.status === 409,
+        mediasFaltantes: error.response?.data?.medias_faltantes || null
       };
     }
   },

@@ -450,6 +450,96 @@ class TiposCardapioCRUDController {
       // Atualizar vínculos unidades-produtos se fornecidos
       // Extrair unidades únicas dos vínculos e salvar apenas na tabela tipos_cardapio_unidades
       if (vinculos !== undefined) {
+        // Buscar unidades que serão desvinculadas (estão vinculadas mas não estão na nova lista)
+        const unidadesAtualmenteVinculadas = await executeQuery(
+          'SELECT unidade_id FROM tipos_cardapio_unidades WHERE tipo_cardapio_id = ?',
+          [id]
+        );
+        
+        const unidadesNovas = new Set();
+        if (Array.isArray(vinculos) && vinculos.length > 0) {
+          vinculos.forEach(vinculo => {
+            if (vinculo.unidade_id) {
+              unidadesNovas.add(vinculo.unidade_id);
+            }
+          });
+        }
+        
+        const unidadesParaDesvincular = unidadesAtualmenteVinculadas
+          .map(u => u.unidade_id)
+          .filter(unidadeId => !unidadesNovas.has(unidadeId));
+        
+        // Verificar se há quantidades servidas para unidades que serão desvinculadas
+        if (unidadesParaDesvincular.length > 0) {
+          const unidadesComQuantidades = [];
+          
+          for (const unidadeId of unidadesParaDesvincular) {
+            // Buscar produtos comerciais deste tipo de cardápio
+            const produtosTipoCardapio = await executeQuery(
+              'SELECT produto_comercial_id FROM tipos_cardapio_produtos WHERE tipo_cardapio_id = ?',
+              [id]
+            );
+            
+            const produtoIds = produtosTipoCardapio.map(p => p.produto_comercial_id);
+            
+            // Verificar se há quantidades servidas ativas para esta unidade + tipo de cardápio
+            let temQuantidades = false;
+            
+            if (produtoIds.length > 0) {
+              const placeholders = produtoIds.map(() => '?').join(',');
+              const quantidades = await executeQuery(
+                `SELECT COUNT(*) as total 
+                 FROM quantidades_servidas 
+                 WHERE unidade_id = ? 
+                   AND tipo_cardapio_id = ?
+                   AND produto_comercial_id IN (${placeholders})
+                   AND ativo = 1
+                 LIMIT 1`,
+                [unidadeId, id, ...produtoIds]
+              );
+              
+              if (quantidades.length > 0 && quantidades[0].total > 0) {
+                temQuantidades = true;
+              }
+            } else {
+              // Se não há produtos, verificar apenas por tipo_cardapio_id
+              const quantidades = await executeQuery(
+                `SELECT COUNT(*) as total 
+                 FROM quantidades_servidas 
+                 WHERE unidade_id = ? 
+                   AND tipo_cardapio_id = ?
+                   AND ativo = 1
+                 LIMIT 1`,
+                [unidadeId, id]
+              );
+              
+              if (quantidades.length > 0 && quantidades[0].total > 0) {
+                temQuantidades = true;
+              }
+            }
+            
+            if (temQuantidades) {
+              // Buscar nome da unidade para mensagem de erro
+              const unidadeInfo = await TiposCardapioCRUDController.buscarDadosDoFoods('unidade', unidadeId, req.headers.authorization);
+              const unidadeNome = unidadeInfo?.nome_escola || unidadeInfo?.nome || `ID ${unidadeId}`;
+              unidadesComQuantidades.push({
+                unidade_id: unidadeId,
+                unidade_nome: unidadeNome
+              });
+            }
+          }
+          
+          // Se há unidades com quantidades servidas, impedir a remoção
+          if (unidadesComQuantidades.length > 0) {
+            const unidadesNomes = unidadesComQuantidades.map(u => u.unidade_nome).join(', ');
+            return errorResponse(
+              res,
+              `Não é possível desvincular as seguintes unidades pois existem quantidades servidas registradas: ${unidadesNomes}. Por favor, exclua ou inative os registros de quantidades servidas antes de desvincular.`,
+              STATUS_CODES.BAD_REQUEST
+            );
+          }
+        }
+        
         // Remover todas as unidades vinculadas e recriar apenas as que têm vínculos
         await executeQuery(
           'DELETE FROM tipos_cardapio_unidades WHERE tipo_cardapio_id = ?',
@@ -510,6 +600,8 @@ class TiposCardapioCRUDController {
       }
 
       // Atualizar vínculos na tabela cozinha_industrial_tipos_cardapio
+      // A validação de quantidades servidas já foi feita acima (na seção de vinculos)
+      // Aqui apenas atualizamos os vínculos na tabela cozinha_industrial_tipos_cardapio
       if (unidades_ids !== undefined || vinculos !== undefined) {
         try {
           // Marcar todos os vínculos existentes como inativos

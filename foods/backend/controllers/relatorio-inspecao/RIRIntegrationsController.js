@@ -79,10 +79,7 @@ class RIRIntegrationsController {
         LEFT JOIN nqa n ON gn.nqa_id = n.id AND n.ativo = 1
         LEFT JOIN notas_fiscais nf ON nf.pedido_compra_id = pi.pedido_id
         LEFT JOIN notas_fiscais_itens nfi ON nfi.nota_fiscal_id = nf.id 
-          AND (
-            nfi.codigo_produto COLLATE utf8mb4_unicode_ci = pi.codigo_produto
-            OR nfi.produto_generico_id = pi.produto_generico_id
-          )
+          AND nfi.produto_generico_id = pi.produto_generico_id
         WHERE pi.pedido_id = ?
           AND (
             -- Itens que ainda não foram usados em nenhum RIR
@@ -144,10 +141,7 @@ class RIRIntegrationsController {
         LEFT JOIN nqa n ON gn.nqa_id = n.id AND n.ativo = 1
         LEFT JOIN notas_fiscais nf ON nf.pedido_compra_id = pi.pedido_id
         LEFT JOIN notas_fiscais_itens nfi ON nfi.nota_fiscal_id = nf.id 
-          AND (
-            nfi.codigo_produto COLLATE utf8mb4_unicode_ci = pi.codigo_produto
-            OR nfi.produto_generico_id = pi.produto_generico_id
-          )
+          AND nfi.produto_generico_id = pi.produto_generico_id
         WHERE pi.pedido_id = ?
         GROUP BY pi.id, pi.produto_generico_id, pi.quantidade_pedido, pi.codigo_produto, 
                  pg.nome, pg.codigo, pg.grupo_id, um.sigla, g.nome, n.id, n.codigo, n.nome, n.nivel_inspecao
@@ -312,10 +306,7 @@ class RIRIntegrationsController {
       LEFT JOIN pedido_compras_itens pci ON pci.pedido_id = pc.id
       LEFT JOIN notas_fiscais nf ON nf.pedido_compra_id = pc.id
       LEFT JOIN notas_fiscais_itens nfi ON nfi.nota_fiscal_id = nf.id 
-        AND (
-          nfi.codigo_produto COLLATE utf8mb4_unicode_ci = pci.codigo_produto
-          OR nfi.produto_generico_id = pci.produto_generico_id
-        )
+        AND nfi.produto_generico_id = pci.produto_generico_id
       WHERE pc.status IN ('aprovado', 'parcial')
       GROUP BY pc.id, pc.numero_pedido, pc.criado_em, f.razao_social, f.cnpj
       HAVING saldo_disponivel > 0

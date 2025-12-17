@@ -147,6 +147,26 @@ const cardapiosService = {
         data: []
       };
     }
+  },
+
+  /**
+   * Buscar filiais que possuem vínculos com cardápios
+   */
+  async buscarFiliaisComCardapios() {
+    try {
+      const response = await api.get('/cardapios/filiais');
+      return {
+        success: true,
+        data: response.data?.data || response.data || []
+      };
+    } catch (error) {
+      console.error('Erro ao buscar filiais com cardápios:', error);
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao buscar filiais com cardápios',
+        data: []
+      };
+    }
   }
 };
 

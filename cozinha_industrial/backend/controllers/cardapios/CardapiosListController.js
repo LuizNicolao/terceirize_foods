@@ -319,6 +319,44 @@ class CardapiosListController {
       );
     }
   });
+
+  /**
+   * Buscar filiais que possuem vínculos com cardápios
+   * Retorna apenas filiais que têm pelo menos um cardápio vinculado
+   */
+  static buscarFiliaisComCardapios = asyncHandler(async (req, res) => {
+    try {
+      const filiais = await executeQuery(
+        `SELECT DISTINCT
+          cf.filial_id as id,
+          COALESCE(cf.filial_nome, f.filial, f.razao_social) as filial,
+          f.cidade,
+          f.estado,
+          f.codigo_filial,
+          f.cnpj,
+          f.status
+        FROM cardapios_filiais cf
+        INNER JOIN foods_db.filiais f ON cf.filial_id = f.id
+        INNER JOIN cardapios c ON cf.cardapio_id = c.id
+        WHERE c.status = 'ativo'
+          AND f.status = 1
+        ORDER BY COALESCE(cf.filial_nome, f.filial, f.razao_social) ASC`
+      );
+
+      return successResponse(
+        res,
+        filiais,
+        'Filiais com cardápios encontradas com sucesso',
+        STATUS_CODES.OK
+      );
+    } catch (error) {
+      return errorResponse(
+        res,
+        'Erro ao buscar filiais com cardápios: ' + error.message,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
+      );
+    }
+  });
 }
 
 module.exports = CardapiosListController;
