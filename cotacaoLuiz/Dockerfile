@@ -14,12 +14,19 @@ RUN apt-get update && apt-get install -y \
 # Habilitar mod_rewrite para Apache
 RUN a2enmod rewrite
 
+# Habilitar env_module para passar variáveis de ambiente para PHP
+RUN a2enmod env
+
 # Configurar o DocumentRoot do Apache
 ENV APACHE_DOCUMENT_ROOT /var/www/html
 
 # Atualizar a configuração do Apache
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
 RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
+
+# Configurar Apache para passar variáveis de ambiente para PHP
+RUN echo 'PassEnv DB_HOST DB_PORT DB_NAME DB_USER DB_PASSWORD' >> /etc/apache2/conf-available/docker-env.conf
+RUN a2enconf docker-env
 
 # Definir o diretório de trabalho
 WORKDIR /var/www/html
