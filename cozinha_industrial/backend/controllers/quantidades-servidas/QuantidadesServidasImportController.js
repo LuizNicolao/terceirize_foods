@@ -86,11 +86,11 @@ class QuantidadesServidasImportController {
 
       // Adicionar dados de exemplo
       const dataAtual = new Date();
-      // Formatar data no formato DD-MM-YYYY para o exemplo
+      // Formatar data no formato DD/MM/YYYY para o exemplo
       const dia = String(dataAtual.getDate()).padStart(2, '0');
       const mes = String(dataAtual.getMonth() + 1).padStart(2, '0');
       const ano = dataAtual.getFullYear();
-      const dataExemplo = `${dia}-${mes}-${ano}`; // DD-MM-YYYY
+      const dataExemplo = `${dia}/${mes}/${ano}`; // DD/MM/YYYY
 
       const exemplos = unidades.slice(0, 2).map((unidade, index) => {
         const exemplo = {
@@ -213,16 +213,16 @@ class QuantidadesServidasImportController {
           return;
         }
 
-        // Validar formato da data (DD-MM-YYYY) e converter para YYYY-MM-DD
-        const dataRegex = /^(\d{2})-(\d{2})-(\d{4})$/;
+        // Validar formato da data (DD/MM/YYYY) e converter para YYYY-MM-DD
+        const dataRegex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
         const match = registro.data.match(dataRegex);
         if (!match) {
-          erros.push(`Linha ${linha}: Data deve estar no formato DD-MM-YYYY (ex: 15-01-2025)`);
+          erros.push(`Linha ${linha}: Data deve estar no formato DD/MM/YYYY (ex: 15/01/2025)`);
           linha++;
           return;
         }
 
-        // Converter DD-MM-YYYY para YYYY-MM-DD
+        // Converter DD/MM/YYYY para YYYY-MM-DD
         const [, dia, mes, ano] = match;
         const diaNum = parseInt(dia, 10);
         const mesNum = parseInt(mes, 10);
