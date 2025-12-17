@@ -86,7 +86,11 @@ class QuantidadesServidasImportController {
 
       // Adicionar dados de exemplo
       const dataAtual = new Date();
-      const dataExemplo = dataAtual.toISOString().split('T')[0]; // YYYY-MM-DD
+      // Formatar data no formato DD-MM-YYYY para o exemplo
+      const dia = String(dataAtual.getDate()).padStart(2, '0');
+      const mes = String(dataAtual.getMonth() + 1).padStart(2, '0');
+      const ano = dataAtual.getFullYear();
+      const dataExemplo = `${dia}-${mes}-${ano}`; // DD-MM-YYYY
 
       const exemplos = unidades.slice(0, 2).map((unidade, index) => {
         const exemplo = {
@@ -209,13 +213,30 @@ class QuantidadesServidasImportController {
           return;
         }
 
-        // Validar formato da data
-        const dataRegex = /^\d{4}-\d{2}-\d{2}$/;
-        if (!dataRegex.test(registro.data)) {
-          erros.push(`Linha ${linha}: Data deve estar no formato YYYY-MM-DD`);
+        // Validar formato da data (DD-MM-YYYY) e converter para YYYY-MM-DD
+        const dataRegex = /^(\d{2})-(\d{2})-(\d{4})$/;
+        const match = registro.data.match(dataRegex);
+        if (!match) {
+          erros.push(`Linha ${linha}: Data deve estar no formato DD-MM-YYYY (ex: 15-01-2025)`);
           linha++;
           return;
         }
+
+        // Converter DD-MM-YYYY para YYYY-MM-DD
+        const [, dia, mes, ano] = match;
+        const diaNum = parseInt(dia, 10);
+        const mesNum = parseInt(mes, 10);
+        const anoNum = parseInt(ano, 10);
+
+        // Validar se a data é válida
+        if (diaNum < 1 || diaNum > 31 || mesNum < 1 || mesNum > 12 || anoNum < 1900 || anoNum > 2100) {
+          erros.push(`Linha ${linha}: Data inválida (${registro.data})`);
+          linha++;
+          return;
+        }
+
+        // Converter para YYYY-MM-DD para salvar no banco
+        registro.data = `${ano}-${mes}-${dia}`;
 
         // Validar se pelo menos uma quantidade é maior que 0
         const temQuantidade = Object.values(registro.quantidades).some(valor => valor > 0);
