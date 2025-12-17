@@ -5,6 +5,7 @@
 
 const NotaFiscalListController = require('./NotaFiscalListController');
 const NotaFiscalCRUDController = require('./NotaFiscalCRUDController');
+const NotaFiscalRecalculoController = require('./NotaFiscalRecalculoController');
 
 module.exports = {
   // Métodos de Listagem
@@ -15,6 +16,10 @@ module.exports = {
   // Métodos CRUD
   criarNotaFiscal: NotaFiscalCRUDController.criarNotaFiscal,
   atualizarNotaFiscal: NotaFiscalCRUDController.atualizarNotaFiscal,
-  excluirNotaFiscal: NotaFiscalCRUDController.excluirNotaFiscal
+  excluirNotaFiscal: NotaFiscalCRUDController.excluirNotaFiscal,
+  
+  // Métodos de Recálculo
+  recalcularMediasPonderadas: NotaFiscalRecalculoController.recalcularMediasPonderadas,
+  recalcularMediaProduto: NotaFiscalRecalculoController.recalcularMediaProduto
 };
 

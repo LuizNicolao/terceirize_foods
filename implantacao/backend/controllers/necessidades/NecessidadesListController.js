@@ -191,33 +191,90 @@ const listarEscolasNutricionista = async (req, res) => {
       try {
         const axios = require('axios');
         const foodsApiUrl = process.env.FOODS_API_URL || 'http://localhost:3001';
-
-        const response = await axios.get(`${foodsApiUrl}/unidades-escolares?limit=10000`, {
+        
+        // Buscar email do usuário logado
+        const userEmail = req.user.email;
+        
+        // Buscar rotas da nutricionista por email
+        const rotasResponse = await axios.get(`${foodsApiUrl}/rotas-nutricionistas?email=${encodeURIComponent(userEmail)}&status=ativo`, {
           headers: {
             'Authorization': `Bearer ${authToken}`
           },
           timeout: 5000
         });
 
-        if (response.data && response.data.success) {
-          const unidadesEscolares = response.data.data || [];
-
-          const escolas = unidadesEscolares.map(unidade => ({
-            id: unidade.id,
-            nome_escola: unidade.nome_escola || unidade.nome,
-            rota: unidade.rota_nome || unidade.rota || 'N/A',
-            cidade: unidade.cidade || '',
-            codigo_teknisa: unidade.codigo_teknisa || unidade.codigo || '',
-            filial_id: unidade.filial_id
-          }));
-
-          return res.json({
-            success: true,
-            data: escolas
+        if (rotasResponse.data && rotasResponse.data.success) {
+          let rotas = rotasResponse.data.data?.rotas || rotasResponse.data.data || rotasResponse.data || [];
+          if (!Array.isArray(rotas)) {
+            rotas = rotas.rotas || [];
+          }
+          
+          // Coletar IDs das escolas das rotas
+          const escolasIds = [];
+          rotas.forEach(rota => {
+            if (rota.escolas_responsaveis) {
+              const ids = rota.escolas_responsaveis
+                .split(',')
+                .map(id => parseInt(id.trim()))
+                .filter(id => !isNaN(id));
+              escolasIds.push(...ids);
+            }
           });
+
+          if (escolasIds.length === 0) {
+            return res.json({ success: true, data: [] });
+          }
+
+          // Buscar unidades escolares diretamente do banco de dados usando os IDs
+          // O endpoint do Foods retorna vazio para nutricionistas, então buscamos direto do banco
+          try {
+            const { executeQuery } = require('../../config/database');
+            
+            const placeholders = escolasIds.map(() => '?').join(',');
+            const unidadesQuery = `
+              SELECT DISTINCT
+                ue.id,
+                ue.nome_escola,
+                COALESCE(GROUP_CONCAT(r.nome SEPARATOR ', '), 'N/A') as rota_nome,
+                ue.cidade,
+                ue.codigo_teknisa,
+                ue.filial_id
+              FROM foods_db.unidades_escolares ue
+              LEFT JOIN foods_db.rotas r ON FIND_IN_SET(r.id, ue.rota_id) > 0
+              WHERE ue.id IN (${placeholders})
+                AND ue.status = 'ativo'
+              GROUP BY ue.id, ue.nome_escola, ue.cidade, ue.codigo_teknisa, ue.filial_id
+              ORDER BY ue.nome_escola ASC
+            `;
+            
+            const unidadesEncontradas = await executeQuery(unidadesQuery, escolasIds);
+
+            if (unidadesEncontradas && unidadesEncontradas.length > 0) {
+              const escolas = unidadesEncontradas.map(unidade => ({
+                id: unidade.id,
+                nome_escola: unidade.nome_escola || `Escola ${unidade.id}`,
+                rota: unidade.rota_nome || 'N/A',
+                cidade: unidade.cidade || '',
+                codigo_teknisa: unidade.codigo_teknisa || '',
+                filial_id: unidade.filial_id
+              }));
+
+              return res.json({
+                success: true,
+                data: escolas
+              });
+            } else {
+              return res.json({ success: true, data: [] });
+            }
+          } catch (dbError) {
+            console.error('Erro ao buscar escolas do banco:', dbError.message);
+            return res.json({ success: true, data: [] });
+          }
         }
+        
         return res.json({ success: true, data: [] });
       } catch (apiError) {
+        console.error('Erro ao buscar escolas:', apiError.message);
         return res.json({ success: true, data: [] });
       }
     }

@@ -238,7 +238,8 @@ class QuantidadesServidasService {
       const response = await api.post('/quantidades-servidas/importar', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
-        }
+        },
+        timeout: 600000 // 10 minutos para arquivos grandes
       });
       return {
         success: true,
@@ -246,9 +247,18 @@ class QuantidadesServidasService {
         message: response.data.message || 'Importação realizada com sucesso'
       };
     } catch (error) {
+      console.error('Erro na importação:', error);
+      // Se for timeout, retornar mensagem específica
+      if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+        return {
+          success: false,
+          error: 'Tempo de processamento excedido. O arquivo pode ser muito grande. Tente dividir em arquivos menores ou aguarde mais tempo.',
+          data: error.response?.data?.data || null
+        };
+      }
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro na importação',
+        error: error.response?.data?.message || error.message || 'Erro na importação',
         data: error.response?.data?.data || null
       };
     }

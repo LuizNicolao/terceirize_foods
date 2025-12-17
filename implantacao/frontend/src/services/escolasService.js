@@ -19,6 +19,7 @@ const escolasService = {
       // Usar endpoint específico de necessidades (igual ao recebimentos-escolas)
       if (user && user.id && !possuiFiltrosAvancados) {
         const response = await api.get(`/necessidades/escolas-nutricionista/${user.id}`);
+        
         if (response.data && response.data.success) {
           return {
             success: true,
@@ -53,7 +54,7 @@ const escolasService = {
       return {
         success: false,
         data: [],
-        error: error.response?.data?.message || 'Erro ao carregar escolas'
+        error: error.response?.data?.message || error.message || 'Erro ao carregar escolas'
       };
     }
   },

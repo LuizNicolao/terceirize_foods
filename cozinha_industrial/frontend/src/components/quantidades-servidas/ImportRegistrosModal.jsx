@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { FaUpload, FaDownload, FaTimes, FaExclamationTriangle, FaCheckCircle } from 'react-icons/fa';
-import { Modal, Button } from '../ui';
+import { Modal, Button, ModalProgresso } from '../ui';
 import quantidadesServidasService from '../../services/quantidadesServidas';
 
 const ImportRegistrosModal = ({ isOpen, onClose, onImportSuccess }) => {
@@ -65,25 +65,45 @@ const ImportRegistrosModal = ({ isOpen, onClose, onImportSuccess }) => {
     try {
       setLoading(true);
       setErro(null);
+      setResultado(null);
       
       const formData = new FormData();
       formData.append('file', arquivo);
 
+      console.log('Iniciando importação...');
       const response = await quantidadesServidasService.importar(formData);
+      console.log('Resposta da importação:', response);
       
       if (response.success) {
         setResultado({
           importados: response.data?.importados || 0,
           atualizados: response.data?.atualizados || 0,
-          erros: response.data?.erros || []
+          erros: response.data?.erros || [],
+          total_erros: response.data?.total_erros || 0,
+          recalculos: response.data?.recalculos || {}
         });
         onImportSuccess(response.data);
       } else {
+        // Se houver dados parciais, mostrar mesmo com erro
+        if (response.data?.importados || response.data?.atualizados) {
+          setResultado({
+            importados: response.data.importados || 0,
+            atualizados: response.data.atualizados || 0,
+            erros: response.data.erros || [],
+            total_erros: response.data.total_erros || 0,
+            parcial: true
+          });
+        }
         setErro(response.error || 'Erro na importação');
       }
     } catch (error) {
       console.error('Erro na importação:', error);
-      setErro('Erro na importação');
+      // Se for timeout, mensagem específica
+      if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+        setErro('Tempo de processamento excedido. O arquivo pode ser muito grande. Verifique os logs do servidor para ver quantos registros foram processados.');
+      } else {
+        setErro(error.message || 'Erro na importação');
+      }
     } finally {
       setLoading(false);
     }
@@ -97,12 +117,20 @@ const ImportRegistrosModal = ({ isOpen, onClose, onImportSuccess }) => {
   };
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={handleClose}
-      title="Importar Registros Diários"
-      size="3xl"
-    >
+    <>
+      {/* Modal de Progresso durante a importação */}
+      <ModalProgresso
+        isOpen={loading}
+        title="Importando Registros"
+        mensagem="Aguarde, processando arquivo..."
+      />
+
+      <Modal
+        isOpen={isOpen && !loading}
+        onClose={handleClose}
+        title="Importar Registros Diários"
+        size="3xl"
+      >
       <div className="space-y-6">
         {/* Instruções */}
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -239,6 +267,7 @@ const ImportRegistrosModal = ({ isOpen, onClose, onImportSuccess }) => {
         </div>
       </div>
     </Modal>
+    </>
   );
 };
 

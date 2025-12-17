@@ -12,6 +12,7 @@ export * from 'foods-frontend/src/components/ui';
 // Componentes específicos do Cozinha Industrial (manter locais)
 export { default as SemanaAbastecimentoFilter } from './SemanaAbastecimentoFilter';
 export { default as SearchableSelect } from './SearchableSelect';
+export { default as ModalProgresso } from './ModalProgresso';
 
 // Sobrescrever ActionButtons para suportar funções (chama funções antes de verificar)
 export { default as ActionButtons } from './ActionButtons';

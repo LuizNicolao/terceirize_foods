@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import FoodsApiService from '../../services/FoodsApiService';
 import { useAuth } from '../../contexts/AuthContext';
 import RegistrosDiariosService from '../../services/registrosDiarios';
+import escolasService from '../../services/escolasService';
 import MediasCalculadasTab from './MediasCalculadasTab';
 import HistoricoTab from './HistoricoTab';
 import TipoAtendimentoEscolaService from '../../services/tipoAtendimentoEscolaService';
@@ -80,45 +81,58 @@ const RegistrosDiariosModal = ({
     }
   }, [isOpen, criarEstadoInicial]);
   
-  // Carregar TODAS as escolas quando modal abrir
+  // Carregar escolas quando modal abrir (filtradas por nutricionista se aplicável)
   useEffect(() => {
-    const carregarTodasEscolas = async () => {
+    const carregarEscolas = async () => {
       if (!isOpen) return;
       
       try {
         setLoadingEscolas(true);
-        let todasEscolas = [];
-        let page = 1;
-        let hasMore = true;
-        const limit = 100;
         
-        // Buscar todas as escolas fazendo múltiplas requisições
-        while (hasMore) {
-          const result = await FoodsApiService.getUnidadesEscolares({
-            page,
-            limit,
-            status: 'ativo'
-          });
+        // Se for nutricionista, usar o serviço que filtra por rotas da nutricionista
+        if (user?.tipo_de_acesso === 'nutricionista') {
+          const result = await escolasService.listar({ status: 'ativo' }, user);
           
-          if (result.success && result.data && result.data.length > 0) {
-            todasEscolas = [...todasEscolas, ...result.data];
-            
-            if (result.data.length < limit) {
-              hasMore = false;
-            } else {
-              page++;
-            }
+          if (result.success && result.data) {
+            setUnidadesEscolares(result.data);
           } else {
-            hasMore = false;
+            setUnidadesEscolares([]);
+          }
+        } else {
+          // Para admin, buscar todas as escolas fazendo múltiplas requisições
+          let todasEscolas = [];
+          let page = 1;
+          let hasMore = true;
+          const limit = 100;
+          
+          while (hasMore) {
+            const pageResult = await FoodsApiService.getUnidadesEscolares({
+              page,
+              limit,
+              status: 'ativo'
+            });
+            
+            if (pageResult.success && pageResult.data && pageResult.data.length > 0) {
+              todasEscolas = [...todasEscolas, ...pageResult.data];
+              
+              if (pageResult.data.length < limit) {
+                hasMore = false;
+              } else {
+                page++;
+              }
+            } else {
+              hasMore = false;
+            }
+            
+            // Limite de segurança
+            if (page > 50) {
+              hasMore = false;
+            }
           }
           
-          // Limite de segurança
-          if (page > 50) {
-            hasMore = false;
-          }
+          console.log('[RegistrosDiariosModal] Admin - Total de escolas carregadas:', todasEscolas.length);
+          setUnidadesEscolares(todasEscolas);
         }
-        
-        setUnidadesEscolares(todasEscolas);
       } catch (error) {
         console.error('Erro ao carregar escolas:', error);
         setUnidadesEscolares([]);
@@ -127,8 +141,8 @@ const RegistrosDiariosModal = ({
       }
     };
     
-    carregarTodasEscolas();
-  }, [isOpen]);
+    carregarEscolas();
+  }, [isOpen, user]);
   
   // Estado para controlar se já carregou os dados iniciais
   const [dadosIniciaisCarregados, setDadosIniciaisCarregados] = useState(false);

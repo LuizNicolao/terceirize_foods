@@ -70,9 +70,16 @@ router.get('/modelo',
 );
 
 // POST /api/quantidades-servidas/importar - Importar registros diários via Excel
+// Timeout aumentado para 10 minutos (600000ms) para arquivos grandes
 router.post('/importar',
   checkScreenPermission('quantidades_servidas', 'criar'),
   upload.single('file'),
+  (req, res, next) => {
+    // Aumentar timeout para 10 minutos
+    req.setTimeout(600000);
+    res.setTimeout(600000);
+    next();
+  },
   QuantidadesServidasImportController.importar
 );
 

@@ -92,5 +92,19 @@ router.post('/importar',
   NotaFiscalImportController.importar
 );
 
+// ===== ROTAS DE RECÁLCULO DE MÉDIAS =====
+
+// POST /api/notas-fiscais/recalcular-medias - Recalcular médias ponderadas desde o início
+router.post('/recalcular-medias',
+  checkScreenPermission('notas-fiscais', 'editar'),
+  NotasFiscaisController.recalcularMediasPonderadas
+);
+
+// POST /api/notas-fiscais/recalcular-media-produto - Recalcular média de um produto específico
+router.post('/recalcular-media-produto',
+  checkScreenPermission('notas-fiscais', 'editar'),
+  NotasFiscaisController.recalcularMediaProduto
+);
+
 module.exports = router;
 
