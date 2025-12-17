@@ -129,6 +129,7 @@ dist/
 # Backup files
 *.bak
 *.backup
+bkp_banco_dados/
 
 # Projetos específicos
 Geracao_necessidade/
