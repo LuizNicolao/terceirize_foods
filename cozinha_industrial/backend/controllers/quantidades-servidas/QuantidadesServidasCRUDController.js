@@ -319,16 +319,17 @@ class QuantidadesServidasCRUDController {
     }
     
     // Soft delete: marcar como inativo
-    // Considerar tipo_cardapio_id se fornecido
-    let whereClause = 'WHERE unidade_id = ? AND data = ?';
+    // Se tipo_cardapio_id for fornecido, excluir apenas registros daquele tipo
+    // Se não for fornecido, excluir TODOS os registros daquela data
+    let whereClause = 'WHERE unidade_id = ? AND data = ? AND ativo = 1';
     const params = [unidade_id, data];
     
     if (tipo_cardapio_id !== undefined && tipo_cardapio_id !== null) {
       whereClause += ' AND COALESCE(tipo_cardapio_id, 0) = ?';
       params.push(parseInt(tipo_cardapio_id));
-    } else {
-      whereClause += ' AND tipo_cardapio_id IS NULL';
     }
+    // Se tipo_cardapio_id não for fornecido, não adicionar filtro adicional
+    // Isso permite excluir TODOS os registros daquela data (com ou sem tipo_cardapio_id)
     
     await executeQuery(
       `UPDATE quantidades_servidas 

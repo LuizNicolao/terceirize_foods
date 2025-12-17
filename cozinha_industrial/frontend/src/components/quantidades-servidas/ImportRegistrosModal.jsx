@@ -110,13 +110,15 @@ const ImportRegistrosModal = ({ isOpen, onClose, onImportSuccess }) => {
           <ul className="text-sm text-blue-800 space-y-1 list-disc list-inside">
             <li>Baixe o modelo de planilha clicando no botão abaixo</li>
             <li>Preencha os dados conforme o exemplo fornecido</li>
-            <li>Use o <strong>nome exato da cozinha industrial</strong> conforme cadastrado no sistema</li>
+            <li>Use o <strong>nome exato da unidade escolar</strong> conforme cadastrado no sistema</li>
             <li>A <strong>data</strong> deve estar no formato DD/MM/YYYY (ex: 15/01/2025)</li>
             <li><strong>Tipo de Cardápio</strong> é opcional (deixe em branco se não aplicável)</li>
             <li>Use o <strong>nome exato do tipo de cardápio</strong> conforme cadastrado no sistema</li>
-            <li>As <strong>quantidades</strong> devem ser números inteiros (ex: 150, 200)</li>
-            <li>Deixe <strong>0</strong> para refeições não servidas</li>
-            <li>Registros duplicados (mesma cozinha industrial/data/período/produto) serão atualizados</li>
+            <li>Use o <strong>nome exato do período</strong> conforme cadastrado no sistema (ex: Almoço, Jantar)</li>
+            <li>Cada <strong>linha</strong> representa um período de atendimento</li>
+            <li>A <strong>quantidade</strong> deve ser um número inteiro não-negativo (ex: 150, 200)</li>
+            <li>Linhas com quantidade <strong>0</strong> serão ignoradas</li>
+            <li>Registros duplicados (mesma unidade/data/período/produto) serão atualizados</li>
           </ul>
         </div>
 

@@ -58,21 +58,14 @@ class QuantidadesServidasImportController {
       `;
       const produtosComerciais = await executeQuery(produtosQuery);
 
-      // Definir colunas dinamicamente: Unidade, Data, Tipo de Cardápio, e depois cada período
+      // Definir colunas: Unidade, Data, Tipo de Cardápio, Período, Quantidade
       const colunas = [
         { header: 'Unidade', key: 'unidade', width: 30 },
         { header: 'Data', key: 'data', width: 15 },
-        { header: 'Tipo de Cardápio', key: 'produto_comercial', width: 30 }
+        { header: 'Tipo de Cardápio', key: 'produto_comercial', width: 30 },
+        { header: 'Período', key: 'periodo', width: 20 },
+        { header: 'Quantidade', key: 'quantidade', width: 15 }
       ];
-      
-      // Adicionar coluna para cada período
-      periodos.forEach(periodo => {
-        colunas.push({
-          header: periodo.nome,
-          key: `periodo_${periodo.id}`,
-          width: 15
-        });
-      });
 
       worksheet.columns = colunas;
 
@@ -92,19 +85,18 @@ class QuantidadesServidasImportController {
       const ano = dataAtual.getFullYear();
       const dataExemplo = `${dia}/${mes}/${ano}`; // DD/MM/YYYY
 
-      const exemplos = unidades.slice(0, 2).map((unidade, index) => {
-        const exemplo = {
-          unidade: unidade.nome_escola,
-          data: dataExemplo,
-          produto_comercial: produtosComerciais[index]?.nome || (produtosComerciais[0]?.nome || '')
-        };
-        
-        // Adicionar valores de exemplo para cada período
-        periodos.forEach((periodo, pIndex) => {
-          exemplo[`periodo_${periodo.id}`] = (index + 1) * 100 + (pIndex + 1) * 10;
+      // Criar exemplos: uma linha por período para cada unidade
+      const exemplos = [];
+      unidades.slice(0, 2).forEach((unidade, uIndex) => {
+        periodos.slice(0, 3).forEach((periodo, pIndex) => {
+          exemplos.push({
+            unidade: unidade.nome_escola,
+            data: dataExemplo,
+            produto_comercial: produtosComerciais[0]?.nome || '',
+            periodo: periodo.nome,
+            quantidade: (uIndex + 1) * 100 + (pIndex + 1) * 10
+          });
         });
-        
-        return exemplo;
       });
 
       exemplos.forEach(exemplo => {
@@ -142,7 +134,7 @@ class QuantidadesServidasImportController {
         return errorResponse(res, 'Planilha não encontrada', 400);
       }
 
-      // Buscar todos os períodos ativos para mapear colunas
+      // Buscar todos os períodos ativos para mapear nomes
       const periodosQuery = `
         SELECT id, nome, codigo 
         FROM periodos_atendimento 
@@ -150,6 +142,7 @@ class QuantidadesServidasImportController {
         ORDER BY nome
       `;
       const periodos = await executeQuery(periodosQuery);
+      const periodosMap = new Map(periodos.map(p => [p.nome.toLowerCase().trim(), p.id]));
 
       // Mapear cabeçalhos da planilha
       const headerRow = worksheet.getRow(1);
@@ -157,7 +150,8 @@ class QuantidadesServidasImportController {
         unidade: null,
         data: null,
         produto_comercial: null,
-        periodos: {}
+        periodo: null,
+        quantidade: null
       };
       
       headerRow.eachCell((cell, colNumber) => {
@@ -170,52 +164,45 @@ class QuantidadesServidasImportController {
           headerMap.data = colNumber;
         } else if (headerValue === 'Tipo de Cardápio') {
           headerMap.produto_comercial = colNumber;
-        } else {
-          // Buscar período pelo nome
-          const periodo = periodos.find(p => p.nome === headerValue);
-          if (periodo) {
-            headerMap.periodos[colNumber] = periodo.id;
-          }
+        } else if (headerValue === 'Período') {
+          headerMap.periodo = colNumber;
+        } else if (headerValue === 'Quantidade') {
+          headerMap.quantidade = colNumber;
         }
       });
+
+      // Validar se todos os cabeçalhos necessários foram encontrados
+      if (!headerMap.unidade || !headerMap.data || !headerMap.periodo || !headerMap.quantidade) {
+        return errorResponse(res, 'Cabeçalhos obrigatórios não encontrados. Verifique se a planilha contém: Unidade, Data, Período, Quantidade', 400);
+      }
 
       const registros = [];
       const erros = [];
       let linha = 2; // Começar da linha 2 (pular cabeçalho)
 
-      // Processar cada linha
+      // Processar cada linha (cada linha = um período)
       worksheet.eachRow((row, rowNumber) => {
         if (rowNumber === 1) return; // Pular cabeçalho
 
         const valores = row.values;
-        if (!valores || valores.length < 3) return; // Mínimo: Unidade, Data, e pelo menos um período
+        if (!valores || valores.length < 4) return; // Mínimo: Unidade, Data, Período, Quantidade
 
-        const registro = {
-          unidade: valores[headerMap.unidade]?.toString().trim(),
-          data: valores[headerMap.data]?.toString().trim(),
-          produto_comercial: headerMap.produto_comercial ? valores[headerMap.produto_comercial]?.toString().trim() : null,
-          quantidades: {}
-        };
-
-        // Extrair valores de cada período
-        Object.keys(headerMap.periodos).forEach(colNumber => {
-          const periodoId = headerMap.periodos[colNumber];
-          const valor = parseInt(valores[colNumber]) || 0;
-          if (valor > 0) {
-            registro.quantidades[periodoId] = valor;
-          }
-        });
+        const unidade = valores[headerMap.unidade]?.toString().trim();
+        const data = valores[headerMap.data]?.toString().trim();
+        const periodoNome = valores[headerMap.periodo]?.toString().trim();
+        const quantidadeStr = valores[headerMap.quantidade]?.toString().trim();
+        const produtoComercial = headerMap.produto_comercial ? valores[headerMap.produto_comercial]?.toString().trim() : null;
 
         // Validações básicas
-        if (!registro.unidade || !registro.data) {
-          erros.push(`Linha ${linha}: Unidade e Data são obrigatórios`);
+        if (!unidade || !data || !periodoNome || !quantidadeStr) {
+          erros.push(`Linha ${linha}: Unidade, Data, Período e Quantidade são obrigatórios`);
           linha++;
           return;
         }
 
         // Validar formato da data (DD/MM/YYYY) e converter para YYYY-MM-DD
         const dataRegex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
-        const match = registro.data.match(dataRegex);
+        const match = data.match(dataRegex);
         if (!match) {
           erros.push(`Linha ${linha}: Data deve estar no formato DD/MM/YYYY (ex: 15/01/2025)`);
           linha++;
@@ -230,23 +217,45 @@ class QuantidadesServidasImportController {
 
         // Validar se a data é válida
         if (diaNum < 1 || diaNum > 31 || mesNum < 1 || mesNum > 12 || anoNum < 1900 || anoNum > 2100) {
-          erros.push(`Linha ${linha}: Data inválida (${registro.data})`);
+          erros.push(`Linha ${linha}: Data inválida (${data})`);
           linha++;
           return;
         }
 
-        // Converter para YYYY-MM-DD para salvar no banco
-        registro.data = `${ano}-${mes}-${dia}`;
+        const dataFormatada = `${ano}-${mes}-${dia}`;
 
-        // Validar se pelo menos uma quantidade é maior que 0
-        const temQuantidade = Object.values(registro.quantidades).some(valor => valor > 0);
-        if (!temQuantidade) {
-          erros.push(`Linha ${linha}: Pelo menos uma quantidade deve ser maior que 0`);
+        // Buscar ID do período pelo nome
+        const periodoId = periodosMap.get(periodoNome.toLowerCase().trim());
+        if (!periodoId) {
+          erros.push(`Linha ${linha}: Período "${periodoNome}" não encontrado`);
           linha++;
           return;
         }
 
-        registros.push(registro);
+        // Validar quantidade
+        const quantidade = parseInt(quantidadeStr);
+        if (isNaN(quantidade) || quantidade < 0) {
+          erros.push(`Linha ${linha}: Quantidade deve ser um número não-negativo`);
+          linha++;
+          return;
+        }
+
+        if (quantidade === 0) {
+          // Pular linhas com quantidade zero
+          linha++;
+          return;
+        }
+
+        // Criar registro (uma linha = um período)
+        registros.push({
+          linha,
+          unidade,
+          data: dataFormatada,
+          produto_comercial: produtoComercial || null,
+          periodo_id: periodoId,
+          quantidade
+        });
+
         linha++;
       });
 
@@ -265,9 +274,9 @@ class QuantidadesServidasImportController {
 
       for (const registro of registros) {
         try {
-          // Buscar unidade pelo nome
+          // Buscar unidade pelo nome (incluindo filial_id e filial_nome)
           const unidadeQuery = `
-            SELECT id, nome_escola 
+            SELECT id, nome_escola, filial_id, filial_nome 
             FROM foods_db.unidades_escolares 
             WHERE nome_escola = ?
             LIMIT 1
@@ -281,6 +290,8 @@ class QuantidadesServidasImportController {
 
           const unidade = unidades[0];
           const nutricionistaId = req.user?.id || 1; // Usar ID do usuário logado
+          const filialId = unidade.filial_id || null;
+          const filialNome = unidade.filial_nome || null;
 
           // Buscar produto comercial e tipo de cardápio se informado
           let produtoComercialId = null;
@@ -319,9 +330,9 @@ class QuantidadesServidasImportController {
                 const produtoSemVinculo = await executeQuery(produtoQuery, [registro.produto_comercial]);
                 
                 if (produtoSemVinculo.length > 0) {
-                  erros.push(`Linha ${linha}: Tipo de Cardápio "${registro.produto_comercial}" não está vinculado à unidade "${registro.unidade}"`);
+                  erros.push(`Linha ${registro.linha}: Tipo de Cardápio "${registro.produto_comercial}" não está vinculado à unidade "${registro.unidade}"`);
                 } else {
-                  erros.push(`Linha ${linha}: Tipo de Cardápio "${registro.produto_comercial}" não encontrado`);
+                  erros.push(`Linha ${registro.linha}: Tipo de Cardápio "${registro.produto_comercial}" não encontrado`);
                 }
                 // Limpar os IDs para não processar este registro
                 produtoComercialId = null;
@@ -345,7 +356,7 @@ class QuantidadesServidasImportController {
                   produtoComercialId = produtos[0].produto_comercial_id;
                   tipoCardapioId = produtos[0].tipo_cardapio_id;
                 } else {
-                  erros.push(`Linha ${linha}: Tipo de Cardápio "${registro.produto_comercial}" não encontrado`);
+                  erros.push(`Linha ${registro.linha}: Tipo de Cardápio "${registro.produto_comercial}" não encontrado`);
                 }
               } else {
                 throw error;
@@ -353,7 +364,12 @@ class QuantidadesServidasImportController {
             }
           }
 
-          // Buscar períodos vinculados a esta unidade
+          // Se o tipo de cardápio não está vinculado, pular o processamento
+          if (registro.produto_comercial && !tipoCardapioId) {
+            continue;
+          }
+
+          // Verificar se o período está vinculado à unidade
           const periodosVinculadosQuery = `
             SELECT pa.id, pa.nome, pa.codigo
             FROM periodos_atendimento pa
@@ -362,93 +378,89 @@ class QuantidadesServidasImportController {
             WHERE cipa.cozinha_industrial_id = ? 
               AND cipa.status = 'ativo'
               AND pa.status = 'ativo'
+              AND pa.id = ?
           `;
-          const periodosVinculados = await executeQuery(periodosVinculadosQuery, [unidade.id]);
-
-          // Se o tipo de cardápio não está vinculado, pular o processamento dos períodos
-          if (registro.produto_comercial && !tipoCardapioId) {
+          const periodosVinculados = await executeQuery(periodosVinculadosQuery, [unidade.id, registro.periodo_id]);
+          
+          if (periodosVinculados.length === 0) {
+            const periodoNome = periodos.find(p => p.id === registro.periodo_id)?.nome || registro.periodo_id;
+            erros.push(`Período "${periodoNome}" não está vinculado à unidade "${registro.unidade}"`);
             continue;
           }
 
-          // Processar cada período presente no registro
-          for (const periodoId of Object.keys(registro.quantidades)) {
-            const valor = registro.quantidades[periodoId];
-            
-            // Verificar se o período está vinculado à unidade
-            const periodoVinculado = periodosVinculados.find(p => p.id === parseInt(periodoId));
-            if (!periodoVinculado) {
-              erros.push(`Linha ${linha}: Período ID ${periodoId} não está vinculado à unidade "${registro.unidade}"`);
-              continue;
-            }
+          // Verificar se já existe registro para esta unidade/data/período/tipo_cardapio/produto_comercial
+          const existeQuery = `
+            SELECT id FROM quantidades_servidas 
+            WHERE unidade_id = ? 
+              AND data = ? 
+              AND periodo_atendimento_id = ? 
+              AND COALESCE(tipo_cardapio_id, 0) = COALESCE(?, 0)
+              AND COALESCE(produto_comercial_id, 0) = COALESCE(?, 0)
+              AND ativo = 1
+            LIMIT 1
+          `;
+          const existentes = await executeQuery(existeQuery, [
+            unidade.id,
+            registro.data,
+            registro.periodo_id,
+            tipoCardapioId,
+            produtoComercialId
+          ]);
 
-            // Verificar se já existe registro para esta unidade/data/período/tipo_cardapio/produto_comercial
-            const existeQuery = `
-              SELECT id FROM quantidades_servidas 
-              WHERE unidade_id = ? 
-                AND data = ? 
-                AND periodo_atendimento_id = ? 
-                AND COALESCE(tipo_cardapio_id, 0) = COALESCE(?, 0)
-                AND COALESCE(produto_comercial_id, 0) = COALESCE(?, 0)
-                AND ativo = 1
-              LIMIT 1
+          if (existentes.length > 0) {
+            // Atualizar registro existente usando INSERT ... ON DUPLICATE KEY UPDATE
+            const updateQuery = `
+              INSERT INTO quantidades_servidas (
+                unidade_id, filial_id, filial_nome, unidade_nome, periodo_atendimento_id, tipo_cardapio_id, produto_comercial_id, nutricionista_id, data, valor, ativo
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+              ON DUPLICATE KEY UPDATE
+                filial_id = VALUES(filial_id),
+                filial_nome = VALUES(filial_nome),
+                valor = VALUES(valor),
+                ativo = 1,
+                atualizado_em = NOW()
             `;
-            const existentes = await executeQuery(existeQuery, [
+            await executeQuery(updateQuery, [
               unidade.id,
-              registro.data,
-              periodoId,
+              filialId,
+              filialNome,
+              unidade.nome_escola,
+              registro.periodo_id,
               tipoCardapioId,
-              produtoComercialId
+              produtoComercialId,
+              nutricionistaId,
+              registro.data,
+              registro.quantidade
             ]);
-
-            if (existentes.length > 0) {
-              // Atualizar registro existente usando INSERT ... ON DUPLICATE KEY UPDATE
-              const updateQuery = `
-                INSERT INTO quantidades_servidas (
-                  unidade_id, unidade_nome, periodo_atendimento_id, tipo_cardapio_id, produto_comercial_id, nutricionista_id, data, valor, ativo
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
-                ON DUPLICATE KEY UPDATE
-                  valor = VALUES(valor),
-                  ativo = 1,
-                  atualizado_em = NOW()
-              `;
-              await executeQuery(updateQuery, [
-                unidade.id,
-                unidade.nome_escola,
-                periodoId,
-                tipoCardapioId,
-                produtoComercialId,
-                nutricionistaId,
-                registro.data,
-                valor
-              ]);
-              atualizados++;
-            } else {
-              // Inserir novo registro
-              const insertQuery = `
-                INSERT INTO quantidades_servidas (
-                  unidade_id, unidade_nome, periodo_atendimento_id, tipo_cardapio_id, produto_comercial_id, nutricionista_id, data, valor, ativo
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
-              `;
-              await executeQuery(insertQuery, [
-                unidade.id,
-                unidade.nome_escola,
-                periodoId,
-                tipoCardapioId,
-                produtoComercialId,
-                nutricionistaId,
-                registro.data,
-                valor
-              ]);
-              importados++;
-            }
-            
-            // Adicionar unidade à lista de unidades que precisam recalcular médias
-            unidadesProcessadas.add(unidade.id);
+            atualizados++;
+          } else {
+            // Inserir novo registro
+            const insertQuery = `
+              INSERT INTO quantidades_servidas (
+                unidade_id, filial_id, filial_nome, unidade_nome, periodo_atendimento_id, tipo_cardapio_id, produto_comercial_id, nutricionista_id, data, valor, ativo
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+            `;
+            await executeQuery(insertQuery, [
+              unidade.id,
+              filialId,
+              filialNome,
+              unidade.nome_escola,
+              registro.periodo_id,
+              tipoCardapioId,
+              produtoComercialId,
+              nutricionistaId,
+              registro.data,
+              registro.quantidade
+            ]);
+            importados++;
           }
+          
+          // Adicionar unidade à lista de unidades que precisam recalcular médias
+          unidadesProcessadas.add(unidade.id);
 
         } catch (error) {
-          console.error(`Erro ao processar registro da linha ${linha}:`, error);
-          erros.push(`Linha ${linha}: Erro interno - ${error.message}`);
+          console.error(`Erro ao processar registro da linha ${registro.linha}:`, error);
+          erros.push(`Linha ${registro.linha}: Erro interno - ${error.message}`);
         }
       }
 
