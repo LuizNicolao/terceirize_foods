@@ -46,6 +46,12 @@ const {
   liberarCoordenacao
 } = require('./NecessidadesAjusteStatusController');
 
+const {
+  corrigirNecessidade,
+  buscarNecessidadeParaCorrecao,
+  excluirNecessidade
+} = require('./NecessidadesCorrecaoController');
+
 module.exports = {
   // CRUD Operations
   criar,
@@ -89,6 +95,11 @@ module.exports = {
   excluirProdutoAjuste,
   
   // Ajuste Operations - Status
-  liberarCoordenacao
+  liberarCoordenacao,
+  
+  // Correção Operations
+  corrigirNecessidade,
+  buscarNecessidadeParaCorrecao,
+  excluirNecessidade
 };
 

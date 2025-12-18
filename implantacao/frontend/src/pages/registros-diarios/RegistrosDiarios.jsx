@@ -166,55 +166,55 @@ const RegistrosDiarios = () => {
       {/* Conteúdo da aba Registros */}
       {activeTab === 'registros' && (
         <>
-          {/* Filtros */}
-          <RegistrosDiariosFilters
-            onFilter={(filters) => {
-              if (filters.escola_id) handleEscolaFilterChange(filters.escola_id);
-              if (filters.data_inicio) handleDataInicioChange(filters.data_inicio);
-              if (filters.data_fim) handleDataFimChange(filters.data_fim);
-            }}
-            onClear={clearFiltros}
+      {/* Filtros */}
+      <RegistrosDiariosFilters
+        onFilter={(filters) => {
+          if (filters.escola_id) handleEscolaFilterChange(filters.escola_id);
+          if (filters.data_inicio) handleDataInicioChange(filters.data_inicio);
+          if (filters.data_fim) handleDataFimChange(filters.data_fim);
+        }}
+        onClear={clearFiltros}
+      />
+      
+      {/* Botões de Exportação */}
+      <div className="mb-4">
+        <ExportButtons
+          onExportXLSX={() => {
+            setTipoFormatoExport('xlsx');
+            setShowExportModal(true);
+          }}
+          onExportPDF={() => {
+            setTipoFormatoExport('pdf');
+            setShowExportModal(true);
+          }}
+          disabled={!canView('registros_diarios')}
+        />
+      </div>
+      
+      {/* Tabela de Registros */}
+      <RegistrosDiariosTable
+        registros={registros}
+        canView={canView('registros_diarios')}
+        canEdit={canEdit('registros_diarios')}
+        canDelete={canDelete('registros_diarios')}
+        onView={handleViewRegistro}
+        onEdit={handleEditRegistro}
+        onDelete={handleDeleteClick}
+        loading={loading}
+      />
+      
+      {/* Paginação */}
+      {totalPages > 1 && (
+        <div className="mt-6">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            itemsPerPage={itemsPerPage}
+            onPageChange={handlePageChange}
+            onItemsPerPageChange={handleItemsPerPageChange}
           />
-          
-          {/* Botões de Exportação */}
-          <div className="mb-4">
-            <ExportButtons
-              onExportXLSX={() => {
-                setTipoFormatoExport('xlsx');
-                setShowExportModal(true);
-              }}
-              onExportPDF={() => {
-                setTipoFormatoExport('pdf');
-                setShowExportModal(true);
-              }}
-              disabled={!canView('registros_diarios')}
-            />
-          </div>
-          
-          {/* Tabela de Registros */}
-          <RegistrosDiariosTable
-            registros={registros}
-            canView={canView('registros_diarios')}
-            canEdit={canEdit('registros_diarios')}
-            canDelete={canDelete('registros_diarios')}
-            onView={handleViewRegistro}
-            onEdit={handleEditRegistro}
-            onDelete={handleDeleteClick}
-            loading={loading}
-          />
-          
-          {/* Paginação */}
-          {totalPages > 1 && (
-            <div className="mt-6">
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                totalItems={totalItems}
-                itemsPerPage={itemsPerPage}
-                onPageChange={handlePageChange}
-                onItemsPerPageChange={handleItemsPerPageChange}
-              />
-            </div>
+        </div>
           )}
         </>
       )}

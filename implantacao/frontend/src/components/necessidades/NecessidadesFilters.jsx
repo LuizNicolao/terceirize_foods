@@ -344,14 +344,14 @@ const NecessidadesFilters = ({
           />
         </div>
 
-        {/* Buscar Produto */}
+        {/* Buscar por ID da Necessidade */}
         <div>
           <Input
-            label="Buscar Produto"
+            label="Buscar por ID"
             type="text"
             value={filtros.search}
             onChange={(e) => handleSearchChange(e.target.value)}
-            placeholder="Digite para buscar..."
+            placeholder="Digite o ID da necessidade..."
             disabled={loading}
           />
         </div>

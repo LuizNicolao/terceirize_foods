@@ -269,6 +269,24 @@ const necessidadesService = {
     } catch (error) {
       throw new Error('Erro ao baixar modelo de planilha');
     }
+  },
+
+  // Buscar necessidade para correção
+  buscarParaCorrecao: async (necessidade_id) => {
+    const response = await api.get(`/necessidades/correcao/${necessidade_id}`);
+    return response.data;
+  },
+
+  // Corrigir necessidade
+  corrigir: async (necessidade_id, dados) => {
+    const response = await api.put(`/necessidades/correcao/${necessidade_id}`, dados);
+    return response.data;
+  },
+
+  // Excluir necessidade (todos os produtos de uma necessidade_id)
+  excluirNecessidade: async (necessidade_id) => {
+    const response = await api.delete(`/necessidades/correcao/${necessidade_id}`);
+    return response.data;
   }
 };
 

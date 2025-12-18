@@ -33,10 +33,18 @@ const listar = async (req, res) => {
       params.push(req.user.email);
     }
 
-    // Filtros opcionais
+    // Filtros opcionais - Buscar por ID da necessidade
     if (search) {
-      whereClause += ' AND (n.produto LIKE ? OR n.escola LIKE ?)';
-      params.push(`%${search}%`, `%${search}%`);
+      // Tentar buscar como número (ID) ou como string (caso seja string numérica)
+      const searchAsNumber = parseInt(search);
+      if (!isNaN(searchAsNumber)) {
+        whereClause += ' AND n.necessidade_id = ?';
+        params.push(searchAsNumber);
+      } else {
+        // Se não for número, buscar por LIKE no ID (caso seja string)
+        whereClause += ' AND CAST(n.necessidade_id AS CHAR) LIKE ?';
+        params.push(`%${search}%`);
+      }
     }
 
     if (escola) {
@@ -150,10 +158,18 @@ const listarTodas = async (req, res) => {
       params.push(req.user.email);
     }
 
-    // Filtros opcionais
+    // Filtros opcionais - Buscar por ID da necessidade
     if (search) {
-      whereClause += ' AND (n.produto LIKE ? OR n.escola LIKE ?)';
-      params.push(`%${search}%`, `%${search}%`);
+      // Tentar buscar como número (ID) ou como string (caso seja string numérica)
+      const searchAsNumber = parseInt(search);
+      if (!isNaN(searchAsNumber)) {
+        whereClause += ' AND n.necessidade_id = ?';
+        params.push(searchAsNumber);
+      } else {
+        // Se não for número, buscar por LIKE no ID (caso seja string)
+        whereClause += ' AND CAST(n.necessidade_id AS CHAR) LIKE ?';
+        params.push(`%${search}%`);
+      }
     }
 
     if (escola) {

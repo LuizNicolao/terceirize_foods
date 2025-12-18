@@ -167,7 +167,7 @@ class RegistrosDiariosListController {
         whereClause += ' AND me.escola_id = ?';
         params.push(escola_id);
       }
-
+      
       // Filtro por busca (nome da escola)
       if (search && search.trim() !== '') {
         whereClause += ' AND me.escola_nome LIKE ?';

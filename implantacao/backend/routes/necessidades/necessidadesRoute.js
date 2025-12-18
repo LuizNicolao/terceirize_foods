@@ -15,7 +15,10 @@ const {
   exportarXLSX,
   exportarPDF,
   importarExcel,
-  baixarModelo
+  baixarModelo,
+  corrigirNecessidade,
+  buscarNecessidadeParaCorrecao,
+  excluirNecessidade
 } = require('../../controllers/necessidades');
 
 const { uploadMiddleware } = require('../../controllers/necessidades/NecessidadesImportController');
@@ -45,6 +48,11 @@ router.get('/stats/resumo', canView('necessidades'), obterResumo);
 // ===== ROTAS DE EXPORTAÇÃO =====
 router.get('/exportar/xlsx', canView('necessidades'), exportarXLSX);
 router.get('/exportar/pdf', canView('necessidades'), exportarPDF);
+
+// ===== ROTAS DE CORREÇÃO =====
+router.get('/correcao/:necessidade_id', canEdit('necessidades'), buscarNecessidadeParaCorrecao);
+router.put('/correcao/:necessidade_id', canEdit('necessidades'), corrigirNecessidade);
+router.delete('/correcao/:necessidade_id', canEdit('necessidades'), excluirNecessidade);
 
 // ===== ROTAS CRUD =====
 router.get('/', canView('necessidades'), listar);

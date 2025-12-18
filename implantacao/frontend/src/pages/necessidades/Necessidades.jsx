@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FaClipboardList } from 'react-icons/fa';
 import { usePermissions } from '../../contexts/PermissionsContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { useNecessidades, useNecessidadesFilters } from '../../hooks/necessidades';
 import {
   NecessidadesLayout,
@@ -10,20 +11,28 @@ import {
   NecessidadesFilters,
   NecessidadeModal,
   ImportNecessidadesModal,
-  StatusBadge
+  StatusBadge,
+  NecessidadesTabsCorrecao,
+  CorrecaoNecessidadeModal,
+  CorrecaoNecessidadesTab
 } from '../../components/necessidades';
 import { ActionButtons, Modal, Pagination } from '../../components/ui';
 import { ExportButtons } from '../../components/shared';
 import { formatarDataParaExibicao } from '../../utils/recebimentos/recebimentosUtils';
 import toast from 'react-hot-toast';
+import necessidadesService from '../../services/necessidadesService';
 
 const Necessidades = () => {
-  const { canView, canCreate, loading: permissionsLoading } = usePermissions();
+  const { canView, canCreate, canEdit, loading: permissionsLoading } = usePermissions();
+  const { user } = useAuth();
+  const [abaAtiva, setAbaAtiva] = useState('listagem');
   const [gerando, setGerando] = useState(false);
   const [modalAberto, setModalAberto] = useState(false);
   const [modalVisualizacaoAberto, setModalVisualizacaoAberto] = useState(false);
   const [modalImportAberto, setModalImportAberto] = useState(false);
+  const [modalCorrecaoAberto, setModalCorrecaoAberto] = useState(false);
   const [necessidadeSelecionada, setNecessidadeSelecionada] = useState(null);
+  const [necessidadeIdParaCorrecao, setNecessidadeIdParaCorrecao] = useState(null);
   const filtrosAnterioresRef = useRef({});
   
   // Hook para gerenciar necessidades
@@ -51,6 +60,14 @@ const Necessidades = () => {
   // Verificar permissões específicas
   const canViewNecessidades = canView('necessidades');
   const canCreateNecessidades = canCreate('necessidades');
+  const isAdministrador = user?.tipo_de_acesso === 'administrador';
+
+  // Garantir que apenas administradores possam acessar aba de correção
+  useEffect(() => {
+    if (abaAtiva === 'correcao' && !isAdministrador) {
+      setAbaAtiva('listagem');
+    }
+  }, [abaAtiva, isAdministrador]);
 
   // Resetar paginação quando filtros mudarem (mas não na primeira renderização)
   useEffect(() => {
@@ -185,10 +202,44 @@ const Necessidades = () => {
     setModalVisualizacaoAberto(true);
   };
 
+  const handleCorrigirNecessidade = (necessidadeId) => {
+    setNecessidadeIdParaCorrecao(necessidadeId);
+    setModalCorrecaoAberto(true);
+  };
+
+  const handleCorrecaoSalva = () => {
+    // Recarregar necessidades após correção
+    carregarNecessidades(filtros);
+  };
+
+  const handleExcluirNecessidade = async (necessidadeId) => {
+    try {
+      const response = await necessidadesService.excluirNecessidade(necessidadeId);
+      
+      if (response.success) {
+        toast.success(`Necessidade ID ${necessidadeId} excluída com sucesso!`);
+        // Recarregar necessidades após exclusão
+        carregarNecessidades(filtros);
+      } else {
+        toast.error(response.message || 'Erro ao excluir necessidade');
+      }
+    } catch (error) {
+      console.error('Erro ao excluir necessidade:', error);
+      toast.error('Erro ao excluir necessidade');
+    }
+  };
+
 
   return (
     <>
     <NecessidadesLayout>
+      {/* Abas */}
+      <NecessidadesTabsCorrecao
+        activeTab={abaAtiva}
+        setActiveTab={setAbaAtiva}
+        isAdministrador={isAdministrador}
+      />
+
       {/* Botão de Adicionar */}
       <NecessidadesActions
         canCreate={canCreateNecessidades}
@@ -231,8 +282,11 @@ const Necessidades = () => {
         </div>
       )}
 
-      {/* Tabela de Necessidades Agrupadas */}
-      {necessidades && necessidades.length > 0 && (
+      {/* Conteúdo baseado na aba ativa */}
+      {abaAtiva === 'listagem' && (
+        <>
+          {/* Tabela de Necessidades Agrupadas */}
+          {necessidades && necessidades.length > 0 && (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
@@ -342,33 +396,44 @@ const Necessidades = () => {
             </table>
           </div>
         </div>
+          )}
+
+          {/* Mensagem quando não há necessidades */}
+          {necessidades && necessidades.length === 0 && !loading && (
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+              <FaClipboardList className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Nenhuma necessidade encontrada
+              </h3>
+              <p className="text-gray-600">
+                Gere uma nova necessidade usando o botão acima.
+              </p>
+            </div>
+          )}
+
+          {/* Paginação */}
+          {pagination.totalItems > 0 && (
+            <div className="mt-6">
+              <Pagination
+                currentPage={pagination.currentPage}
+                totalPages={pagination.totalPages}
+                totalItems={pagination.totalItems}
+                itemsPerPage={pagination.itemsPerPage}
+                onPageChange={pagination.handlePageChange}
+                onItemsPerPageChange={pagination.handleItemsPerPageChange}
+              />
+            </div>
+          )}
+        </>
       )}
 
-      {/* Mensagem quando não há necessidades */}
-      {necessidades && necessidades.length === 0 && !loading && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
-          <FaClipboardList className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            Nenhuma necessidade encontrada
-          </h3>
-          <p className="text-gray-600">
-            Gere uma nova necessidade usando o botão acima.
-          </p>
-        </div>
-      )}
-
-      {/* Paginação */}
-      {pagination.totalItems > 0 && (
-        <div className="mt-6">
-          <Pagination
-            currentPage={pagination.currentPage}
-            totalPages={pagination.totalPages}
-            totalItems={pagination.totalItems}
-            itemsPerPage={pagination.itemsPerPage}
-            onPageChange={pagination.handlePageChange}
-            onItemsPerPageChange={pagination.handleItemsPerPageChange}
-          />
-        </div>
+      {abaAtiva === 'correcao' && isAdministrador && (
+        <CorrecaoNecessidadesTab
+          necessidades={necessidades}
+          onCorrigir={handleCorrigirNecessidade}
+          onExcluir={handleExcluirNecessidade}
+          loading={loading}
+        />
       )}
     </NecessidadesLayout>
 
@@ -477,6 +542,17 @@ const Necessidades = () => {
         isOpen={modalImportAberto}
         onClose={() => setModalImportAberto(false)}
         onImportSuccess={handleImportSuccess}
+      />
+
+      {/* Modal de Correção */}
+      <CorrecaoNecessidadeModal
+        isOpen={modalCorrecaoAberto}
+        onClose={() => {
+          setModalCorrecaoAberto(false);
+          setNecessidadeIdParaCorrecao(null);
+        }}
+        necessidadeId={necessidadeIdParaCorrecao}
+        onSave={handleCorrecaoSalva}
       />
     </>
   );

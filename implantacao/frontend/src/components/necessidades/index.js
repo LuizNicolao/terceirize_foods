@@ -7,4 +7,7 @@ export { default as NecessidadesStats } from './NecessidadesStats';
 export { default as NecessidadeModal } from './NecessidadeModal';
 export { default as ImportNecessidadesModal } from './ImportNecessidadesModal';
 export { default as StatusBadge } from './StatusBadge';
+export { default as NecessidadesTabsCorrecao } from './NecessidadesTabsCorrecao';
+export { default as CorrecaoNecessidadeModal } from './CorrecaoNecessidadeModal';
+export { default as CorrecaoNecessidadesTab } from './CorrecaoNecessidadesTab';
 
