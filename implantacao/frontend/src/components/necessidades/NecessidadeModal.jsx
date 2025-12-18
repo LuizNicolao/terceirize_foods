@@ -28,8 +28,12 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
     error: necessidadesError
   } = useNecessidades();
 
-  // Hook para semanas de consumo do calendário
-  const { opcoes: opcoesSemanasConsumo, obterValorPadrao: obterValorPadraoConsumo } = useSemanasConsumo();
+  // Estados para filtros de ano e mês
+  const [anoFiltro, setAnoFiltro] = useState(new Date().getFullYear());
+  const [mesFiltro, setMesFiltro] = useState(null);
+
+  // Hook para semanas de consumo do calendário com filtros de ano e mês
+  const { opcoes: opcoesSemanasConsumo, obterValorPadrao: obterValorPadraoConsumo } = useSemanasConsumo(anoFiltro, true, {}, mesFiltro);
 
   const [formData, setFormData] = useState({
     escola_id: '',
@@ -68,6 +72,9 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
       });
       setProdutosTabela([]);
       setTiposAtendimentoEscola([]);
+      // Resetar filtros de ano e mês
+      setAnoFiltro(new Date().getFullYear());
+      setMesFiltro(null);
     }
   }, [isOpen, obterValorPadraoConsumo]);
 
@@ -523,6 +530,33 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
     return `${percentual.toFixed(2).replace('.', ',')}% (${formatarNumero(diferenca)})`;
   };
 
+  // Funções auxiliares para gerar opções de ano e mês
+  const gerarAnos = () => {
+    const anos = [];
+    const anoAtual = new Date().getFullYear();
+    for (let i = anoAtual - 2; i <= anoAtual + 2; i++) {
+      anos.push({ value: i, label: i.toString() });
+    }
+    return anos;
+  };
+
+  const gerarMeses = () => {
+    return [
+      { value: 1, label: 'Janeiro' },
+      { value: 2, label: 'Fevereiro' },
+      { value: 3, label: 'Março' },
+      { value: 4, label: 'Abril' },
+      { value: 5, label: 'Maio' },
+      { value: 6, label: 'Junho' },
+      { value: 7, label: 'Julho' },
+      { value: 8, label: 'Agosto' },
+      { value: 9, label: 'Setembro' },
+      { value: 10, label: 'Outubro' },
+      { value: 11, label: 'Novembro' },
+      { value: 12, label: 'Dezembro' }
+    ];
+  };
+
   return (
     <Modal
       isOpen={isOpen}
@@ -576,6 +610,44 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
               placeholder="Digite para buscar um grupo..."
               disabled={necessidadesLoading || loading}
               required
+              usePortal={false}
+            />
+          </div>
+        </div>
+
+        {/* Filtros de Ano e Mês para Semanas de Consumo */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-t pt-4">
+          <div>
+            <SearchableSelect
+              label="Ano"
+              value={anoFiltro}
+              onChange={(value) => {
+                setAnoFiltro(value);
+                // Limpar semana de consumo quando ano mudar
+                setFormData(prev => ({ ...prev, data: '' }));
+              }}
+              options={gerarAnos()}
+              placeholder="Selecione o ano..."
+              disabled={necessidadesLoading || loading}
+              usePortal={false}
+            />
+          </div>
+          
+          <div>
+            <SearchableSelect
+              label="Mês (Opcional)"
+              value={mesFiltro}
+              onChange={(value) => {
+                setMesFiltro(value || null);
+                // Limpar semana de consumo quando mês mudar
+                setFormData(prev => ({ ...prev, data: '' }));
+              }}
+              options={[
+                { value: '', label: 'Todos os meses' },
+                ...gerarMeses()
+              ]}
+              placeholder="Selecione o mês..."
+              disabled={necessidadesLoading || loading}
               usePortal={false}
             />
           </div>

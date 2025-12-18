@@ -128,13 +128,22 @@ class RegistrosDiariosListController {
   }
   
   /**
-   * Listar médias por escola
+   * Listar médias por escola com paginação
    */
   static async listarMedias(req, res) {
     try {
       const userId = req.user.id;
       const userType = req.user.tipo_de_acesso;
-      const { escola_id } = req.query;
+      const { 
+        escola_id, 
+        page = 1, 
+        limit = 20,
+        search = ''
+      } = req.query;
+      
+      const pageNumber = parseInt(page) || 1;
+      const limitNumber = parseInt(limit) || 20;
+      const offset = Math.max(0, (pageNumber - 1) * limitNumber);
       
       let whereClause = 'WHERE me.ativo = 1';
       let params = [];
@@ -158,15 +167,40 @@ class RegistrosDiariosListController {
         whereClause += ' AND me.escola_id = ?';
         params.push(escola_id);
       }
+
+      // Filtro por busca (nome da escola)
+      if (search && search.trim() !== '') {
+        whereClause += ' AND me.escola_nome LIKE ?';
+        params.push(`%${search.trim()}%`);
+      }
       
+      // Contar total de registros
+      const [totalResult] = await executeQuery(
+        `SELECT COUNT(*) as total FROM media_escolas me ${whereClause}`,
+        params
+      );
+      const total = totalResult.total;
+      
+      // Buscar médias com paginação
+      // IMPORTANTE: LIMIT e OFFSET interpolados diretamente (números seguros já validados)
       const medias = await executeQuery(
-        `SELECT me.* FROM media_escolas me ${whereClause} ORDER BY me.escola_id ASC`,
+        `SELECT me.* 
+         FROM media_escolas me 
+         ${whereClause} 
+         ORDER BY me.escola_nome ASC
+         LIMIT ${limitNumber} OFFSET ${offset}`,
         params
       );
       
       res.json({
         success: true,
-        data: medias
+        data: medias,
+        pagination: {
+          page: pageNumber,
+          limit: limitNumber,
+          total: total,
+          totalPages: Math.ceil(total / limitNumber)
+        }
       });
     } catch (error) {
       console.error('Erro ao listar médias:', error);

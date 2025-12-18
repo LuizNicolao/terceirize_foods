@@ -69,8 +69,12 @@ const calendarioService = {
 
   // ===== API DE INTEGRAÇÃO =====
   // Semanas
-  buscarSemanasConsumo: async (ano) => {
-    const response = await api.get(`/calendario/api/semanas-consumo/${ano}`);
+  buscarSemanasConsumo: async (ano, mes = null) => {
+    const params = {};
+    if (mes !== null && mes !== undefined && mes !== '') {
+      params.mes = mes;
+    }
+    const response = await api.get(`/calendario/api/semanas-consumo/${ano}`, { params });
     return response.data;
   },
 

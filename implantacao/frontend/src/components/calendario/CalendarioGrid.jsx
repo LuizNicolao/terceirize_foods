@@ -129,12 +129,19 @@ const CalendarioGrid = ({ dados, ano, mes, loading = false }) => {
                 {semana.dias
                   .sort((a, b) => {
                     // Ordenar os dias da semana começando pela segunda-feira
-                    const diaSemanaA = new Date(a.data).getDay();
-                    const diaSemanaB = new Date(b.data).getDay();
+                    // dia_semana_numero do backend: 1=Segunda, 2=Terça, 3=Quarta, 4=Quinta, 5=Sexta, 6=Sábado, 7=Domingo
+                    let ordemA = a.dia_semana_numero;
+                    let ordemB = b.dia_semana_numero;
                     
-                    // Converter para ordem da semana (Seg=1, Ter=2, ..., Dom=0)
-                    const ordemA = diaSemanaA === 0 ? 7 : diaSemanaA;
-                    const ordemB = diaSemanaB === 0 ? 7 : diaSemanaB;
+                    // Se não tiver dia_semana_numero, calcular a partir da data
+                    if (!ordemA) {
+                      const diaSemana = new Date(a.data).getDay();
+                      ordemA = diaSemana === 0 ? 7 : diaSemana;
+                    }
+                    if (!ordemB) {
+                      const diaSemana = new Date(b.data).getDay();
+                      ordemB = diaSemana === 0 ? 7 : diaSemana;
+                    }
                     
                     return ordemA - ordemB;
                   })
@@ -149,7 +156,7 @@ const CalendarioGrid = ({ dados, ano, mes, loading = false }) => {
                       >
                         <div className="flex items-center justify-between mb-2">
                           <span className="text-sm font-semibold text-gray-900">
-                            {new Date(dia.data).getDate()}
+                            {dia.dia}
                           </span>
                           <span className="text-xs text-gray-500">
                             {dia.dia_semana_nome}

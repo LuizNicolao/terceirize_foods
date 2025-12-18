@@ -3,6 +3,7 @@ const { authenticateToken, checkScreenPermission } = require('../../middleware/a
 const { registrosDiariosValidations, handleValidationErrors } = require('./registrosDiariosValidator');
 const RegistrosDiariosController = require('../../controllers/registros-diarios');
 const { RegistrosDiariosImportController, upload } = require('../../controllers/registros-diarios/RegistrosDiariosImportController');
+const ConfiguracaoMediasController = require('../../controllers/registros-diarios/ConfiguracaoMediasController');
 
 const router = express.Router();
 
@@ -88,6 +89,24 @@ router.delete('/',
   registrosDiariosValidations.excluir,
   handleValidationErrors,
   RegistrosDiariosController.excluir
+);
+
+// GET /api/registros-diarios/configuracao-medias - Obter configuração de meses válidos
+router.get('/configuracao-medias',
+  checkScreenPermission('registros_diarios', 'visualizar'),
+  ConfiguracaoMediasController.obterConfiguracao
+);
+
+// POST /api/registros-diarios/configuracao-medias - Salvar configuração de meses válidos
+router.post('/configuracao-medias',
+  checkScreenPermission('registros_diarios', 'editar'),
+  ConfiguracaoMediasController.salvarConfiguracao
+);
+
+// POST /api/registros-diarios/configuracao-medias/recalcular - Recalcular médias de todas as escolas
+router.post('/configuracao-medias/recalcular',
+  checkScreenPermission('registros_diarios', 'editar'),
+  ConfiguracaoMediasController.recalcularMedias
 );
 
 module.exports = router;

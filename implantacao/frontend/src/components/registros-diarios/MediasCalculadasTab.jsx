@@ -1,29 +1,209 @@
-import React from 'react';
-import { FaSchool, FaChartLine } from 'react-icons/fa';
-import { EmptyState } from '../ui';
+import React, { useState, useEffect, useCallback } from 'react';
+import { FaSchool, FaChartLine, FaSearch, FaTimes } from 'react-icons/fa';
+import { EmptyState, SearchableSelect, Button, Input, Pagination } from '../ui';
+import FoodsApiService from '../../services/FoodsApiService';
+import RegistrosDiariosService from '../../services/registrosDiarios';
 
-const MediasCalculadasTab = ({ medias, loading }) => {
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
-        <span className="ml-3 text-gray-600">Carregando médias...</span>
-      </div>
-    );
-  }
+const MediasCalculadasTab = () => {
+  const [medias, setMedias] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [escolaFilter, setEscolaFilter] = useState('');
+  const [search, setSearch] = useState('');
+  const [searchInput, setSearchInput] = useState('');
+  const [escolas, setEscolas] = useState([]);
+  const [loadingEscolas, setLoadingEscolas] = useState(false);
   
-  if (!medias || medias.length === 0) {
-    return (
-      <EmptyState
-        title="Nenhuma média calculada"
-        description="As médias são calculadas automaticamente quando você registra quantidades servidas"
-        icon="chart"
-      />
-    );
-  }
-  
+  // Paginação
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [itemsPerPage, setItemsPerPage] = useState(20);
+
+  // Carregar escolas para o filtro
+  useEffect(() => {
+    const carregarEscolas = async () => {
+      setLoadingEscolas(true);
+      try {
+        let todasEscolas = [];
+        let page = 1;
+        let hasMore = true;
+        const limit = 100;
+        
+        while (hasMore) {
+          const result = await FoodsApiService.getUnidadesEscolares({
+            page,
+            limit,
+            status: 'ativo'
+          });
+          
+          if (result.success && result.data && result.data.length > 0) {
+            todasEscolas = [...todasEscolas, ...result.data];
+            
+            if (result.data.length < limit) {
+              hasMore = false;
+            } else {
+              page++;
+            }
+          } else {
+            hasMore = false;
+          }
+          
+          if (page > 50) {
+            hasMore = false;
+          }
+        }
+        
+        setEscolas(todasEscolas);
+      } catch (error) {
+        console.error('Erro ao carregar escolas:', error);
+      } finally {
+        setLoadingEscolas(false);
+      }
+    };
+    
+    carregarEscolas();
+  }, []);
+
+  // Carregar médias
+  const carregarMedias = useCallback(async (page = 1) => {
+    setLoading(true);
+    try {
+      const response = await RegistrosDiariosService.listarMedias({
+        escola_id: escolaFilter || null,
+        page,
+        limit: itemsPerPage,
+        search: search.trim() || ''
+      });
+
+      if (response.success) {
+        setMedias(response.data || []);
+        if (response.pagination) {
+          setCurrentPage(response.pagination.page);
+          setTotalPages(response.pagination.totalPages);
+          setTotalItems(response.pagination.total);
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao carregar médias:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [escolaFilter, itemsPerPage, search]);
+
+  // Debounce para busca
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearch(searchInput);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchInput]);
+
+  // Carregar médias quando filtros mudarem
+  useEffect(() => {
+    setCurrentPage(1);
+    carregarMedias(1);
+  }, [carregarMedias]);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    carregarMedias(page);
+  };
+
+  const handleItemsPerPageChange = (items) => {
+    setItemsPerPage(items);
+    setCurrentPage(1);
+  };  
+
+  const handleClearFilters = () => {
+    setEscolaFilter('');
+    setSearch('');
+    setSearchInput('');
+    setCurrentPage(1);
+  };
   return (
     <>
+      {/* Filtros */}
+      <div className="bg-white p-4 rounded-lg shadow-sm border mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Escola */}
+          <div>
+            <SearchableSelect
+              label="Escola"
+              value={escolaFilter}
+              onChange={(value) => {
+                setEscolaFilter(value);
+                setCurrentPage(1);
+              }}
+              options={[
+                { value: '', label: 'Todas as escolas' },
+                ...escolas.map(escola => ({
+                  value: escola.id,
+                  label: escola.nome_escola,
+                  description: `${escola.cidade} - ${escola.rota_nome || 'Sem rota'}`
+                }))
+              ]}
+              placeholder="Selecione uma escola..."
+              disabled={loadingEscolas}
+              usePortal={false}
+              renderOption={(option) => (
+                <div className="flex flex-col">
+                  <span className="font-medium text-gray-900">{option.label}</span>
+                  {option.description && (
+                    <span className="text-xs text-gray-500 mt-1">{option.description}</span>
+                  )}
+                </div>
+              )}
+            />
+          </div>
+          
+          {/* Busca por nome */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Buscar por nome
+            </label>
+            <div className="relative">
+              <Input
+                type="text"
+                value={searchInput}
+                onChange={(e) => {
+                  setSearchInput(e.target.value);
+                }}
+                placeholder="Digite o nome da escola..."
+                className="pl-10"
+              />
+              <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            </div>
+          </div>
+          
+          {/* Botões */}
+          <div className="flex items-end gap-2">
+            <Button
+              onClick={handleClearFilters}
+              variant="secondary"
+              size="sm"
+              className="flex-1"
+            >
+              <FaTimes className="mr-2" />
+              Limpar
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="flex justify-center items-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+          <span className="ml-3 text-gray-600">Carregando médias...</span>
+        </div>
+      ) : !medias || medias.length === 0 ? (
+        <EmptyState
+          title="Nenhuma média calculada"
+          description="As médias são calculadas automaticamente quando você registra quantidades servidas"
+          icon="chart"
+        />
+      ) : (
+        <>
       {/* Desktop */}
       <div className="hidden xl:block bg-white rounded-lg shadow-sm border overflow-hidden">
         <div className="overflow-x-auto">
@@ -158,6 +338,22 @@ const MediasCalculadasTab = ({ medias, loading }) => {
           </div>
         ))}
       </div>
+      </>
+      )}
+
+      {/* Paginação */}
+      {!loading && medias.length > 0 && totalPages > 1 && (
+        <div className="mt-6">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            itemsPerPage={itemsPerPage}
+            onPageChange={handlePageChange}
+            onItemsPerPageChange={handleItemsPerPageChange}
+          />
+        </div>
+      )}
     </>
   );
 };

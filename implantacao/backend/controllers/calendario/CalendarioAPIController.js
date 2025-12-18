@@ -11,6 +11,17 @@ class CalendarioAPIController {
   static async buscarSemanasConsumo(req, res) {
     try {
       const { ano = new Date().getFullYear() } = req.params;
+      const { mes } = req.query; // Filtro opcional de mês
+
+      // Construir query com filtros opcionais
+      let whereClause = 'ano = ? AND semana_consumo IS NOT NULL AND semana_consumo != \'\'';
+      const params = [ano];
+
+      // Adicionar filtro de mês se fornecido
+      if (mes && mes !== '' && mes !== 'undefined') {
+        whereClause += ' AND mes = ?';
+        params.push(parseInt(mes));
+      }
 
       const semanas = await executeQuery(`
         SELECT DISTINCT 
@@ -22,9 +33,9 @@ class CalendarioAPIController {
           semana_abastecimento_fim,
           mes_referencia
         FROM calendario 
-        WHERE ano = ? AND semana_consumo IS NOT NULL AND semana_consumo != ''
-        ORDER BY semana_consumo_inicio DESC
-      `, [ano]);
+        WHERE ${whereClause}
+        ORDER BY semana_consumo_inicio ASC
+      `, params);
 
       // Formatar semanas de consumo a partir das datas do banco (sem adicionar dias)
       // As datas semana_consumo_inicio e semana_consumo_fim já estão corretas (segunda a domingo)

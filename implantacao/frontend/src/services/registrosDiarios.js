@@ -129,21 +129,52 @@ class RegistrosDiariosService {
   }
 
   /**
-   * Listar médias por escola
+   * Listar médias por escola com paginação
    */
-  static async listarMedias(escolaId = null) {
+  static async listarMedias(params = {}) {
     try {
-      const params = escolaId ? { escola_id: escolaId } : {};
-      const response = await api.get('/registros-diarios/medias', { params });
+      const {
+        escola_id = null,
+        page = 1,
+        limit = 20,
+        search = ''
+      } = params;
+
+      const queryParams = {
+        page,
+        limit
+      };
+
+      if (escola_id) {
+        queryParams.escola_id = escola_id;
+      }
+
+      if (search && search.trim() !== '') {
+        queryParams.search = search.trim();
+      }
+
+      const response = await api.get('/registros-diarios/medias', { params: queryParams });
       return {
         success: true,
-        data: response.data.data || []
+        data: response.data.data || [],
+        pagination: response.data.pagination || {
+          page: 1,
+          limit: 20,
+          total: 0,
+          totalPages: 0
+        }
       };
     } catch (error) {
       return {
         success: false,
         error: error.response?.data?.message || 'Erro ao listar médias',
-        data: []
+        data: [],
+        pagination: {
+          page: 1,
+          limit: 20,
+          total: 0,
+          totalPages: 0
+        }
       };
     }
   }

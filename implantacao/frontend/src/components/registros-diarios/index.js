@@ -5,4 +5,6 @@ export { default as RegistrosDiariosFilters } from './RegistrosDiariosFilters';
 export { default as MediasCalculadasTab } from './MediasCalculadasTab';
 export { default as HistoricoTab } from './HistoricoTab';
 export { default as ModalValidacaoExclusao } from './ModalValidacaoExclusao';
+export { default as RegistrosDiariosTabs } from './RegistrosDiariosTabs';
+export { default as ConfiguracaoMediasTab } from './ConfiguracaoMediasTab';
 

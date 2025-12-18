@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaPlus, FaUpload } from 'react-icons/fa';
 import { usePermissions } from '../../contexts/PermissionsContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { useRegistrosDiarios } from '../../hooks/useRegistrosDiarios';
 import { Button, ConfirmModal } from '../../components/ui';
 import { Pagination } from '../../components/ui';
@@ -10,13 +11,29 @@ import {
   RegistrosDiariosTable, 
   RegistrosDiariosStats,
   RegistrosDiariosFilters,
-  ModalValidacaoExclusao
+  ModalValidacaoExclusao,
+  RegistrosDiariosTabs,
+  MediasCalculadasTab,
+  ConfiguracaoMediasTab
 } from '../../components/registros-diarios';
 import ImportRegistrosModal from '../../components/registros-diarios/ImportRegistrosModal';
 import ModalExportRegistros from '../../components/registros-diarios/ModalExportRegistros';
 
 const RegistrosDiarios = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
+  const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState('registros');
+
+  // Verificar se usuário pode acessar aba de configuração
+  const podeAcessarConfiguracao = user?.tipo_de_acesso === 'administrador';
+
+  // Redirecionar se tentar acessar configuração sem permissão
+  const handleTabChange = (tab) => {
+    if (tab === 'configuracao' && !podeAcessarConfiguracao) {
+      return; // Não permite mudar para configuração
+    }
+    setActiveTab(tab);
+  };
   
   const {
     registros,
@@ -120,7 +137,7 @@ const RegistrosDiarios = () => {
         </div>
         
         <div className="flex items-center gap-2 mt-4 sm:mt-0">
-          {canCreate('registros_diarios') && (
+          {canCreate('registros_diarios') && activeTab === 'registros' && (
             <>
               <Button onClick={handleImportClick} size="sm" variant="outline" className="flex items-center space-x-2">
                 <FaUpload size={14} />
@@ -137,57 +154,79 @@ const RegistrosDiarios = () => {
       </div>
       
       {/* Estatísticas */}
-      <RegistrosDiariosStats estatisticas={estatisticas} />
+      {activeTab === 'registros' && <RegistrosDiariosStats estatisticas={estatisticas} />}
       
-      {/* Filtros */}
-      <RegistrosDiariosFilters
-        onFilter={(filters) => {
-          if (filters.escola_id) handleEscolaFilterChange(filters.escola_id);
-          if (filters.data_inicio) handleDataInicioChange(filters.data_inicio);
-          if (filters.data_fim) handleDataFimChange(filters.data_fim);
-        }}
-        onClear={clearFiltros}
+      {/* Abas */}
+      <RegistrosDiariosTabs
+        activeTab={activeTab}
+        setActiveTab={handleTabChange}
+        userType={user?.tipo_de_acesso}
       />
-      
-      {/* Botões de Exportação */}
-      <div className="mb-4">
-        <ExportButtons
-          onExportXLSX={() => {
-            setTipoFormatoExport('xlsx');
-            setShowExportModal(true);
-          }}
-          onExportPDF={() => {
-            setTipoFormatoExport('pdf');
-            setShowExportModal(true);
-          }}
-          disabled={!canView('registros_diarios')}
-        />
-      </div>
-      
-      {/* Tabela de Registros */}
-      <RegistrosDiariosTable
-        registros={registros}
-        canView={canView('registros_diarios')}
-        canEdit={canEdit('registros_diarios')}
-        canDelete={canDelete('registros_diarios')}
-        onView={handleViewRegistro}
-        onEdit={handleEditRegistro}
-        onDelete={handleDeleteClick}
-        loading={loading}
-      />
-      
-      {/* Paginação */}
-      {totalPages > 1 && (
-        <div className="mt-6">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalItems={totalItems}
-            itemsPerPage={itemsPerPage}
-            onPageChange={handlePageChange}
-            onItemsPerPageChange={handleItemsPerPageChange}
+
+      {/* Conteúdo da aba Registros */}
+      {activeTab === 'registros' && (
+        <>
+          {/* Filtros */}
+          <RegistrosDiariosFilters
+            onFilter={(filters) => {
+              if (filters.escola_id) handleEscolaFilterChange(filters.escola_id);
+              if (filters.data_inicio) handleDataInicioChange(filters.data_inicio);
+              if (filters.data_fim) handleDataFimChange(filters.data_fim);
+            }}
+            onClear={clearFiltros}
           />
-        </div>
+          
+          {/* Botões de Exportação */}
+          <div className="mb-4">
+            <ExportButtons
+              onExportXLSX={() => {
+                setTipoFormatoExport('xlsx');
+                setShowExportModal(true);
+              }}
+              onExportPDF={() => {
+                setTipoFormatoExport('pdf');
+                setShowExportModal(true);
+              }}
+              disabled={!canView('registros_diarios')}
+            />
+          </div>
+          
+          {/* Tabela de Registros */}
+          <RegistrosDiariosTable
+            registros={registros}
+            canView={canView('registros_diarios')}
+            canEdit={canEdit('registros_diarios')}
+            canDelete={canDelete('registros_diarios')}
+            onView={handleViewRegistro}
+            onEdit={handleEditRegistro}
+            onDelete={handleDeleteClick}
+            loading={loading}
+          />
+          
+          {/* Paginação */}
+          {totalPages > 1 && (
+            <div className="mt-6">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={totalItems}
+                itemsPerPage={itemsPerPage}
+                onPageChange={handlePageChange}
+                onItemsPerPageChange={handleItemsPerPageChange}
+              />
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Conteúdo da aba Médias */}
+      {activeTab === 'medias' && (
+        <MediasCalculadasTab />
+      )}
+
+      {/* Conteúdo da aba Configuração */}
+      {activeTab === 'configuracao' && (
+        <ConfiguracaoMediasTab />
       )}
       
       {/* Modal de Cadastro/Edição */}

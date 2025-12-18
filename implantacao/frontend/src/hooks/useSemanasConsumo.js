@@ -7,8 +7,9 @@ import necessidadesService from '../services/necessidadesService';
  * @param {number} ano - Ano para buscar semanas (quando usarCalendario = true)
  * @param {boolean} usarCalendario - Se true, busca do calendário. Se false, busca da tabela necessidades
  * @param {object} filtros - Filtros opcionais (escola_id) quando usarCalendario = false
+ * @param {number} mes - Mês opcional para filtrar semanas (quando usarCalendario = true)
  */
-export const useSemanasConsumo = (ano = new Date().getFullYear(), usarCalendario = true, filtros = {}) => {
+export const useSemanasConsumo = (ano = new Date().getFullYear(), usarCalendario = true, filtros = {}, mes = null) => {
   const [opcoes, setOpcoes] = useState([]);
   const [semanas, setSemanas] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -21,7 +22,7 @@ export const useSemanasConsumo = (ano = new Date().getFullYear(), usarCalendario
   }, [filtros]);
 
   // Carregar semanas de consumo
-  const carregarSemanasConsumo = useCallback(async (anoSelecionado, usarCalend = usarCalendario, filtrosData = null) => {
+  const carregarSemanasConsumo = useCallback(async (anoSelecionado, usarCalend = usarCalendario, filtrosData = null, mesSelecionado = null) => {
     // Usar filtros do ref se não foram passados
     const filtrosParaUsar = filtrosData !== null ? filtrosData : filtrosRef.current;
     setLoading(true);
@@ -32,7 +33,9 @@ export const useSemanasConsumo = (ano = new Date().getFullYear(), usarCalendario
       
       if (usarCalend) {
         // Usar endpoint do calendário
-        response = await calendarioService.buscarSemanasConsumo(anoSelecionado || new Date().getFullYear());
+        // Obter mês dos filtros, do parâmetro mesSelecionado ou do parâmetro mes do hook
+        const mesParaBuscar = filtrosParaUsar?.mes || mesSelecionado || mes;
+        response = await calendarioService.buscarSemanasConsumo(anoSelecionado || new Date().getFullYear(), mesParaBuscar);
       } else {
         // Usar endpoint da tabela necessidades
         response = await necessidadesService.buscarSemanasConsumoDisponiveis(filtrosParaUsar);
@@ -69,18 +72,18 @@ export const useSemanasConsumo = (ano = new Date().getFullYear(), usarCalendario
     } finally {
       setLoading(false);
     }
-  }, [usarCalendario]);
+  }, [usarCalendario, mes]);
 
   // Carregar semanas quando o ano mudar ou usarCalendario mudar
   // Usar stringify para comparar filtros de forma estável e evitar loop
   const filtrosString = JSON.stringify(filtros);
   useEffect(() => {
     if (usarCalendario) {
-      carregarSemanasConsumo(ano, true, {});
+      carregarSemanasConsumo(ano, true, {}, mes);
     } else {
-      carregarSemanasConsumo(null, false, null);
+      carregarSemanasConsumo(null, false, null, null);
     }
-  }, [ano, usarCalendario, filtrosString, carregarSemanasConsumo]);
+  }, [ano, mes, usarCalendario, filtrosString, carregarSemanasConsumo]);
 
   /**
    * Obtém o valor padrão para o estado inicial
@@ -95,11 +98,11 @@ export const useSemanasConsumo = (ano = new Date().getFullYear(), usarCalendario
    */
   const recarregar = useCallback(() => {
     if (usarCalendario) {
-      carregarSemanasConsumo(ano, true, {});
+      carregarSemanasConsumo(ano, true, {}, mes);
     } else {
-      carregarSemanasConsumo(null, false, null);
+      carregarSemanasConsumo(null, false, null, null);
     }
-  }, [ano, usarCalendario, carregarSemanasConsumo]);
+  }, [ano, mes, usarCalendario, carregarSemanasConsumo]);
 
   return {
     opcoes,
