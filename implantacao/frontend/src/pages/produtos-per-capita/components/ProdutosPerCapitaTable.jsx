@@ -47,7 +47,7 @@ const ProdutosPerCapitaTable = ({
 
   const formatPerCapita = (value) => {
     if (value === null || value === undefined) return '-';
-    return parseFloat(value).toFixed(2);
+    return parseFloat(value).toFixed(3).replace('.', ',');
   };
 
   const getStatusBadge = (ativo) => {

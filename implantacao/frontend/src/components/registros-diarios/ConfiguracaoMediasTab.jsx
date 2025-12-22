@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FaSave, FaSpinner, FaCheckCircle, FaExclamationTriangle, FaSync } from 'react-icons/fa';
-import { Button, SearchableSelect } from '../ui';
+import { Button, SearchableSelect, ConfirmModal } from '../ui';
 import toast from 'react-hot-toast';
 import configuracaoMediasService from '../../services/configuracaoMediasService';
 
@@ -10,6 +10,7 @@ const ConfiguracaoMediasTab = () => {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [recalculando, setRecalculando] = useState(false);
+  const [showConfirmRecalcular, setShowConfirmRecalcular] = useState(false);
 
   const meses = [
     { value: 1, label: 'Janeiro' },
@@ -92,11 +93,12 @@ const ConfiguracaoMediasTab = () => {
     }
   };
 
-  const handleRecalcular = async () => {
-    if (!window.confirm('Deseja recalcular as médias de todas as escolas? Esta operação pode levar alguns minutos.')) {
-      return;
-    }
+  const handleRecalcular = () => {
+    setShowConfirmRecalcular(true);
+  };
 
+  const confirmRecalcular = async () => {
+    setShowConfirmRecalcular(false);
     setRecalculando(true);
     try {
       const response = await configuracaoMediasService.recalcularMedias();
@@ -239,6 +241,18 @@ const ConfiguracaoMediasTab = () => {
           )}
         </Button>
       </div>
+
+      {/* Modal de Confirmação para Recalcular Médias */}
+      <ConfirmModal
+        isOpen={showConfirmRecalcular}
+        onClose={() => setShowConfirmRecalcular(false)}
+        onConfirm={confirmRecalcular}
+        title="Recalcular Médias"
+        message="Deseja recalcular as médias de todas as escolas? Esta operação pode levar alguns minutos."
+        confirmText="Recalcular"
+        cancelText="Cancelar"
+        variant="warning"
+      />
     </div>
   );
 };
