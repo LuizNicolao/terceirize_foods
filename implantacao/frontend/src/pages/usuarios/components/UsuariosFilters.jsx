@@ -8,7 +8,8 @@ import { CadastroFilterBar } from '../../../components/ui';
 
 const UsuariosFilters = ({ 
   searchTerm, 
-  onSearchChange, 
+  onSearchChange,
+  onKeyPress,
   loading 
 }) => {
   return (
@@ -16,6 +17,7 @@ const UsuariosFilters = ({
       <CadastroFilterBar
         searchTerm={searchTerm}
         onSearchChange={onSearchChange}
+        onKeyPress={onKeyPress}
         placeholder="Buscar por nome, email ou tipo de acesso..."
         loading={loading}
         showFilters={false} // Usuários não tem filtros adicionais por enquanto

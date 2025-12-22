@@ -43,6 +43,7 @@ const Usuarios = () => {
     handleCloseModal,
     handlePageChange,
     setSearchTerm,
+    handleKeyPress,
     setItemsPerPage,
     formatDate,
     getStatusLabel,
@@ -95,6 +96,7 @@ const Usuarios = () => {
       <UsuariosFilters
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
+        onKeyPress={handleKeyPress}
         loading={loading}
       />
 

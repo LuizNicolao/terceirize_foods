@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import toast from 'react-hot-toast';
 import UsuariosService from '../services/usuarios';
 import { useBaseEntity } from './common/useBaseEntity';
@@ -15,6 +15,12 @@ export const useUsuarios = () => {
 
   // Hook de filtros customizados para usuários
   const customFilters = useFilters({});
+
+  // Ref para manter referência estável do loadData
+  const loadDataRef = useRef(baseEntity.loadData);
+  useEffect(() => {
+    loadDataRef.current = baseEntity.loadData;
+  }, [baseEntity.loadData]);
 
   // Estados de estatísticas específicas dos usuários
   const [estatisticasUsuarios, setEstatisticasUsuarios] = useState({
@@ -56,14 +62,14 @@ export const useUsuarios = () => {
    */
   const loadDataWithFilters = useCallback(async () => {
     const params = {
-      ...baseEntity.getPaginationParams(),
-      ...customFilters.getFilterParams(),
-      search: customFilters.searchTerm || undefined,
+      page: baseEntity.currentPage,
+      limit: baseEntity.itemsPerPage,
+      search: customFilters.appliedSearchTerm || undefined,
       status: customFilters.statusFilter === 'ativo' ? 1 : customFilters.statusFilter === 'inativo' ? 0 : undefined
     };
 
     await baseEntity.loadData(params);
-  }, [baseEntity, customFilters]);
+  }, [baseEntity.currentPage, baseEntity.itemsPerPage, baseEntity.loadData, customFilters.appliedSearchTerm, customFilters.statusFilter]);
 
   /**
    * Submissão customizada com limpeza de dados
@@ -80,7 +86,7 @@ export const useUsuarios = () => {
     await baseEntity.onSubmit(cleanData);
     // Recalcular estatísticas após salvar
     calculateEstatisticas(baseEntity.items);
-  }, [baseEntity, calculateEstatisticas]);
+  }, [baseEntity.onSubmit, baseEntity.items, calculateEstatisticas]);
 
   /**
    * Exclusão customizada que recarrega dados
@@ -89,7 +95,7 @@ export const useUsuarios = () => {
     await baseEntity.handleConfirmDelete();
     // Recalcular estatísticas após excluir
     calculateEstatisticas(baseEntity.items);
-  }, [baseEntity, calculateEstatisticas]);
+  }, [baseEntity.handleConfirmDelete, baseEntity.items, calculateEstatisticas]);
 
   /**
    * Visualização customizada que busca dados completos
@@ -107,7 +113,7 @@ export const useUsuarios = () => {
       console.error('Erro ao buscar usuário:', error);
       toast.error('Erro ao carregar dados do usuário');
     }
-  }, [baseEntity]);
+  }, [baseEntity.handleView]);
 
   /**
    * Edição customizada que busca dados completos
@@ -125,7 +131,7 @@ export const useUsuarios = () => {
       console.error('Erro ao buscar usuário:', error);
       toast.error('Erro ao carregar dados do usuário');
     }
-  }, [baseEntity]);
+  }, [baseEntity.handleEdit]);
 
   /**
    * Funções utilitárias
@@ -164,15 +170,27 @@ export const useUsuarios = () => {
     return tipos[tipo] || tipo;
   }, []);
 
-  // Carregar dados quando filtros mudam
-  useEffect(() => {
-    loadDataWithFilters();
-  }, [customFilters.searchTerm, customFilters.statusFilter, customFilters.filters]);
+  /**
+   * Handler para pressionar Enter na busca
+   */
+  const handleKeyPress = useCallback((e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      customFilters.applySearch();
+      baseEntity.handlePageChange(1); // Reset para primeira página
+    }
+  }, [customFilters.applySearch, baseEntity.handlePageChange]);
 
-  // Carregar dados quando paginação muda
+  // Carregar dados quando filtros aplicados ou paginação mudam
   useEffect(() => {
-    loadDataWithFilters();
-  }, [baseEntity.currentPage, baseEntity.itemsPerPage]);
+    const params = {
+      page: baseEntity.currentPage,
+      limit: baseEntity.itemsPerPage,
+      search: customFilters.appliedSearchTerm || undefined,
+      status: customFilters.statusFilter === 'ativo' ? 1 : customFilters.statusFilter === 'inativo' ? 0 : undefined
+    };
+    loadDataRef.current(params);
+  }, [customFilters.appliedSearchTerm, customFilters.statusFilter, baseEntity.currentPage, baseEntity.itemsPerPage]);
 
   // Recalcular estatísticas quando os dados mudam
   useEffect(() => {
@@ -221,6 +239,7 @@ export const useUsuarios = () => {
     // Ações de filtros
     setSearchTerm: customFilters.setSearchTerm,
     setStatusFilter: customFilters.setStatusFilter,
+    handleKeyPress,
     setItemsPerPage: baseEntity.handleItemsPerPageChange, // Alias para compatibilidade
     
     // Ações de CRUD (customizadas)
