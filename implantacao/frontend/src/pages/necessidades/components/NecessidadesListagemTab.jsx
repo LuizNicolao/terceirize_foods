@@ -1,12 +1,21 @@
 /**
  * Componente da aba de Listagem de Necessidades
- * Exibe a tabela de necessidades agrupadas
+ * Exibe a tabela de necessidades com três modos de visualização:
+ * - Padrão: Agrupada por necessidade_id
+ * - Individual: Cada necessidade individualmente
+ * - Consolidado: Agrupada por produto, somando quantidades
  */
 
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { FaClipboardList } from 'react-icons/fa';
-import { ActionButtons, Pagination } from '../../../components/ui';
-import { StatusBadge } from '../../../components/necessidades';
+import { Pagination } from '../../../components/ui';
+import { ExportButtons } from '../../../components/shared';
+import { consolidarNecessidadesListagem } from '../utils/consolidarNecessidadesListagem';
+import { useExportListagemNecessidades } from '../hooks/useExportListagemNecessidades';
+import ControleVisualizacaoListagem from './listagem/ControleVisualizacaoListagem';
+import TabelaPadraoListagem from './listagem/TabelaPadraoListagem';
+import TabelaIndividualListagem from './listagem/TabelaIndividualListagem';
+import TabelaConsolidadaListagem from './listagem/TabelaConsolidadaListagem';
 
 const NecessidadesListagemTab = ({
   necessidades = [],
@@ -14,9 +23,21 @@ const NecessidadesListagemTab = ({
   pagination = null,
   onView = () => {}
 }) => {
+  // Estado para modo de visualização (padrao, individual, consolidado)
+  const [modoVisualizacao, setModoVisualizacao] = useState('padrao');
+
+  // Estado local para paginação (usado apenas para modos Individual e Consolidado)
+  const [paginaLocal, setPaginaLocal] = useState(1);
+  const [itemsPerPageLocal, setItemsPerPageLocal] = useState(20);
+
+  // Hook de exportação
+  const { exportarExcel, exportarPDF } = useExportListagemNecessidades();
+
+  // Processar dados conforme o modo de visualização
+  const dadosProcessados = useMemo(() => {
+    if (modoVisualizacao === 'padrao') {
   // Agrupar necessidades por necessidade_id (se disponível) ou por escola, data e grupo
   const agrupadas = necessidades.reduce((acc, necessidade) => {
-    // Se tem necessidade_id, usar ele. Senão, usar escola-data-grupo para diferenciar grupos
     const chave = necessidade.necessidade_id || `${necessidade.escola}-${necessidade.semana_consumo}-${necessidade.grupo || 'sem-grupo'}`;
     if (!acc[chave]) {
       acc[chave] = {
@@ -34,8 +55,54 @@ const NecessidadesListagemTab = ({
     acc[chave].produtos.push(necessidade);
     return acc;
   }, {});
+      return Object.values(agrupadas);
+    } else if (modoVisualizacao === 'consolidado') {
+      return consolidarNecessidadesListagem(necessidades);
+    } else {
+      // Individual: retornar todas as necessidades individualmente
+      return necessidades;
+    }
+  }, [necessidades, modoVisualizacao]);
 
-  const gruposArray = Object.values(agrupadas);
+  // Para modos Individual e Consolidado, aplicar paginação local
+  const dadosExibidos = useMemo(() => {
+    // Modo padrão usa paginação do backend (dados já vêm paginados)
+    if (modoVisualizacao === 'padrao') {
+      return dadosProcessados;
+    }
+
+    // Modos Individual e Consolidado: paginar localmente
+    const startIndex = (paginaLocal - 1) * itemsPerPageLocal;
+    const endIndex = startIndex + itemsPerPageLocal;
+    return dadosProcessados.slice(startIndex, endIndex);
+  }, [dadosProcessados, modoVisualizacao, paginaLocal, itemsPerPageLocal]);
+
+  // Calcular total de páginas para paginação local
+  const totalPaginasLocal = useMemo(() => {
+    if (modoVisualizacao === 'padrao') {
+      return pagination?.totalPages || 1;
+    }
+    return Math.ceil(dadosProcessados.length / itemsPerPageLocal);
+  }, [dadosProcessados.length, modoVisualizacao, itemsPerPageLocal, pagination?.totalPages]);
+
+  // Handler para resetar página quando mudar o modo de visualização
+  const handleModoVisualizacaoChange = (modo) => {
+    setModoVisualizacao(modo);
+    setPaginaLocal(1);
+    if (pagination?.handlePageChange) {
+      pagination.handlePageChange(1);
+    }
+  };
+
+  // Handlers para paginação local (modos Individual e Consolidado)
+  const handlePageChangeLocal = (novaPagina) => {
+    setPaginaLocal(novaPagina);
+  };
+
+  const handleItemsPerPageChangeLocal = (novoItemsPerPage) => {
+    setItemsPerPageLocal(novoItemsPerPage);
+    setPaginaLocal(1); // Resetar para primeira página
+  };
 
   if (loading) {
     return (
@@ -46,7 +113,7 @@ const NecessidadesListagemTab = ({
     );
   }
 
-  if (gruposArray.length === 0) {
+  if (dadosExibidos.length === 0) {
     return (
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
         <FaClipboardList className="mx-auto h-12 w-12 text-gray-400 mb-4" />
@@ -60,97 +127,57 @@ const NecessidadesListagemTab = ({
     );
   }
 
+  // Renderizar a tabela apropriada conforme o modo de visualização
+  const renderizarTabela = () => {
+    switch (modoVisualizacao) {
+      case 'consolidado':
+        return <TabelaConsolidadaListagem dados={dadosExibidos} onView={onView} />;
+      case 'individual':
+        return <TabelaIndividualListagem dados={dadosExibidos} onView={onView} />;
+      case 'padrao':
+      default:
+        return <TabelaPadraoListagem dados={dadosExibidos} onView={onView} />;
+    }
+  };
+
+  // Handlers de exportação que respeitam o modo de visualização
+  // Exportar TODOS os dados processados, não apenas os paginados
+  const handleExportarExcel = () => {
+    exportarExcel(dadosProcessados, modoVisualizacao);
+  };
+
+  const handleExportarPDF = () => {
+    exportarPDF(dadosProcessados, modoVisualizacao);
+  };
+
   return (
     <>
-      {/* Tabela de Necessidades Agrupadas */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  ID
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Escola
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Rota
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Grupo
-                </th>
-                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Produtos
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Semana Consumo
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Semana Abastecimento
-                </th>
-                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Ações
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {gruposArray.map((grupo, index) => (
-                <tr key={index} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {grupo.necessidade_id || '-'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">
-                      {grupo.escola || '-'}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {grupo.rota || '-'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                    {grupo.grupo ? (
-                      <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">
-                        {grupo.grupo}
-                      </span>
-                    ) : (
-                      '-'
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-center">
-                    <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                      {grupo.produtos.length} produtos
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {grupo.data_consumo || '-'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {grupo.data_abastecimento || '-'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-center">
-                    <StatusBadge status={grupo.status || grupo.produtos[0]?.status || 'NEC'} />
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                    <ActionButtons
-                      canView={true}
-                      onView={() => onView(grupo)}
-                      item={grupo}
-                      size="sm"
-                    />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {/* Controles: Visualização e Exportação */}
+      <div className="mb-4 flex justify-between items-center">
+        <div>
+          <ExportButtons
+            onExportXLSX={handleExportarExcel}
+            onExportPDF={handleExportarPDF}
+          />
         </div>
+        <ControleVisualizacaoListagem
+          modoVisualizacao={modoVisualizacao}
+          onModoVisualizacaoChange={handleModoVisualizacaoChange}
+          onPageReset={() => {
+            if (pagination?.handlePageChange) {
+              pagination.handlePageChange(1);
+            }
+          }}
+        />
       </div>
 
+      {/* Tabela de Necessidades */}
+      {renderizarTabela()}
+
       {/* Paginação */}
-      {pagination && pagination.totalItems > 0 && (
+      {modoVisualizacao === 'padrao' ? (
+        // Paginação do backend para modo padrão
+        pagination && pagination.totalItems > 0 && (
         <div className="mt-6">
           <Pagination
             currentPage={pagination.currentPage}
@@ -161,6 +188,21 @@ const NecessidadesListagemTab = ({
             onItemsPerPageChange={pagination.handleItemsPerPageChange}
           />
         </div>
+        )
+      ) : (
+        // Paginação local para modos Individual e Consolidado
+        dadosProcessados.length > 0 && (
+          <div className="mt-6">
+            <Pagination
+              currentPage={paginaLocal}
+              totalPages={totalPaginasLocal}
+              totalItems={dadosProcessados.length}
+              itemsPerPage={itemsPerPageLocal}
+              onPageChange={handlePageChangeLocal}
+              onItemsPerPageChange={handleItemsPerPageChangeLocal}
+            />
+          </div>
+        )
       )}
     </>
   );

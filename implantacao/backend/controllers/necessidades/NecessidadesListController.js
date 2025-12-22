@@ -33,18 +33,11 @@ const listar = async (req, res) => {
       params.push(req.user.email);
     }
 
-    // Filtros opcionais - Buscar por ID da necessidade
+    // Filtros opcionais - Buscar por ID da necessidade (busca exata do valor digitado)
     if (search) {
-      // Tentar buscar como número (ID) ou como string (caso seja string numérica)
-      const searchAsNumber = parseInt(search);
-      if (!isNaN(searchAsNumber)) {
-        whereClause += ' AND n.necessidade_id = ?';
-        params.push(searchAsNumber);
-      } else {
-        // Se não for número, buscar por LIKE no ID (caso seja string)
-        whereClause += ' AND CAST(n.necessidade_id AS CHAR) LIKE ?';
-        params.push(`%${search}%`);
-      }
+      // Buscar exatamente o valor digitado (convertendo para string para garantir compatibilidade)
+      whereClause += ' AND CAST(n.necessidade_id AS CHAR) = ?';
+      params.push(String(search).trim());
     }
 
     if (escola) {
@@ -68,6 +61,8 @@ const listar = async (req, res) => {
       whereClause += ' AND n.semana_abastecimento = ?';
       params.push(semana_abastecimento);
     }
+
+    // Não precisa mais verificar status EXCLUÍDO pois essas necessidades foram movidas para necessidades_excluidas
 
     if (status) {
       // Filtrar por status
@@ -139,6 +134,7 @@ const listar = async (req, res) => {
     }
 
     // Agora buscar todos os produtos dessas necessidades
+    // Não precisa mais filtrar EXCLUÍDO pois essas necessidades foram movidas para necessidades_excluidas
     const placeholders = necessidadesIds.map(() => '?').join(',');
     const necessidades = await executeQuery(`
       SELECT 
@@ -177,6 +173,8 @@ const listarTodas = async (req, res) => {
     let whereClause = 'WHERE 1=1';
     let params = [];
 
+    // Não precisa mais verificar status EXCLUÍDO pois essas necessidades foram movidas para necessidades_excluidas
+
     if (isNutricionista) {
       try {
         const authToken = req.headers.authorization?.replace('Bearer ', '');
@@ -199,18 +197,11 @@ const listarTodas = async (req, res) => {
       params.push(req.user.email);
     }
 
-    // Filtros opcionais - Buscar por ID da necessidade
+    // Filtros opcionais - Buscar por ID da necessidade (busca exata do valor digitado)
     if (search) {
-      // Tentar buscar como número (ID) ou como string (caso seja string numérica)
-      const searchAsNumber = parseInt(search);
-      if (!isNaN(searchAsNumber)) {
-        whereClause += ' AND n.necessidade_id = ?';
-        params.push(searchAsNumber);
-      } else {
-        // Se não for número, buscar por LIKE no ID (caso seja string)
-        whereClause += ' AND CAST(n.necessidade_id AS CHAR) LIKE ?';
-        params.push(`%${search}%`);
-      }
+      // Buscar exatamente o valor digitado (convertendo para string para garantir compatibilidade)
+      whereClause += ' AND CAST(n.necessidade_id AS CHAR) = ?';
+      params.push(String(search).trim());
     }
 
     if (escola) {

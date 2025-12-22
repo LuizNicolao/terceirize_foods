@@ -171,51 +171,71 @@ const gerarNecessidade = async (req, res) => {
       });
     }
 
-    // Buscar semana de abastecimento na tabela calendario baseado na semana de consumo
-    let semanaAbastecimentoFinal = semana_abastecimento; // Usar valor do frontend como fallback
+    // SEMPRE calcular semana_abastecimento programaticamente (semana anterior) quando temos semana_consumo
+    // Ignorar o valor do frontend pois pode estar incorreto - usar apenas como fallback se cálculo falhar
+    // Usando a mesma lógica do Gerar Pedido Padrão que funciona corretamente
+    // Como os dados no banco podem estar incorretos, é melhor sempre calcular programaticamente
+    let semanaAbastecimentoFinal = null;
     
     if (semana_consumo) {
       try {
-        // Primeiro, tentar busca exata
-        let calendarioResult = await executeQuery(`
-          SELECT DISTINCT semana_abastecimento
-          FROM foods_db.calendario
-          WHERE semana_consumo = ?
-            AND semana_abastecimento IS NOT NULL
-            AND semana_abastecimento != ''
-          LIMIT 1
-        `, [semana_consumo]);
+        // Calcular semana de abastecimento (semana anterior) - mesma lógica do Gerar Pedido Padrão
+        let data;
         
-        // Se não encontrou, tentar buscar pelo padrão de data (ignorando ano)
-        // Extrair padrão "DD/MM a DD/MM" da string "(DD/MM a DD/MM/YY)"
-        if (calendarioResult.length === 0) {
-          const padraoData = semana_consumo.replace(/[()]/g, '').replace(/\/\d{2}$/, '');
+        // Se for uma string da semana (ex: "(09/02 a 13/02/26)"), converter para data
+        if (typeof semana_consumo === 'string' && semana_consumo.includes(' a ')) {
+          // Remover parênteses se existirem
+          const dataLimpa = semana_consumo.replace(/[()]/g, '');
+          // Extrair a primeira data da string (ex: "09/02" de "09/02 a 13/02/26")
+          const primeiraData = dataLimpa.split(' a ')[0];
+          const [dia, mes] = primeiraData.split('/');
           
-          calendarioResult = await executeQuery(`
-            SELECT DISTINCT semana_abastecimento
-            FROM foods_db.calendario
-            WHERE semana_consumo LIKE ?
-              AND semana_abastecimento IS NOT NULL
-              AND semana_abastecimento != ''
-            ORDER BY semana_consumo DESC
-            LIMIT 1
-          `, [`%${padraoData}%`]);
+          // Extrair ano da string original
+          const anoMatch = semana_consumo.match(/\/(\d{2})[)]?$/);
+          const ano2digitos = anoMatch ? anoMatch[1] : new Date().getFullYear().toString().slice(-2);
+          const ano = parseInt(`20${ano2digitos}`);
+          
+          data = new Date(ano, parseInt(mes) - 1, parseInt(dia));
+        } else {
+          data = new Date(semana_consumo);
         }
         
-        if (calendarioResult.length > 0 && calendarioResult[0].semana_abastecimento) {
-          semanaAbastecimentoFinal = calendarioResult[0].semana_abastecimento;
-          console.log(`Semana de abastecimento encontrada no calendário: ${semanaAbastecimentoFinal} para semana de consumo: ${semana_consumo}`);
+        // Verificar se a data é válida
+        if (isNaN(data.getTime())) {
+          // Fallback: usar valor do frontend se cálculo falhou
+          semanaAbastecimentoFinal = semana_abastecimento || null;
         } else {
-          console.warn(`Semana de abastecimento não encontrada no calendário para semana de consumo: ${semana_consumo}. Usando valor do frontend: ${semana_abastecimento}`);
+          // Calcular o início da semana anterior (segunda-feira)
+          const inicioSemanaAnterior = new Date(data);
+          inicioSemanaAnterior.setDate(data.getDate() - 7 - data.getDay() + 1); // -7 dias + ajuste para segunda-feira
+          
+          // Calcular o fim da semana anterior (sexta-feira - apenas 5 dias úteis)
+          const fimSemanaAnterior = new Date(inicioSemanaAnterior);
+          fimSemanaAnterior.setDate(inicioSemanaAnterior.getDate() + 4);
+          
+          // Formatar as datas
+          const formatarDataSemana = (data) => {
+            const dia = String(data.getDate()).padStart(2, '0');
+            const mes = String(data.getMonth() + 1).padStart(2, '0');
+            return `${dia}/${mes}`;
+          };
+          
+          const anoFormatado = fimSemanaAnterior.getFullYear().toString().slice(-2);
+          semanaAbastecimentoFinal = `(${formatarDataSemana(inicioSemanaAnterior)} a ${formatarDataSemana(fimSemanaAnterior)}/${anoFormatado})`;
         }
       } catch (error) {
-        console.error('Erro ao buscar semana de abastecimento no calendário:', error);
-        // Continuar com o valor do frontend se houver erro
+        console.error('Erro ao calcular semana de abastecimento:', error);
+        // Em caso de erro, usar valor do frontend como fallback
+        semanaAbastecimentoFinal = semana_abastecimento || null;
       }
+    } else if (!semana_consumo && semana_abastecimento) {
+      // Se não tem semana_consumo mas tem semana_abastecimento, usar o valor recebido
+      semanaAbastecimentoFinal = semana_abastecimento;
     }
 
     // Verificar se já existe necessidade para esta escola/semana/grupo específico
     // Permite criar necessidades de grupos diferentes na mesma semana para a mesma escola
+    // Necessidades excluídas já foram movidas para necessidades_excluidas, então não precisamos verificar status
     if (grupoPrincipal) {
     const existing = await executeQuery(`
       SELECT DISTINCT necessidade_id FROM necessidades 

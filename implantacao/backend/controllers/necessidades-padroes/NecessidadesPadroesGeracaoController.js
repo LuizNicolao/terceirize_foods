@@ -137,18 +137,6 @@ class NecessidadesPadroesGeracaoController {
 
         const nutricionistaData = nutricionista[0];
 
-        // Verificar se já existe necessidade para esta escola/semana
-        const existing = await executeQuery(`
-          SELECT DISTINCT necessidade_id 
-          FROM necessidades 
-          WHERE escola_id = ? AND semana_consumo = ?
-        `, [escolaId, semana_consumo]);
-
-        if (existing.length > 0) {
-          console.warn(`Necessidade já existe para escola ${escola.nome_escola} na semana ${semana_consumo}`);
-          continue; // Pular escola que já tem necessidade
-        }
-
         // Gerar ID sequencial para esta necessidade
         const ultimoId = await executeQuery(`
           SELECT COALESCE(MAX(CAST(necessidade_id AS UNSIGNED)), 0) as ultimo_id 
@@ -229,54 +217,89 @@ class NecessidadesPadroesGeracaoController {
           }
 
           try {
-            const result = await executeQuery(`
-              INSERT INTO necessidades (
-                usuario_email,
-                usuario_id,
-                produto_id,
-                produto,
-                produto_unidade,
-                escola_id,
-                escola,
-                escola_rota,
-                codigo_teknisa,
-                ajuste,
-                semana_consumo,
-                semana_abastecimento,
-                grupo,
-                grupo_id,
-                status,
-                observacoes,
-                necessidade_id
-              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            `, [
-              nutricionistaData.usuario_email,
-              nutricionistaData.usuario_id,
-              produto_id,
-              produto_nome,
-              produto_unidade || '',
-              escolaId,
-              escola.nome_escola,
-              rotaNome, // Usar rota vinculada ao grupo de produto
-              escola.codigo_teknisa || '',
-              quantidade,
-              semana_consumo,
-              semanaAbastecimentoFinal,
-              grupo,
-              grupo_id_final,
-              'NEC',
-              'Gerado automaticamente pedido mensal',
-              necessidadeId
-            ]);
+            // Verificar se já existe necessidade para este produto/escola/semana
+            // Se existir, atualizar ao invés de criar nova
+            const existing = await executeQuery(`
+              SELECT id FROM necessidades 
+              WHERE escola_id = ? AND produto_id = ? AND semana_consumo = ? AND status != 'EXCLUÍDO'
+              LIMIT 1
+            `, [escolaId, produto_id, semana_consumo]);
 
-            necessidadesCriadas.push({
-              id: result.insertId,
-              escola: escola.nome_escola,
-              produto: produto_nome,
-              quantidade: quantidade
-            });
+            if (existing.length > 0) {
+              // Atualizar necessidade existente
+              await executeQuery(`
+                UPDATE necessidades SET
+                  ajuste = ?,
+                  semana_abastecimento = ?,
+                  observacoes = ?,
+                  data_atualizacao = NOW()
+                WHERE id = ?
+              `, [
+                quantidade,
+                semanaAbastecimentoFinal,
+                'Atualizado automaticamente pedido mensal',
+                existing[0].id
+              ]);
+
+              necessidadesCriadas.push({
+                id: existing[0].id,
+                escola: escola.nome_escola,
+                produto: produto_nome,
+                quantidade: quantidade,
+                acao: 'atualizado'
+              });
+            } else {
+              // Criar nova necessidade
+              const result = await executeQuery(`
+                INSERT INTO necessidades (
+                  usuario_email,
+                  usuario_id,
+                  produto_id,
+                  produto,
+                  produto_unidade,
+                  escola_id,
+                  escola,
+                  escola_rota,
+                  codigo_teknisa,
+                  ajuste,
+                  semana_consumo,
+                  semana_abastecimento,
+                  grupo,
+                  grupo_id,
+                  status,
+                  observacoes,
+                  necessidade_id
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+              `, [
+                nutricionistaData.usuario_email,
+                nutricionistaData.usuario_id,
+                produto_id,
+                produto_nome,
+                produto_unidade || '',
+                escolaId,
+                escola.nome_escola,
+                rotaNome, // Usar rota vinculada ao grupo de produto
+                escola.codigo_teknisa || '',
+                quantidade,
+                semana_consumo,
+                semanaAbastecimentoFinal,
+                grupo,
+                grupo_id_final,
+                'NEC',
+                'Gerado automaticamente pedido mensal',
+                necessidadeId
+              ]);
+
+              necessidadesCriadas.push({
+                id: result.insertId,
+                escola: escola.nome_escola,
+                produto: produto_nome,
+                quantidade: quantidade,
+                acao: 'criado'
+              });
+            }
           } catch (error) {
-            console.error(`Erro ao criar necessidade para produto ${produto_nome} na escola ${escola.nome_escola}:`, error);
+            console.error(`Erro ao criar/atualizar necessidade para produto ${produto_nome} na escola ${escola.nome_escola}:`, error);
             // Continuar processando outros produtos
           }
         }
@@ -305,7 +328,7 @@ class NecessidadesPadroesGeracaoController {
 
   /**
    * Buscar semana de abastecimento baseado na semana de consumo
-   * Busca na tabela calendario que contém a relação entre semana_consumo e semana_abastecimento
+   * Calcula a semana anterior programaticamente (mesma lógica do modal Gerar Necessidade)
    */
   static async buscarSemanaAbastecimentoPorConsumo(req, res) {
     try {
@@ -315,43 +338,58 @@ class NecessidadesPadroesGeracaoController {
         return errorResponse(res, 'Semana de consumo é obrigatória', 400);
       }
 
-      // Primeiro, tentar busca exata
-      let result = await executeQuery(`
-        SELECT DISTINCT semana_abastecimento
-        FROM calendario
-        WHERE semana_consumo = ?
-          AND semana_abastecimento IS NOT NULL
-          AND semana_abastecimento != ''
-        LIMIT 1
-      `, [semana_consumo]);
-
-      // Se não encontrou, tentar buscar pelo padrão de data (ignorando ano)
-      // Extrair padrão "05/01 a 11/01" da string "(05/01 a 11/01/25)"
-      if (result.length === 0) {
-        const padraoData = semana_consumo.replace(/[()]/g, '').replace(/\/\d{2}$/, '');
+      // Calcular semana de abastecimento (semana anterior) - mesma lógica do frontend
+      let data;
+      
+      try {
+        // Se for uma string da semana (ex: "(09/02 a 13/02/26)"), converter para data
+        if (typeof semana_consumo === 'string' && semana_consumo.includes(' a ')) {
+          // Remover parênteses se existirem
+          const dataLimpa = semana_consumo.replace(/[()]/g, '');
+          // Extrair a primeira data da string (ex: "09/02" de "09/02 a 13/02/26")
+          const primeiraData = dataLimpa.split(' a ')[0];
+          const [dia, mes] = primeiraData.split('/');
+          
+          // Extrair ano da string original
+          const anoMatch = semana_consumo.match(/\/(\d{2})[)]?$/);
+          const ano2digitos = anoMatch ? anoMatch[1] : new Date().getFullYear().toString().slice(-2);
+          const ano = parseInt(`20${ano2digitos}`);
+          
+          data = new Date(ano, parseInt(mes) - 1, parseInt(dia));
+        } else {
+          data = new Date(semana_consumo);
+        }
         
-        // Incluir semana_consumo no SELECT para poder fazer ORDER BY
-        const resultadosCompleto = await executeQuery(`
-          SELECT DISTINCT semana_consumo, semana_abastecimento
-          FROM calendario
-          WHERE semana_consumo LIKE ?
-            AND semana_abastecimento IS NOT NULL
-            AND semana_abastecimento != ''
-          ORDER BY semana_consumo DESC
-          LIMIT 1
-        `, [`%${padraoData}%`]);
+        // Verificar se a data é válida
+        if (isNaN(data.getTime())) {
+          return errorResponse(res, 'Formato de semana de consumo inválido', 400);
+        }
+        
+        // Calcular o início da semana anterior (segunda-feira)
+        const inicioSemanaAnterior = new Date(data);
+        inicioSemanaAnterior.setDate(data.getDate() - 7 - data.getDay() + 1); // -7 dias + ajuste para segunda-feira
+        
+        // Calcular o fim da semana anterior (sexta-feira - apenas 5 dias úteis)
+        const fimSemanaAnterior = new Date(inicioSemanaAnterior);
+        fimSemanaAnterior.setDate(inicioSemanaAnterior.getDate() + 4); // segunda + 4 dias = sexta (5 dias úteis)
+        
+        // Formatar as datas
+        const formatarDataSemana = (data) => {
+          const dia = String(data.getDate()).padStart(2, '0');
+          const mes = String(data.getMonth() + 1).padStart(2, '0');
+          return `${dia}/${mes}`;
+        };
+        
+        const anoFormatado = fimSemanaAnterior.getFullYear().toString().slice(-2);
+        const semanaAbastecimento = `(${formatarDataSemana(inicioSemanaAnterior)} a ${formatarDataSemana(fimSemanaAnterior)}/${anoFormatado})`;
 
-        // Extrair apenas semana_abastecimento do resultado
-        result = resultadosCompleto.length > 0 ? [{ semana_abastecimento: resultadosCompleto[0].semana_abastecimento }] : [];
-      }
-
-      if (result.length > 0 && result[0].semana_abastecimento) {
         return successResponse(res, {
           semana_consumo,
-          semana_abastecimento: result[0].semana_abastecimento
-        }, 'Semana de abastecimento encontrada');
-      } else {
-        return errorResponse(res, 'Semana de abastecimento não encontrada para esta semana de consumo', 404);
+          semana_abastecimento: semanaAbastecimento
+        }, 'Semana de abastecimento calculada');
+      } catch (error) {
+        console.error('Erro ao calcular semana de abastecimento:', error);
+        return errorResponse(res, 'Erro ao calcular semana de abastecimento', 500);
       }
     } catch (error) {
       console.error('Erro ao buscar semana de abastecimento:', error);

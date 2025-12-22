@@ -2,6 +2,7 @@ import React from 'react';
 import { FaCheckCircle, FaFilePdf, FaFileExcel, FaSearch, FaSort, FaSortUp, FaSortDown, FaList, FaLayerGroup } from 'react-icons/fa';
 import { Pagination } from '../../../../components/ui';
 import { getStatusSubstituicaoLabel } from '../../utils/getStatusLabels';
+import { formatarQuantidade } from '../../utils/formatarQuantidade';
 
 const TabelaProcessadas = ({
   necessidades,
@@ -258,7 +259,7 @@ const TabelaProcessadas = ({
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                           {necessidade.quantidade_total ? (
                             <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-semibold">
-                              {necessidade.quantidade_total.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 3 })} {necessidade.produto_generico_unidade || necessidade.produto_unidade || ''}
+                              {formatarQuantidade(necessidade.quantidade_total)} {necessidade.produto_generico_unidade || necessidade.produto_unidade || ''}
                             </span>
                           ) : '-'}
                         </td>
@@ -290,7 +291,7 @@ const TabelaProcessadas = ({
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                           {necessidade.quantidade_generico ? (
                             <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs">
-                              {necessidade.quantidade_generico} {necessidade.produto_generico_unidade}
+                              {formatarQuantidade(necessidade.quantidade_generico)} {necessidade.produto_generico_unidade}
                             </span>
                           ) : '-'}
                         </td>

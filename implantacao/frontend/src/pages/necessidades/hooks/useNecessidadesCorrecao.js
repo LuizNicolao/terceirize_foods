@@ -15,7 +15,8 @@ export const useNecessidadesCorrecao = () => {
     loading,
     error,
     pagination,
-    carregarNecessidades
+    carregarNecessidades,
+    gerarNecessidade
   } = useNecessidades();
 
   const { filtros, updateFiltros, clearFiltros } = useNecessidadesFilters();
@@ -110,6 +111,7 @@ export const useNecessidadesCorrecao = () => {
     filtros,
     updateFiltros,
     clearFiltros,
+    gerarNecessidade,
     recarregarNecessidades
   };
 };

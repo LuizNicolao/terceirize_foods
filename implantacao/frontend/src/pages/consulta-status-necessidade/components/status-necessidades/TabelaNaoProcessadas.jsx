@@ -2,6 +2,7 @@ import React from 'react';
 import { FaTimesCircle, FaFilePdf, FaFileExcel, FaSearch, FaSort, FaSortUp, FaSortDown, FaList, FaLayerGroup } from 'react-icons/fa';
 import { Pagination } from '../../../../components/ui';
 import { getStatusNecessidadeLabel } from '../../utils/getStatusLabels';
+import { formatarQuantidade } from '../../utils/formatarQuantidade';
 
 const TabelaNaoProcessadas = ({
   necessidades,
@@ -267,7 +268,7 @@ const TabelaNaoProcessadas = ({
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                           {necessidade.quantidade_total ? (
                             <span className="font-semibold bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs">
-                              {necessidade.quantidade_total.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 3 })} {necessidade.produto_unidade || ''}
+                              {formatarQuantidade(necessidade.quantidade_total)} {necessidade.produto_unidade || ''}
                             </span>
                           ) : '-'}
                         </td>
@@ -301,7 +302,7 @@ const TabelaNaoProcessadas = ({
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                           {necessidade.quantidade ? (
-                            <span className="font-medium">{necessidade.quantidade}</span>
+                            <span className="font-medium">{formatarQuantidade(necessidade.quantidade)}</span>
                           ) : '-'}
                         </td>
                       </>

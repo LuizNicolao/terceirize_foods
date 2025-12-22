@@ -415,6 +415,18 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
       return;
     }
 
+    if (!formData.grupo_id) {
+      toast.error('Selecione um grupo antes de copiar frequências');
+      return;
+    }
+
+    // Buscar informações do grupo
+    const grupoSelecionado = grupos.find(g => g.id === formData.grupo_id);
+    if (!grupoSelecionado) {
+      toast.error('Grupo não encontrado');
+      return;
+    }
+
     // Extrair apenas as frequências de cada produto
     const frequencias = produtosTabela.reduce((acc, produto) => {
       const frequenciasProduto = {};
@@ -441,41 +453,68 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
       return;
     }
 
-    // Salvar no localStorage e no state
+    // Salvar no localStorage com chave específica do grupo
     const dadosCopiados = {
       frequencias,
-      grupo: formData.grupo,
+      grupo_id: formData.grupo_id,
+      grupo_nome: grupoSelecionado.nome,
       timestamp: new Date().toISOString()
     };
     
-    localStorage.setItem('necessidades_frequencias_copiadas', JSON.stringify(dadosCopiados));
+    const chaveLocalStorage = `necessidades_frequencias_grupo_${formData.grupo_id}`;
+    localStorage.setItem(chaveLocalStorage, JSON.stringify(dadosCopiados));
+    
+    // Atualizar lista de grupos com frequências copiadas
+    const gruposCopiados = JSON.parse(localStorage.getItem('necessidades_grupos_copiados') || '[]');
+    if (!gruposCopiados.find(g => g.grupo_id === formData.grupo_id)) {
+      gruposCopiados.push({
+        grupo_id: formData.grupo_id,
+        grupo_nome: grupoSelecionado.nome,
+        timestamp: dadosCopiados.timestamp
+      });
+      localStorage.setItem('necessidades_grupos_copiados', JSON.stringify(gruposCopiados));
+    }
+    
+    // Atualizar state para o grupo atual
     setFrequenciasCopiadas(dadosCopiados);
     
-    toast.success(`Frequências de ${Object.keys(frequencias).length} produto(s) copiadas com sucesso!`);
+    toast.success(`Frequências do grupo "${grupoSelecionado.nome}" copiadas com sucesso! (${Object.keys(frequencias).length} produto(s))`);
   };
 
   // Função para colar frequências da escola anterior
   const handleColarFrequencias = () => {
-    // Tentar carregar do localStorage se não estiver no state
-    let dadosCopiados = frequenciasCopiadas;
-    if (!dadosCopiados) {
-      const dadosSalvos = localStorage.getItem('necessidades_frequencias_copiadas');
-      if (dadosSalvos) {
-        try {
-          dadosCopiados = JSON.parse(dadosSalvos);
-        } catch (error) {
-          console.error('Erro ao parsear frequências copiadas:', error);
-        }
-      }
-    }
-
-    if (!dadosCopiados || !dadosCopiados.frequencias || Object.keys(dadosCopiados.frequencias).length === 0) {
-      toast.error('Não há frequências copiadas. Copie as frequências de uma escola primeiro.');
+    if (!formData.grupo_id) {
+      toast.error('Selecione um grupo antes de colar frequências');
       return;
     }
 
     if (produtosTabela.length === 0) {
       toast.error('Carregue os produtos primeiro antes de colar as frequências');
+      return;
+    }
+
+    // Buscar frequências do grupo atual (ou do grupo selecionado)
+    const chaveLocalStorage = `necessidades_frequencias_grupo_${formData.grupo_id}`;
+    const dadosSalvos = localStorage.getItem(chaveLocalStorage);
+    
+    let dadosCopiados = null;
+    if (dadosSalvos) {
+      try {
+        dadosCopiados = JSON.parse(dadosSalvos);
+      } catch (error) {
+        console.error('Erro ao parsear frequências copiadas:', error);
+      }
+    }
+
+    // Se não encontrou para o grupo atual, tentar usar o state (compatibilidade)
+    if (!dadosCopiados && frequenciasCopiadas) {
+      dadosCopiados = frequenciasCopiadas;
+    }
+
+    if (!dadosCopiados || !dadosCopiados.frequencias || Object.keys(dadosCopiados.frequencias).length === 0) {
+      const grupoSelecionado = grupos.find(g => g.id === formData.grupo_id);
+      const grupoNome = grupoSelecionado?.nome || 'este grupo';
+      toast.error(`Não há frequências copiadas para ${grupoNome}. Copie as frequências de uma escola primeiro.`);
       return;
     }
 
@@ -525,26 +564,33 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
 
     // Mostrar mensagem apropriada
     if (produtosAtualizados > 0) {
-      toast.success(`Frequências coladas para ${produtosAtualizados} produto(s)`);
+      const grupoNome = dadosCopiados.grupo_nome || 'grupo anterior';
+      toast.success(`Frequências do grupo "${grupoNome}" coladas para ${produtosAtualizados} produto(s)`);
     } else {
       toast('Nenhum produto foi atualizado. Verifique se os produtos correspondem aos copiados.');
     }
   };
 
-  // Carregar frequências copiadas do localStorage quando modal abrir
+  // Carregar frequências copiadas do localStorage quando grupo mudar
   useEffect(() => {
-    if (isOpen) {
-      const dadosSalvos = localStorage.getItem('necessidades_frequencias_copiadas');
+    if (isOpen && formData.grupo_id) {
+      const chaveLocalStorage = `necessidades_frequencias_grupo_${formData.grupo_id}`;
+      const dadosSalvos = localStorage.getItem(chaveLocalStorage);
       if (dadosSalvos) {
         try {
           const dados = JSON.parse(dadosSalvos);
           setFrequenciasCopiadas(dados);
         } catch (error) {
           console.error('Erro ao carregar frequências copiadas:', error);
+          setFrequenciasCopiadas(null);
         }
+      } else {
+        setFrequenciasCopiadas(null);
       }
+    } else {
+      setFrequenciasCopiadas(null);
     }
-  }, [isOpen]);
+  }, [isOpen, formData.grupo_id]);
 
   // Função para carregar produtos (chamada quando usuário clica no botão)
   const handleCarregarProdutos = () => {

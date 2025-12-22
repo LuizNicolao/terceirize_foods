@@ -25,6 +25,9 @@ const NecessidadesFilters = ({
   const [loadingSemanaAbastecimento, setLoadingSemanaAbastecimento] = useState(false);
   const [loadingStatus, setLoadingStatus] = useState(false);
   
+  // Estado local para o campo de busca (para controlar quando aplicar o filtro)
+  const [localSearchValue, setLocalSearchValue] = useState(filtros.search || '');
+  
   // Buscar escolas disponíveis na tabela necessidades
   useEffect(() => {
     const buscarEscolas = async () => {
@@ -248,12 +251,25 @@ const NecessidadesFilters = ({
     onFilterChange({ grupo });
   };
 
+  // Sincronizar estado local com filtros quando filtros mudarem externamente
+  useEffect(() => {
+    setLocalSearchValue(filtros.search || '');
+  }, [filtros.search]);
+
   const handleDataChange = (data) => {
     onFilterChange({ data });
   };
 
-  const handleSearchChange = (search) => {
-    onFilterChange({ search });
+  const handleSearchInputChange = (value) => {
+    // Apenas atualizar o estado local, não disparar busca
+    setLocalSearchValue(value);
+  };
+
+  const handleSearchKeyDown = (e) => {
+    // Buscar apenas quando Enter for pressionado
+    if (e.key === 'Enter') {
+      onFilterChange({ search: localSearchValue });
+    }
   };
 
   const handleSemanaChange = (semana) => {
@@ -392,9 +408,10 @@ const NecessidadesFilters = ({
           <Input
             label="Buscar por ID"
             type="text"
-            value={filtros.search}
-            onChange={(e) => handleSearchChange(e.target.value)}
-            placeholder="Digite o ID da necessidade..."
+            value={localSearchValue}
+            onChange={(e) => handleSearchInputChange(e.target.value)}
+            onKeyDown={handleSearchKeyDown}
+            placeholder="Digite o ID da necessidade e pressione Enter..."
             disabled={loading}
           />
         </div>

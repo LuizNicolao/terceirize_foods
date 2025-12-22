@@ -193,14 +193,6 @@ const Necessidades = () => {
         loading={loading}
       />
 
-      {/* Botões de Exportação */}
-      <div className="mb-4">
-        <ExportButtons
-          onExportXLSX={exportarXLSX}
-          onExportPDF={exportarPDF}
-        />
-      </div>
-
       {/* Error Message */}
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-md p-4">

@@ -210,7 +210,7 @@ const buscarNecessidadeParaCorrecao = async (req, res) => {
 
 /**
  * Excluir necessidade por necessidade_id (todos os produtos dessa necessidade)
- * Altera o status para EXCLUÍDO ao invés de deletar fisicamente
+ * Move os dados para a tabela necessidades_excluidas e deleta da tabela necessidades
  * Apenas administradores podem excluir
  */
 const excluirNecessidade = async (req, res) => {
@@ -229,11 +229,11 @@ const excluirNecessidade = async (req, res) => {
 
     // Verificar se a necessidade existe
     const existing = await executeQuery(`
-      SELECT COUNT(*) as total FROM necessidades 
+      SELECT * FROM necessidades 
       WHERE necessidade_id = ?
     `, [necessidade_id]);
 
-    if (!existing || existing.length === 0 || existing[0].total === 0) {
+    if (!existing || existing.length === 0) {
       return res.status(404).json({
         success: false,
         error: 'Necessidade não encontrada',
@@ -241,19 +241,53 @@ const excluirNecessidade = async (req, res) => {
       });
     }
 
-    // Alterar status para EXCLUÍDO (não deletar fisicamente)
+    // Mover todos os registros para a tabela necessidades_excluidas
+    // Primeiro, inserir na tabela de excluídas
+    for (const registro of existing) {
+      await executeQuery(`
+        INSERT INTO necessidades_excluidas (
+          id, usuario_email, usuario_id, produto_id, produto, produto_unidade,
+          escola_id, escola, escola_rota, codigo_teknisa, ajuste, total,
+          semana_consumo, semana_abastecimento, grupo, grupo_id, status,
+          observacoes, necessidade_id, data_preenchimento, data_atualizacao
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+      `, [
+        registro.id,
+        registro.usuario_email,
+        registro.usuario_id,
+        registro.produto_id,
+        registro.produto,
+        registro.produto_unidade,
+        registro.escola_id,
+        registro.escola,
+        registro.escola_rota,
+        registro.codigo_teknisa,
+        registro.ajuste,
+        registro.total,
+        registro.semana_consumo,
+        registro.semana_abastecimento,
+        registro.grupo,
+        registro.grupo_id,
+        'EXCLUÍDO', // Status fixo para registros excluídos
+        registro.observacoes,
+        registro.necessidade_id,
+        registro.data_preenchimento || new Date()
+      ]);
+    }
+
+    // Depois, deletar da tabela principal
     const resultado = await executeQuery(`
-      UPDATE necessidades 
-      SET status = 'EXCLUÍDO', data_atualizacao = NOW()
+      DELETE FROM necessidades 
       WHERE necessidade_id = ?
     `, [necessidade_id]);
 
     res.json({
       success: true,
-      message: 'Necessidade marcada como excluída com sucesso',
+      message: 'Necessidade excluída com sucesso',
       data: {
         necessidade_id,
-        registros_atualizados: resultado.affectedRows
+        registros_movidos: existing.length,
+        registros_deletados: resultado.affectedRows
       }
     });
   } catch (error) {

@@ -113,6 +113,7 @@ class NecessidadesPadroesListController {
           np.quantidade,
           po.nome as produto_nome,
           po.codigo as produto_codigo,
+          np.unidade_medida_sigla as unidade_medida_sigla,
           um.sigla as unidade_medida
         FROM necessidades_padroes np
         LEFT JOIN foods_db.produto_origem po ON np.produto_id = po.id

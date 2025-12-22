@@ -1,27 +1,38 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { FaFilter, FaPlay, FaSpinner } from 'react-icons/fa';
-import { Button, SearchableSelect } from '../ui';
+import { FaPlay, FaSpinner } from 'react-icons/fa';
+import { Button } from '../ui';
+import GerarNecessidadePadraoFilters from './gerar-necessidade-padrao/components/GerarNecessidadePadraoFilters';
 import NecessidadesPadroesService from '../../services/necessidadesPadroes';
 import FoodsApiService from '../../services/FoodsApiService';
-import calendarioService from '../../services/calendarioService';
+import { useSemanasConsumo } from '../../hooks/useSemanasConsumo';
+import ModalProgresso from '../necessidades/ajuste/ModalProgresso';
 import toast from 'react-hot-toast';
 
 const GerarNecessidadePadrao = () => {
   // Estados dos filtros
   const [filtros, setFiltros] = useState({
     filial_id: '',
-    escola_id: '',
     semana_consumo: '',
     semana_abastecimento: '',
     grupo_id: ''
   });
 
+  // Estado para escolas selecionadas (array de IDs)
+  const [escolasSelecionadas, setEscolasSelecionadas] = useState([]);
+
+  // Estados para filtros de ano e mês
+  const [anoFiltro, setAnoFiltro] = useState('');
+  const [mesFiltro, setMesFiltro] = useState('');
+
   // Estados para opções dos filtros
   const [filiais, setFiliais] = useState([]);
-  const [escolas, setEscolas] = useState([]);
   const [grupos, setGrupos] = useState([]);
-  const [semanasConsumo, setSemanasConsumo] = useState([]);
   const [semanasAbastecimento, setSemanasAbastecimento] = useState([]);
+
+  // Hook para semanas de consumo do calendário com filtros de ano e mês
+  const anoParaHook = anoFiltro && anoFiltro !== '' ? Number(anoFiltro) : new Date().getFullYear();
+  const mesParaHook = mesFiltro && mesFiltro !== '' ? Number(mesFiltro) : null;
+  const { opcoes: opcoesSemanasConsumo, loading: loadingSemanasConsumo } = useSemanasConsumo(anoParaHook, true, {}, mesParaHook);
 
   // Estados de loading
   const [loading, setLoading] = useState(false);
@@ -31,18 +42,24 @@ const GerarNecessidadePadrao = () => {
   const [loadingSemanaAbastecimento, setLoadingSemanaAbastecimento] = useState(false);
   const [semanaAbastecimentoPreenchidaAuto, setSemanaAbastecimentoPreenchidaAuto] = useState(false);
 
+  // Estado para modal de progresso
+  const [progressoModal, setProgressoModal] = useState({
+    isOpen: false,
+    progresso: 0,
+    total: 0,
+    mensagem: 'Gerando necessidades padrão...',
+    title: 'Gerando Necessidades'
+  });
+
   // Carregar dados iniciais
   useEffect(() => {
     carregarDadosIniciais();
   }, []);
 
-  // Carregar escolas quando filial mudar
+  // Limpar escolas selecionadas quando filial mudar
   useEffect(() => {
-    if (filtros.filial_id) {
-      carregarEscolas();
-    } else {
-      setEscolas([]);
-      setFiltros(prev => ({ ...prev, escola_id: '' }));
+    if (!filtros.filial_id) {
+      setEscolasSelecionadas([]);
     }
   }, [filtros.filial_id]);
 
@@ -129,26 +146,8 @@ const GerarNecessidadePadrao = () => {
         }
       }
 
-      // Carregar semanas de consumo
-      const anoAtual = new Date().getFullYear();
-      const semanasResponse = await calendarioService.buscarSemanasConsumo(anoAtual);
-      if (semanasResponse.success && semanasResponse.data) {
-        const semanasData = semanasResponse.data.map(s => ({
-          value: s.semana_consumo,
-          label: s.semana_consumo
-        }));
-        setSemanasConsumo([{ value: '', label: 'Selecione...' }, ...semanasData]);
-      }
-
-      // Carregar semanas de abastecimento
-      const semanasAbastResponse = await calendarioService.buscarSemanasAbastecimento(anoAtual);
-      if (semanasAbastResponse.success && semanasAbastResponse.data) {
-        const semanasAbastData = semanasAbastResponse.data.map(s => ({
-          value: s.semana_abastecimento,
-          label: s.semana_abastecimento
-        }));
-        setSemanasAbastecimento([{ value: '', label: 'Selecione...' }, ...semanasAbastData]);
-      }
+      // Semanas de consumo agora são carregadas pelo hook useSemanasConsumo baseado em ano e mês
+      // Semanas de abastecimento são preenchidas automaticamente quando semana de consumo é selecionada
     } catch (error) {
       console.error('Erro ao carregar dados iniciais:', error);
       toast.error('Erro ao carregar dados iniciais');
@@ -157,43 +156,13 @@ const GerarNecessidadePadrao = () => {
     }
   };
 
-  const carregarEscolas = async () => {
-    setLoadingEscolas(true);
-    try {
-      const response = await FoodsApiService.getUnidadesEscolares({ 
-        filial_id: filtros.filial_id, 
-        limit: 1000 
-      });
-      if (response.success && response.data) {
-        const escolasData = Array.isArray(response.data) 
-          ? response.data 
-          : response.data.data;
-        
-        if (Array.isArray(escolasData)) {
-          setEscolas([
-            { value: '', label: 'Todas as escolas' },
-            ...escolasData.map(e => ({ 
-              value: e.id, 
-              label: e.nome_escola 
-            }))
-          ]);
-        }
-      }
-    } catch (error) {
-      console.error('Erro ao carregar escolas:', error);
-      toast.error('Erro ao carregar escolas');
-      setEscolas([]);
-    } finally {
-      setLoadingEscolas(false);
-    }
-  };
 
   const handleFiltroChange = (name, value) => {
     setFiltros(prev => ({ ...prev, [name]: value }));
     
-    // Limpar escola quando filial mudar
+    // Limpar escolas selecionadas quando filial mudar
     if (name === 'filial_id') {
-      setFiltros(prev => ({ ...prev, escola_id: '' }));
+      setEscolasSelecionadas([]);
     }
     
     // Se semana de abastecimento for alterada manualmente, marcar como não preenchida automaticamente
@@ -204,8 +173,35 @@ const GerarNecessidadePadrao = () => {
     // Se semana de consumo for alterada manualmente, já será tratado pelo useEffect
   };
 
+  const handleAnoChange = (value) => {
+    setAnoFiltro(value);
+    // Limpar semana de consumo quando ano mudar
+    setFiltros(prev => ({ ...prev, semana_consumo: '', semana_abastecimento: '' }));
+    setSemanaAbastecimentoPreenchidaAuto(false);
+  };
+
+  const handleMesChange = (value) => {
+    setMesFiltro(value || '');
+    // Limpar semana de consumo quando mês mudar
+    setFiltros(prev => ({ ...prev, semana_consumo: '', semana_abastecimento: '' }));
+    setSemanaAbastecimentoPreenchidaAuto(false);
+  };
+
+  const handleLimparFiltros = () => {
+    setAnoFiltro('');
+    setMesFiltro('');
+    setFiltros({
+      filial_id: '',
+      semana_consumo: '',
+      semana_abastecimento: '',
+      grupo_id: ''
+    });
+    setEscolasSelecionadas([]);
+    setSemanaAbastecimentoPreenchidaAuto(false);
+  };
+
   const handleGerar = async () => {
-    // Validar filtros obrigatórios: Filial, Semana de Consumo e Grupo de Produtos (Escola é opcional)
+    // Validar filtros obrigatórios: Filial, Semana de Consumo e Grupo de Produtos
     if (!filtros.filial_id || !filtros.semana_consumo || !filtros.grupo_id) {
       toast.error('Por favor, preencha todos os campos obrigatórios: Filial, Semana de Consumo e Grupo de Produtos');
       return;
@@ -217,22 +213,84 @@ const GerarNecessidadePadrao = () => {
       return;
     }
 
-    setGerando(true);
-    try {
-      const response = await NecessidadesPadroesService.gerarNecessidadesPadrao({
-        filial_id: filtros.filial_id,
-        escola_id: filtros.escola_id || null,
-        semana_abastecimento: filtros.semana_abastecimento,
-        semana_consumo: filtros.semana_consumo,
-        grupo_id: filtros.grupo_id
-      });
+    // Validar se pelo menos uma escola foi selecionada (opcional, mas recomendado)
+    if (escolasSelecionadas.length === 0) {
+      toast.error('Por favor, selecione pelo menos uma escola');
+      return;
+    }
 
-      if (response.success) {
-        const { total_necessidades, escolas_processadas, escolas } = response.data;
+    setGerando(true);
+
+    // Abrir modal de progresso
+    const totalEscolas = escolasSelecionadas.length;
+    setProgressoModal({
+      isOpen: true,
+      progresso: 0,
+      total: totalEscolas,
+      mensagem: 'Gerando necessidades padrão...',
+      title: 'Gerando Necessidades'
+    });
+
+    try {
+      // Gerar necessidades para cada escola selecionada
+      let totalNecessidades = 0;
+      let totalEscolasProcessadas = 0;
+      const escolasProcessadas = [];
+      const delayEntreRequisicoes = 200; // 200ms entre cada requisição para evitar bloqueio
+
+      for (let i = 0; i < escolasSelecionadas.length; i++) {
+        const escolaId = escolasSelecionadas[i];
+        
+        try {
+          // Atualizar mensagem de progresso
+          setProgressoModal(prev => ({
+            ...prev,
+            mensagem: `Gerando necessidade para escola ${i + 1} de ${totalEscolas}...`,
+            progresso: i
+          }));
+
+          const response = await NecessidadesPadroesService.gerarNecessidadesPadrao({
+            filial_id: filtros.filial_id,
+            escola_id: escolaId,
+            semana_abastecimento: filtros.semana_abastecimento,
+            semana_consumo: filtros.semana_consumo,
+            grupo_id: filtros.grupo_id
+          });
+
+          if (response.success) {
+            totalNecessidades += response.data?.total_necessidades || 0;
+            totalEscolasProcessadas += response.data?.escolas_processadas || 0;
+            if (response.data?.escolas && Array.isArray(response.data.escolas)) {
+              escolasProcessadas.push(...response.data.escolas);
+            }
+          }
+        } catch (error) {
+          console.error(`Erro ao gerar necessidade para escola ${escolaId}:`, error);
+          // Continuar processando outras escolas mesmo se uma falhar
+        }
+
+        // Atualizar progresso
+        setProgressoModal(prev => ({
+          ...prev,
+          progresso: i + 1
+        }));
+
+        // Delay entre requisições (exceto na última)
+        if (i < escolasSelecionadas.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, delayEntreRequisicoes));
+        }
+      }
+
+      // Fechar modal de progresso
+      setProgressoModal(prev => ({ ...prev, isOpen: false }));
+
+      if (totalNecessidades > 0) {
         let mensagem = `Necessidades geradas com sucesso!\n\n`;
-        mensagem += `• ${total_necessidades} necessidade(s) criada(s)\n`;
-        mensagem += `• ${escolas_processadas} escola(s) processada(s)\n\n`;
-        mensagem += `Escolas afetadas:\n${escolas.map(e => `  - ${e}`).join('\n')}`;
+        mensagem += `• ${totalNecessidades} necessidade(s) criada(s)\n`;
+        mensagem += `• ${totalEscolasProcessadas} escola(s) processada(s)\n\n`;
+        if (escolasProcessadas.length > 0) {
+          mensagem += `Escolas afetadas:\n${escolasProcessadas.map(e => `  - ${e}`).join('\n')}`;
+        }
         
         toast.success(mensagem, {
           duration: 8000,
@@ -241,131 +299,75 @@ const GerarNecessidadePadrao = () => {
           }
         });
 
-        // Limpar filtros após sucesso
+        // Limpar filtros após sucesso (manter filial, ano e mês)
         setFiltros({
           filial_id: filtros.filial_id, // Manter filial
-          escola_id: '',
           semana_consumo: '',
           semana_abastecimento: '',
           grupo_id: ''
         });
+        setEscolasSelecionadas([]);
+        // Não limpar ano e mês para facilitar gerar mais necessidades
       } else {
-        toast.error(response.message || 'Erro ao gerar necessidades');
+        toast.error('Nenhuma necessidade foi gerada. Verifique os dados e tente novamente.');
       }
     } catch (error) {
       console.error('Erro ao gerar necessidades:', error);
       const errorMessage = error.response?.data?.message || error.message || 'Erro ao gerar necessidades padrão';
       toast.error(errorMessage);
+      // Fechar modal de progresso em caso de erro
+      setProgressoModal(prev => ({ ...prev, isOpen: false }));
     } finally {
       setGerando(false);
     }
   };
 
-  // Validar se pode gerar: Filial, Semana de Consumo e Grupo de Produtos (Semana de Abastecimento é preenchida automaticamente, Escola é opcional)
-  const podeGerar = filtros.filial_id && filtros.semana_consumo && filtros.grupo_id && filtros.semana_abastecimento && !gerando;
+  // Validar se pode gerar: Filial, Semana de Consumo, Grupo de Produtos e pelo menos uma escola selecionada
+  const podeGerar = filtros.filial_id && filtros.semana_consumo && filtros.grupo_id && filtros.semana_abastecimento && escolasSelecionadas.length > 0 && !gerando;
 
   return (
     <div className="space-y-4 md:space-y-6">
-      {/* Filtros */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
-        <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-          <FaFilter className="mr-2" /> Filtros
-        </h2>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <SearchableSelect
-            label="Filial"
-            name="filial_id"
-            options={filiais}
-            value={filtros.filial_id}
-            onChange={(value) => handleFiltroChange('filial_id', value)}
-            placeholder="Digite para buscar a filial..."
-            loading={loadingFiltros}
-            required
-            usePortal={false}
-          />
-          
-          <SearchableSelect
-            label="Escola"
-            name="escola_id"
-            options={escolas}
-            value={filtros.escola_id}
-            onChange={(value) => handleFiltroChange('escola_id', value)}
-            placeholder={filtros.filial_id ? "Digite para buscar uma escola (opcional)..." : "Selecione uma filial primeiro"}
-            loading={loadingEscolas}
-            disabled={!filtros.filial_id}
-            usePortal={false}
-          />
-          
-          <SearchableSelect
-            label="Semana de Consumo"
-            name="semana_consumo"
-            options={semanasConsumo}
-            value={filtros.semana_consumo}
-            onChange={(value) => handleFiltroChange('semana_consumo', value)}
-            placeholder="Selecione a semana de consumo..."
-            loading={loadingFiltros}
-            required
-            usePortal={false}
-          />
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Semana de Abastecimento (AB)
-              {filtros.semana_consumo && (
-                <span className="ml-2 text-xs text-gray-500 font-normal">(Preenchido automaticamente)</span>
-              )}
-            </label>
-            <SearchableSelect
-              name="semana_abastecimento"
-              options={filtros.semana_abastecimento && filtros.semana_consumo
-                ? [{ value: filtros.semana_abastecimento, label: filtros.semana_abastecimento }]
-                : semanasAbastecimento
-              }
-              value={filtros.semana_abastecimento || ''}
-              onChange={() => {
-                // Campo apenas informativo - não permite mudança manual quando há semana de consumo
-              }}
-              placeholder={
-                !filtros.semana_consumo
-                  ? "Selecione primeiro a semana de consumo"
-                  : loadingSemanaAbastecimento
-                  ? "Carregando semana de abastecimento..."
-                  : filtros.semana_abastecimento
-                  ? filtros.semana_abastecimento
-                  : "Carregando..."
-              }
-              disabled={true}
-              loading={loadingSemanaAbastecimento}
-              className={filtros.semana_consumo ? "bg-gray-50 cursor-not-allowed" : ""}
-              usePortal={false}
-            />
-          </div>
-          
-          <SearchableSelect
-            label="Grupo de Produtos"
-            name="grupo_id"
-            options={grupos}
-            value={filtros.grupo_id}
-            onChange={(value) => handleFiltroChange('grupo_id', value)}
-            placeholder="Digite para buscar um grupo..."
-            loading={loadingFiltros}
-            required
-            usePortal={false}
-          />
-        </div>
+      {/* Modal de Progresso */}
+      <ModalProgresso
+        isOpen={progressoModal.isOpen}
+        title={progressoModal.title}
+        progresso={progressoModal.progresso}
+        total={progressoModal.total}
+        mensagem={progressoModal.mensagem}
+      />
 
-        <div className="mt-6 pt-4 border-t border-gray-200 flex justify-end">
-          <Button
-            onClick={handleGerar}
-            color="green"
-            icon={gerando ? <FaSpinner className="animate-spin" /> : <FaPlay />}
-            disabled={!podeGerar}
-            size="md"
-          >
-            {gerando ? 'Gerando...' : 'Gerar Necessidades'}
-          </Button>
-        </div>
+      {/* Filtros */}
+      <GerarNecessidadePadraoFilters
+        filtros={filtros}
+        anoFiltro={anoFiltro}
+        mesFiltro={mesFiltro}
+        filiais={filiais}
+        grupos={grupos}
+        opcoesSemanasConsumo={opcoesSemanasConsumo}
+        semanasAbastecimento={semanasAbastecimento}
+        loading={loadingFiltros}
+        loadingEscolas={loadingEscolas}
+        loadingSemanasConsumo={loadingSemanasConsumo}
+        loadingSemanaAbastecimento={loadingSemanaAbastecimento}
+        onAnoChange={handleAnoChange}
+        onMesChange={handleMesChange}
+        onFiltroChange={handleFiltroChange}
+        onLimparFiltros={handleLimparFiltros}
+        escolasSelecionadas={escolasSelecionadas}
+        onEscolasChange={setEscolasSelecionadas}
+      />
+
+      {/* Botão de ação */}
+      <div className="flex justify-end">
+        <Button
+          onClick={handleGerar}
+          color="green"
+          icon={gerando ? <FaSpinner className="animate-spin" /> : <FaPlay />}
+          disabled={!podeGerar}
+          size="md"
+        >
+          {gerando ? 'Gerando...' : 'Gerar Necessidades'}
+        </Button>
       </div>
     </div>
   );

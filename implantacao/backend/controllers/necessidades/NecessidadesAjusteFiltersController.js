@@ -557,12 +557,12 @@ const buscarEscolasSemNecessidade = async (req, res) => {
     `);
 
     // Buscar escolas que JÁ têm necessidade gerada para esta combinação
+    // Não precisa mais verificar status EXCLUÍDO pois essas necessidades foram movidas para necessidades_excluidas
     const escolasComNecessidade = await executeQuery(`
       SELECT DISTINCT escola_id
       FROM necessidades
       WHERE semana_consumo = ?
         AND grupo = ?
-        AND status != 'EXCLUÍDO'
     `, [semana_consumo, grupoNome]);
 
     const idsComNecessidade = new Set(escolasComNecessidade.map(e => e.escola_id));
