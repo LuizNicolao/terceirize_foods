@@ -15,6 +15,7 @@ import NecessidadeModalCabecalho from './NecessidadeModalCabecalho';
 import NecessidadeModalProdutos from './NecessidadeModalProdutos';
 import NecessidadeModalReplicarFrequencias from './NecessidadeModalReplicarFrequencias';
 import { tiposConfig, filtrarTiposDisponiveis } from './utils/necessidadeModalUtils';
+import necessidadesService from '../../services/necessidadesService';
 
 const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], loading = false }) => {
   const {
@@ -53,6 +54,10 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
   const [loadingTiposAtendimento, setLoadingTiposAtendimento] = useState(false);
   const [showModalReplicar, setShowModalReplicar] = useState(false);
   const [frequenciasCopiadas, setFrequenciasCopiadas] = useState(null);
+  
+  // Estado para escolas filtradas (sem necessidade gerada)
+  const [escolasFiltradas, setEscolasFiltradas] = useState([]);
+  const [loadingEscolas, setLoadingEscolas] = useState(false);
 
   // Filtrar tipos disponíveis
   const tiposDisponiveis = filtrarTiposDisponiveis(
@@ -80,6 +85,7 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
       setAnoFiltro('');
       setMesFiltro('');
       setAbaAtiva('cabecalho');
+      setEscolasFiltradas([]);
       limparMediasPeriodo();
     }
   }, [isOpen, limparMediasPeriodo]);
@@ -112,6 +118,54 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
       buscarTiposAtendimento();
     }
   }, [isOpen, formData.escola_id]);
+
+  // Buscar escolas que não têm necessidade gerada quando semana_consumo e grupo forem selecionados
+  useEffect(() => {
+    const buscarEscolasSemNecessidade = async () => {
+      // Só buscar se ambos estiverem selecionados
+      if (!formData.data || !formData.grupo_id) {
+        setEscolasFiltradas([]);
+        return;
+      }
+
+      setLoadingEscolas(true);
+      try {
+        // Buscar o nome do grupo
+        const grupoSelecionado = grupos.find(g => g.id === formData.grupo_id);
+        const grupoNome = grupoSelecionado?.nome;
+
+        if (!grupoNome) {
+          setEscolasFiltradas([]);
+          return;
+        }
+
+        const response = await necessidadesService.buscarEscolasSemNecessidade(
+          formData.data,
+          formData.grupo_id,
+          grupoNome
+        );
+
+        if (response.success) {
+          setEscolasFiltradas(response.data || []);
+        } else {
+          setEscolasFiltradas([]);
+          toast.error('Erro ao buscar escolas disponíveis');
+        }
+      } catch (error) {
+        console.error('Erro ao buscar escolas sem necessidade:', error);
+        setEscolasFiltradas([]);
+        toast.error('Erro ao buscar escolas disponíveis');
+      } finally {
+        setLoadingEscolas(false);
+      }
+    };
+
+    if (isOpen && formData.data && formData.grupo_id) {
+      buscarEscolasSemNecessidade();
+    } else {
+      setEscolasFiltradas([]);
+    }
+  }, [isOpen, formData.data, formData.grupo_id, grupos]);
 
   // Carregar produtos quando grupo mudar
   useEffect(() => {
@@ -526,7 +580,7 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
       return;
     }
 
-    const escolaSelecionada = escolas.find(e => e.id === formData.escola_id);
+    const escolaSelecionada = escolasFiltradas.find(e => e.id === formData.escola_id) || escolas.find(e => e.id === formData.escola_id);
     
     let semanaFormatada = formData.data;
     
@@ -608,10 +662,17 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
   // Verificar se pode ir para aba de produtos
   const podeIrParaProdutos = formData.escola_id && formData.grupo_id && formData.data && produtosTabela.length > 0;
 
+  // Prevenir submit ao pressionar ENTER
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+    }
+  };
+
   return (
     <>
       <Modal isOpen={isOpen} onClose={onClose} title="Gerar Necessidade" size="full">
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} onKeyDown={handleKeyDown} className="space-y-6">
           {/* Navegação por Abas */}
           <div className="border-b border-gray-200">
             <nav className="flex space-x-8" aria-label="Tabs">
@@ -658,14 +719,14 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
               <NecessidadeModalCabecalho
                 formData={formData}
                 onInputChange={handleInputChange}
-                escolas={escolas}
+                escolas={escolasFiltradas}
                 grupos={grupos}
                 anoFiltro={anoFiltro}
                 mesFiltro={mesFiltro}
                 onAnoFiltroChange={setAnoFiltro}
                 onMesFiltroChange={setMesFiltro}
                 opcoesSemanasConsumo={opcoesSemanasConsumo || []}
-                loading={loading}
+                loading={loading || loadingEscolas}
                 necessidadesLoading={necessidadesLoading}
               />
             )}

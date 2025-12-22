@@ -30,7 +30,8 @@ const {
   buscarGruposDisponiveis,
   buscarSemanaAbastecimentoPorConsumo,
   buscarEscolasDisponiveis,
-  buscarProdutosParaModal
+  buscarProdutosParaModal,
+  buscarEscolasSemNecessidade
 } = require('./NecessidadesAjusteFiltersController');
 
 const {
@@ -87,6 +88,7 @@ module.exports = {
   buscarSemanaAbastecimentoPorConsumo,
   buscarEscolasDisponiveis,
   buscarProdutosParaModal,
+  buscarEscolasSemNecessidade,
   
   // Ajuste Operations - List
   listarParaAjuste,

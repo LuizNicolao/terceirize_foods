@@ -95,6 +95,20 @@ const necessidadesService = {
     return response.data;
   },
 
+  // Buscar escolas que não têm necessidade gerada para semana_consumo + grupo
+  buscarEscolasSemNecessidade: async (semanaConsumo, grupoId, grupoNome) => {
+    const params = new URLSearchParams();
+    params.append('semana_consumo', semanaConsumo);
+    if (grupoId) {
+      params.append('grupo_id', grupoId);
+    }
+    if (grupoNome) {
+      params.append('grupo_nome', grupoNome);
+    }
+    const response = await api.get(`/necessidades/escolas-sem-necessidade?${params.toString()}`);
+    return response.data;
+  },
+
   // Buscar status disponíveis nas necessidades
   buscarStatusDisponiveis: async () => {
     const response = await api.get('/necessidades/status/disponiveis');

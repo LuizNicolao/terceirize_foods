@@ -507,11 +507,101 @@ const buscarProdutosParaModal = async (req, res) => {
   }
 };
 
+/**
+ * Buscar escolas que NÃO têm necessidade gerada para uma combinação específica
+ * de semana_consumo + grupo
+ */
+const buscarEscolasSemNecessidade = async (req, res) => {
+  try {
+    const { semana_consumo, grupo_id, grupo_nome } = req.query;
+
+    // Validar parâmetros obrigatórios
+    if (!semana_consumo || (!grupo_id && !grupo_nome)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Parâmetros obrigatórios',
+        message: 'semana_consumo e grupo_id ou grupo_nome são obrigatórios'
+      });
+    }
+
+    // Buscar grupo se foi passado grupo_id
+    let grupoNome = grupo_nome;
+    if (grupo_id && !grupo_nome) {
+      const grupoResult = await executeQuery(
+        'SELECT nome FROM foods_db.grupos WHERE id = ?',
+        [grupo_id]
+      );
+      if (grupoResult.length === 0) {
+        return res.status(404).json({
+          success: false,
+          error: 'Grupo não encontrado',
+          message: `Grupo com ID ${grupo_id} não foi encontrado`
+        });
+      }
+      grupoNome = grupoResult[0].nome;
+    }
+
+    // Buscar todas as escolas disponíveis (do Foods DB - tabela unidades_escolares)
+    const todasEscolas = await executeQuery(`
+      SELECT 
+        ue.id,
+        ue.nome_escola,
+        COALESCE(GROUP_CONCAT(r.nome SEPARATOR ', '), 'N/A') as rota,
+        ue.cidade,
+        ue.codigo_teknisa
+      FROM foods_db.unidades_escolares ue
+      LEFT JOIN foods_db.rotas r ON FIND_IN_SET(r.id, ue.rota_id) > 0
+      WHERE ue.status = 'ativo'
+      GROUP BY ue.id, ue.nome_escola, ue.cidade, ue.codigo_teknisa
+      ORDER BY ue.nome_escola ASC
+    `);
+
+    // Buscar escolas que JÁ têm necessidade gerada para esta combinação
+    const escolasComNecessidade = await executeQuery(`
+      SELECT DISTINCT escola_id
+      FROM necessidades
+      WHERE semana_consumo = ?
+        AND grupo = ?
+        AND status != 'EXCLUÍDO'
+    `, [semana_consumo, grupoNome]);
+
+    const idsComNecessidade = new Set(escolasComNecessidade.map(e => e.escola_id));
+
+    // Filtrar escolas que NÃO têm necessidade gerada
+    const escolasSemNecessidade = todasEscolas.filter(escola => 
+      !idsComNecessidade.has(escola.id)
+    );
+
+    // Formatar resposta
+    const escolasFormatadas = escolasSemNecessidade.map(escola => ({
+      id: escola.id,
+      nome_escola: escola.nome_escola,
+      rota: escola.rota,
+      cidade: escola.cidade,
+      codigo_teknisa: escola.codigo_teknisa
+    }));
+
+    res.json({
+      success: true,
+      data: escolasFormatadas,
+      total: escolasFormatadas.length
+    });
+  } catch (error) {
+    console.error('Erro ao buscar escolas sem necessidade:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Erro interno do servidor',
+      message: 'Erro ao buscar escolas sem necessidade gerada'
+    });
+  }
+};
+
 module.exports = {
   buscarSemanasConsumoDisponiveis,
   buscarGruposDisponiveis,
   buscarSemanaAbastecimentoPorConsumo,
   buscarEscolasDisponiveis,
-  buscarProdutosParaModal
+  buscarProdutosParaModal,
+  buscarEscolasSemNecessidade
 };
 

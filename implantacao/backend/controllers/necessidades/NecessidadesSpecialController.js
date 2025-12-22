@@ -76,16 +76,17 @@ const gerarNecessidade = async (req, res) => {
     }
 
     // Buscar ID da semana na tabela calendario usando semana_consumo
-    // Segue o mesmo padrão usado no roteamento
+    // Como cada dia tem um ID e a semana_consumo se repete, pegamos o primeiro ID daquela semana
     let semanaId = null;
     
     if (semana_consumo) {
       try {
-        // Tentativa 1: Busca exata por semana_consumo
+        // Tentativa 1: Busca exata por semana_consumo - pegar o primeiro ID (menor ID daquela semana)
         const semanaCalendarioExata = await executeQuery(`
-          SELECT MIN(id) as semana_id
+          SELECT id as semana_id
           FROM foods_db.calendario
           WHERE semana_consumo = ?
+          ORDER BY id ASC
           LIMIT 1
         `, [semana_consumo]);
         
@@ -95,14 +96,45 @@ const gerarNecessidade = async (req, res) => {
           // Tentativa 2: Busca com LIKE (caso haja diferenças de formatação)
           const semanaLimpa = semana_consumo.replace(/[()]/g, '').trim();
           const semanaCalendarioLike = await executeQuery(`
-            SELECT MIN(id) as semana_id
+            SELECT id as semana_id
             FROM foods_db.calendario
             WHERE REPLACE(REPLACE(semana_consumo, '(', ''), ')', '') LIKE ?
+            ORDER BY id ASC
             LIMIT 1
           `, [`%${semanaLimpa}%`]);
           
           if (semanaCalendarioLike.length > 0 && semanaCalendarioLike[0].semana_id) {
             semanaId = semanaCalendarioLike[0].semana_id;
+          } else {
+            // Tentativa 3: Buscar pela semana_consumo_inicio (mais confiável, usa data)
+            // Extrair data do formato da semana_consumo se possível
+            // Formato esperado: "(DD/MM a DD/MM/YY)" ou similar
+            const dataMatch = semana_consumo.match(/(\d{2})\/(\d{2})/);
+            if (dataMatch) {
+              const dia = dataMatch[1];
+              const mes = dataMatch[2];
+              // Tentar buscar pelo ano atual ou próximo
+              const anoAtual = new Date().getFullYear();
+              for (let ano = anoAtual; ano >= anoAtual - 1; ano--) {
+                try {
+                  const dataInicio = `${ano}-${mes}-${dia}`;
+                  const semanaPorData = await executeQuery(`
+                    SELECT id as semana_id
+                    FROM foods_db.calendario
+                    WHERE semana_consumo_inicio = ?
+                    ORDER BY id ASC
+                    LIMIT 1
+                  `, [dataInicio]);
+                  
+                  if (semanaPorData.length > 0 && semanaPorData[0].semana_id) {
+                    semanaId = semanaPorData[0].semana_id;
+                    break;
+                  }
+                } catch (err) {
+                  // Continuar tentando
+                }
+              }
+            }
           }
         }
       } catch (error) {

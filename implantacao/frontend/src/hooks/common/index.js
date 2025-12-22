@@ -15,3 +15,4 @@ export { useExport } from './useExport';
 export { useAuditoria } from './useAuditoria';
 export { useInputMask } from './useInputMask';
 export { useMaskedField } from './useMaskedField';
+export { useKeyboardCellNavigation, useKeyboardCellNavigationWithAjuste } from './useKeyboardCellNavigation';

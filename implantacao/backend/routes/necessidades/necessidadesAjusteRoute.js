@@ -11,7 +11,8 @@ const {
   incluirProdutoExtra,
   liberarCoordenacao,
   buscarProdutosParaModal,
-  excluirProdutoAjuste
+  excluirProdutoAjuste,
+  buscarEscolasSemNecessidade
 } = require('../../controllers/necessidades');
 
 // Middleware para verificar se tem acesso à funcionalidade
@@ -57,5 +58,8 @@ router.get('/produtos-modal', authenticateToken, hasAccessToAdjustment, buscarPr
 
 // DELETE /api/necessidades/ajuste/:id - Excluir produto de necessidade em ajuste
 router.delete('/ajuste/:id', authenticateToken, hasAccessToAdjustment, excluirProdutoAjuste);
+
+// GET /api/necessidades/escolas-sem-necessidade - Buscar escolas que não têm necessidade gerada para semana_consumo + grupo
+router.get('/escolas-sem-necessidade', authenticateToken, buscarEscolasSemNecessidade);
 
 module.exports = router;

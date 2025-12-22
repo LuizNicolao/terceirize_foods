@@ -171,8 +171,24 @@ const ModalProdutoExtra = ({
                         step="0.001"
                         value={quantidades[produto.produto_id] || ''}
                         onChange={(e) => handleQuantidadeChange(produto.produto_id, e.target.value)}
+                        onKeyDown={(e) => {
+                          // Bloquear setas para cima e para baixo
+                          if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            return false;
+                          }
+                        }}
+                        onWheel={(e) => {
+                          // Bloquear scroll quando o input está focado
+                          if (e.target === document.activeElement || e.currentTarget.contains(e.target)) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            return false;
+                          }
+                        }}
                         disabled={!isSelected}
-                        className="w-24 text-sm"
+                        className="w-24 text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         placeholder="0.000"
                       />
                     </td>

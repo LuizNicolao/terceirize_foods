@@ -102,8 +102,24 @@ const NecessidadesTable = ({
                       min="0"
                       value={produto.frequencia || 0}
                       onChange={(e) => handleFrequenciaChange(produto.id, e.target.value)}
+                      onKeyDown={(e) => {
+                        // Bloquear setas para cima e para baixo
+                        if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          return false;
+                        }
+                      }}
+                      onWheel={(e) => {
+                        // Bloquear scroll quando o input está focado
+                        if (e.target === document.activeElement || e.currentTarget.contains(e.target)) {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          return false;
+                        }
+                      }}
                       disabled={loading}
-                      className="text-center"
+                      className="text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       size="sm"
                     />
                   </div>
@@ -116,8 +132,24 @@ const NecessidadesTable = ({
                       min="0"
                       value={produto.ajuste || 0}
                       onChange={(e) => handleAjusteChange(produto.id, e.target.value)}
+                      onKeyDown={(e) => {
+                        // Bloquear setas para cima e para baixo
+                        if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          return false;
+                        }
+                      }}
+                      onWheel={(e) => {
+                        // Bloquear scroll quando o input está focado
+                        if (e.target === document.activeElement || e.currentTarget.contains(e.target)) {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          return false;
+                        }
+                      }}
                       disabled={loading}
-                      className="text-center"
+                      className="text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       size="sm"
                     />
                   </div>

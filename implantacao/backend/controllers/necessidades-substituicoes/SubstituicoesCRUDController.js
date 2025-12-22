@@ -339,15 +339,15 @@ class SubstituicoesCRUDController {
           await connection.beginTransaction();
 
           // Buscar id da semana de abastecimento na tabela calendario
-          // Usar MIN(id) para pegar um id representativo da semana
-          // Tentar busca exata primeiro, depois busca com LIKE para casos de formatação diferente
+          // Como cada dia tem um ID e a semana_abastecimento se repete, pegamos o primeiro ID daquela semana
           let semanaId = null;
           
-          // Tentativa 1: Busca exata
+          // Tentativa 1: Busca exata - pegar o primeiro ID (menor ID daquela semana)
           const [semanaCalendarioExata] = await connection.execute(`
-            SELECT MIN(id) as semana_id
+            SELECT id as semana_id
             FROM foods_db.calendario
             WHERE semana_abastecimento = ?
+            ORDER BY id ASC
             LIMIT 1
           `, [semana_abastecimento]);
           
@@ -358,14 +358,44 @@ class SubstituicoesCRUDController {
             // Remover parênteses e espaços extras para comparação
             const semanaLimpa = semana_abastecimento.replace(/[()]/g, '').trim();
             const [semanaCalendarioLike] = await connection.execute(`
-              SELECT MIN(id) as semana_id
+              SELECT id as semana_id
               FROM foods_db.calendario
               WHERE REPLACE(REPLACE(semana_abastecimento, '(', ''), ')', '') LIKE ?
+              ORDER BY id ASC
               LIMIT 1
             `, [`%${semanaLimpa}%`]);
             
             if (semanaCalendarioLike.length > 0 && semanaCalendarioLike[0].semana_id) {
               semanaId = semanaCalendarioLike[0].semana_id;
+            } else {
+              // Tentativa 3: Buscar pela semana_abastecimento_inicio (mais confiável, usa data)
+              // Extrair data do formato da semana_abastecimento se possível
+              const dataMatch = semana_abastecimento.match(/(\d{2})\/(\d{2})/);
+              if (dataMatch) {
+                const dia = dataMatch[1];
+                const mes = dataMatch[2];
+                // Tentar buscar pelo ano atual ou próximo
+                const anoAtual = new Date().getFullYear();
+                for (let ano = anoAtual; ano >= anoAtual - 1; ano--) {
+                  try {
+                    const dataInicio = `${ano}-${mes}-${dia}`;
+                    const [semanaPorData] = await connection.execute(`
+                      SELECT id as semana_id
+                      FROM foods_db.calendario
+                      WHERE semana_abastecimento_inicio = ?
+                      ORDER BY id ASC
+                      LIMIT 1
+                    `, [dataInicio]);
+                    
+                    if (semanaPorData.length > 0 && semanaPorData[0].semana_id) {
+                      semanaId = semanaPorData[0].semana_id;
+                      break;
+                    }
+                  } catch (err) {
+                    // Continuar tentando
+                  }
+                }
+              }
             }
           }
           

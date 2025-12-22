@@ -4,6 +4,7 @@
 
 import React from 'react';
 import { formatarNumero, calcularPercentual } from './utils/necessidadeModalUtils';
+import { useKeyboardCellNavigationWithAjuste } from '../../hooks/common/useKeyboardCellNavigation';
 
 const NecessidadeProdutosTable = ({
   produtos = [],
@@ -12,6 +13,12 @@ const NecessidadeProdutosTable = ({
   onAjusteChange,
   loading = false
 }) => {
+  // Usar hook reutilizável para navegação
+  const { handleKeyNavigation, handleWheelBlock } = useKeyboardCellNavigationWithAjuste({
+    totalRows: produtos.length,
+    totalTipos: tiposDisponiveis.length,
+    dataAttributePrefix: 'produto'
+  });
   return (
     <div className="overflow-auto" style={{ maxHeight: 'calc(100vh - 400px)' }}>
       <table className="min-w-full divide-y divide-gray-200 border-b border-gray-200">
@@ -78,7 +85,7 @@ const NecessidadeProdutosTable = ({
             
             {/* Corpo da tabela */}
             <tbody className="bg-white divide-y divide-gray-200">
-              {produtos.map((produto) => (
+              {produtos.map((produto, produtoIndex) => (
                 <tr key={produto.id} className="hover:bg-gray-50">
                   {/* Coluna Produtos - fixa à esquerda */}
                   <td 
@@ -90,7 +97,7 @@ const NecessidadeProdutosTable = ({
                   </td>
                   
                   {/* Células dos tipos de atendimento */}
-                  {tiposDisponiveis.map((tipo) => {
+                  {tiposDisponiveis.map((tipo, tipoIndex) => {
                     const tipoKey = tipo.key;
                     const percapitaKey = `percapita_${tipoKey}`;
                     const mediaKey = `media_${tipoKey}`;
@@ -110,10 +117,15 @@ const NecessidadeProdutosTable = ({
                             type="number"
                             value={produto[frequenciaKey] || ''}
                             onChange={(e) => onFrequenciaChange(produto.id, tipoKey, e.target.value)}
+                            onKeyDown={(e) => handleKeyNavigation(e, produtoIndex, tipoIndex, false)}
+                            onWheel={handleWheelBlock}
+                            data-produto-index={produtoIndex}
+                            data-tipo-index={tipoIndex}
+                            data-is-ajuste="false"
                             min="0"
                             step="1"
                             placeholder=""
-                            className="w-16 text-center border border-gray-300 rounded px-1 py-1 text-xs bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            className="w-16 text-center border border-gray-300 rounded px-1 py-1 text-xs bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             disabled={loading}
                           />
                         </td>
@@ -137,8 +149,13 @@ const NecessidadeProdutosTable = ({
                       min="0"
                       value={produto.ajuste}
                       onChange={(e) => onAjusteChange(produto.id, e.target.value)}
+                      onKeyDown={(e) => handleKeyNavigation(e, produtoIndex, -1, true)}
+                      onWheel={handleWheelBlock}
+                      data-produto-index={produtoIndex}
+                      data-tipo-index={-1}
+                      data-is-ajuste="true"
                       placeholder=""
-                      className="w-20 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white"
+                      className="w-20 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       disabled={loading}
                     />
                   </td>

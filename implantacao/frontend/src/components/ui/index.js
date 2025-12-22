@@ -12,3 +12,4 @@ export * from 'foods-frontend/src/components/ui';
 // Componentes específicos do Implantação (manter locais)
 export { default as SemanaAbastecimentoFilter } from './SemanaAbastecimentoFilter';
 export { SortableHeader, useSorting } from './SortableTable';
+export { default as NavigableInput } from './NavigableInput';
