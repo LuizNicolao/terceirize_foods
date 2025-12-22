@@ -95,6 +95,12 @@ const necessidadesService = {
     return response.data;
   },
 
+  // Buscar status disponíveis nas necessidades
+  buscarStatusDisponiveis: async () => {
+    const response = await api.get('/necessidades/status/disponiveis');
+    return response.data;
+  },
+
   // ===== ENDPOINTS PARA AJUSTE DE NECESSIDADES =====
 
   // Buscar semanas de consumo disponíveis na tabela necessidades
@@ -283,7 +289,7 @@ const necessidadesService = {
     return response.data;
   },
 
-  // Excluir necessidade (todos os produtos de uma necessidade_id)
+  // Marcar necessidade como excluída (altera status para EXCLUÍDO - todos os produtos de uma necessidade_id)
   excluirNecessidade: async (necessidade_id) => {
     const response = await api.delete(`/necessidades/correcao/${necessidade_id}`);
     return response.data;

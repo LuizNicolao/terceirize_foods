@@ -75,7 +75,9 @@ const corrigirNecessidade = async (req, res) => {
 
     if (escola_rota !== undefined && escola_rota !== null) {
       updateFields.push('escola_rota = ?');
-      updateValues.push(escola_rota);
+      // Truncar escola_rota para evitar erro de tamanho (limite de 255 caracteres)
+      const escolaRotaTruncada = String(escola_rota).substring(0, 255);
+      updateValues.push(escolaRotaTruncada);
     }
 
     if (updateFields.length === 0) {
@@ -208,6 +210,7 @@ const buscarNecessidadeParaCorrecao = async (req, res) => {
 
 /**
  * Excluir necessidade por necessidade_id (todos os produtos dessa necessidade)
+ * Altera o status para EXCLUÍDO ao invés de deletar fisicamente
  * Apenas administradores podem excluir
  */
 const excluirNecessidade = async (req, res) => {
@@ -238,18 +241,19 @@ const excluirNecessidade = async (req, res) => {
       });
     }
 
-    // Excluir todos os produtos dessa necessidade_id
+    // Alterar status para EXCLUÍDO (não deletar fisicamente)
     const resultado = await executeQuery(`
-      DELETE FROM necessidades 
+      UPDATE necessidades 
+      SET status = 'EXCLUÍDO', data_atualizacao = NOW()
       WHERE necessidade_id = ?
     `, [necessidade_id]);
 
     res.json({
       success: true,
-      message: 'Necessidade excluída com sucesso',
+      message: 'Necessidade marcada como excluída com sucesso',
       data: {
         necessidade_id,
-        registros_excluidos: resultado.affectedRows
+        registros_atualizados: resultado.affectedRows
       }
     });
   } catch (error) {

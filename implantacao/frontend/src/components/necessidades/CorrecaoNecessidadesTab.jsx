@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from 'react';
-import { Button, ConfirmModal } from '../ui';
+import { Button, ConfirmModal, Pagination } from '../ui';
 import { StatusBadge } from './';
 import { FaEdit, FaTrash } from 'react-icons/fa';
 
@@ -12,12 +12,19 @@ const CorrecaoNecessidadesTab = ({
   necessidades = [],
   onCorrigir,
   onExcluir,
-  loading = false
+  loading = false,
+  pagination = null
 }) => {
   const [necessidadeIdParaExcluir, setNecessidadeIdParaExcluir] = useState(null);
   const [showConfirmExclusao, setShowConfirmExclusao] = useState(false);
+  
+  // Filtrar necessidades: apenas NEC e NEC NUTRI devem aparecer na aba de correção
+  const necessidadesFiltradas = necessidades.filter(nec => 
+    nec.status === 'NEC' || nec.status === 'NEC NUTRI'
+  );
+  
   // Agrupar necessidades APENAS por necessidade_id (sem separar por grupo)
-  const agrupadas = necessidades.reduce((acc, necessidade) => {
+  const agrupadas = necessidadesFiltradas.reduce((acc, necessidade) => {
     // Usar apenas necessidade_id, sem incluir grupo na chave
     const chave = necessidade.necessidade_id || `${necessidade.escola}-${necessidade.semana_consumo}`;
     if (!acc[chave]) {
@@ -180,6 +187,20 @@ const CorrecaoNecessidadesTab = ({
         </table>
       </div>
 
+      {/* Paginação */}
+      {pagination && (
+        <div className="px-6 py-4 border-t border-gray-200">
+          <Pagination
+            currentPage={pagination.currentPage}
+            totalPages={pagination.totalPages}
+            totalItems={pagination.totalItems}
+            itemsPerPage={pagination.itemsPerPage}
+            onPageChange={pagination.handlePageChange}
+            onItemsPerPageChange={pagination.handleItemsPerPageChange}
+          />
+        </div>
+      )}
+
       {/* Modal de confirmação de exclusão */}
       <ConfirmModal
         isOpen={showConfirmExclusao}
@@ -195,8 +216,8 @@ const CorrecaoNecessidadesTab = ({
           setNecessidadeIdParaExcluir(null);
         }}
         title="Confirmar Exclusão"
-        message={`Tem certeza que deseja excluir a necessidade ID ${necessidadeIdParaExcluir}? Esta ação excluirá todos os produtos desta necessidade e não pode ser desfeita.`}
-        confirmText="Excluir"
+        message={`Tem certeza que deseja marcar a necessidade ID ${necessidadeIdParaExcluir} como excluída? Esta ação alterará o status de todos os produtos desta necessidade para EXCLUÍDO.`}
+        confirmText="Marcar como Excluída"
         cancelText="Cancelar"
         variant="danger"
       />
