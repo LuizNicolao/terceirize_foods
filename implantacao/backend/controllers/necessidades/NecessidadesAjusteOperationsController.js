@@ -390,7 +390,7 @@ const incluirProdutoExtra = async (req, res) => {
         produto.unidade_medida,
         escola_id,
         escolaData.nome_escola,
-        escolaData.rota || '',
+        escolaData.rota ? String(escolaData.rota).substring(0, 255) : '', // Truncar para evitar erro de tamanho
         escolaData.codigo_teknisa || '',
         ajuste,
         escolaData.semana_consumo,

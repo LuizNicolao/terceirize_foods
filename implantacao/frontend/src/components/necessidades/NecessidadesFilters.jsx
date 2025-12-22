@@ -19,9 +19,11 @@ const NecessidadesFilters = ({
   const [opcoesEscolas, setOpcoesEscolas] = useState([]);
   const [opcoesGrupos, setOpcoesGrupos] = useState([]);
   const [opcoesSemanasAbastecimento, setOpcoesSemanasAbastecimento] = useState([]);
+  const [opcoesStatus, setOpcoesStatus] = useState([]);
   const [loadingEscolas, setLoadingEscolas] = useState(false);
   const [loadingGrupos, setLoadingGrupos] = useState(false);
   const [loadingSemanaAbastecimento, setLoadingSemanaAbastecimento] = useState(false);
+  const [loadingStatus, setLoadingStatus] = useState(false);
   
   // Buscar escolas disponíveis na tabela necessidades
   useEffect(() => {
@@ -183,6 +185,60 @@ const NecessidadesFilters = ({
       setOpcoesSemanasAbastecimento([]);
     }
   }, [filtros.data, filtros.semana_abastecimento, onFilterChange]);
+
+  // Buscar status disponíveis na tabela necessidades
+  useEffect(() => {
+    const buscarStatus = async () => {
+      setLoadingStatus(true);
+      try {
+        const response = await necessidadesService.buscarStatusDisponiveis();
+        if (response.success && response.data) {
+          // Mapear status para opções com labels descritivos
+          const statusMap = {
+            'NEC': 'NEC - Criada pela Nutricionista',
+            'NEC NUTRI': 'NEC NUTRI - Necessidade Nutricionista',
+            'CONF NUTRI': 'CONF NUTRI - Confirmada Nutricionista',
+            'NEC COORD': 'NEC COORD - Necessidade Coordenação',
+            'CONF COORD': 'CONF COORD - Confirmada Coordenação',
+            'NEC LOG': 'NEC LOG - Necessidade Logística',
+            'CONF': 'CONF - Confirmada',
+            'APROVADA': 'APROVADA',
+            'REJEITADA': 'REJEITADA',
+            'EM_ANALISE': 'EM_ANALISE - Em Análise'
+          };
+
+          const statusOptions = [
+            { value: '', label: 'Todos os Status' },
+            ...response.data.map(status => ({
+              value: status,
+              label: statusMap[status] || status
+            }))
+          ];
+          setOpcoesStatus(statusOptions);
+        }
+      } catch (error) {
+        console.error('Erro ao buscar status disponíveis:', error);
+        // Em caso de erro, usar lista padrão
+        setOpcoesStatus([
+          { value: '', label: 'Todos os Status' },
+          { value: 'NEC', label: 'NEC - Criada pela Nutricionista' },
+          { value: 'NEC NUTRI', label: 'NEC NUTRI - Necessidade Nutricionista' },
+          { value: 'CONF NUTRI', label: 'CONF NUTRI - Confirmada Nutricionista' },
+          { value: 'NEC COORD', label: 'NEC COORD - Necessidade Coordenação' },
+          { value: 'CONF COORD', label: 'CONF COORD - Confirmada Coordenação' },
+          { value: 'NEC LOG', label: 'NEC LOG - Necessidade Logística' },
+          { value: 'CONF', label: 'CONF - Confirmada' },
+          { value: 'APROVADA', label: 'APROVADA' },
+          { value: 'REJEITADA', label: 'REJEITADA' },
+          { value: 'EM_ANALISE', label: 'EM_ANALISE - Em Análise' }
+        ]);
+      } finally {
+        setLoadingStatus(false);
+      }
+    };
+
+    buscarStatus();
+  }, []);
   
   const handleEscolaChange = (escola) => {
     onFilterChange({ escola });
@@ -207,20 +263,6 @@ const NecessidadesFilters = ({
   const handleStatusChange = (status) => {
     onFilterChange({ status });
   };
-
-  // Opções de status disponíveis
-  const opcoesStatus = [
-    { value: '', label: 'Todos os Status' },
-    { value: 'NEC', label: 'NEC - Criada pela Nutricionista' },
-    { value: 'NEC NUTRI', label: 'NEC NUTRI - Necessidade Nutricionista' },
-    { value: 'CONF NUTRI', label: 'CONF NUTRI - Confirmada Nutricionista' },
-    { value: 'NEC COORD', label: 'NEC COORD - Necessidade Coordenação' },
-    { value: 'CONF COORD', label: 'CONF COORD - Confirmada Coordenação' },
-    { value: 'NEC LOG', label: 'NEC LOG - Necessidade Logística' },
-    { value: 'APROVADA', label: 'APROVADA' },
-    { value: 'REJEITADA', label: 'REJEITADA' },
-    { value: 'EM_ANALISE', label: 'EM_ANALISE - Em Análise' }
-  ];
 
   const hasActiveFilters = filtros.escola || filtros.grupo || filtros.data || filtros.search || filtros.semana_abastecimento || filtros.status;
 
@@ -338,8 +380,9 @@ const NecessidadesFilters = ({
             value={filtros.status || ''}
             onChange={handleStatusChange}
             options={opcoesStatus}
-            placeholder="Selecione o status..."
-            disabled={loading}
+            placeholder={loadingStatus ? "Carregando status..." : "Selecione o status..."}
+            disabled={loading || loadingStatus}
+            loading={loadingStatus}
             usePortal={false}
           />
         </div>

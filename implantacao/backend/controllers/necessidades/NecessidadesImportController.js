@@ -499,12 +499,15 @@ const importarExcel = async (req, res) => {
           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
         `;
         
+        // Truncar escola_rota para evitar erro de tamanho (limite de 255 caracteres)
+        const escolaRotaTruncada = escola.rota ? String(escola.rota).substring(0, 255) : null;
+        
         const params = [
           nutricionista.usuario_id, // Usar nutricionista da escola
           nutricionista.usuario_email, // Usar email da nutricionista
           necessidade.escola_id,
           necessidade.escola_nome,
-          escola.rota || null, // escola_rota da tabela unidades_escolares
+          escolaRotaTruncada, // escola_rota da tabela unidades_escolares (truncado)
           escola.codigo_teknisa || null, // codigo_teknisa da tabela unidades_escolares
           necessidade.produto_id,
           necessidade.produto_nome,

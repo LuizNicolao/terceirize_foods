@@ -18,7 +18,8 @@ const {
   baixarModelo,
   corrigirNecessidade,
   buscarNecessidadeParaCorrecao,
-  excluirNecessidade
+  excluirNecessidade,
+  buscarStatusDisponiveis
 } = require('../../controllers/necessidades');
 
 const { uploadMiddleware } = require('../../controllers/necessidades/NecessidadesImportController');
@@ -36,6 +37,7 @@ router.use(authenticateToken);
 // ===== ROTAS ESPECÍFICAS (DEVEM VIR ANTES DAS ROTAS COM PARÂMETROS) =====
 router.post('/gerar', canCreate('necessidades'), validateGerarNecessidade, gerarNecessidade);
 router.get('/escolas-nutricionista/:usuarioId', canView('necessidades'), listarEscolasNutricionista);
+router.get('/status/disponiveis', canView('necessidades'), buscarStatusDisponiveis);
 
 // ===== ROTAS DE IMPORTAÇÃO =====
 router.post('/importar', canCreate('necessidades'), uploadMiddleware, importarExcel);

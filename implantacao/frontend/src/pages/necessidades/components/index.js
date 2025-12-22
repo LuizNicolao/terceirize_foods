@@ -1,3 +1,2 @@
-export { default as FiltrosGerarNecessidade } from './FiltrosGerarNecessidade';
-export { default as TabelaProdutosNecessidade } from './TabelaProdutosNecessidade';
-
+export { default as NecessidadesListagemTab } from './NecessidadesListagemTab';
+export { default as NecessidadeVisualizacaoModal } from './NecessidadeVisualizacaoModal';

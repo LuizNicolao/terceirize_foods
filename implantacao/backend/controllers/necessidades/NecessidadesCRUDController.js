@@ -25,15 +25,34 @@ const criar = async (req, res) => {
       });
     }
 
-    // Gerar ID sequencial para esta necessidade
-    const ultimoId = await executeQuery(`
-      SELECT COALESCE(MAX(CAST(necessidade_id AS UNSIGNED)), 0) as ultimo_id 
-      FROM necessidades 
-      WHERE necessidade_id REGEXP '^[0-9]+$'
-    `);
+    // Gerar ID no formato YYYYMMDD-XXX (data + sequencial do dia)
+    const agora = new Date();
+    const ano = agora.getFullYear();
+    const mes = String(agora.getMonth() + 1).padStart(2, '0');
+    const dia = String(agora.getDate()).padStart(2, '0');
+    const prefixoData = `${ano}${mes}${dia}`;
     
-    const proximoId = (ultimoId[0]?.ultimo_id || 0) + 1;
-    const necessidadeId = proximoId.toString();
+    // Buscar o último sequencial do dia atual
+    const ultimoSequencial = await executeQuery(`
+      SELECT necessidade_id 
+      FROM necessidades 
+      WHERE necessidade_id LIKE ?
+      ORDER BY necessidade_id DESC
+      LIMIT 1
+    `, [`${prefixoData}-%`]);
+    
+    let proximoSequencial = 1;
+    if (ultimoSequencial.length > 0) {
+      const ultimoId = ultimoSequencial[0].necessidade_id;
+      const partes = ultimoId.split('-');
+      if (partes.length === 2 && partes[0] === prefixoData) {
+        const sequencialAtual = parseInt(partes[1], 10) || 0;
+        proximoSequencial = sequencialAtual + 1;
+      }
+    }
+    
+    // Formato: YYYYMMDD-XXX (ex: 20241215-001)
+    const necessidadeId = `${prefixoData}-${String(proximoSequencial).padStart(3, '0')}`;
 
     // Inserir nova necessidade
     const resultado = await executeQuery(`

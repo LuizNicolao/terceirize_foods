@@ -594,7 +594,7 @@ class NecessidadesLogisticaController {
           produto.unidade_medida,
           escola_id,
           escolaData[0].escola,
-          escolaData[0].escola_rota,
+          escolaData[0].escola_rota ? String(escolaData[0].escola_rota).substring(0, 255) : null, // Truncar para evitar erro de tamanho
           escolaData[0].codigo_teknisa,
           0, // ajuste sempre 0 para logística (NOT NULL)
           semana_consumo || escolaData[0].semana_consumo,

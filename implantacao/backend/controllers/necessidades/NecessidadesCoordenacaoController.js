@@ -609,6 +609,9 @@ class NecessidadesCoordenacaoController {
           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?)
         `;
 
+        // Truncar escola_rota para evitar erro de tamanho (limite de 255 caracteres)
+        const escolaRotaTruncada = escolaData[0].escola_rota ? String(escolaData[0].escola_rota).substring(0, 255) : null;
+        
         const values = [
           escolaData[0].usuario_email,
           escolaData[0].usuario_id,
@@ -617,7 +620,7 @@ class NecessidadesCoordenacaoController {
           produto.unidade_medida,
           escola_id,
           escolaData[0].escola,
-          escolaData[0].escola_rota,
+          escolaRotaTruncada,
           escolaData[0].codigo_teknisa,
           0, // ajuste sempre 0 para coordenação (NOT NULL)
           semana_consumo || escolaData[0].semana_consumo,

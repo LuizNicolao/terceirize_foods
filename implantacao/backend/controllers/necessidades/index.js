@@ -8,7 +8,8 @@ const {
 const { 
   listar, 
   listarTodas,
-  listarEscolasNutricionista
+  listarEscolasNutricionista,
+  buscarStatusDisponiveis
 } = require('./NecessidadesListController');
 
 const { 
@@ -63,6 +64,7 @@ module.exports = {
   listar,
   listarTodas,
   listarEscolasNutricionista,
+  buscarStatusDisponiveis,
   
   // Statistics Operations
   obterEstatisticas,

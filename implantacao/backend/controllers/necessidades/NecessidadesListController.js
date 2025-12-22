@@ -75,6 +75,18 @@ const listar = async (req, res) => {
       params.push(status);
     }
 
+    // Excluir necessidades com status CONF quando for para correção
+    if (req.query.excluir_conf === 'true' || req.query.excluir_status_conf === 'true') {
+      whereClause += ' AND n.status != ?';
+      params.push('CONF');
+    }
+
+    // Para aba de correção: mostrar apenas NEC e NEC NUTRI
+    if (req.query.apenas_nec_correcao === 'true') {
+      whereClause += ' AND n.status IN (?, ?)';
+      params.push('NEC', 'NEC NUTRI');
+    }
+
     // Calcular paginação com validação
     const pageNum = parseInt(page) || 1;
     const limitNum = parseInt(limit) || 10;
@@ -85,9 +97,9 @@ const listar = async (req, res) => {
     
     const offset = (validPageNum - 1) * validLimitNum;
 
-    // Query para contar total de registros (sem JOIN com tabelas externas)
+    // Query para contar total de necessidades distintas (agrupadas por necessidade_id)
     const countQuery = `
-      SELECT COUNT(*) as total
+      SELECT COUNT(DISTINCT n.necessidade_id) as total
       FROM necessidades n
       ${whereClause}
     `;
@@ -97,15 +109,44 @@ const listar = async (req, res) => {
     const totalItems = countResult && countResult.length > 0 && countResult[0] ? countResult[0].total : 0;
     const totalPages = Math.ceil(totalItems / validLimitNum);
 
-    // Query principal com paginação (sem JOIN - dados já na tabela necessidades)
+    // Primeiro, buscar os IDs das necessidades paginadas (agrupadas por necessidade_id)
+    const necessidadesIdsQuery = `
+      SELECT n.necessidade_id
+      FROM necessidades n
+      ${whereClause}
+      GROUP BY n.necessidade_id
+      ORDER BY MAX(n.data_preenchimento) DESC
+      LIMIT ${validLimitNum} OFFSET ${offset}
+    `;
+    
+    const necessidadesIdsResult = await executeQuery(necessidadesIdsQuery, params);
+    const necessidadesIds = necessidadesIdsResult.map(row => row.necessidade_id);
+
+    // Se não houver necessidades, retornar array vazio
+    if (necessidadesIds.length === 0) {
+      return res.json({
+        success: true,
+        data: [],
+        pagination: {
+          currentPage: validPageNum,
+          totalPages,
+          totalItems,
+          itemsPerPage: validLimitNum,
+          hasNextPage: validPageNum < totalPages,
+          hasPrevPage: validPageNum > 1
+        }
+      });
+    }
+
+    // Agora buscar todos os produtos dessas necessidades
+    const placeholders = necessidadesIds.map(() => '?').join(',');
     const necessidades = await executeQuery(`
       SELECT 
         n.*
       FROM necessidades n
-      ${whereClause}
-      ORDER BY n.data_preenchimento DESC
-      LIMIT ${validLimitNum} OFFSET ${offset}
-    `, params);
+      WHERE n.necessidade_id IN (${placeholders})
+      ORDER BY n.data_preenchimento DESC, n.necessidade_id ASC
+    `, necessidadesIds);
 
     res.json({
       success: true,
@@ -349,8 +390,65 @@ const listarEscolasNutricionista = async (req, res) => {
   }
 };
 
+// Buscar status únicos das necessidades
+const buscarStatusDisponiveis = async (req, res) => {
+  try {
+    const userType = req.user.tipo_de_acesso;
+    const isNutricionista = userType === 'nutricionista';
+
+    let whereClause = 'WHERE n.status IS NOT NULL AND n.status != ""';
+    let params = [];
+
+    // Aplicar filtros de permissão
+    if (isNutricionista) {
+      try {
+        const authToken = req.headers.authorization?.replace('Bearer ', '');
+        const escolasIds = await buscarEscolasIdsDaNutricionista(req.user.email, authToken);
+
+        if (escolasIds.length > 0) {
+          const placeholders = escolasIds.map(() => '?').join(',');
+          whereClause += ` AND n.escola_id IN (${placeholders})`;
+          params.push(...escolasIds);
+        } else {
+          whereClause += ' AND n.usuario_email = ?';
+          params.push(req.user.email);
+        }
+      } catch (error) {
+        whereClause += ' AND n.usuario_email = ?';
+        params.push(req.user.email);
+      }
+    } else if (!['coordenador', 'supervisor', 'administrador', 'logistica'].includes(userType)) {
+      whereClause += ' AND n.usuario_email = ?';
+      params.push(req.user.email);
+    }
+
+    const query = `
+      SELECT DISTINCT n.status
+      FROM necessidades n
+      ${whereClause}
+      ORDER BY n.status ASC
+    `;
+
+    const statusList = await executeQuery(query, params);
+
+    const status = statusList.map(row => row.status).filter(s => s);
+
+    return res.json({
+      success: true,
+      data: status
+    });
+  } catch (error) {
+    console.error('Erro ao buscar status disponíveis:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Erro ao buscar status disponíveis'
+    });
+  }
+};
+
 module.exports = {
   listar,
   listarTodas,
-  listarEscolasNutricionista
+  listarEscolasNutricionista,
+  buscarStatusDisponiveis
 };

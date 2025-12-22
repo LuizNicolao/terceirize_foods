@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { FaClipboardList } from 'react-icons/fa';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { useAuth } from '../../contexts/AuthContext';
-import { useNecessidades, useNecessidadesFilters } from '../../hooks/necessidades';
 import {
   NecessidadesLayout,
   NecessidadesActions,
@@ -11,19 +10,24 @@ import {
   NecessidadesFilters,
   NecessidadeModal,
   ImportNecessidadesModal,
-  StatusBadge,
   NecessidadesTabsCorrecao,
   CorrecaoNecessidadeModal,
   CorrecaoNecessidadesTab
 } from '../../components/necessidades';
-import { ActionButtons, Modal, Pagination } from '../../components/ui';
 import { ExportButtons } from '../../components/shared';
-import { formatarDataParaExibicao } from '../../utils/recebimentos/recebimentosUtils';
+import { useNecessidadesListagem } from './hooks/useNecessidadesListagem';
+import { useNecessidadesCorrecao } from './hooks/useNecessidadesCorrecao';
+import { NecessidadesListagemTab, NecessidadeVisualizacaoModal } from './components';
+import {
+  createSalvarNecessidadeHandler,
+  createImportSuccessHandler,
+  createExcluirNecessidadeHandler,
+  createCorrecaoSalvaHandler
+} from './handlers/necessidadesHandlers';
 import toast from 'react-hot-toast';
-import necessidadesService from '../../services/necessidadesService';
 
 const Necessidades = () => {
-  const { canView, canCreate, canEdit, loading: permissionsLoading } = usePermissions();
+  const { canView, canCreate, loading: permissionsLoading } = usePermissions();
   const { user } = useAuth();
   const [abaAtiva, setAbaAtiva] = useState('listagem');
   const [gerando, setGerando] = useState(false);
@@ -33,34 +37,36 @@ const Necessidades = () => {
   const [modalCorrecaoAberto, setModalCorrecaoAberto] = useState(false);
   const [necessidadeSelecionada, setNecessidadeSelecionada] = useState(null);
   const [necessidadeIdParaCorrecao, setNecessidadeIdParaCorrecao] = useState(null);
-  const filtrosAnterioresRef = useRef({});
   
-  // Hook para gerenciar necessidades
-  const {
-    necessidades,
-    escolas,
-    grupos,
-    produtosTabela,
-    loading,
-    error,
-    pagination,
-    carregarNecessidades,
-    gerarNecessidade,
-    exportarXLSX,
-    exportarPDF
-  } = useNecessidades();
-
-  // Hook para filtros
-  const {
-    filtros,
-    updateFiltros,
-    clearFiltros
-  } = useNecessidadesFilters();
-
   // Verificar permissões específicas
   const canViewNecessidades = canView('necessidades');
   const canCreateNecessidades = canCreate('necessidades');
   const isAdministrador = user?.tipo_de_acesso === 'administrador';
+
+  // Hooks separados para cada aba - cada um com sua própria lógica e estado
+  const listagemData = useNecessidadesListagem();
+  const correcaoData = useNecessidadesCorrecao();
+
+  // Ref para rastrear aba anterior e evitar recarregamentos desnecessários
+  const abaAnteriorRef = useRef(abaAtiva);
+
+  // Selecionar dados baseado na aba ativa
+  const dadosAtivos = abaAtiva === 'correcao' ? correcaoData : listagemData;
+  const { 
+    necessidades, 
+    escolas, 
+    grupos, 
+    loading, 
+    error, 
+    pagination, 
+    filtros, 
+    updateFiltros, 
+    clearFiltros, 
+    gerarNecessidade, 
+    exportarXLSX, 
+    exportarPDF, 
+    recarregarNecessidades 
+  } = dadosAtivos;
 
   // Garantir que apenas administradores possam acessar aba de correção
   useEffect(() => {
@@ -69,68 +75,20 @@ const Necessidades = () => {
     }
   }, [abaAtiva, isAdministrador]);
 
-  // Resetar paginação quando filtros mudarem (mas não na primeira renderização)
+  // Recarregar dados quando a aba mudar (cada aba tem sua própria lógica)
   useEffect(() => {
-    if (canViewNecessidades) {
-      const filtrosAtuais = JSON.stringify({
-        escola: filtros.escola?.id || filtros.escola,
-        grupo: filtros.grupo?.id || filtros.grupo,
-        data: filtros.data,
-        semana_abastecimento: filtros.semana_abastecimento
-      });
-      const filtrosAnteriores = JSON.stringify(filtrosAnterioresRef.current);
-      
-      if (filtrosAtuais !== filtrosAnteriores && filtrosAnteriores !== '{}') {
-        pagination.resetPagination();
-      }
-      
-      filtrosAnterioresRef.current = {
-        escola: filtros.escola?.id || filtros.escola,
-        grupo: filtros.grupo?.id || filtros.grupo,
-        data: filtros.data,
-        semana_abastecimento: filtros.semana_abastecimento
-      };
-    }
-  }, [canViewNecessidades, filtros.escola, filtros.grupo, filtros.data, filtros.semana_abastecimento, pagination]);
-
-  // Ref para evitar chamadas duplicadas e rastrear última página
-  const carregandoRef = useRef(false);
-  const ultimaPaginaRef = useRef(pagination.currentPage);
-  const ultimoItemsPerPageRef = useRef(pagination.itemsPerPage);
-  const filtrosAnterioresPagRef = useRef(JSON.stringify(filtros));
-
-  // Carregar necessidades quando a página for montada ou filtros mudarem
-  useEffect(() => {
-    if (canViewNecessidades && !carregandoRef.current) {
-      const filtrosAtuais = JSON.stringify(filtros);
-      if (filtrosAtuais !== filtrosAnterioresPagRef.current) {
-        filtrosAnterioresPagRef.current = filtrosAtuais;
-        carregandoRef.current = true;
-        carregarNecessidades(filtros).then(() => {
-          carregandoRef.current = false;
-        }).catch(() => {
-          carregandoRef.current = false;
-        });
+    if (canViewNecessidades && abaAnteriorRef.current !== abaAtiva) {
+      abaAnteriorRef.current = abaAtiva;
+      // Resetar paginação e forçar recarregamento ao mudar de aba
+      if (abaAtiva === 'correcao') {
+        correcaoData.pagination.resetPagination();
+        correcaoData.recarregarNecessidades();
+      } else {
+        listagemData.pagination.resetPagination();
+        listagemData.recarregarNecessidades();
       }
     }
-  }, [canViewNecessidades, carregarNecessidades, filtros]);
-
-  // Carregar necessidades quando paginação mudar (separado para evitar loop)
-  useEffect(() => {
-    const paginaMudou = ultimaPaginaRef.current !== pagination.currentPage;
-    const itemsPerPageMudou = ultimoItemsPerPageRef.current !== pagination.itemsPerPage;
-    
-    if (canViewNecessidades && (paginaMudou || itemsPerPageMudou) && !carregandoRef.current) {
-      ultimaPaginaRef.current = pagination.currentPage;
-      ultimoItemsPerPageRef.current = pagination.itemsPerPage;
-      carregandoRef.current = true;
-      carregarNecessidades(filtros).then(() => {
-        carregandoRef.current = false;
-      }).catch(() => {
-        carregandoRef.current = false;
-      });
-    }
-  }, [pagination.currentPage, pagination.itemsPerPage, canViewNecessidades, carregarNecessidades, filtros]);
+  }, [abaAtiva, canViewNecessidades, correcaoData, listagemData]);
 
 
   // Verificar se pode visualizar
@@ -154,7 +112,7 @@ const Necessidades = () => {
     );
   }
 
-  // Handler para gerar necessidade
+  // Handlers usando funções factory
   const handleGerarNecessidade = () => {
     if (!canCreateNecessidades) {
       toast.error('Você não tem permissão para gerar necessidades');
@@ -163,25 +121,13 @@ const Necessidades = () => {
     setModalAberto(true);
   };
 
-  const handleSalvarNecessidade = async (dados) => {
-    setGerando(true);
-    try {
-      const resultado = await gerarNecessidade(dados);
-      if (resultado.success) {
-        setModalAberto(false);
-        // Recarregar necessidades após gerar, mantendo os filtros atuais
-        carregarNecessidades(filtros);
-      }
-      // Toast de sucesso/erro é tratado no hook
-    } catch (error) {
-      console.error('Erro ao gerar necessidade:', error);
-      toast.error('Erro ao gerar necessidade');
-    } finally {
-      setGerando(false);
-    }
-  };
+  const handleSalvarNecessidade = createSalvarNecessidadeHandler(
+    gerarNecessidade,
+    recarregarNecessidades,
+    setModalAberto,
+    setGerando
+  );
 
-  // Handler para importar necessidades
   const handleImportarNecessidades = () => {
     if (!canCreateNecessidades) {
       toast.error('Você não tem permissão para importar necessidades');
@@ -190,12 +136,10 @@ const Necessidades = () => {
     setModalImportAberto(true);
   };
 
-  // Handler para sucesso na importação
-  const handleImportSuccess = () => {
-    setModalImportAberto(false);
-    carregarNecessidades();
-    toast.success('Necessidades importadas com sucesso!');
-  };
+  const handleImportSuccess = createImportSuccessHandler(
+    setModalImportAberto,
+    recarregarNecessidades
+  );
 
   const handleVisualizarNecessidade = (grupo) => {
     setNecessidadeSelecionada(grupo);
@@ -207,27 +151,9 @@ const Necessidades = () => {
     setModalCorrecaoAberto(true);
   };
 
-  const handleCorrecaoSalva = () => {
-    // Recarregar necessidades após correção
-    carregarNecessidades(filtros);
-  };
+  const handleCorrecaoSalva = createCorrecaoSalvaHandler(recarregarNecessidades);
 
-  const handleExcluirNecessidade = async (necessidadeId) => {
-    try {
-      const response = await necessidadesService.excluirNecessidade(necessidadeId);
-      
-      if (response.success) {
-        toast.success(`Necessidade ID ${necessidadeId} excluída com sucesso!`);
-        // Recarregar necessidades após exclusão
-        carregarNecessidades(filtros);
-      } else {
-        toast.error(response.message || 'Erro ao excluir necessidade');
-      }
-    } catch (error) {
-      console.error('Erro ao excluir necessidade:', error);
-      toast.error('Erro ao excluir necessidade');
-    }
-  };
+  const handleExcluirNecessidade = createExcluirNecessidadeHandler(recarregarNecessidades);
 
 
   return (
@@ -284,147 +210,12 @@ const Necessidades = () => {
 
       {/* Conteúdo baseado na aba ativa */}
       {abaAtiva === 'listagem' && (
-        <>
-          {/* Tabela de Necessidades Agrupadas */}
-          {necessidades && necessidades.length > 0 && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    ID
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Escola
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Rota
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Grupo
-                  </th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Produtos
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Semana Consumo
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Semana Abastecimento
-                  </th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Ações
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {(() => {
-                  // Agrupar necessidades por necessidade_id (se disponível) ou por escola, data e grupo
-                  // Incluir grupo na chave para permitir múltiplos grupos na mesma escola/semana
-                  const agrupadas = necessidades.reduce((acc, necessidade) => {
-                    // Se tem necessidade_id, usar ele. Senão, usar escola-data-grupo para diferenciar grupos
-                    const chave = necessidade.necessidade_id || `${necessidade.escola}-${necessidade.semana_consumo}-${necessidade.grupo || 'sem-grupo'}`;
-                    if (!acc[chave]) {
-                      acc[chave] = {
-                        necessidade_id: necessidade.necessidade_id,
-                        escola: necessidade.escola,
-                        rota: necessidade.escola_rota,
-                        grupo: necessidade.grupo,
-                        data_consumo: necessidade.semana_consumo,
-                        data_abastecimento: necessidade.semana_abastecimento,
-                        data_preenchimento: necessidade.data_preenchimento,
-                        status: necessidade.status,
-                        produtos: []
-                      };
-                    }
-                    acc[chave].produtos.push(necessidade);
-                    return acc;
-                  }, {});
-
-                  return Object.values(agrupadas).map((grupo, index) => (
-                    <tr key={index} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {grupo.necessidade_id || '-'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">
-                          {grupo.escola || '-'}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {grupo.rota || '-'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                        {grupo.grupo ? (
-                          <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">
-                            {grupo.grupo}
-                          </span>
-                        ) : (
-                          '-'
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center">
-                        <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                          {grupo.produtos.length} produtos
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {grupo.data_consumo || '-'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {grupo.data_abastecimento || '-'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center">
-                        <StatusBadge status={grupo.status || grupo.produtos[0]?.status || 'NEC'} />
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                        <ActionButtons
-                          canView={true}
-                          onView={() => handleVisualizarNecessidade(grupo)}
-                          item={grupo}
-                          size="sm"
-                        />
-                      </td>
-                    </tr>
-                  ));
-                })()}
-              </tbody>
-            </table>
-          </div>
-        </div>
-          )}
-
-          {/* Mensagem quando não há necessidades */}
-          {necessidades && necessidades.length === 0 && !loading && (
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
-              <FaClipboardList className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Nenhuma necessidade encontrada
-              </h3>
-              <p className="text-gray-600">
-                Gere uma nova necessidade usando o botão acima.
-              </p>
-            </div>
-          )}
-
-          {/* Paginação */}
-          {pagination.totalItems > 0 && (
-            <div className="mt-6">
-              <Pagination
-                currentPage={pagination.currentPage}
-                totalPages={pagination.totalPages}
-                totalItems={pagination.totalItems}
-                itemsPerPage={pagination.itemsPerPage}
-                onPageChange={pagination.handlePageChange}
-                onItemsPerPageChange={pagination.handleItemsPerPageChange}
-              />
-            </div>
-          )}
-        </>
+        <NecessidadesListagemTab
+          necessidades={necessidades}
+          loading={loading}
+          pagination={pagination}
+          onView={handleVisualizarNecessidade}
+        />
       )}
 
       {abaAtiva === 'correcao' && isAdministrador && (
@@ -433,6 +224,7 @@ const Necessidades = () => {
           onCorrigir={handleCorrigirNecessidade}
           onExcluir={handleExcluirNecessidade}
           loading={loading}
+          pagination={pagination}
         />
       )}
     </NecessidadesLayout>
@@ -447,95 +239,11 @@ const Necessidades = () => {
       />
 
       {/* Modal de Visualização */}
-      <Modal
+      <NecessidadeVisualizacaoModal
         isOpen={modalVisualizacaoAberto}
         onClose={() => setModalVisualizacaoAberto(false)}
-        title={`Necessidade - ${necessidadeSelecionada?.escola || ''}`}
-        size="xl"
-      >
-        {necessidadeSelecionada && (
-          <div className="space-y-6">
-            {/* Informações da Escola */}
-            <div className="bg-gray-50 rounded-lg p-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="font-medium text-gray-700">Escola:</span>
-                  <p className="text-gray-900">{necessidadeSelecionada.escola}</p>
-                </div>
-                <div>
-                  <span className="font-medium text-gray-700">Rota:</span>
-                  <p className="text-gray-900">{necessidadeSelecionada.rota}</p>
-                </div>
-                            <div>
-                              <span className="font-medium text-gray-700">Semana de Consumo:</span>
-                              <p className="text-gray-900">{necessidadeSelecionada.data_consumo}</p>
-                            </div>
-                <div>
-                  <span className="font-medium text-gray-700">Gerado em:</span>
-                  <p className="text-gray-900">{new Date(necessidadeSelecionada.data_preenchimento).toLocaleString('pt-BR')}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Lista de Produtos */}
-            <div>
-              <h4 className="text-md font-semibold text-gray-900 mb-3">
-                Produtos ({necessidadeSelecionada.produtos.length})
-              </h4>
-              <div className="max-h-96 overflow-y-auto border border-gray-200 rounded-lg">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50 sticky top-0">
-                    <tr>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Produto
-                      </th>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Unidade
-                      </th>
-                      <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Ajuste
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {necessidadeSelecionada.produtos.map((produto) => (
-                      <tr key={produto.id} className="hover:bg-gray-50">
-                        <td className="px-4 py-3 text-sm font-medium text-gray-900">
-                          {produto.produto_nome || produto.produto}
-                        </td>
-                        <td className="px-4 py-3 text-sm text-gray-500">
-                          {produto.produto_unidade}
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                            Number(produto.ajuste) > 0 
-                              ? 'bg-green-100 text-green-800' 
-                              : 'bg-gray-100 text-gray-600'
-                          }`}>
-                            {Number(produto.ajuste).toFixed(3).replace('.', ',')}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* Resumo */}
-            <div className="bg-blue-50 rounded-lg p-4">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-blue-700">
-                  <strong>Total de produtos com ajuste:</strong> {necessidadeSelecionada.produtos.filter(p => Number(p.ajuste) > 0).length}
-                </span>
-                <span className="text-blue-900 font-semibold">
-                  <strong>Soma dos ajustes:</strong> {necessidadeSelecionada.produtos.reduce((sum, p) => sum + Number(p.ajuste), 0).toFixed(3).replace('.', ',')}
-                </span>
-              </div>
-            </div>
-          </div>
-        )}
-      </Modal>
+        necessidade={necessidadeSelecionada}
+      />
 
       {/* Modal de Importação */}
       <ImportNecessidadesModal

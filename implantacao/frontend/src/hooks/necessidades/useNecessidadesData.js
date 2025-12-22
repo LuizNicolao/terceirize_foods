@@ -59,6 +59,16 @@ export const useNecessidadesData = () => {
         paramsComPaginacao.status = filtros.status;
       }
       
+      // Excluir status CONF quando for para correção
+      if (filtros.excluir_conf === true || filtros.excluir_conf === 'true') {
+        paramsComPaginacao.excluir_conf = 'true';
+      }
+      
+      // Para aba de correção: mostrar apenas NEC e NEC NUTRI
+      if (filtros.apenas_nec_correcao === true || filtros.apenas_nec_correcao === 'true') {
+        paramsComPaginacao.apenas_nec_correcao = 'true';
+      }
+      
       // Adicionar parâmetros de paginação
       const paginationParams = pagination.getPaginationParams();
       paramsComPaginacao.page = paginationParams.page;
