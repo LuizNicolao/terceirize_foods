@@ -65,12 +65,17 @@ const TipoAtendimentoEscola = () => {
   const canDeleteVinculos = canDelete('tipo_atendimento_escola');
 
   // Handler para salvar (criar ou atualizar)
-  const handleSave = async (dados) => {
-    if (editingItem) {
-      return await atualizar(editingItem.id, dados);
-    } else {
-      return await criar(dados);
+  const handleSave = async (idOuDados, dados) => {
+    // Se recebeu ID como primeiro parâmetro (formato novo do modal)
+    if (typeof idOuDados === 'number' || (typeof idOuDados === 'string' && !isNaN(idOuDados))) {
+      const vínculoId = typeof idOuDados === 'string' ? parseInt(idOuDados) : idOuDados;
+      return await atualizar(vínculoId, dados);
     }
+    
+    // Se recebeu apenas dados (sem ID), usar criar (que atualiza automaticamente se já existir)
+    // Isso funciona tanto para criação quanto para edição de outras escolas
+    const dadosParaSalvar = dados || idOuDados;
+    return await criar(dadosParaSalvar);
   };
 
   // Handler para limpar filtros
@@ -179,6 +184,10 @@ const TipoAtendimentoEscola = () => {
         viewMode={viewMode}
         loading={loading}
         buscarPorEscola={buscarPorEscola}
+        onSaveComplete={async () => {
+          await carregarVinculos();
+          handleCloseModal();
+        }}
       />
 
       {/* Modal de Confirmação de Exclusão */}

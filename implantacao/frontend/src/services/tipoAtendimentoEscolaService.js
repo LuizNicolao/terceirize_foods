@@ -73,6 +73,7 @@ class TipoAtendimentoEscolaService {
   static async atualizar(id, dados) {
     try {
       const response = await api.put(`/tipo-atendimento-escola/${id}`, dados);
+
       return {
         success: true,
         data: response.data.data || response.data,

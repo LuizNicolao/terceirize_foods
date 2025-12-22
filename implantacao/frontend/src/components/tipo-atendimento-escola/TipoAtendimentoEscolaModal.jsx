@@ -17,7 +17,8 @@ const TipoAtendimentoEscolaModal = ({
   editingItem = null,
   viewMode = false,
   loading = false,
-  buscarPorEscola = async () => []
+  buscarPorEscola = async () => [],
+  onSaveComplete = null // Callback quando salvar for concluído
 }) => {
   const { user } = useAuth();
   const [filialId, setFilialId] = useState('');
@@ -26,6 +27,7 @@ const TipoAtendimentoEscolaModal = ({
   const [loadingFiliais, setLoadingFiliais] = useState(false);
   const [loadingEscolas, setLoadingEscolas] = useState(false);
   const [vinculosSelecionados, setVinculosSelecionados] = useState({}); // { escola_id: [tipo1, tipo2, ...] }
+  const [vinculosIniciais, setVinculosIniciais] = useState({}); // Estado inicial para comparar mudanças
   const [escolasPage, setEscolasPage] = useState(1);
   const [escolasTotalPages, setEscolasTotalPages] = useState(1);
   const [escolasTotalItems, setEscolasTotalItems] = useState(0);
@@ -117,9 +119,10 @@ const TipoAtendimentoEscolaModal = ({
             : editingItem.tipo_atendimento
               ? [editingItem.tipo_atendimento]
               : [];
-            setVinculosSelecionados({
-              [escolaId]: tiposSelecionados
-            });
+            const vinculosIniciaisMap = { [escolaId]: tiposSelecionados };
+            setVinculosSelecionados(vinculosIniciaisMap);
+            // Salvar estado inicial
+            setVinculosIniciais(JSON.parse(JSON.stringify(vinculosIniciaisMap)));
             setLoadingEscolas(false);
             return;
           }
@@ -211,6 +214,8 @@ const TipoAtendimentoEscolaModal = ({
             setEscolasTotalItems(totalItems);
             setEscolasTotalPages(totalPages);
             setVinculosSelecionados(vinculosMap);
+            // Salvar estado inicial para comparar mudanças depois
+            setVinculosIniciais(JSON.parse(JSON.stringify(vinculosMap)));
           } else {
             // Se não encontrou escolas com tipos, mostrar apenas a escola do editingItem
             const escolaSelecionada = {
@@ -233,9 +238,11 @@ const TipoAtendimentoEscolaModal = ({
               : editingItem.tipo_atendimento
                 ? [editingItem.tipo_atendimento]
                 : [];
-          setVinculosSelecionados({
-            [escolaId]: tiposSelecionados
-          });
+            
+          const vinculosIniciaisMap = { [escolaId]: tiposSelecionados };
+          setVinculosSelecionados(vinculosIniciaisMap);
+          // Salvar estado inicial
+          setVinculosIniciais(JSON.parse(JSON.stringify(vinculosIniciaisMap)));
           }
         } catch (error) {
           console.error('Erro ao carregar escolas da filial para visualização/edição:', error);
@@ -261,14 +268,16 @@ const TipoAtendimentoEscolaModal = ({
               : editingItem.tipo_atendimento
                 ? [editingItem.tipo_atendimento]
                 : [];
-            setVinculosSelecionados({
-              [escolaId]: tiposSelecionados
-            });
+            const vinculosIniciaisMap = { [escolaId]: tiposSelecionados };
+            setVinculosSelecionados(vinculosIniciaisMap);
+            // Salvar estado inicial
+            setVinculosIniciais(JSON.parse(JSON.stringify(vinculosIniciaisMap)));
           } catch (err) {
             console.error('Erro ao carregar tipos da escola:', err);
-          setVinculosSelecionados({
-            [escolaId]: editingItem.tipo_atendimento ? [editingItem.tipo_atendimento] : []
-          });
+            const vinculosIniciaisMap = { [escolaId]: editingItem.tipo_atendimento ? [editingItem.tipo_atendimento] : [] };
+            setVinculosSelecionados(vinculosIniciaisMap);
+            // Salvar estado inicial
+            setVinculosIniciais(JSON.parse(JSON.stringify(vinculosIniciaisMap)));
           }
         } finally {
           setLoadingEscolas(false);
@@ -278,6 +287,7 @@ const TipoAtendimentoEscolaModal = ({
       carregarEscolasDaFilial();
     } else {
       setVinculosSelecionados({});
+      setVinculosIniciais({});
       setFilialId('');
       setBuscaEscola('');
       setEscolasPage(1);
@@ -376,7 +386,7 @@ const TipoAtendimentoEscolaModal = ({
     if (!isViewMode) {
       markDirty();
     }
-  }, [isViewMode, markDirty]);
+  }, [isViewMode, markDirty, isEditing, editingItem]);
 
   const isTipoSelecionado = (escolaId, tipoValue) => {
     return vinculosSelecionados[escolaId]?.includes(tipoValue) || false;
@@ -499,13 +509,135 @@ const TipoAtendimentoEscolaModal = ({
       return;
     }
 
-    // Se estiver editando, atualizar tipos desta escola
+    // Se estiver editando, atualizar tipos apenas das escolas que foram realmente modificadas
     if (isEditing && editingItem) {
-      await onSave({
-        escola_id: editingItem.escola_id,
-        tipos_atendimento: vinculosSelecionados[editingItem.escola_id] || [],
-        ativo: statusAtivo
+      // Comparar estado inicial com estado atual para identificar mudanças
+      const escolasModificadas = [];
+      
+      // Função auxiliar para comparar arrays (ordem não importa)
+      const arraysIguais = (arr1, arr2) => {
+        if (!arr1 && !arr2) return true;
+        if (!arr1 || !arr2) return false;
+        const sorted1 = [...arr1].sort().join(',');
+        const sorted2 = [...arr2].sort().join(',');
+        return sorted1 === sorted2;
+      };
+      
+      // Verificar todas as escolas no estado atual
+      const todasEscolas = new Set([
+        ...Object.keys(vinculosSelecionados),
+        ...Object.keys(vinculosIniciais)
+      ]);
+      
+      for (const escolaIdStr of todasEscolas) {
+        const escolaId = parseInt(escolaIdStr);
+        const tiposAtuais = vinculosSelecionados[escolaIdStr] || [];
+        const tiposIniciais = vinculosIniciais[escolaIdStr] || [];
+        
+        // Verificar se houve mudança
+        if (!arraysIguais(tiposAtuais, tiposIniciais)) {
+          escolasModificadas.push(escolaIdStr);
+        }
+      }
+      
+      // Se nenhuma escola foi modificada, apenas atualizar status se mudou
+      if (escolasModificadas.length === 0) {
+        const statusMudou = statusAtivo !== (editingItem.ativo !== undefined ? Boolean(editingItem.ativo) : true);
+        if (statusMudou) {
+          const resultado = await onSave(editingItem.id, {
+            escola_id: editingItem.escola_id,
+            tipos_atendimento: vinculosSelecionados[editingItem.escola_id] || [],
+            ativo: statusAtivo
+          });
+          
+          if (resultado && resultado.success) {
+            // Chamar callback para recarregar dados
+            if (onSaveComplete) {
+              await onSaveComplete();
+            }
+            toast.success('Vínculo atualizado com sucesso!');
+          }
+        } else {
+          toast.info('Nenhuma alteração para salvar');
+        }
+        return;
+      }
+
+      // Salvar apenas as escolas que foram modificadas
+      // Para a escola do editingItem, usar o ID conhecido
+      // Para outras escolas, buscar o ID do vínculo ou criar novo
+      const promessasSalvar = escolasModificadas.map(async (escolaIdStr) => {
+        const escolaId = parseInt(escolaIdStr);
+        const tiposAtendimento = vinculosSelecionados[escolaIdStr] || [];
+        const isEscolaPrincipal = escolaId === editingItem.escola_id;
+
+        if (isEscolaPrincipal) {
+          // Escola principal: usar ID do editingItem e atualizar diretamente
+          const dadosParaSalvar = {
+            escola_id: escolaId,
+            tipos_atendimento: tiposAtendimento,
+            ativo: statusAtivo
+          };
+
+          return onSave(editingItem.id, dadosParaSalvar);
+        } else {
+          // Outras escolas: buscar ID do vínculo primeiro
+          try {
+            const tiposEscola = await buscarPorEscola(escolaId);
+            const vinculoId = tiposEscola && tiposEscola.length > 0 ? tiposEscola[0].id : null;
+
+            if (vinculoId) {
+              // Atualizar vínculo existente
+              const dadosParaSalvar = {
+                escola_id: escolaId,
+                tipos_atendimento: tiposAtendimento,
+                ativo: true
+              };
+
+              return onSave(vinculoId, dadosParaSalvar);
+            } else {
+              // Criar novo vínculo (o backend vai criar se não existir)
+              const dadosParaSalvar = {
+                escola_id: escolaId,
+                tipos_atendimento: tiposAtendimento,
+                ativo: true
+              };
+
+              // Usar onSave sem ID para criar (handleSave vai detectar e usar criar)
+              return onSave(dadosParaSalvar);
+            }
+          } catch (error) {
+            console.error(`[TipoAtendimentoEscolaModal] Erro ao processar escola ${escolaId}:`, error);
+            throw error;
+          }
+        }
       });
+
+      // Aguardar todas as atualizações
+      const resultados = await Promise.all(promessasSalvar);
+      
+      // Contar sucessos
+      const sucessos = resultados.filter(r => r && r.success).length;
+      const total = resultados.length;
+      
+      // Recarregar vínculos e fechar modal apenas uma vez
+      if (sucessos > 0) {
+        // Chamar callback para recarregar dados (se fornecido)
+        if (onSaveComplete) {
+          await onSaveComplete();
+        }
+        
+        // Exibir mensagem única
+        if (total === 1) {
+          toast.success('Vínculo atualizado com sucesso!');
+        } else {
+          toast.success(`${sucessos} vínculo(s) atualizado(s) com sucesso!`);
+        }
+        
+        // Fechar modal será feito pelo componente pai
+      } else if (total > 0) {
+        toast.error('Erro ao atualizar vínculo(s)');
+      }
     } else {
       // Criar array de vínculos para salvar
       const vinculosParaSalvar = [];
@@ -543,9 +675,8 @@ const TipoAtendimentoEscolaModal = ({
     carregarEscolas(filialId, 1, escolasItemsPerPage);
   };
 
-  const handleItemsPerPageChange = (event) => {
-    const value = parseInt(event.target.value, 10);
-    if (Number.isNaN(value)) {
+  const handleItemsPerPageChange = (value) => {
+    if (Number.isNaN(value) || value <= 0) {
       return;
     }
 
@@ -588,14 +719,6 @@ const TipoAtendimentoEscolaModal = ({
   const totalPagesParaExibicao = isEditing 
     ? Math.max(1, Math.ceil(escolasFiltradas.length / escolasItemsPerPage))
     : escolasTotalPages;
-  
-  const inicioItem = totalItemsParaExibicao === 0
-    ? 0
-    : (escolasPage - 1) * escolasItemsPerPage + 1;
-  const fimItem = totalItemsParaExibicao === 0
-    ? 0
-    : Math.min(escolasPage * escolasItemsPerPage, totalItemsParaExibicao);
-  const possuiEscolasListadas = filialId && totalItemsParaExibicao > 0;
 
   const handleStatusChange = (e) => {
     setStatusAtivo(e.target.value === 'ativo');
@@ -806,28 +929,6 @@ const TipoAtendimentoEscolaModal = ({
         {!isEditing && filialId && (
           <div className="flex flex-col items-center justify-center gap-3 pt-4 border-t border-gray-200">
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full">
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600">Itens por página</span>
-                <select
-                  value={escolasItemsPerPage}
-                  onChange={handleItemsPerPageChange}
-                  className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                  disabled={loadingEscolas}
-                >
-                  {[10, 20, 30, 50].map(opcao => (
-                    <option key={opcao} value={opcao}>
-                      {opcao}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-2 text-sm text-gray-600">
-                {possuiEscolasListadas && (
-                  <span>
-                    Exibindo {inicioItem}-{fimItem} de {escolasTotalItems}
-                  </span>
-                )}
                 {escolasTotalPages > 1 && (
                   <Pagination
                     currentPage={escolasPage}
@@ -835,9 +936,9 @@ const TipoAtendimentoEscolaModal = ({
                     totalItems={escolasTotalItems}
                     itemsPerPage={escolasItemsPerPage}
                     onPageChange={setEscolasPage}
+                  onItemsPerPageChange={handleItemsPerPageChange}
                   />
                 )}
-              </div>
 
               <div className="flex gap-2">
                 <Button
@@ -866,32 +967,6 @@ const TipoAtendimentoEscolaModal = ({
         {/* Navegação - Modo edição/visualização */}
         {isEditing && filialId && totalItemsParaExibicao > 0 && (
           <div className="flex flex-col items-center justify-center gap-3 pt-4 border-t border-gray-200">
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full">
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600">Itens por página</span>
-                <select
-                  value={escolasItemsPerPage}
-                  onChange={handleItemsPerPageChange}
-                  className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                  disabled={loadingEscolas || isViewMode}
-                >
-                  {[10, 20, 30, 50].map(opcao => (
-                    <option key={opcao} value={opcao}>
-                      {opcao}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-2 text-sm text-gray-600">
-                {possuiEscolasListadas && (
-                  <span>
-                    Exibindo {inicioItem}-{fimItem} de {totalItemsParaExibicao}
-                    {buscaEscola && escolas.length > escolasFiltradas.length && (
-                      <span className="text-gray-500"> (de {escolas.length} total)</span>
-                    )}
-                  </span>
-                )}
                 {totalPagesParaExibicao > 1 && (
                   <Pagination
                     currentPage={escolasPage}
@@ -899,10 +974,9 @@ const TipoAtendimentoEscolaModal = ({
                     totalItems={totalItemsParaExibicao}
                     itemsPerPage={escolasItemsPerPage}
                     onPageChange={setEscolasPage}
+                onItemsPerPageChange={handleItemsPerPageChange}
                   />
                 )}
-              </div>
-            </div>
           </div>
         )}
 

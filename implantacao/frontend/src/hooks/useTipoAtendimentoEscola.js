@@ -225,17 +225,25 @@ export const useTipoAtendimentoEscola = () => {
       }
 
       const result = await TipoAtendimentoEscolaService.atualizar(id, dadosAtualizados);
+
       if (result.success) {
-        toast.success('Vínculo atualizado com sucesso!');
+        // Não exibir toast aqui se for chamado múltiplas vezes (o modal vai exibir mensagem consolidada)
+        // toast.success('Vínculo atualizado com sucesso!');
         await carregarVinculos();
-        setShowModal(false);
-        setEditingItem(null);
+        // Não fechar modal nem limpar editingItem se for chamado múltiplas vezes
+        // setShowModal(false);
+        // setEditingItem(null);
         return { success: true, data: result.data };
       } else {
         toast.error(result.error || 'Erro ao atualizar vínculo');
         return { success: false, error: result.error };
       }
     } catch (err) {
+      console.error('[useTipoAtendimentoEscola] atualizar - Erro capturado', {
+        error: err,
+        response: err.response?.data,
+        message: err.message
+      });
       const errorMessage = err.response?.data?.message || 'Erro ao atualizar vínculo';
       toast.error(errorMessage);
       return { success: false, error: errorMessage };

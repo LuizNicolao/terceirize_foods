@@ -314,7 +314,7 @@ class TipoAtendimentoEscolaCRUDController {
       const novoAtivo = ativo !== undefined ? ativo : vinculoAntigo.ativo;
 
       // Atualizar vínculo
-      await executeQuery(
+      const resultadoUpdate = await executeQuery(
         `UPDATE tipos_atendimento_escola 
          SET tipos_atendimento = ?, ativo = ?, atualizado_por = ?, atualizado_em = NOW()
          WHERE id = ?`,
