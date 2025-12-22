@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { FaChevronDown, FaTimes } from 'react-icons/fa';
 
 /**
@@ -12,10 +13,13 @@ const MultiSelectCheckbox = ({
   placeholder = "Selecione...",
   disabled = false,
   className = "",
-  maxHeight = "200px"
+  maxHeight = "200px",
+  usePortal = true,
+  portalContainer = null
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
   const containerRef = useRef(null);
   const dropdownRef = useRef(null);
 
@@ -64,10 +68,55 @@ const MultiSelectCheckbox = ({
     onChange([]);
   };
 
+  // Calcular posição do dropdown quando abrir (para portal)
+  useEffect(() => {
+    if (!usePortal) {
+      return;
+    }
+
+    if (isOpen && containerRef.current) {
+      const updatePosition = () => {
+        const rect = containerRef.current.getBoundingClientRect();
+        const viewportHeight = window.innerHeight;
+        const dropdownHeight = 250; // altura estimada do dropdown
+        const spaceBelow = viewportHeight - rect.bottom;
+        const spaceAbove = rect.top;
+        
+        // Se não há espaço suficiente abaixo, mas há acima, mostrar acima
+        const showAbove = spaceBelow < dropdownHeight && spaceAbove > spaceBelow;
+        
+        // Com position: fixed, usar coordenadas da viewport (sem scrollY/scrollX)
+        setDropdownPosition({
+          top: showAbove 
+            ? rect.top - dropdownHeight - 4
+            : rect.bottom + 4,
+          left: rect.left,
+          width: rect.width
+        });
+      };
+      
+      updatePosition();
+      
+      // Atualizar posição em scroll ou resize
+      window.addEventListener('scroll', updatePosition, true);
+      window.addEventListener('resize', updatePosition);
+      
+      return () => {
+        window.removeEventListener('scroll', updatePosition, true);
+        window.removeEventListener('resize', updatePosition);
+      };
+    }
+  }, [isOpen, usePortal]);
+
   // Fechar dropdown ao clicar fora
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (containerRef.current && !containerRef.current.contains(event.target)) {
+        // Verificar se o clique foi no portal do dropdown
+        const dropdownElement = document.querySelector('[data-dropdown-portal]');
+        if (dropdownElement && dropdownElement.contains(event.target)) {
+          return;
+        }
         setIsOpen(false);
       }
     };
@@ -128,79 +177,107 @@ const MultiSelectCheckbox = ({
         </div>
       </button>
 
-      {isOpen && !disabled && (
-        <div
-          ref={dropdownRef}
-          className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg"
-          style={{ maxHeight, overflow: 'hidden' }}
-        >
-          {/* Campo de busca */}
-          <div className="p-2 border-b border-gray-200">
-            <input
-              type="text"
-              placeholder="Buscar..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              onClick={(e) => e.stopPropagation()}
-              className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-green-500"
-            />
-          </div>
+      {isOpen && !disabled && (() => {
+        const dropdownElement = (
+          <div
+            ref={dropdownRef}
+            data-dropdown-portal={usePortal ? true : undefined}
+            className={`
+              ${usePortal ? 'fixed z-[9999]' : 'absolute z-50 w-full mt-1'}
+              bg-white border border-gray-300 rounded-lg shadow-lg
+            `}
+            style={
+              usePortal
+                ? {
+                    top: `${dropdownPosition.top}px`,
+                    left: `${dropdownPosition.left}px`,
+                    width: `${dropdownPosition.width}px`,
+                    maxHeight,
+                    overflow: 'hidden'
+                  }
+                : {
+                    maxHeight,
+                    overflow: 'hidden'
+                  }
+            }
+          >
+            {/* Campo de busca */}
+            <div className="p-2 border-b border-gray-200">
+              <input
+                type="text"
+                placeholder="Buscar..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onClick={(e) => e.stopPropagation()}
+                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              />
+            </div>
 
-          {/* Botões de ação */}
-          <div className="p-2 border-b border-gray-200 flex gap-2">
-            <button
-              type="button"
-              onClick={handleSelectAll}
-              className="text-xs text-green-600 hover:text-green-700 px-2 py-1"
-            >
-              Selecionar Todos
-            </button>
-            {value.length > 0 && (
+            {/* Botões de ação */}
+            <div className="p-2 border-b border-gray-200 flex gap-2">
               <button
                 type="button"
-                onClick={handleClear}
-                className="text-xs text-red-600 hover:text-red-700 px-2 py-1"
+                onClick={handleSelectAll}
+                className="text-xs text-green-600 hover:text-green-700 px-2 py-1"
               >
-                Limpar
+                Selecionar Todos
               </button>
-            )}
-          </div>
+              {value.length > 0 && (
+                <button
+                  type="button"
+                  onClick={handleClear}
+                  className="text-xs text-red-600 hover:text-red-700 px-2 py-1"
+                >
+                  Limpar
+                </button>
+              )}
+            </div>
 
-          {/* Lista de opções */}
-          <div className="overflow-y-auto" style={{ maxHeight: `calc(${maxHeight} - 100px)` }}>
-            {filteredOptions.length === 0 ? (
-              <div className="text-sm text-gray-500 text-center py-4">
-                Nenhuma opção encontrada
-              </div>
-            ) : (
-              <div className="p-2">
-                {filteredOptions
-                  .filter(opt => opt.value !== 'todos') // Filtrar opção "todos" se existir
-                  .map(option => {
-                    const selected = isSelected(option.value);
-                    return (
-                      <label
-                        key={option.value}
-                        className={`
-                          flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer hover:bg-gray-50
-                          ${selected ? 'bg-green-50' : ''}
-                        `}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={selected}
-                          onChange={() => handleToggle(option.value)}
-                          className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded flex-shrink-0"
-                        />
-                        <span className="text-sm text-gray-700 flex-1">{option.label}</span>
-                      </label>
-                    );
-                  })}
-              </div>
-            )}
+            {/* Lista de opções */}
+            <div className="overflow-y-auto" style={{ maxHeight: `calc(${maxHeight} - 100px)` }}>
+              {filteredOptions.length === 0 ? (
+                <div className="text-sm text-gray-500 text-center py-4">
+                  Nenhuma opção encontrada
+                </div>
+              ) : (
+                <div className="p-2">
+                  {filteredOptions
+                    .filter(opt => opt.value !== 'todos') // Filtrar opção "todos" se existir
+                    .map(option => {
+                      const selected = isSelected(option.value);
+                      return (
+                        <label
+                          key={option.value}
+                          className={`
+                            flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer hover:bg-gray-50
+                            ${selected ? 'bg-green-50' : ''}
+                          `}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={selected}
+                            onChange={() => handleToggle(option.value)}
+                            className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded flex-shrink-0"
+                          />
+                          <span className="text-sm text-gray-700 flex-1">{option.label}</span>
+                        </label>
+                      );
+                    })}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        );
+
+        if (usePortal) {
+          if (typeof document === 'undefined') {
+            return null;
+          }
+          return createPortal(dropdownElement, portalContainer || document.body);
+        }
+
+        return dropdownElement;
+      })()}
     </div>
   );
 };
