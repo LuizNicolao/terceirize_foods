@@ -17,7 +17,8 @@ const CalendarioConfiguracao = () => {
     configurarDiasAbastecimento,
     configurarDiasConsumo,
     adicionarFeriado,
-    removerFeriado
+    removerFeriado,
+    recalcularSemanasConsumo
   } = useCalendario();
 
   const [ano, setAno] = useState(new Date().getFullYear());
@@ -25,6 +26,7 @@ const CalendarioConfiguracao = () => {
   const [diasAbastecimento, setDiasAbastecimento] = useState([]);
   const [diasConsumo, setDiasConsumo] = useState([]);
   const [modalFeriado, setModalFeriado] = useState(false);
+  const [showConfirmRecalcular, setShowConfirmRecalcular] = useState(false);
   const [formFeriado, setFormFeriado] = useState({
     data: '',
     nome_feriado: '',
@@ -119,6 +121,18 @@ useEffect(() => {
     const sucesso = await configurarDiasConsumo(ano, diasConsumo);
     if (sucesso) {
       toast.success('Dias de consumo salvos com sucesso!');
+    }
+  };
+
+  const handleRecalcularSemanasConsumo = () => {
+    setShowConfirmRecalcular(true);
+  };
+
+  const confirmRecalcularSemanasConsumo = async () => {
+    setShowConfirmRecalcular(false);
+    const sucesso = await recalcularSemanasConsumo(ano);
+    if (sucesso) {
+      // Sucesso já é mostrado no hook
     }
   };
 
@@ -292,15 +306,27 @@ const closeModalFeriado = useCallback(() => {
                 <FaShoppingCart className="h-5 w-5 text-purple-600 mr-2" />
                 Dias de Consumo
               </h3>
-              <Button
-                onClick={handleSalvarDiasConsumo}
-                variant="primary"
-                size="sm"
-                disabled={loading}
-              >
-                <FaSave className="h-4 w-4 mr-2" />
-                Salvar
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  onClick={handleSalvarDiasConsumo}
+                  variant="primary"
+                  size="sm"
+                  disabled={loading}
+                >
+                  <FaSave className="h-4 w-4 mr-2" />
+                  Salvar
+                </Button>
+                <Button
+                  onClick={handleRecalcularSemanasConsumo}
+                  variant="secondary"
+                  size="sm"
+                  disabled={loading}
+                  title="Recalcular semanas de consumo baseado nos dias ativos"
+                >
+                  <FaCalendarCheck className="h-4 w-4 mr-2" />
+                  Recalcular Semanas
+                </Button>
+              </div>
             </div>
             
             <div className="space-y-2">
@@ -426,6 +452,18 @@ const closeModalFeriado = useCallback(() => {
         confirmText="Descartar"
         cancelText="Continuar editando"
         variant="danger"
+      />
+
+      {/* Modal de Confirmação para Recalcular Semanas de Consumo */}
+      <ConfirmModal
+        isOpen={showConfirmRecalcular}
+        onClose={() => setShowConfirmRecalcular(false)}
+        onConfirm={confirmRecalcularSemanasConsumo}
+        title="Recalcular Semanas de Consumo"
+        message={`Tem certeza que deseja recalcular as semanas de consumo para o ano ${ano}? Esta ação irá atualizar todas as semanas baseado nos dias de consumo ativos.`}
+        confirmText="Recalcular"
+        cancelText="Cancelar"
+        variant="warning"
       />
     </div>
   );

@@ -67,6 +67,12 @@ const calendarioService = {
     return response.data;
   },
 
+  // ===== PROCESSAMENTO =====
+  recalcularSemanasConsumo: async (ano) => {
+    const response = await api.post('/calendario/processamento/recalcular-semanas-consumo', { ano });
+    return response.data;
+  },
+
   // ===== API DE INTEGRAÇÃO =====
   // Semanas
   buscarSemanasConsumo: async (ano, mes = null) => {

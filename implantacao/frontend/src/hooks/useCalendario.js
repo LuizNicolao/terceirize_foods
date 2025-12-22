@@ -213,6 +213,31 @@ export const useCalendario = () => {
     }
   }, []);
 
+  // ===== PROCESSAMENTO =====
+  const recalcularSemanasConsumo = useCallback(async (ano) => {
+    setLoading(true);
+    try {
+      const response = await calendarioService.recalcularSemanasConsumo(ano);
+      if (response.success) {
+        const mensagem = response.data?.semanasAtualizadas 
+          ? `Semanas de consumo recalculadas! ${response.data.semanasAtualizadas} semanas atualizadas.`
+          : response.message || 'Semanas de consumo recalculadas com sucesso!';
+        toast.success(mensagem);
+        await carregarConfiguracao(ano); // Recarregar configuração após processamento
+        return true;
+      } else {
+        toast.error(response.message || 'Erro ao recalcular semanas de consumo');
+        return false;
+      }
+    } catch (error) {
+      console.error('Erro ao recalcular semanas de consumo:', error);
+      toast.error('Erro ao recalcular semanas de consumo');
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, [carregarConfiguracao]);
+
   // ===== API DE INTEGRAÇÃO =====
   const buscarSemanasConsumo = useCallback(async (ano) => {
     try {
@@ -310,6 +335,9 @@ export const useCalendario = () => {
     adicionarFeriado,
     removerFeriado,
     carregarConfiguracao,
+
+    // Processamento
+    recalcularSemanasConsumo,
 
     // API de Integração
     buscarSemanasConsumo,

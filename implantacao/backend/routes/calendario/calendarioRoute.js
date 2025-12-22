@@ -7,6 +7,7 @@ const CalendarioDashboardController = require('../../controllers/calendario/Cale
 const CalendarioVisualizacaoController = require('../../controllers/calendario/CalendarioVisualizacaoController');
 const CalendarioConfiguracaoController = require('../../controllers/calendario/CalendarioConfiguracaoController');
 const CalendarioAPIController = require('../../controllers/calendario/CalendarioAPIController');
+const CalendarioProcessamentoController = require('../../controllers/calendario/CalendarioProcessamentoController');
 
 const router = express.Router();
 
@@ -29,6 +30,9 @@ router.post('/configuracao/dias-consumo', canEdit('calendario'), CalendarioConfi
 router.post('/configuracao/feriados', canEdit('calendario'), CalendarioConfiguracaoController.adicionarFeriado);
 router.delete('/configuracao/feriados/:data', canDelete('calendario'), CalendarioConfiguracaoController.removerFeriado);
 router.get('/configuracao', canView('calendario'), CalendarioConfiguracaoController.obterConfiguracao);
+
+// ===== PROCESSAMENTO =====
+router.post('/processamento/recalcular-semanas-consumo', canEdit('calendario'), CalendarioProcessamentoController.recalcularSemanasConsumo);
 
 // ===== API DE INTEGRAÇÃO =====
 // Semanas
