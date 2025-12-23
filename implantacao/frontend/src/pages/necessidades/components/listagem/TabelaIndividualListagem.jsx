@@ -10,6 +10,44 @@ const TabelaIndividualListagem = ({
   dados = [],
   onView = () => {}
 }) => {
+  // Função auxiliar para converter valor antes de formatar
+  // CORREÇÃO: Valores no banco estão armazenados como inteiros multiplicados por 1000
+  const converterValor = (valor) => {
+    if (valor === null || valor === undefined || valor === '') {
+      return 0;
+    }
+    
+    let num;
+    if (typeof valor === 'string') {
+      if (valor.includes('.') && !valor.includes(',')) {
+        const semPontos = valor.replace(/\./g, '');
+        const numSemPontos = parseFloat(semPontos);
+        if (!isNaN(numSemPontos) && numSemPontos >= 100 && numSemPontos % 1 === 0) {
+          num = numSemPontos / 1000;
+        } else {
+          num = parseFloat(valor);
+        }
+      } else {
+        num = parseFloat(valor.replace(',', '.'));
+      }
+    } else {
+      num = valor;
+    }
+    
+    if (isNaN(num)) {
+      return 0;
+    }
+    
+    const parteInteiraOriginal = Math.floor(Math.abs(num));
+    const parteDecimalOriginal = Math.abs(num) - parteInteiraOriginal;
+    
+    if (parteDecimalOriginal === 0 && parteInteiraOriginal >= 100) {
+      num = num / 1000;
+    }
+    
+    return num;
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
       <div className="overflow-x-auto">
@@ -76,7 +114,7 @@ const TabelaIndividualListagem = ({
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
                   {necessidade.ajuste || necessidade.quantidade 
-                    ? `${parseFloat(necessidade.ajuste || necessidade.quantidade || 0).toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 3 })} ${necessidade.produto_unidade || necessidade.unidade_medida_sigla || ''}`
+                    ? `${converterValor(necessidade.ajuste || necessidade.quantidade || 0).toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 3 })} ${necessidade.produto_unidade || necessidade.unidade_medida_sigla || ''}`
                     : '-'
                   }
                 </td>
