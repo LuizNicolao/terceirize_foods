@@ -17,12 +17,13 @@ const AjusteTabelaCoordenacao = ({
   // Função para formatar números
   // CORREÇÃO: Valores no banco estão armazenados como inteiros multiplicados por 1000
   // Exemplo: 7200 no banco representa 7,2 (deve dividir por 1000)
+  // IMPORTANTE: Se vier como string "160.000", é um DECIMAL, não um inteiro 160000
   const formatarQuantidade = (valor) => {
     if (valor === null || valor === undefined || valor === '') {
       return '0';
     }
     
-    // Guardar valor original como string para detectar casas decimais
+    // Guardar valor original ANTES de qualquer processamento
     const valorOriginalString = String(valor);
     
     // Detectar se o valor original tinha 3 casas decimais
@@ -60,27 +61,39 @@ const AjusteTabelaCoordenacao = ({
       }
     }
     
-    // Se o valor vier como string "7.200", pode ser que o banco retornou como decimal formatado
-    // Precisamos verificar se é uma string que representa um número inteiro grande
+    // CORREÇÃO CRÍTICA: Se o valor original veio como STRING com ponto decimal (ex: "160.000"),
+    // isso significa que é um DECIMAL do banco, NÃO um inteiro multiplicado por 1000
+    // Portanto, NÃO devemos dividir por 1000 neste caso
     let num;
+    let veioComoDecimalString = false;
+    
     if (typeof valor === 'string') {
-      // Se a string contém ponto, pode ser formato decimal ou separador de milhar
-      // Exemplo: "7.200" pode ser 7.2 ou 7200
-      // Se não tem vírgula e tem ponto, tentar interpretar como número inteiro
+      // Se a string contém ponto seguido de dígitos, é um decimal formatado
+      // Exemplo: "160.000" é um decimal, não um inteiro 160000
       if (valor.includes('.') && !valor.includes(',')) {
-        // Remover pontos e tentar parseFloat
-        const semPontos = valor.replace(/\./g, '');
-        const numSemPontos = parseFloat(semPontos);
-        // Se ao remover os pontos o número fica >= 100, provavelmente é inteiro multiplicado por 1000
-        if (!isNaN(numSemPontos) && numSemPontos >= 100 && numSemPontos % 1 === 0) {
-          num = numSemPontos / 1000;
-        } else {
+        // Verificar se tem formato decimal (ex: "160.000", "7.200", "0.250")
+        const temFormatoDecimal = /^\d+\.\d+$/.test(valor);
+        
+        if (temFormatoDecimal) {
+          // É um decimal formatado do banco (ex: "160.000" = 160.0)
+          veioComoDecimalString = true;
           num = parseFloat(valor);
+        } else {
+          // Pode ser separador de milhar (ex: "7.200" como 7200)
+          const semPontos = valor.replace(/\./g, '');
+          const numSemPontos = parseFloat(semPontos);
+          // Se ao remover os pontos o número fica >= 100, provavelmente é inteiro multiplicado por 1000
+          if (!isNaN(numSemPontos) && numSemPontos >= 100 && numSemPontos % 1 === 0) {
+            num = numSemPontos / 1000;
+          } else {
+            num = parseFloat(valor);
+          }
         }
       } else {
         num = parseFloat(valor.replace(',', '.'));
       }
     } else {
+      // Valor veio como NUMBER
       num = valor;
     }
     
@@ -89,12 +102,17 @@ const AjusteTabelaCoordenacao = ({
     }
     
     // Verificar se o valor precisa ser convertido (valores inteiros >= 100 sem parte decimal)
-    // Isso indica que está armazenado como inteiro multiplicado por 1000
+    // IMPORTANTE: Só dividir por 1000 se:
+    // 1. NÃO veio como string decimal (ex: "160.000")
+    // 2. É um número inteiro >= 100
+    // 3. Não tem parte decimal
     const parteInteiraOriginal = Math.floor(Math.abs(num));
     const parteDecimalOriginal = Math.abs(num) - parteInteiraOriginal;
+    const ehInteiro = parteDecimalOriginal === 0;
+    const ehGrande = parteInteiraOriginal >= 100;
     
-    // Se for um inteiro grande (>= 100) sem parte decimal, dividir por 1000
-    if (parteDecimalOriginal === 0 && parteInteiraOriginal >= 100) {
+    // Se for um inteiro grande (>= 100) sem parte decimal E NÃO veio como string decimal, dividir por 1000
+    if (!veioComoDecimalString && ehInteiro && ehGrande) {
       num = num / 1000;
     }
     
