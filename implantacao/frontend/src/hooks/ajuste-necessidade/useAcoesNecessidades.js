@@ -41,9 +41,10 @@ export const useAcoesNecessidades = ({
       return;
     }
 
+    let loadingToast = null;
     try {
       // Mostrar feedback visual de processamento
-      const loadingToast = toast.loading('Salvando ajustes...');
+      loadingToast = toast.loading('Salvando ajustes...');
 
       // Validar produtos extras zerados
       const produtosExtrasZerados = necessidades.filter(nec => {
@@ -61,7 +62,7 @@ export const useAcoesNecessidades = ({
       });
 
       if (produtosExtrasZerados.length > 0) {
-        toast.dismiss(loadingToast);
+        if (loadingToast) toast.dismiss(loadingToast);
         const nomesProdutos = produtosExtrasZerados.map(p => p.produto).join(', ');
         toast.error(`Produtos extra devem ter quantidade maior que zero: ${nomesProdutos}`);
         return;
@@ -109,7 +110,7 @@ export const useAcoesNecessidades = ({
 
       // Validar se há algo para salvar: ajustes OU trocas de produto origem
       if (itensComAjuste.length === 0 && !temTrocasProdutoOrigem) {
-        toast.dismiss(loadingToast);
+        if (loadingToast) toast.dismiss(loadingToast);
         toast.error('Nenhum ajuste foi feito. Digite um valor ou troque um produto origem antes de salvar.');
         return;
       }
@@ -226,9 +227,45 @@ export const useAcoesNecessidades = ({
       let resultado = { success: true };
       
       if (itens.length > 0) {
+      // Normalizar grupo (pode ser objeto ou string)
+      const normalizarGrupo = (valor) => {
+        if (valor === null || valor === undefined || valor === '') return null;
+        if (typeof valor === 'object' && !Array.isArray(valor)) {
+          const grupoExtraido = valor.nome ?? valor.label ?? valor.value ?? valor.id ?? valor.nome_grupo ?? null;
+          return grupoExtraido && grupoExtraido !== '' ? String(grupoExtraido) : null;
+        }
+        return valor && valor !== '' ? String(valor) : null;
+      };
+
+      // Normalizar escola_id (pode ser objeto ou número)
+      const normalizarEscolaId = (valor) => {
+        if (valor === null || valor === undefined || valor === '') return null;
+        if (typeof valor === 'object' && !Array.isArray(valor)) {
+          const idExtraido = valor.id ?? valor.escola_id ?? valor.value ?? null;
+          if (idExtraido === null || idExtraido === undefined) return null;
+          const numId = typeof idExtraido === 'string' ? parseInt(idExtraido, 10) : Number(idExtraido);
+          return isNaN(numId) ? null : numId;
+        }
+        if (typeof valor === 'string') {
+          const numId = parseInt(valor, 10);
+          return isNaN(numId) ? null : numId;
+        }
+        const numId = Number(valor);
+        return isNaN(numId) ? null : numId;
+      };
+
+      const grupoNormalizado = filtros.grupo ? normalizarGrupo(filtros.grupo) : null;
+      const escolaIdNormalizado = normalizarEscolaId(filtros.escola_id);
+
+      // Validação antes de enviar (apenas escola_id é obrigatório)
+      if (!escolaIdNormalizado) {
+        toast.error('Erro: Escola é obrigatória');
+        return;
+      }
+
       const dadosParaSalvar = {
-        escola_id: filtros.escola_id,
-        grupo: filtros.grupo,
+        escola_id: escolaIdNormalizado,
+        grupo: grupoNormalizado,
         periodo: {
           consumo_de: filtros.consumo_de,
           consumo_ate: filtros.consumo_ate
@@ -249,7 +286,7 @@ export const useAcoesNecessidades = ({
       }
       
       // Remover toast de loading
-      toast.dismiss(loadingToast);
+      if (loadingToast) toast.dismiss(loadingToast);
       
       if (resultado.success || (itens.length === 0 && trocasExecutadasComSucesso)) {
         // Se houve apenas trocas de produto origem (sem ajustes), mostrar mensagem específica
@@ -271,7 +308,7 @@ export const useAcoesNecessidades = ({
       }
     } catch (error) {
       console.error('Erro ao salvar ajustes:', error);
-      toast.dismiss(loadingToast);
+      if (loadingToast) toast.dismiss(loadingToast);
       toast.error('Erro ao salvar ajustes');
     }
   }, [activeTab, ajustesLocais, filtros, necessidadeAtual, necessidades, salvarAjustesNutricionista, salvarAjustesCoordenacao, salvarAjustesLogistica, handleCarregarNecessidades, limparAjustesLocais, selectedProdutosOrigemLogistica]);

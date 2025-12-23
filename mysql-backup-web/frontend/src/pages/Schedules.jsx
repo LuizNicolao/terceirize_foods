@@ -50,6 +50,18 @@ export default function Schedules() {
 
   const handleSubmit = async () => {
     try {
+      // Validar backup incremental
+      if (formData.scheduleType === 'incremental') {
+        if (!formData.selectedTables || formData.selectedTables.length === 0) {
+          alert('⚠️ Backup incremental requer pelo menos uma tabela selecionada')
+          return
+        }
+        if (formData.selectedTables.length > 1) {
+          alert('⚠️ Backup incremental atualmente suporta apenas uma tabela por vez')
+          return
+        }
+      }
+      
       const payload = {
         ...formData,
         selectedTables: formData.selectedTables && formData.selectedTables.length > 0 ? formData.selectedTables : null
@@ -200,7 +212,8 @@ export default function Schedules() {
     const presets = {
       daily: { minute: '0', hour: '2', day: '*', month: '*', dayOfWeek: '*' },
       weekly: { minute: '0', hour: '2', day: '*', month: '*', dayOfWeek: '0' },
-      monthly: { minute: '0', hour: '2', day: '1', month: '*', dayOfWeek: '*' }
+      monthly: { minute: '0', hour: '2', day: '1', month: '*', dayOfWeek: '*' },
+      incremental: { minute: '0', hour: '*/6', day: '*', month: '*', dayOfWeek: '*' } // A cada 6 horas
     }
     return presets[type] || presets.daily
   }

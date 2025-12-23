@@ -135,7 +135,7 @@ async function initSystemDatabase() {
       CREATE TABLE IF NOT EXISTS backups (
         id INT AUTO_INCREMENT PRIMARY KEY,
         database_name VARCHAR(255) NOT NULL,
-        backup_type ENUM('daily', 'weekly', 'monthly', 'manual') NOT NULL,
+        backup_type ENUM('daily', 'weekly', 'monthly', 'manual', 'incremental') NOT NULL,
         file_path VARCHAR(500) NOT NULL,
         file_size BIGINT,
         remote_path VARCHAR(500) NULL,
@@ -162,14 +162,13 @@ async function initSystemDatabase() {
       CREATE TABLE IF NOT EXISTS schedules (
         id INT AUTO_INCREMENT PRIMARY KEY,
         database_name VARCHAR(255) NOT NULL,
-        schedule_type ENUM('daily', 'weekly', 'monthly') NOT NULL,
+        schedule_type ENUM('daily', 'weekly', 'monthly', 'incremental') NOT NULL,
         cron_expression VARCHAR(100) NOT NULL,
         enabled BOOLEAN DEFAULT TRUE,
         status VARCHAR(20) DEFAULT 'ativo',
         selected_tables TEXT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        UNIQUE KEY unique_schedule (database_name, schedule_type)
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
     `);
     
@@ -184,6 +183,27 @@ async function initSystemDatabase() {
       await pool.execute(`ALTER TABLE schedules ADD COLUMN selected_tables TEXT NULL`);
     } catch (error) {
       // Coluna já existe, ignorar erro
+    }
+    
+    // Migração: remover constraint UNIQUE se existir (permite múltiplos agendamentos do mesmo tipo para o mesmo banco)
+    try {
+      await pool.execute(`ALTER TABLE schedules DROP INDEX unique_schedule`);
+    } catch (error) {
+      // Índice não existe, ignorar erro
+    }
+    
+    // Migração: adicionar 'incremental' ao ENUM backup_type
+    try {
+      await pool.execute(`ALTER TABLE backups MODIFY COLUMN backup_type ENUM('daily', 'weekly', 'monthly', 'manual', 'incremental') NOT NULL`);
+    } catch (error) {
+      // Já existe ou erro, ignorar
+    }
+    
+    // Migração: adicionar 'incremental' ao ENUM schedule_type
+    try {
+      await pool.execute(`ALTER TABLE schedules MODIFY COLUMN schedule_type ENUM('daily', 'weekly', 'monthly', 'incremental') NOT NULL`);
+    } catch (error) {
+      // Já existe ou erro, ignorar
     }
     
   } catch (error) {

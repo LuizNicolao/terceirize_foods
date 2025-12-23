@@ -21,11 +21,7 @@ const poolConfig = {
   queueLimit: 0
 };
 
-// Forçar IPv4 se o host for localhost (evita problemas com IPv6)
-if (FOODS_DB_HOST === 'localhost' || FOODS_DB_HOST === '127.0.0.1') {
-  poolConfig.ipFamily = 4;
-}
-
+// Nota: mysql2 resolve automaticamente IPv4/IPv6 baseado no host
 const foodsDbPool = mysql.createPool(poolConfig);
 
 // Middleware para verificar token JWT

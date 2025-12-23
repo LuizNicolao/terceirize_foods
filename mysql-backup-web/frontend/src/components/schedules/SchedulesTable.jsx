@@ -46,6 +46,7 @@ export default function SchedulesTable({
                   {schedule.schedule_type === 'daily' ? 'Diário' : 
                    schedule.schedule_type === 'weekly' ? 'Semanal' : 
                    schedule.schedule_type === 'monthly' ? 'Mensal' : 
+                   schedule.schedule_type === 'incremental' ? 'Incremental' : 
                    schedule.schedule_type}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

@@ -47,15 +47,10 @@ router.post('/', async (req, res) => {
       selectedTablesJson = JSON.stringify(selectedTables);
     }
     
+    // Inserir novo agendamento (agora permite múltiplos agendamentos do mesmo tipo para o mesmo banco)
     await executeQuery(
       `INSERT INTO schedules (database_name, schedule_type, cron_expression, enabled, status, selected_tables)
-       VALUES (?, ?, ?, ?, ?, ?)
-       ON DUPLICATE KEY UPDATE
-       cron_expression = VALUES(cron_expression),
-       enabled = VALUES(enabled),
-       status = VALUES(status),
-       selected_tables = VALUES(selected_tables),
-       updated_at = NOW()`,
+       VALUES (?, ?, ?, ?, ?, ?)`,
       [databaseName, scheduleType, cronExpression, enabled, status, selectedTablesJson]
     );
     

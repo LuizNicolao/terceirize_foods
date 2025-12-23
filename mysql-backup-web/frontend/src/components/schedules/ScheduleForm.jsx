@@ -79,6 +79,7 @@ export default function ScheduleForm({
                 <option value="daily">Diário</option>
                 <option value="weekly">Semanal</option>
                 <option value="monthly">Mensal</option>
+                <option value="incremental">Incremental</option>
               </select>
             </div>
           </div>
@@ -205,7 +206,9 @@ export default function ScheduleForm({
               <div>
                 <h3 className="text-sm font-semibold text-gray-900">Tabelas para Backup</h3>
                 <p className="text-xs text-gray-500 mt-1">
-                  Selecione as tabelas que deseja fazer backup. Deixe vazio para backup completo do banco.
+                  {formData.scheduleType === 'incremental' 
+                    ? '⚠️ Backup incremental requer seleção de exatamente uma tabela. Será feito backup apenas dos registros modificados desde o último backup.'
+                    : 'Selecione as tabelas que deseja fazer backup. Deixe vazio para backup completo do banco.'}
                 </p>
               </div>
               <span className="text-sm font-medium text-gray-700 bg-gray-100 px-3 py-1 rounded-full">
@@ -307,10 +310,17 @@ export default function ScheduleForm({
               )}
             </div>
             
-            {formData.selectedTables.length === 0 && (
+            {formData.selectedTables.length === 0 && formData.scheduleType !== 'incremental' && (
               <div className="mt-3 bg-blue-50 border border-blue-200 rounded-lg p-2">
                 <p className="text-xs text-blue-800">
                   ℹ️ Nenhuma tabela selecionada = backup completo do banco
+                </p>
+              </div>
+            )}
+            {formData.selectedTables.length === 0 && formData.scheduleType === 'incremental' && (
+              <div className="mt-3 bg-orange-50 border border-orange-200 rounded-lg p-2">
+                <p className="text-xs text-orange-800">
+                  ⚠️ Backup incremental requer pelo menos uma tabela selecionada
                 </p>
               </div>
             )}

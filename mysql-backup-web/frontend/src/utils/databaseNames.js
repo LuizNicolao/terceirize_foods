@@ -17,7 +17,8 @@ export const getBackupTypeDisplayName = (type) => {
     'manual': 'Manual',
     'daily': 'Diário',
     'weekly': 'Semanal',
-    'monthly': 'Mensal'
+    'monthly': 'Mensal',
+    'incremental': 'Incremental'
   }
   return types[type] || type
 }

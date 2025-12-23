@@ -52,6 +52,7 @@ export default function BackupsFilters({
         <option value="daily">Diário</option>
         <option value="weekly">Semanal</option>
         <option value="monthly">Mensal</option>
+        <option value="incremental">Incremental</option>
         <option value="manual">Manual</option>
       </select>
           </div>

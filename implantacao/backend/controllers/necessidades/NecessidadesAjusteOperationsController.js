@@ -10,11 +10,11 @@ const salvarAjustes = async (req, res) => {
     const { escola_id, grupo, periodo, itens } = req.body;
 
     // Validar dados obrigatórios
-    if (!escola_id || !grupo || !itens || !Array.isArray(itens)) {
+    if (!escola_id || !itens || !Array.isArray(itens)) {
       return res.status(400).json({
         success: false,
         error: 'Dados obrigatórios',
-        message: 'escola_id, grupo e itens são obrigatórios'
+        message: 'escola_id e itens são obrigatórios'
       });
     }
 
@@ -82,17 +82,20 @@ const salvarAjustes = async (req, res) => {
 
     // Atualizar status do conjunto para 'NEC NUTRI' se houve atualizações
     if (updatedCount > 0) {
-      await executeQuery(`
-        UPDATE necessidades 
-        SET status = 'NEC NUTRI', data_atualizacao = CURRENT_TIMESTAMP
-        WHERE escola_id = ? 
-          AND status = 'NEC'
-          AND produto_id IN (
-            SELECT DISTINCT ppc.produto_id 
-            FROM produtos_per_capita ppc
-            WHERE ppc.grupo = ?
-          )
-      `, [escola_id, grupo]);
+      // Se grupo foi fornecido, usar filtro por grupo
+      if (grupo) {
+        await executeQuery(`
+          UPDATE necessidades 
+          SET status = 'NEC NUTRI', data_atualizacao = CURRENT_TIMESTAMP
+          WHERE escola_id = ? 
+            AND status = 'NEC'
+            AND produto_id IN (
+              SELECT DISTINCT ppc.produto_id 
+              FROM produtos_per_capita ppc
+              WHERE ppc.grupo = ?
+            )
+        `, [escola_id, grupo]);
+      }
 
       // Aplicar filtros de período se fornecidos
       if (periodo && periodo.consumo_de && periodo.consumo_ate) {

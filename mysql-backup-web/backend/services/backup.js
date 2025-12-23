@@ -15,7 +15,8 @@ function translateBackupType(backupType) {
     'daily': 'Diário',
     'weekly': 'Semanal',
     'monthly': 'Mensal',
-    'manual': 'Manual'
+    'manual': 'Manual',
+    'incremental': 'Incremental'
   };
   return translations[backupType] || backupType;
 }
@@ -73,6 +74,11 @@ async function ensureDirectories(backupType, databaseName) {
     path.join(BACKUP_BASE_DIR, 'logs')
   ];
   
+  // Para backup incremental, usar pasta 'incremental' ao invés do tipo
+  if (backupType === 'incremental') {
+    dirs[0] = path.join(BACKUP_BASE_DIR, 'incremental', dbFolder);
+  }
+  
   for (const dir of dirs) {
     await fs.mkdir(dir, { recursive: true });
     // Garantir permissões
@@ -80,8 +86,275 @@ async function ensureDirectories(backupType, databaseName) {
   }
 }
 
+// Buscar último timestamp de backup incremental para uma tabela
+async function getLastIncrementalBackupTimestamp(databaseName, tableName) {
+  try {
+    const pool = require('./database').getPool();
+    if (!pool) return null;
+    
+    // Buscar último backup incremental completo (não apenas da tabela específica)
+    // que tenha a tabela selecionada
+    const [backups] = await pool.execute(`
+      SELECT MAX(completed_at) as last_timestamp
+      FROM backups
+      WHERE database_name = ?
+        AND backup_type = 'incremental'
+        AND status = 'completed'
+    `, [databaseName]);
+    
+    if (backups && backups.length > 0 && backups[0].last_timestamp) {
+      return new Date(backups[0].last_timestamp);
+    }
+    
+    // Se não encontrou backup incremental, buscar último backup diário como referência
+    const [dailyBackups] = await pool.execute(`
+      SELECT MAX(completed_at) as last_timestamp
+      FROM backups
+      WHERE database_name = ?
+        AND backup_type = 'daily'
+        AND status = 'completed'
+    `, [databaseName]);
+    
+    if (dailyBackups && dailyBackups.length > 0 && dailyBackups[0].last_timestamp) {
+      return new Date(dailyBackups[0].last_timestamp);
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Erro ao buscar último timestamp de backup incremental:', error);
+    return null;
+  }
+}
+
+// Criar backup incremental de uma tabela específica (busca dados)
+async function getIncrementalData(databaseName, tableName, timestampColumn = 'data_atualizacao') {
+  const { getPool } = require('./database');
+  const pool = getPool();
+  
+  if (!pool) {
+    throw new Error('Database pool não inicializado');
+  }
+  
+  // Buscar último timestamp
+  const lastTimestamp = await getLastIncrementalBackupTimestamp(databaseName, tableName);
+  
+  if (!lastTimestamp) {
+    // Se não há backup anterior, retornar erro
+    throw new Error('Não há backup anterior. Faça um backup completo primeiro (daily) antes de usar incremental.');
+  }
+  
+  // Criar conexão temporária para o banco de destino
+  const tempConfig = { ...pool.config.connectionConfig };
+  tempConfig.database = databaseName;
+  const tempPool = require('mysql2').createPool(tempConfig);
+  
+  try {
+    // Buscar estrutura da tabela
+    const [columns] = await tempPool.execute(`
+      SELECT COLUMN_NAME, DATA_TYPE, IS_NULLABLE, COLUMN_DEFAULT
+      FROM information_schema.COLUMNS
+      WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ?
+      ORDER BY ORDINAL_POSITION
+    `, [databaseName, tableName]);
+    
+    if (columns.length === 0) {
+      throw new Error(`Tabela ${tableName} não encontrada no banco ${databaseName}`);
+    }
+    
+    // Verificar se a coluna de timestamp existe
+    const hasTimestampColumn = columns.some(col => col.COLUMN_NAME === timestampColumn);
+    if (!hasTimestampColumn) {
+      throw new Error(`Coluna ${timestampColumn} não encontrada na tabela ${tableName}`);
+    }
+    
+    // Buscar registros modificados desde o último backup
+    const columnNames = columns.map(col => `\`${col.COLUMN_NAME}\``).join(', ');
+    const [records] = await tempPool.execute(`
+      SELECT ${columnNames}
+      FROM \`${tableName}\`
+      WHERE \`${timestampColumn}\` >= ?
+      ORDER BY \`${timestampColumn}\` ASC
+    `, [lastTimestamp]);
+    
+    await tempPool.end();
+    
+    return {
+      records,
+      columns,
+      lastTimestamp,
+      recordCount: records.length
+    };
+  } catch (error) {
+    await tempPool.end();
+    throw error;
+  }
+}
+
+// Função para escapar valores SQL
+function escapeSQLValue(value, dataType) {
+  if (value === null || value === undefined) {
+    return 'NULL';
+  }
+  
+  // Para tipos de texto/data, escapar e adicionar aspas
+  if (dataType.includes('char') || dataType.includes('text') || dataType.includes('date') || dataType.includes('time')) {
+    const str = String(value);
+    return `'${str.replace(/'/g, "''").replace(/\\/g, '\\\\')}'`;
+  }
+  
+  // Para números, retornar como está
+  if (dataType.includes('int') || dataType.includes('decimal') || dataType.includes('float') || dataType.includes('double')) {
+    return String(value);
+  }
+  
+  // Para boolean, converter para 0/1
+  if (dataType.includes('bool') || dataType === 'tinyint(1)') {
+    return value ? '1' : '0';
+  }
+  
+  // Padrão: escapar como string
+  return `'${String(value).replace(/'/g, "''").replace(/\\/g, '\\\\')}'`;
+}
+
+// Criar backup incremental (wrapper principal)
+async function createIncrementalBackupWrapper(databaseName, selectedTables) {
+  if (!selectedTables || selectedTables.length === 0) {
+    throw new Error('Para backup incremental, é necessário especificar pelo menos uma tabela');
+  }
+  
+  if (selectedTables.length > 1) {
+    throw new Error('Backup incremental atualmente suporta apenas uma tabela por vez');
+  }
+  
+  const tableName = selectedTables[0];
+  const timestampColumn = 'data_atualizacao'; // Padrão, pode ser configurável depois
+  
+  // Timestamp para nome do arquivo
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
+  const timestamp = `${year}-${month}-${day}_${hours}${minutes}${seconds}`;
+  
+  const dbFolder = DB_NAMES[databaseName] || databaseName;
+  const fileNameSql = `${tableName}_${timestamp}_incremental.sql`;
+  const sqlFilePath = path.join(BACKUP_BASE_DIR, 'incremental', dbFolder, fileNameSql);
+  const fileNameGz = `${tableName}_${timestamp}_incremental.sql.gz`;
+  const filePath = path.join(BACKUP_BASE_DIR, 'incremental', dbFolder, fileNameGz);
+  
+  // Criar registro no banco
+  const { getPool } = require('./database');
+  const pool = getPool();
+  
+  if (!pool) {
+    throw new Error('Database pool não inicializado');
+  }
+  
+  const [result] = await pool.execute(
+    `INSERT INTO backups (database_name, backup_type, file_path, status) 
+     VALUES (?, ?, ?, 'running')`,
+    [databaseName, 'incremental', filePath]
+  );
+  const backupId = result.insertId;
+  
+  try {
+    // Garantir que as pastas existem
+    await ensureDirectories('incremental', databaseName);
+    
+    // Buscar dados incrementais
+    const { records, columns, lastTimestamp, recordCount } = await getIncrementalData(databaseName, tableName, timestampColumn);
+    
+    if (recordCount === 0) {
+      // Não há mudanças, criar arquivo vazio ou pular backup
+      await pool.execute(
+        `UPDATE backups SET status = 'completed', completed_at = NOW(), file_size = 0 WHERE id = ?`,
+        [backupId]
+      );
+      
+      return {
+        success: true,
+        backupId,
+        databaseName,
+        backupType: 'incremental',
+        filePath: filePath,
+        fileSize: 0,
+        recordCount: 0,
+        message: 'Nenhuma mudança detectada desde o último backup'
+      };
+    }
+    
+    // Criar conteúdo SQL
+    let sqlContent = `-- Backup incremental: ${tableName}\n`;
+    sqlContent += `-- Banco: ${databaseName}\n`;
+    sqlContent += `-- Período: ${lastTimestamp.toISOString()} até ${now.toISOString()}\n`;
+    sqlContent += `-- Registros alterados: ${recordCount}\n`;
+    sqlContent += `-- Gerado em: ${now.toISOString()}\n\n`;
+    sqlContent += `USE \`${databaseName}\`;\n\n`;
+    
+    // Gerar INSERT ou REPLACE para cada registro
+    const columnNames = columns.map(col => `\`${col.COLUMN_NAME}\``).join(', ');
+    
+    for (const record of records) {
+      const values = columns.map(col => escapeSQLValue(record[col.COLUMN_NAME], col.DATA_TYPE)).join(', ');
+      sqlContent += `REPLACE INTO \`${tableName}\` (${columnNames}) VALUES (${values});\n`;
+    }
+    
+    // Escrever arquivo
+    await fs.writeFile(sqlFilePath, sqlContent, 'utf8');
+    
+    // Comprimir
+    await execPromise(`gzip -f "${sqlFilePath}"`);
+    
+    // Aguardar compressão
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Obter tamanho do arquivo comprimido
+    const finalStats = await fs.stat(filePath);
+    
+    // Atualizar registro
+    await pool.execute(
+      `UPDATE backups SET status = 'completed', completed_at = NOW(), file_size = ? WHERE id = ?`,
+      [finalStats.size, backupId]
+    );
+    
+    // Enviar notificação
+    const message = `✅ Backup incremental concluído: ${databaseName}/${tableName}\n📊 Registros: ${recordCount}\n💾 Tamanho: ${(finalStats.size / 1024).toFixed(2)} KB`;
+    sendTelegram(message).catch(() => {});
+    
+    return {
+      success: true,
+      backupId,
+      databaseName,
+      backupType: 'incremental',
+      tableName,
+      filePath: filePath,
+      fileSize: finalStats.size,
+      recordCount,
+      status: 'completed'
+    };
+  } catch (error) {
+    // Atualizar registro com erro
+    await pool.execute(
+      `UPDATE backups SET status = 'failed', error_message = ?, completed_at = NOW() WHERE id = ?`,
+      [error.message, backupId]
+    );
+    
+    // Enviar notificação de erro
+    sendTelegram(`❌ Erro no backup incremental: ${databaseName}/${tableName}\n⚠️ ${error.message}`).catch(() => {});
+    
+    throw error;
+  }
+}
+
 // Fazer backup de um banco (com opção de tabelas específicas)
 async function createBackup(databaseName, backupType = 'manual', selectedTables = null) {
+  // Se for backup incremental, usar lógica diferente
+  if (backupType === 'incremental') {
+    return await createIncrementalBackupWrapper(databaseName, selectedTables);
+  }
   // Usar o mesmo formato de timestamp do script: YYYY-MM-DD_HHMMSS
   const now = new Date();
   const year = now.getFullYear();
