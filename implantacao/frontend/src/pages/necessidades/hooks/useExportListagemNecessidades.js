@@ -7,6 +7,7 @@ import { useCallback } from 'react';
 import jsPDF from 'jspdf';
 import * as XLSX from 'xlsx';
 import toast from 'react-hot-toast';
+import { formatarQuantidade } from '../../consulta-status-necessidade/utils/formatarQuantidade';
 
 export const useExportListagemNecessidades = () => {
   /**
@@ -30,7 +31,7 @@ export const useExportListagemNecessidades = () => {
           'Grupo': item.grupo || '-',
           'Total Escolas': item.total_escolas || 0,
           'Total Necessidades': item.total_necessidades || 0,
-          'Quantidade Total': item.quantidade_total || 0,
+          'Quantidade Total': formatarQuantidade(item.quantidade_total || 0),
           'Unidade': item.produto_unidade || item.unidade_medida_sigla || '',
           'Status': item.status || 'NEC'
         }));
@@ -43,7 +44,7 @@ export const useExportListagemNecessidades = () => {
           'Rota': item.escola_rota || item.rota || '-',
           'Produto': item.produto || item.produto_nome || '-',
           'Grupo': item.grupo || '-',
-          'Quantidade': item.ajuste || item.quantidade || 0,
+          'Quantidade': formatarQuantidade(item.ajuste || item.quantidade || 0),
           'Unidade': item.produto_unidade || item.unidade_medida_sigla || '',
           'Semana Consumo': item.semana_consumo || '-',
           'Semana Abastecimento': item.semana_abastecimento || '-',
@@ -159,7 +160,7 @@ export const useExportListagemNecessidades = () => {
 
           const produto = (item.produto_nome || item.produto || '-').substring(0, 30);
           const grupo = (item.grupo || '-').substring(0, 20);
-          const quantidadeTotal = item.quantidade_total ? item.quantidade_total.toFixed(2) : '0';
+          const quantidadeTotal = formatarQuantidade(item.quantidade_total || 0);
           const unidade = item.produto_unidade || item.unidade_medida_sigla || '';
 
           doc.text(produto, margin, yPosition);
@@ -206,7 +207,7 @@ export const useExportListagemNecessidades = () => {
           const escola = (item.escola || item.escola_nome || '-').substring(0, 25);
           const produto = (item.produto || item.produto_nome || '-').substring(0, 30);
           const grupo = (item.grupo || '-').substring(0, 20);
-          const quantidade = item.ajuste || item.quantidade || 0;
+          const quantidade = formatarQuantidade(item.ajuste || item.quantidade || 0);
           const unidade = item.produto_unidade || item.unidade_medida_sigla || '';
 
           doc.text(id, margin, yPosition);

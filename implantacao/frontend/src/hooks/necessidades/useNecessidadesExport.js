@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import toast from 'react-hot-toast';
+import { formatarQuantidade } from '../../pages/consulta-status-necessidade/utils/formatarQuantidade';
 
 /**
  * Hook para gerenciar exportação de necessidades (XLSX e PDF)
@@ -25,7 +26,7 @@ export const useNecessidadesExport = () => {
         'Código Produto': necessidade.produto_id || '',
         'Produto': necessidade.produto,
         'UN': necessidade.produto_unidade || '',
-        'Quantidade': necessidade.ajuste
+        'Quantidade': formatarQuantidade(necessidade.ajuste || 0)
       }));
 
       // Criar workbook
@@ -161,7 +162,7 @@ export const useNecessidadesExport = () => {
           necessidade.produto_id?.toString() || '',
           necessidade.produto,
           necessidade.produto_unidade || '',
-          necessidade.ajuste.toString()
+          formatarQuantidade(necessidade.ajuste || 0)
         ];
 
         xPos = margin;
