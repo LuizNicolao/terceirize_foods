@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react'
 import api from '../services/api'
 import SchedulesTable from '../components/schedules/SchedulesTable'
 import ScheduleForm from '../components/schedules/ScheduleForm'
+import ConfirmModal from '../components/ui/ConfirmModal'
+import { getDatabaseDisplayName } from '../utils/databaseNames'
+import toast from 'react-hot-toast'
 
 export default function Schedules() {
   const [schedules, setSchedules] = useState([])
@@ -28,6 +31,10 @@ export default function Schedules() {
     month: '*',
     dayOfWeek: '*'
   })
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    config: null
+  })
 
   useEffect(() => {
     loadData()
@@ -53,11 +60,11 @@ export default function Schedules() {
       // Validar backup incremental
       if (formData.scheduleType === 'incremental') {
         if (!formData.selectedTables || formData.selectedTables.length === 0) {
-          alert('⚠️ Backup incremental requer pelo menos uma tabela selecionada')
+          toast.error('⚠️ Backup incremental requer pelo menos uma tabela selecionada')
           return
         }
         if (formData.selectedTables.length > 1) {
-          alert('⚠️ Backup incremental atualmente suporta apenas uma tabela por vez')
+          toast.error('⚠️ Backup incremental atualmente suporta apenas uma tabela por vez')
           return
         }
       }
@@ -75,9 +82,10 @@ export default function Schedules() {
       setShowModal(false)
       setEditingSchedule(null)
       resetForm()
+      toast.success(`Agendamento ${editingSchedule ? 'atualizado' : 'criado'} com sucesso!`)
       loadData()
     } catch (error) {
-      alert(`Erro ao ${editingSchedule ? 'atualizar' : 'criar'} agendamento: ` + (error.response?.data?.message || error.message))
+      toast.error(`Erro ao ${editingSchedule ? 'atualizar' : 'criar'} agendamento: ` + (error.response?.data?.message || error.message))
     }
   }
 
@@ -196,16 +204,53 @@ export default function Schedules() {
   }
 
   const handleDelete = async (id) => {
-    if (!confirm('Tem certeza que deseja deletar este agendamento?')) {
-      return
-    }
+    setConfirmModal({
+      isOpen: true,
+      config: {
+        title: 'Confirmar Exclusão',
+        message: 'Tem certeza que deseja deletar este agendamento?',
+        confirmText: 'Deletar',
+        cancelText: 'Cancelar',
+        type: 'danger',
+        onConfirm: async () => {
+          try {
+            await api.delete(`/schedules/${id}`)
+            toast.success('Agendamento deletado com sucesso!')
+            loadData()
+          } catch (error) {
+            toast.error('Erro ao deletar: ' + (error.response?.data?.message || error.message))
+          }
+        }
+      }
+    })
+  }
+
+  const handleExecute = async (schedule) => {
+    const scheduleTypeName = schedule.schedule_type === 'daily' ? 'Diário' : 
+                             schedule.schedule_type === 'weekly' ? 'Semanal' : 
+                             schedule.schedule_type === 'monthly' ? 'Mensal' : 
+                             schedule.schedule_type === 'incremental' ? 'Incremental' : 
+                             schedule.schedule_type
     
-    try {
-      await api.delete(`/schedules/${id}`)
-      loadData()
-    } catch (error) {
-      alert('Erro ao deletar: ' + error.message)
-    }
+    setConfirmModal({
+      isOpen: true,
+      config: {
+        title: 'Executar Agendamento',
+        message: `Deseja executar o agendamento "${getDatabaseDisplayName(schedule.database_name)} - ${scheduleTypeName}" agora?`,
+        confirmText: 'Executar',
+        cancelText: 'Cancelar',
+        type: 'info',
+        onConfirm: async () => {
+          try {
+            await api.post(`/schedules/${schedule.id}/execute`)
+            toast.success('✅ Backup iniciado com sucesso! Verifique a página de Backups para acompanhar o progresso.')
+            loadData()
+          } catch (error) {
+            toast.error('Erro ao executar agendamento: ' + (error.response?.data?.message || error.message))
+          }
+        }
+      }
+    })
   }
 
   const getCronPresets = (type) => {
@@ -444,6 +489,7 @@ export default function Schedules() {
         onView={handleView}
         onEdit={handleEdit}
         onDelete={handleDelete}
+        onExecute={handleExecute}
       />
 
       <ScheduleForm
@@ -481,6 +527,17 @@ export default function Schedules() {
         onTableSearchTermChange={setTableSearchTerm}
         onDatabaseChange={() => {}}
         readOnly={true}
+      />
+
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({ isOpen: false, config: null })}
+        onConfirm={confirmModal.config?.onConfirm || (() => {})}
+        title={confirmModal.config?.title || 'Confirmar ação'}
+        message={confirmModal.config?.message || 'Tem certeza que deseja realizar esta ação?'}
+        confirmText={confirmModal.config?.confirmText || 'Confirmar'}
+        cancelText={confirmModal.config?.cancelText || 'Cancelar'}
+        type={confirmModal.config?.type || 'danger'}
       />
     </div>
   )

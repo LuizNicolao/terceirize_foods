@@ -44,8 +44,7 @@ function getBackupBaseDir() {
     return '/backups';
   } else {
     // Fora do container (npm start): usar caminho relativo ao terceirize_foods
-    // O código está em mysql-backup-web/backend, então volta 2 níveis para terceirize_foods
-    const path = require('path');
+    // O código está em mysql-backup-web/backend/services, então volta 3 níveis para terceirize_foods
     const projectRoot = path.resolve(__dirname, '../../..'); // volta para terceirize_foods
     return path.join(projectRoot, 'bkp_banco_dados');
   }
@@ -144,9 +143,20 @@ async function getIncrementalData(databaseName, tableName, timestampColumn = 'da
   }
   
   // Criar conexão temporária para o banco de destino
-  const tempConfig = { ...pool.config.connectionConfig };
-  tempConfig.database = databaseName;
-  const tempPool = require('mysql2').createPool(tempConfig);
+  // Usar a mesma configuração do pool principal, mas mudando o database
+  const tempConfig = {
+    host: MYSQL_HOST,
+    port: MYSQL_PORT,
+    user: MYSQL_USER,
+    password: MYSQL_PASSWORD,
+    database: databaseName,
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0,
+    charset: 'utf8mb4'
+  };
+  const mysql = require('mysql2/promise');
+  const tempPool = mysql.createPool(tempConfig);
   
   try {
     // Buscar estrutura da tabela
@@ -240,10 +250,15 @@ async function createIncrementalBackupWrapper(databaseName, selectedTables) {
   const timestamp = `${year}-${month}-${day}_${hours}${minutes}${seconds}`;
   
   const dbFolder = DB_NAMES[databaseName] || databaseName;
+  const backupType = 'incremental';
+  
+  // Garantir que as pastas existam ANTES de construir os caminhos
+  await ensureDirectories(backupType, databaseName);
+  
   const fileNameSql = `${tableName}_${timestamp}_incremental.sql`;
-  const sqlFilePath = path.join(BACKUP_BASE_DIR, 'incremental', dbFolder, fileNameSql);
+  const sqlFilePath = path.join(BACKUP_BASE_DIR, backupType, dbFolder, fileNameSql);
   const fileNameGz = `${tableName}_${timestamp}_incremental.sql.gz`;
-  const filePath = path.join(BACKUP_BASE_DIR, 'incremental', dbFolder, fileNameGz);
+  const filePath = path.join(BACKUP_BASE_DIR, backupType, dbFolder, fileNameGz);
   
   // Criar registro no banco
   const { getPool } = require('./database');
@@ -256,22 +271,55 @@ async function createIncrementalBackupWrapper(databaseName, selectedTables) {
   const [result] = await pool.execute(
     `INSERT INTO backups (database_name, backup_type, file_path, status) 
      VALUES (?, ?, ?, 'running')`,
-    [databaseName, 'incremental', filePath]
+    [databaseName, backupType, filePath]
   );
   const backupId = result.insertId;
   
   try {
-    // Garantir que as pastas existem
-    await ensureDirectories('incremental', databaseName);
-    
     // Buscar dados incrementais
     const { records, columns, lastTimestamp, recordCount } = await getIncrementalData(databaseName, tableName, timestampColumn);
     
     if (recordCount === 0) {
-      // Não há mudanças, criar arquivo vazio ou pular backup
+      // Não há mudanças, mas criar arquivo vazio para registrar que o backup foi executado
+      let sqlContent = `-- Backup incremental: ${tableName}\n`;
+      sqlContent += `-- Banco: ${databaseName}\n`;
+      sqlContent += `-- Período: ${lastTimestamp.toISOString()} até ${now.toISOString()}\n`;
+      sqlContent += `-- Registros alterados: 0\n`;
+      sqlContent += `-- Gerado em: ${now.toISOString()}\n`;
+      sqlContent += `-- Status: Nenhuma mudança detectada desde o último backup\n\n`;
+      sqlContent += `USE \`${databaseName}\`;\n\n`;
+      sqlContent += `-- Nenhum registro foi modificado desde o último backup incremental\n`;
+      
+      // Escrever arquivo
+      await fs.writeFile(sqlFilePath, sqlContent, 'utf8');
+      
+      // Comprimir mesmo arquivo vazio para manter consistência
+      await execPromise(`gzip -f "${sqlFilePath}"`).catch(() => {
+        // Se falhar compressão de arquivo vazio, não é crítico
+      });
+      
+      // Aguardar compressão
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Tentar obter tamanho do arquivo comprimido (pode não existir se compressão falhou)
+      let fileSize = 0;
+      try {
+        const finalStats = await fs.stat(filePath);
+        fileSize = finalStats.size;
+      } catch (error) {
+        // Arquivo comprimido não existe, usar tamanho do arquivo SQL original
+        try {
+          const sqlStats = await fs.stat(sqlFilePath);
+          fileSize = sqlStats.size;
+        } catch (e) {
+          // Se nenhum arquivo existe, manter 0
+        }
+      }
+      
+      // Atualizar registro
       await pool.execute(
-        `UPDATE backups SET status = 'completed', completed_at = NOW(), file_size = 0 WHERE id = ?`,
-        [backupId]
+        `UPDATE backups SET status = 'completed', completed_at = NOW(), file_size = ? WHERE id = ?`,
+        [fileSize, backupId]
       );
       
       return {
@@ -279,8 +327,8 @@ async function createIncrementalBackupWrapper(databaseName, selectedTables) {
         backupId,
         databaseName,
         backupType: 'incremental',
-        filePath: filePath,
-        fileSize: 0,
+        filePath: fileSize > 0 ? filePath : sqlFilePath,
+        fileSize: fileSize,
         recordCount: 0,
         message: 'Nenhuma mudança detectada desde o último backup'
       };

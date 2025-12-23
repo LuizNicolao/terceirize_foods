@@ -15,12 +15,12 @@ const deleteBackupHandler = require('./delete');
 router.get('/', listBackupsHandler);
 router.post('/', createBackupHandler);
 
-// Rotas específicas por backup (deve vir ANTES de /:id/status para evitar conflito)
+// Rotas específicas por backup (rotas mais específicas primeiro)
+router.get('/:id/restore/status', getRestoreStatusHandler);
 router.get('/:id/logs', getBackupLogsHandler);
 router.get('/:id/download', downloadBackupHandler);
 router.get('/:id/status', getBackupStatusHandler);
 router.post('/:id/restore', restoreBackupHandler);
-router.get('/:id/restore/status', getRestoreStatusHandler);
 router.post('/:id/cancel', cancelBackupHandler);
 router.delete('/:id', deleteBackupHandler);
 

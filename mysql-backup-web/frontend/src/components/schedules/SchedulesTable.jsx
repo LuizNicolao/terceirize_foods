@@ -7,7 +7,8 @@ export default function SchedulesTable({
   getCronShortDescription,
   onView,
   onEdit,
-  onDelete
+  onDelete,
+  onExecute
 }) {
   if (loading) {
     return (
@@ -71,9 +72,11 @@ export default function SchedulesTable({
                     canView={true}
                     canEdit={true}
                     canDelete={true}
+                    canExecute={true}
                     onView={() => onView(schedule)}
                     onEdit={() => onEdit(schedule)}
                     onDelete={() => onDelete(schedule.id)}
+                    onExecute={() => onExecute(schedule)}
                     item={schedule}
                   />
                 </td>

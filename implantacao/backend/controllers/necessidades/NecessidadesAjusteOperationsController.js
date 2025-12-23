@@ -84,17 +84,17 @@ const salvarAjustes = async (req, res) => {
     if (updatedCount > 0) {
       // Se grupo foi fornecido, usar filtro por grupo
       if (grupo) {
-        await executeQuery(`
-          UPDATE necessidades 
-          SET status = 'NEC NUTRI', data_atualizacao = CURRENT_TIMESTAMP
-          WHERE escola_id = ? 
-            AND status = 'NEC'
-            AND produto_id IN (
-              SELECT DISTINCT ppc.produto_id 
-              FROM produtos_per_capita ppc
-              WHERE ppc.grupo = ?
-            )
-        `, [escola_id, grupo]);
+      await executeQuery(`
+        UPDATE necessidades 
+        SET status = 'NEC NUTRI', data_atualizacao = CURRENT_TIMESTAMP
+        WHERE escola_id = ? 
+          AND status = 'NEC'
+          AND produto_id IN (
+            SELECT DISTINCT ppc.produto_id 
+            FROM produtos_per_capita ppc
+            WHERE ppc.grupo = ?
+          )
+      `, [escola_id, grupo]);
       }
 
       // Aplicar filtros de período se fornecidos

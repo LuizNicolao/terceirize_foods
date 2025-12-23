@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { executeQuery } = require('../services/database');
-const { loadSchedules } = require('../services/scheduler');
+const { loadSchedules, executeSchedule } = require('../services/scheduler');
 const cron = require('node-cron');
 
 // Listar agendamentos
@@ -144,6 +144,19 @@ router.delete('/:id', async (req, res) => {
     res.status(500).json({
       success: false,
       message: error.message
+    });
+  }
+});
+
+// Executar agendamento manualmente
+router.post('/:id/execute', async (req, res) => {
+  try {
+    const result = await executeSchedule(req.params.id);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Erro ao executar agendamento'
     });
   }
 });

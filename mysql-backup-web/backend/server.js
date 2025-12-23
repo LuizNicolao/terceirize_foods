@@ -27,7 +27,7 @@ app.use('/api/health', require('./routes/health'));
 // Rotas protegidas - requerem autenticação
 const { authenticateToken } = require('./middleware/auth');
 app.use('/api/databases', authenticateToken, require('./routes/databases'));
-app.use('/api/backups', authenticateToken, require('./routes/backups'));
+app.use('/api/backups', authenticateToken, require('./routes/backups/index'));
 app.use('/api/schedules', authenticateToken, require('./routes/schedules'));
 app.use('/api/settings', authenticateToken, require('./routes/settings'));
 app.use('/api/rclone', authenticateToken, require('./routes/rclone'));

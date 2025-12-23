@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaEye, FaEdit, FaTrash, FaDownload, FaRedo, FaStop, FaFileAlt } from 'react-icons/fa';
+import { FaEye, FaEdit, FaTrash, FaDownload, FaRedo, FaStop, FaFileAlt, FaPlay } from 'react-icons/fa';
 import Button from './Button';
 
 const ActionButtons = ({ 
@@ -10,6 +10,7 @@ const ActionButtons = ({
   canRestore = false,
   canCancel = false,
   canViewLogs = false,
+  canExecute = false,
   onView, 
   onEdit, 
   onDelete,
@@ -17,6 +18,7 @@ const ActionButtons = ({
   onRestore,
   onCancel,
   onViewLogs,
+  onExecute,
   item,
   size = "sm",
   className = ""
@@ -92,6 +94,18 @@ const ActionButtons = ({
           className="text-purple-600 hover:text-purple-800 hover:bg-purple-50"
         >
           <FaFileAlt className="w-3 h-3" />
+        </Button>
+      )}
+
+      {canExecute && onExecute && (
+        <Button
+          variant="ghost"
+          size={size}
+          onClick={() => onExecute(item)}
+          title="Executar Agora"
+          className="text-green-600 hover:text-green-800 hover:bg-green-50"
+        >
+          <FaPlay className="w-3 h-3" />
         </Button>
       )}
       

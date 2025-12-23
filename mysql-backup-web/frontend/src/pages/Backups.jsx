@@ -267,7 +267,17 @@ export default function Backups() {
       document.body.removeChild(link)
       window.URL.revokeObjectURL(url)
       
-      toast.success('Download iniciado com sucesso!')
+      // Mostrar caminho do arquivo no servidor
+      const serverPath = backup.file_path || 'N/A'
+      toast.success(
+        <div>
+          <div>Download iniciado com sucesso!</div>
+          <div className="text-xs text-gray-400 mt-1 font-mono">
+            Servidor: {serverPath}
+          </div>
+        </div>,
+        { duration: 5000 }
+      )
     } catch (error) {
       toast.error(error.response?.data?.message || 'Erro ao fazer download do backup')
     }
