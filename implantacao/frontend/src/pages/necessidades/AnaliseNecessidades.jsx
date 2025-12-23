@@ -13,6 +13,7 @@ import {
 import { ActionButtons, Modal } from '../../components/ui';
 import { ExportButtons } from '../../components/shared';
 import toast from 'react-hot-toast';
+import { formatarQuantidade, formatarQuantidadeComUnidade } from '../consulta-status-necessidade/utils/formatarQuantidade';
 
 const AnaliseNecessidades = () => {
   const { canView, canEdit, loading: permissionsLoading } = usePermissions();
@@ -222,7 +223,7 @@ const AnaliseNecessidades = () => {
                           Total de produtos com ajuste: {grupo.produtos.filter(p => Number(p.ajuste) > 0).length}
                         </span>
                         <span className="font-medium text-gray-900">
-                          Soma dos ajustes: {grupo.produtos.reduce((sum, p) => sum + Number(p.ajuste), 0).toFixed(3).replace('.', ',')}
+                          Soma dos ajustes: {formatarQuantidade(grupo.produtos.reduce((sum, p) => sum + Number(p.ajuste), 0))}
                         </span>
                       </div>
                     </div>
@@ -255,7 +256,7 @@ const AnaliseNecessidades = () => {
                                 </div>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
-                                {Number(produto.ajuste).toFixed(3).replace('.', ',')}
+                                {formatarQuantidadeComUnidade(produto.ajuste, produto.produto_unidade)}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-center">
                                 <StatusBadge status={produto.status} />

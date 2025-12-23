@@ -1,6 +1,7 @@
 import React from 'react';
 import { FaChevronDown, FaChevronUp, FaSave, FaUndo, FaTrash } from 'react-icons/fa';
 import { Button, SearchableSelect } from '../../../../components/ui';
+import { formatarQuantidadeComUnidade } from '../../../consulta-status-necessidade/utils/formatarQuantidade';
 
 const SubstituicoesConsolidatedRow = ({
   necessidade,
@@ -125,11 +126,12 @@ const SubstituicoesConsolidatedRow = ({
       </td>
       <td className="px-2 py-2 whitespace-nowrap text-center">
         <span className="text-xs text-gray-900 font-semibold">
-          {quantidadeConsolidada > 0 
-            ? quantidadeConsolidada.toFixed(3).replace('.', ',') 
-            : (necessidade.quantidade_total_origem ? 
-                parseFloat(necessidade.quantidade_total_origem).toFixed(3).replace('.', ',') : 
-                '0,000')}
+          {formatarQuantidadeComUnidade(
+            quantidadeConsolidada > 0 
+              ? quantidadeConsolidada 
+              : (necessidade.quantidade_total_origem || 0),
+            necessidade.produto_origem_unidade || ''
+          )}
         </span>
       </td>
       <td className="px-2 py-2 whitespace-nowrap text-center">
@@ -173,7 +175,10 @@ const SubstituicoesConsolidatedRow = ({
       </td>
       <td className="px-2 py-2 whitespace-nowrap text-center">
         <span className="text-xs text-cyan-600 font-semibold">
-          {quantidadeGenericaCalculada || (quantidadesGenericos[chaveOrigem] !== undefined ? quantidadesGenericos[chaveOrigem] : '0,000')}
+          {formatarQuantidadeComUnidade(
+            quantidadeGenericaCalculada || (quantidadesGenericos[chaveOrigem] !== undefined ? quantidadesGenericos[chaveOrigem] : 0),
+            undGenericos[chaveOrigem] || necessidade.produto_generico_unidade || ''
+          )}
         </span>
       </td>
       <td className="px-2 py-2 whitespace-nowrap text-center">

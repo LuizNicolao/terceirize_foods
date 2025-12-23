@@ -130,7 +130,12 @@ const buscarGruposDisponiveis = async (req, res) => {
     if (gruposUnicos.length > 0) {
       try {
         const axios = require('axios');
-        const foodsApiUrl = process.env.FOODS_API_URL || 'http://localhost:3001';
+        let foodsApiUrl = process.env.FOODS_API_URL || 'http://localhost:3001/api';
+        
+        // Garantir que a URL tenha /api se não tiver (para compatibilidade com env vars antigas)
+        if (!foodsApiUrl.includes('/api')) {
+          foodsApiUrl = foodsApiUrl.endsWith('/') ? `${foodsApiUrl}api` : `${foodsApiUrl}/api`;
+        }
         
         const response = await axios.get(`${foodsApiUrl}/grupos?status=ativo`, {
           headers: {
@@ -153,7 +158,10 @@ const buscarGruposDisponiveis = async (req, res) => {
           });
         }
       } catch (apiError) {
-        console.error('Erro ao buscar grupos do foods:', apiError);
+        // Log apenas se não for erro de conexão (serviço não disponível)
+        if (apiError.code !== 'ECONNREFUSED' && apiError.code !== 'ETIMEDOUT') {
+          console.error('Erro ao buscar grupos do foods:', apiError.message);
+        }
         // Fallback: retornar apenas com nome
         gruposUnicos.forEach(nomeGrupo => {
           if (nomeGrupo && !gruposComInfo.find(g => g.nome === nomeGrupo)) {

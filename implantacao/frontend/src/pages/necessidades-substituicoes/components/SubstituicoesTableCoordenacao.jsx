@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { FaChevronDown, FaChevronUp, FaSave, FaUndo, FaTrash } from 'react-icons/fa';
 import { Button, Input, SearchableSelect, Pagination, ConfirmModal } from '../../../components/ui';
 import toast from 'react-hot-toast';
+import { formatarQuantidade, formatarQuantidadeComUnidade } from '../../../pages/consulta-status-necessidade/utils/formatarQuantidade';
 
 const SubstituicoesTableCoordenacao = ({
   necessidades,
@@ -498,9 +499,7 @@ const SubstituicoesTableCoordenacao = ({
     const quantidade = quantidadesOrigemEditadas[chaveEscola] !== undefined 
       ? quantidadesOrigemEditadas[chaveEscola] 
       : (escola.substituicao?.quantidade_origem || escola.quantidade_origem || 0);
-    // Garantir que quantidade seja um número
-    const quantidadeNum = typeof quantidade === 'number' ? quantidade : parseFloat(quantidade) || 0;
-    return quantidadeNum.toFixed(3).replace('.', ',');
+    return formatarQuantidade(quantidade);
   };
 
   // Função para obter quantidade origem atual (número)
@@ -742,10 +741,10 @@ const SubstituicoesTableCoordenacao = ({
                   </td>
                   <td className="px-2 py-2 whitespace-nowrap text-center">
                     <span className="text-xs text-gray-900">
-                      {necessidade.quantidade_total_origem ? 
-                        parseFloat(necessidade.quantidade_total_origem).toFixed(3).replace('.', ',') : 
-                        '0,000'
-                      }
+                      {formatarQuantidadeComUnidade(
+                        necessidade.quantidade_total_origem || 0,
+                        necessidade.produto_origem_unidade || ''
+                      )}
                     </span>
                   </td>
                   <td className="px-2 py-2 whitespace-nowrap text-center">
@@ -789,10 +788,10 @@ const SubstituicoesTableCoordenacao = ({
                   </td>
                   <td className="px-2 py-2 whitespace-nowrap text-center">
                     <span className="text-xs text-cyan-600 font-semibold">
-                      {quantidadesGenericos[chaveUnica] !== undefined ? 
-                        quantidadesGenericos[chaveUnica] : 
-                        '0,000'
-                      }
+                      {formatarQuantidadeComUnidade(
+                        quantidadesGenericos[chaveUnica] !== undefined ? quantidadesGenericos[chaveUnica] : 0,
+                        undGenericos[chaveUnica] || necessidade.produto_generico_unidade || ''
+                      )}
                     </span>
                   </td>
                   <td className="px-2 py-2 whitespace-nowrap text-center">
@@ -1022,7 +1021,10 @@ const SubstituicoesTableCoordenacao = ({
                                     </span>
                                   </td>
                                   <td className="px-3 py-2 whitespace-nowrap text-center text-xs font-semibold text-cyan-600">
-                                    {quantidadeGenerica || '0,000'}
+                                    {formatarQuantidadeComUnidade(
+                                      quantidadeGenerica || 0,
+                                      unidadeProduto || ''
+                                    )}
                                   </td>
                                   <td className="px-3 py-2 whitespace-nowrap text-center">
                                     <div className="flex items-center justify-center gap-2">

@@ -1,6 +1,7 @@
 import React from 'react';
 import { FaSave, FaTrash } from 'react-icons/fa';
 import { Button, Input, SearchableSelect } from '../../../../components/ui';
+import { formatarQuantidadeComUnidade } from '../../../consulta-status-necessidade/utils/formatarQuantidade';
 
 const SubstituicoesIndividualRow = ({
   escola,
@@ -119,7 +120,10 @@ const SubstituicoesIndividualRow = ({
         </span>
       </td>
       <td className="px-3 py-2 whitespace-nowrap text-center text-xs font-semibold text-cyan-600">
-        {quantidadeGenerica || '0,000'}
+        {formatarQuantidadeComUnidade(
+          quantidadeGenerica || 0,
+          unidadeProduto || ''
+        )}
       </td>
       <td className="px-3 py-2 whitespace-nowrap text-center">
         <div className="flex items-center justify-center gap-2">

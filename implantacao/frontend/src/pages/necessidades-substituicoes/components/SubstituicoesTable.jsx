@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FaChevronDown, FaChevronUp, FaSave } from 'react-icons/fa';
 import { Button, Input, SearchableSelect } from '../../../components/ui';
 import toast from 'react-hot-toast';
+import { formatarQuantidadeComUnidade } from '../../../pages/consulta-status-necessidade/utils/formatarQuantidade';
 
 const SubstituicoesTable = ({
   necessidades,
@@ -423,7 +424,10 @@ const SubstituicoesTable = ({
                                     </span>
                                   </td>
                                   <td className="px-4 py-2 whitespace-nowrap text-center text-xs font-semibold text-cyan-600">
-                                    {quantidadeGenerica || '0,000'}
+                                    {formatarQuantidadeComUnidade(
+                                      quantidadeGenerica || 0,
+                                      unidadeProduto || ''
+                                    )}
                                   </td>
                                   <td className="px-4 py-2 whitespace-nowrap text-center">
                                     {ajustesAtivados && (
