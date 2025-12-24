@@ -96,7 +96,29 @@ export const useGerenciamentoFiltros = ({
       return;
     }
     
-    // Se não for semana_consumo, atualizar normalmente
+    // Se o campo for escola_id e foi limpo ou alterado, limpar também o grupo
+    // pois o grupo selecionado pode não pertencer mais à escola selecionada
+    if (campo === 'escola_id') {
+      if (activeTab === 'nutricionista') {
+        atualizarFiltrosNutricionista({ 
+          [campo]: valor,
+          grupo: null // Limpar grupo quando escola muda
+        });
+      } else if (activeTab === 'coordenacao') {
+        atualizarFiltrosCoordenacao({ 
+          [campo]: valor,
+          grupo: null // Limpar grupo quando escola muda
+        });
+      } else if (activeTab === 'logistica') {
+        atualizarFiltrosLogistica({ 
+          [campo]: valor,
+          grupo: null // Limpar grupo quando escola muda
+        });
+      }
+      return;
+    }
+    
+    // Se não for semana_consumo nem escola_id, atualizar normalmente
     if (activeTab === 'nutricionista') {
       atualizarFiltrosNutricionista({ [campo]: valor });
     } else if (activeTab === 'coordenacao') {

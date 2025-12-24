@@ -1,0 +1,603 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { useForm } from 'react-hook-form';
+import { FaSave, FaComments, FaPaperPlane, FaPaperclip, FaTrash, FaDownload } from 'react-icons/fa';
+import { Button, Input, Modal } from '../ui';
+import ChamadosService from '../../services/chamados';
+import toast from 'react-hot-toast';
+
+const ChamadoModal = ({ 
+  isOpen, 
+  onClose, 
+  onSubmit, 
+  chamado, 
+  isViewMode = false
+}) => {
+  const { register, handleSubmit, reset, setValue, watch } = useForm();
+  const [comentarios, setComentarios] = useState([]);
+  const [novoComentario, setNovoComentario] = useState('');
+  const [loadingComentarios, setLoadingComentarios] = useState(false);
+  const [arquivosSelecionados, setArquivosSelecionados] = useState([]);
+  const [anexosExistentes, setAnexosExistentes] = useState([]);
+  const [loadingAnexos, setLoadingAnexos] = useState(false);
+  const fileInputRef = useRef(null);
+
+  // Carregar comentários e anexos quando o modal abrir e tiver um chamado
+  useEffect(() => {
+    if (isOpen && chamado?.id) {
+      loadComentarios();
+      loadAnexos();
+    } else if (!chamado && isOpen) {
+      // Limpar arquivos selecionados quando abrir novo chamado
+      setArquivosSelecionados([]);
+      setAnexosExistentes([]);
+    }
+  }, [isOpen, chamado?.id]);
+
+  const loadComentarios = async () => {
+    if (!chamado?.id) return;
+    
+    setLoadingComentarios(true);
+    try {
+      const result = await ChamadosService.listarComentarios(chamado.id);
+      if (result.success) {
+        setComentarios(result.data || []);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar comentários:', error);
+    } finally {
+      setLoadingComentarios(false);
+    }
+  };
+
+  const loadAnexos = async () => {
+    if (!chamado?.id) return;
+    
+    setLoadingAnexos(true);
+    try {
+      const result = await ChamadosService.listarAnexos(chamado.id);
+      if (result.success) {
+        setAnexosExistentes(result.data || []);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar anexos:', error);
+    } finally {
+      setLoadingAnexos(false);
+    }
+  };
+
+  useEffect(() => {
+    if (chamado && isOpen) {
+      // Preencher formulário com dados do chamado
+      Object.keys(chamado).forEach(key => {
+        if (chamado[key] !== null && chamado[key] !== undefined && key !== 'comentarios') {
+          // Converter sistema e tela para maiúsculas
+          if (key === 'sistema' || key === 'tela') {
+            setValue(key, String(chamado[key]).toUpperCase());
+          } else {
+            setValue(key, chamado[key]);
+          }
+        }
+      });
+    } else if (!chamado && isOpen) {
+      // Resetar formulário para novo chamado
+      reset();
+      setValue('tipo', 'bug');
+      setValue('prioridade', 'media');
+      setValue('status', 'aberto');
+    }
+    if (!isOpen) {
+      setComentarios([]);
+      setNovoComentario('');
+      setArquivosSelecionados([]);
+      setAnexosExistentes([]);
+    }
+  }, [chamado, isOpen, setValue, reset]);
+
+  const handleFileSelect = (e) => {
+    const files = Array.from(e.target.files);
+    setArquivosSelecionados(prev => [...prev, ...files]);
+    // Limpar o input para permitir selecionar o mesmo arquivo novamente
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleRemoveFile = (index) => {
+    setArquivosSelecionados(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleDownloadAnexo = async (anexo) => {
+    try {
+      const result = await ChamadosService.downloadAnexo(chamado.id, anexo.id);
+      if (result.success) {
+        // Criar URL do blob e fazer download
+        const url = window.URL.createObjectURL(new Blob([result.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', anexo.nome_arquivo);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+      } else {
+        toast.error(result.error || 'Erro ao baixar arquivo');
+      }
+    } catch (error) {
+      toast.error('Erro ao baixar arquivo');
+      console.error(error);
+    }
+  };
+
+  const handleDeleteAnexo = async (anexoId) => {
+    if (!window.confirm('Tem certeza que deseja excluir este anexo?')) {
+      return;
+    }
+
+    try {
+      const result = await ChamadosService.excluirAnexo(chamado.id, anexoId);
+      if (result.success) {
+        toast.success(result.message || 'Anexo excluído com sucesso!');
+        loadAnexos();
+      } else {
+        toast.error(result.error || 'Erro ao excluir anexo');
+      }
+    } catch (error) {
+      toast.error('Erro ao excluir anexo');
+      console.error(error);
+    }
+  };
+
+  const formatFileSize = (bytes) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+  };
+
+  const handleFormSubmit = async (data) => {
+    // Garantir que sistema e tela estejam em maiúsculas
+    if (data.sistema) {
+      data.sistema = data.sistema.toUpperCase();
+    }
+    if (data.tela) {
+      data.tela = data.tela.toUpperCase();
+    }
+    
+    // Se for um novo chamado e houver arquivos selecionados, precisamos fazer upload após criar
+    const arquivosParaUpload = !chamado ? arquivosSelecionados : [];
+    
+    await onSubmit(data, arquivosParaUpload);
+  };
+
+  const handleSistemaChange = (e) => {
+    const value = e.target.value.toUpperCase();
+    setValue('sistema', value);
+  };
+
+  const handleTelaChange = (e) => {
+    const value = e.target.value.toUpperCase();
+    setValue('tela', value);
+  };
+
+  const handleAddComentario = async () => {
+    if (!novoComentario.trim() || !chamado?.id) return;
+
+    try {
+      const result = await ChamadosService.criarComentario(chamado.id, {
+        comentario: novoComentario.trim(),
+        tipo: 'comentario'
+      });
+
+      if (result.success) {
+        toast.success(result.message || 'Comentário adicionado com sucesso!');
+        setNovoComentario('');
+        loadComentarios();
+      } else {
+        toast.error(result.message || 'Erro ao adicionar comentário');
+      }
+    } catch (error) {
+      toast.error('Erro ao adicionar comentário');
+      console.error(error);
+    }
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return '-';
+    return new Date(dateString).toLocaleString('pt-BR');
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={isViewMode ? 'Visualizar Chamado' : chamado ? 'Editar Chamado' : 'Novo Chamado'}
+      size="6xl"
+    >
+      <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4 max-h-[85vh] overflow-y-auto">
+        {/* Primeira Linha - Informações Básicas */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Card 1: Informações do Chamado */}
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">
+              Informações do Chamado
+            </h3>
+            <div className="space-y-3">
+              <Input
+                label="Título *"
+                {...register('titulo')}
+                disabled={isViewMode}
+                required
+              />
+              <div className="grid grid-cols-2 gap-3">
+                <Input
+                  label="Sistema *"
+                  {...register('sistema')}
+                  onChange={handleSistemaChange}
+                  disabled={isViewMode}
+                  required
+                  style={{ textTransform: 'uppercase' }}
+                  placeholder="Ex: IMPLANTACAO"
+                />
+                <Input
+                  label="Tela"
+                  {...register('tela')}
+                  onChange={handleTelaChange}
+                  disabled={isViewMode}
+                  placeholder="Rota/tela onde ocorreu"
+                  style={{ textTransform: 'uppercase' }}
+                />
+              </div>
+              <Input
+                label="Tipo *"
+                type="select"
+                {...register('tipo')}
+                disabled={isViewMode}
+                required
+              >
+                <option value="bug">Bug</option>
+                <option value="erro">Erro</option>
+                <option value="melhoria">Melhoria</option>
+                <option value="feature">Feature</option>
+              </Input>
+            </div>
+          </div>
+
+          {/* Card 2: Status e Prioridade */}
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">
+              Status e Prioridade
+            </h3>
+            <div className="space-y-3">
+              <Input
+                label="Status *"
+                type="select"
+                {...register('status')}
+                disabled={isViewMode}
+                required
+              >
+                <option value="aberto">Aberto</option>
+                <option value="em_analise">Em Análise</option>
+                <option value="em_desenvolvimento">Em Desenvolvimento</option>
+                <option value="em_teste">Em Teste</option>
+                <option value="concluido">Concluído</option>
+                <option value="fechado">Fechado</option>
+              </Input>
+              <Input
+                label="Prioridade *"
+                type="select"
+                {...register('prioridade')}
+                disabled={isViewMode}
+                required
+              >
+                <option value="baixa">Baixa</option>
+                <option value="media">Média</option>
+                <option value="alta">Alta</option>
+                <option value="critica">Crítica</option>
+              </Input>
+              {chamado?.usuario_responsavel_nome && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Responsável
+                  </label>
+                  <p className="text-sm text-gray-900">{chamado.usuario_responsavel_nome}</p>
+                </div>
+              )}
+              {chamado?.data_abertura && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Data de Abertura
+                  </label>
+                  <p className="text-sm text-gray-900">{formatDate(chamado.data_abertura)}</p>
+                </div>
+              )}
+              {chamado?.data_conclusao && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Data de Conclusão
+                  </label>
+                  <p className="text-sm text-gray-900">{formatDate(chamado.data_conclusao)}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Segunda Linha - Descrição */}
+        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+          <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">
+            Descrição
+          </h3>
+          <textarea
+            {...register('descricao')}
+            disabled={isViewMode}
+            rows={4}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+            required
+          />
+        </div>
+
+        {/* Anexos - Upload de arquivos */}
+        {!isViewMode && (
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500 flex items-center gap-2">
+              <FaPaperclip /> Anexos
+            </h3>
+            
+            {/* Upload de arquivos - Apenas para novo chamado */}
+            {!chamado && (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    multiple
+                    onChange={handleFileSelect}
+                    className="hidden"
+                    id="file-upload"
+                    accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip,.rar"
+                  />
+                  <label
+                    htmlFor="file-upload"
+                    className="cursor-pointer inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                  >
+                    <FaPaperclip className="mr-2" />
+                    Adicionar Arquivos
+                  </label>
+                  <span className="text-xs text-gray-500">
+                    Máximo 10MB por arquivo. Formatos: Imagens, PDF, Word, Excel, TXT, ZIP, RAR
+                  </span>
+                </div>
+
+                {/* Lista de arquivos selecionados */}
+                {arquivosSelecionados.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-gray-700">Arquivos selecionados:</p>
+                    <div className="space-y-1 max-h-40 overflow-y-auto">
+                      {arquivosSelecionados.map((file, index) => (
+                        <div key={index} className="flex items-center justify-between bg-white p-2 rounded border border-gray-200">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm text-gray-900 truncate">{file.name}</p>
+                            <p className="text-xs text-gray-500">{formatFileSize(file.size)}</p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveFile(index)}
+                            className="ml-2 text-red-600 hover:text-red-800"
+                          >
+                            <FaTrash />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Upload de arquivos - Para chamados existentes em edição */}
+            {chamado?.id && !isViewMode && (
+              <div className="mb-3">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  onChange={async (e) => {
+                    const files = Array.from(e.target.files);
+                    // Fazer upload imediato dos arquivos
+                    for (const file of files) {
+                      try {
+                        const result = await ChamadosService.uploadAnexo(chamado.id, file);
+                        if (result.success) {
+                          toast.success(`Arquivo ${file.name} enviado com sucesso!`);
+                          loadAnexos();
+                        } else {
+                          toast.error(`Erro ao enviar ${file.name}: ${result.message}`);
+                        }
+                      } catch (error) {
+                        toast.error(`Erro ao enviar ${file.name}`);
+                        console.error(error);
+                      }
+                    }
+                    // Limpar input
+                    if (fileInputRef.current) {
+                      fileInputRef.current.value = '';
+                    }
+                  }}
+                  className="hidden"
+                  id="file-upload-existing"
+                  accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip,.rar"
+                />
+                <label
+                  htmlFor="file-upload-existing"
+                  className="cursor-pointer inline-flex items-center px-3 py-1.5 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                >
+                  <FaPaperclip className="mr-2" />
+                  Adicionar Arquivos
+                </label>
+              </div>
+            )}
+
+            {/* Lista de anexos existentes - Para chamados existentes */}
+            {chamado?.id && (
+              <div className="space-y-2">
+                {loadingAnexos ? (
+                  <p className="text-sm text-gray-500 text-center py-2">Carregando anexos...</p>
+                ) : anexosExistentes.length === 0 ? (
+                  <p className="text-sm text-gray-500 text-center py-2">Nenhum anexo ainda</p>
+                ) : (
+                  <div className="space-y-2 max-h-48 overflow-y-auto">
+                    {anexosExistentes.map((anexo) => (
+                      <div key={anexo.id} className="flex items-center justify-between bg-white p-3 rounded border border-gray-200">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">{anexo.nome_arquivo}</p>
+                          <p className="text-xs text-gray-500">
+                            {formatFileSize(anexo.tamanho)} • {formatDate(anexo.data_upload)}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2 ml-2">
+                          <button
+                            type="button"
+                            onClick={() => handleDownloadAnexo(anexo)}
+                            className="text-blue-600 hover:text-blue-800"
+                            title="Baixar arquivo"
+                          >
+                            <FaDownload />
+                          </button>
+                          {!isViewMode && (
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteAnexo(anexo.id)}
+                              className="text-red-600 hover:text-red-800"
+                              title="Excluir arquivo"
+                            >
+                              <FaTrash />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Anexos - Visualização apenas - Para modo visualização */}
+        {isViewMode && chamado?.id && (
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500 flex items-center gap-2">
+              <FaPaperclip /> Anexos
+            </h3>
+            <div className="space-y-2">
+              {loadingAnexos ? (
+                <p className="text-sm text-gray-500 text-center py-2">Carregando anexos...</p>
+              ) : anexosExistentes.length === 0 ? (
+                <p className="text-sm text-gray-500 text-center py-2">Nenhum anexo</p>
+              ) : (
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {anexosExistentes.map((anexo) => (
+                    <div key={anexo.id} className="flex items-center justify-between bg-white p-3 rounded border border-gray-200">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">{anexo.nome_arquivo}</p>
+                        <p className="text-xs text-gray-500">
+                          {formatFileSize(anexo.tamanho)} • {formatDate(anexo.data_upload)}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleDownloadAnexo(anexo)}
+                        className="ml-2 text-blue-600 hover:text-blue-800"
+                        title="Baixar arquivo"
+                      >
+                        <FaDownload />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Comentários - Apenas quando visualizando ou editando chamado existente */}
+        {chamado?.id && (
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500 flex items-center gap-2">
+              <FaComments /> Comentários
+            </h3>
+            
+            {/* Lista de comentários */}
+            <div className="space-y-3 mb-4 max-h-64 overflow-y-auto">
+              {loadingComentarios ? (
+                <p className="text-sm text-gray-500 text-center py-4">Carregando comentários...</p>
+              ) : comentarios.length === 0 ? (
+                <p className="text-sm text-gray-500 text-center py-4">Nenhum comentário ainda</p>
+              ) : (
+                comentarios.map((comentario) => (
+                  <div key={comentario.id} className="bg-white p-3 rounded border border-gray-200">
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">
+                          {comentario.usuario_nome || 'Usuário'}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {formatDate(comentario.data_criacao)}
+                        </p>
+                      </div>
+                      {comentario.tipo && comentario.tipo !== 'comentario' && (
+                        <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded">
+                          {comentario.tipo === 'resolucao' ? 'Resolução' : 'Atualização'}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm text-gray-700 whitespace-pre-wrap">{comentario.comentario}</p>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Formulário de novo comentário */}
+            {!isViewMode && (
+              <div className="space-y-2">
+                <textarea
+                  value={novoComentario}
+                  onChange={(e) => setNovoComentario(e.target.value)}
+                  placeholder="Adicionar um comentário..."
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
+                />
+                <Button
+                  type="button"
+                  onClick={handleAddComentario}
+                  disabled={!novoComentario.trim()}
+                  size="sm"
+                  className="flex items-center gap-2"
+                >
+                  <FaPaperPlane /> Adicionar Comentário
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {!isViewMode && (
+          <div className="flex justify-end gap-2 sm:gap-3 pt-3 border-t">
+            <Button type="button" variant="secondary" size="sm" onClick={onClose}>
+              Cancelar
+            </Button>
+            <Button type="submit" size="sm">
+              <FaSave className="mr-2" />
+              {chamado ? 'Atualizar' : 'Criar'}
+            </Button>
+          </div>
+        )}
+      </form>
+    </Modal>
+  );
+};
+
+export default ChamadoModal;

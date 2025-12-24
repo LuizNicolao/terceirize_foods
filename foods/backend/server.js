@@ -11,7 +11,7 @@ console.log('DB_NAME:', process.env.DB_NAME);
 
 // Importar configurações da aplicação
 const { app, PORT, limiter, loginLimiter } = require('./config/app');
-const { connectRedis } = require('./config/redis');
+const { connectRedis, isRedisReady } = require('./config/redis');
 
 // Importar middleware de prefixo de rotas
 const { applyRoutePrefixes } = require('./middleware/routePrefix');
@@ -52,13 +52,21 @@ app.use('*', (req, res) => {
 });
 
 // Inicializar servidor
-app.listen(PORT, () => {
-  // Redis desabilitado - comentado para não gerar logs de erro
-  // connectRedis();
+app.listen(PORT, async () => {
+  // Tentar conectar Redis (com fallback gracioso se não disponível)
+  await connectRedis();
+  
   console.log(`🚀 Servidor rodando na porta ${PORT}`);
   console.log(`📊 Ambiente: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🔗 URL: http://localhost:${PORT}`);
   console.log(`🌐 URL Externa: https://foods.terceirizemais.com.br`);
   console.log(`✅ Estrutura modular carregada com sucesso`);
   console.log(`🔄 Prefixos de rota aplicados: /api e /foods/api`);
+  console.log(`🔒 Pool de conexões DB: ${process.env.DB_CONNECTION_LIMIT || 75}`);
+  console.log(`🛡️ Rate limiting: ${process.env.RATE_LIMIT_MAX || 1000} req/15min`);
+  if (isRedisReady()) {
+    console.log(`⚡ Redis: Ativo - Rate limiting distribuído habilitado`);
+  } else {
+    console.log(`⚠️ Redis: Inativo - Rate limiting em memória (local apenas)`);
+  }
 }); 

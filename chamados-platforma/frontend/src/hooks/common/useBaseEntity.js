@@ -1,0 +1,317 @@
+/**
+ * Hook base para entidades CRUD
+ * Combina paginação, modais, filtros e validação em um hook reutilizável
+ */
+
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import toast from 'react-hot-toast';
+import { useValidation } from './useValidation';
+import { usePagination } from './usePagination';
+import { useModal } from './useModal';
+import { useFilters } from './useFilters';
+import { useDebouncedSearch } from './useDebouncedSearch';
+
+export const useBaseEntity = (entityName, service, options = {}) => {
+  const {
+    initialItemsPerPage = 20,
+    initialFilters = {},
+    enableStats = true,
+    enableDelete = true,
+    enableDebouncedSearch = true,
+    autoLoad = true
+  } = options;
+
+  // Hooks base
+  const validation = useValidation();
+  const pagination = usePagination(initialItemsPerPage);
+  const modal = useModal();
+  const filters = useFilters(initialFilters);
+  
+  // Hook de busca com debounce (opcional)
+  const debouncedSearch = enableDebouncedSearch ? useDebouncedSearch(500) : null;
+
+  // Estados específicos da entidade
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
+  
+  // Estados de ordenação
+  const [sortField, setSortField] = useState(null);
+  const [sortDirection, setSortDirection] = useState(null);
+
+  // Estados de estatísticas
+  const [estatisticas, setEstatisticas] = useState({});
+
+  /**
+   * Carrega dados da entidade
+   */
+  const loadData = useCallback(async (customParams = {}) => {
+    setLoading(true);
+    try {
+      const params = {
+        ...pagination.getPaginationParams(),
+        ...filters.getFilterParams(),
+        // Usar debouncedSearch se disponível, senão usar o searchTerm do filters
+        search: debouncedSearch?.debouncedSearchTerm || filters.searchTerm || undefined,
+        // Adicionar parâmetros de ordenação (customParams tem prioridade)
+        sortField: customParams.sortField !== undefined ? customParams.sortField : sortField,
+        sortDirection: customParams.sortDirection !== undefined ? customParams.sortDirection : sortDirection,
+        ...customParams
+      };
+
+      const response = await service.listar(params);
+
+      if (response.success) {
+        // Lidar com diferentes estruturas de resposta
+        let items = [];
+        let paginationData = response.pagination;
+        
+        if (Array.isArray(response.data)) {
+          // Estrutura simples: response.data é um array
+          items = response.data;
+        } else if (response.data && Array.isArray(response.data[entityName])) {
+          // Estrutura aninhada: response.data.{entityName} é um array
+          items = response.data[entityName];
+          // Se pagination está dentro de data, usar ela
+          if (response.data.pagination) {
+            paginationData = response.data.pagination;
+          }
+        } else if (response.data && Array.isArray(response.data.receitas)) {
+          // Estrutura específica para receitas
+          items = response.data.receitas;
+          paginationData = {
+            page: response.data.totalPages || 1,
+            limit: response.data.totalItems || 0,
+            total: response.data.totalItems || 0,
+            pages: response.data.totalPages || 1
+          };
+        } else if (response.data && Array.isArray(response.data.rotas)) {
+          // Estrutura específica para rotas nutricionistas
+          items = response.data.rotas;
+          if (response.data.pagination) {
+            paginationData = response.data.pagination;
+          }
+        }
+        
+        setItems(items);
+        pagination.updatePagination(paginationData);
+        
+        // Atualizar estatísticas se habilitado
+        if (enableStats) {
+          // Priorizar estatísticas do backend se disponíveis
+          if (response.statistics) {
+            // Preservar todos os campos do statistics, mas garantir campos básicos
+            setEstatisticas({
+              total: response.statistics.total || 0,
+              ativos: response.statistics.ativos || 0,
+              inativos: response.statistics.inativos || 0,
+              bloqueados: response.statistics.bloqueados || 0,
+              // Preservar campos adicionais do statistics (para páginas específicas)
+              ...response.statistics
+            });
+          } else if (response.data && Array.isArray(response.data)) {
+            // Fallback: usar totalItems da paginação para total, calcular ativos/inativos localmente
+            const total = response.pagination?.totalItems || response.data.length;
+            const ativos = response.data.filter(item => item.status === 1 || item.status === 'ativo' || item.status === 'ATIVO').length;
+            const inativos = response.data.filter(item => item.status === 0 || item.status === 'inativo' || item.status === 'INATIVO').length;
+            const bloqueados = response.data.filter(item => item.status === 'BLOQUEADO' || item.status === 'bloqueado').length;
+            
+            setEstatisticas({
+              total,
+              ativos,
+              inativos,
+              bloqueados
+            });
+          }
+        }
+      } else {
+        toast.error(response.message || `Erro ao carregar ${entityName}`);
+      }
+    } catch (error) {
+      console.error(`Erro ao carregar ${entityName}:`, error);
+      toast.error(`Erro ao carregar ${entityName}`);
+    } finally {
+      setLoading(false);
+    }
+  }, [entityName, service, pagination, filters, enableStats, debouncedSearch?.debouncedSearchTerm, sortField, sortDirection]);
+
+  /**
+   * Submete formulário (criar/editar)
+   */
+  const onSubmit = useCallback(async (formData) => {
+    try {
+      let response;
+      
+      if (modal.editingItem) {
+        // Atualizar
+        response = await service.atualizar(modal.editingItem.id, formData);
+      } else {
+        // Criar
+        response = await service.criar(formData);
+      }
+
+      if (validation.handleApiResponse(response)) {
+        return; // Há erros de validação
+      }
+
+      if (response.success) {
+        toast.success(
+          modal.editingItem 
+            ? `${entityName} atualizado com sucesso!` 
+            : `${entityName} criado com sucesso!`
+        );
+        modal.handleCloseModal();
+        loadData();
+      } else {
+        toast.error(response.message || `Erro ao salvar ${entityName}`);
+      }
+    } catch (error) {
+      console.error(`Erro ao salvar ${entityName}:`, error);
+      toast.error(`Erro ao salvar ${entityName}`);
+    }
+  }, [entityName, service, modal, validation, loadData]);
+
+  /**
+   * Inicia processo de exclusão
+   */
+  const handleDelete = useCallback((item) => {
+    setItemToDelete(item);
+    setShowDeleteConfirmModal(true);
+  }, []);
+
+  /**
+   * Confirma exclusão
+   */
+  const handleConfirmDelete = useCallback(async () => {
+    if (!itemToDelete || !enableDelete) return;
+
+    try {
+      const response = await service.excluir(itemToDelete.id);
+
+      if (response.success) {
+        // Usar mensagem do response se disponível, senão usar mensagem padrão amigável
+        const friendlyName = entityName === 'pedidos-compras' ? 'Pedido de compras' : 
+                            entityName === 'solicitacoes-compras' ? 'Solicitação de compras' :
+                            entityName;
+        toast.success(response.message || `${friendlyName} excluído com sucesso!`);
+        setShowDeleteConfirmModal(false);
+        setItemToDelete(null);
+        loadData();
+      } else {
+        toast.error(response.message || `Erro ao excluir ${entityName}`);
+      }
+    } catch (error) {
+      console.error(`Erro ao excluir ${entityName}:`, error);
+      toast.error(`Erro ao excluir ${entityName}`);
+    }
+  }, [entityName, service, itemToDelete, enableDelete, loadData]);
+
+  /**
+   * Cancela exclusão
+   */
+  const handleCloseDeleteModal = useCallback(() => {
+    setShowDeleteConfirmModal(false);
+    setItemToDelete(null);
+  }, []);
+
+  // Usar useRef para manter referência estável de loadData
+  const loadDataRef = useRef(loadData);
+  loadDataRef.current = loadData;
+
+  // Serializar filters.filters para comparação estável usando useMemo
+  const filtersString = useMemo(() => JSON.stringify(filters.filters), [filters.filters]);
+  
+  // Memoizar o termo de busca para evitar re-renders desnecessários
+  const searchTerm = useMemo(() => debouncedSearch?.debouncedSearchTerm || filters.searchTerm, [debouncedSearch?.debouncedSearchTerm, filters.searchTerm]);
+
+  /**
+   * Carrega dados quando filtros ou paginação mudam
+   * Monitora também filters.filters para capturar filtros customizados
+   * Pode ser desabilitado com autoLoad = false
+   */
+  useEffect(() => {
+    if (autoLoad) {
+      loadDataRef.current();
+    }
+  }, [pagination.currentPage, pagination.itemsPerPage, searchTerm, filters.statusFilter, filtersString, autoLoad]);
+
+  return {
+    // Estados principais
+    items,
+    loading,
+    estatisticas,
+    
+    // Estados de modal
+    showModal: modal.showModal,
+    viewMode: modal.viewMode,
+    editingItem: modal.editingItem,
+    
+    // Estados de exclusão
+    showDeleteConfirmModal,
+    itemToDelete,
+    
+    // Estados de paginação
+    currentPage: pagination.currentPage,
+    totalPages: pagination.totalPages,
+    totalItems: pagination.totalItems,
+    itemsPerPage: pagination.itemsPerPage,
+    
+    // Estados de filtros
+    searchTerm: debouncedSearch?.searchTerm || filters.searchTerm,
+    isSearching: debouncedSearch?.isSearching || false,
+    statusFilter: filters.statusFilter,
+    filters: filters.filters,
+    
+    // Estados de validação
+    validationErrors: validation.validationErrors,
+    showValidationModal: validation.showValidationModal,
+    
+    // Ações de modal
+    handleAdd: modal.handleAdd,
+    handleView: modal.handleView,
+    handleEdit: modal.handleEdit,
+    handleOpenModal: modal.handleEdit, // Alias para compatibilidade
+    handleCloseModal: modal.handleCloseModal,
+    
+    // Ações de paginação
+    handlePageChange: pagination.handlePageChange,
+    handleItemsPerPageChange: pagination.handleItemsPerPageChange,
+    
+    // Ações de filtros
+    setSearchTerm: debouncedSearch?.updateSearchTerm || filters.setSearchTerm,
+    clearSearch: debouncedSearch?.clearSearch || (() => filters.setSearchTerm('')),
+    handleKeyPress: debouncedSearch?.handleKeyPress || (() => {}),
+    setStatusFilter: filters.setStatusFilter,
+    updateFilter: filters.updateFilter,
+    updateFilters: filters.updateFilters,
+    clearFilters: filters.clearFilters,
+    
+    // Ações de CRUD
+    onSubmit,
+    handleDelete,
+    handleConfirmDelete,
+    handleCloseDeleteModal,
+    
+    // Ações de validação
+    handleCloseValidationModal: validation.handleCloseValidationModal,
+    clearValidationErrors: validation.clearValidationErrors,
+    
+    // Ações de dados
+    loadData,
+    
+    // Funções de paginação (do hook pagination)
+    getPaginationParams: pagination.getPaginationParams,
+    
+    // Setters diretos (para casos específicos)
+    setItems,
+    setLoading,
+    setEstatisticas,
+    
+    // Funções de ordenação
+    sortField,
+    sortDirection,
+    setSortField,
+    setSortDirection
+  };
+};

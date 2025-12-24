@@ -14,6 +14,8 @@ export const useFiltrosDinamicos = (
   carregarEscolasLogistica
 ) => {
   // Recarregar grupos dinamicamente baseado nos filtros (escola_id e semana_consumo)
+  // Quando escola_id é selecionado, grupos devem mostrar apenas os relacionados à escola
+  // Quando escola_id é limpo, grupos devem mostrar todos novamente
   useEffect(() => {
     const filtrosGrupos = {};
     if (filtros.escola_id) filtrosGrupos.escola_id = filtros.escola_id;

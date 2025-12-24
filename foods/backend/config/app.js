@@ -10,8 +10,26 @@ const PORT = process.env.PORT || 3001;
 // Configuração de trust proxy para rate-limit funcionar corretamente
 app.set('trust proxy', 1);
 
-// Configuração de segurança
-app.use(helmet());
+// Configuração de segurança com opções avançadas
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'"],
+      imgSrc: ["'self'", "data:", "https:"],
+    },
+  },
+  hsts: {
+    maxAge: 31536000, // 1 ano
+    includeSubDomains: true,
+    preload: true
+  },
+  frameguard: { action: 'deny' },
+  noSniff: true,
+  xssFilter: true,
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' }
+}));
 
 // Configuração de CORS
 const corsOptions = {
@@ -57,13 +75,24 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-// Rate limiting mais flexível para sistema em produção
+// Rate limiting otimizado para muitos acessos simultâneos
+// Limite mais restritivo para prevenir abusos e garantir estabilidade
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 2000, // limite de 2000 requisições por IP
-  message: 'Muitas requisições deste IP, tente novamente mais tarde.',
-  standardHeaders: true,
+  max: parseInt(process.env.RATE_LIMIT_MAX) || 1000, // Reduzido para 1000 requisições por IP (era 2000)
+  message: {
+    error: 'Muitas requisições deste IP, tente novamente em alguns minutos.',
+    retryAfter: 900 // 15 minutos em segundos
+  },
+  standardHeaders: true, // Retorna info sobre rate limit nos headers
   legacyHeaders: false,
+  // Handler personalizado para incluir informações úteis
+  handler: (req, res) => {
+    res.status(429).json({
+      error: 'Muitas requisições deste IP, tente novamente em alguns minutos.',
+      retryAfter: 900
+    });
+  },
   skip: (req) => {
     return req.path === '/api/health' || 
            req.path === '/foods/api/health' ||
@@ -74,13 +103,23 @@ const limiter = rateLimit({
   }
 });
 
-// Rate limiting específico para login
+// Rate limiting específico para login - mais restritivo
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 20, // limite de 20 tentativas de login por IP
-  message: 'Muitas tentativas de login, tente novamente em 15 minutos.',
+  max: 15, // Reduzido para 15 tentativas de login por IP (era 20)
+  message: {
+    error: 'Muitas tentativas de login, tente novamente em 15 minutos.',
+    retryAfter: 900
+  },
   standardHeaders: true,
   legacyHeaders: false,
+  skipSuccessfulRequests: true, // Não contar logins bem-sucedidos
+  handler: (req, res) => {
+    res.status(429).json({
+      error: 'Muitas tentativas de login, tente novamente em 15 minutos.',
+      retryAfter: 900
+    });
+  },
   skip: (req) => {
     return req.path !== '/api/auth/login' && req.path !== '/foods/api/auth/login';
   }
@@ -90,6 +129,17 @@ const loginLimiter = rateLimit({
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(cookieParser());
+
+// Middleware para forçar HTTPS em produção
+if (process.env.NODE_ENV === 'production') {
+  app.use((req, res, next) => {
+    // Se estiver atrás de um proxy (como nginx), verificar header X-Forwarded-Proto
+    if (req.headers['x-forwarded-proto'] && req.headers['x-forwarded-proto'] !== 'https') {
+      return res.redirect(301, `https://${req.headers.host}${req.url}`);
+    }
+    next();
+  });
+}
 
 module.exports = {
   app,

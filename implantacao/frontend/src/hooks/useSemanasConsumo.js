@@ -81,7 +81,8 @@ export const useSemanasConsumo = (ano = new Date().getFullYear(), usarCalendario
     if (usarCalendario) {
       carregarSemanasConsumo(ano, true, {}, mes);
     } else {
-      carregarSemanasConsumo(null, false, null, null);
+      // Passar os filtros quando não usar calendário (buscar da tabela necessidades)
+      carregarSemanasConsumo(null, false, filtros, null);
     }
   }, [ano, mes, usarCalendario, filtrosString, carregarSemanasConsumo]);
 
@@ -100,7 +101,8 @@ export const useSemanasConsumo = (ano = new Date().getFullYear(), usarCalendario
     if (usarCalendario) {
       carregarSemanasConsumo(ano, true, {}, mes);
     } else {
-      carregarSemanasConsumo(null, false, null, null);
+      // Passar os filtros atuais quando não usar calendário
+      carregarSemanasConsumo(null, false, filtrosRef.current, null);
     }
   }, [ano, mes, usarCalendario, carregarSemanasConsumo]);
 

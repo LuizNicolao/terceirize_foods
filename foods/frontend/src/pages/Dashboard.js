@@ -33,8 +33,9 @@ const Dashboard = () => {
   };
 
   const handleFilterChange = (newFilters) => {
-    setFilters(newFilters);
-    loadDashboardData(newFilters);
+    // TODO: Implementar filtros no useDashboard se necessário
+    // Por enquanto, apenas recarrega os dados
+    loadDashboardData();
   };
 
   const handleRefresh = () => {

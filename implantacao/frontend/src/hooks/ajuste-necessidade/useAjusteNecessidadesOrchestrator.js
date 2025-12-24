@@ -95,10 +95,6 @@ export const useAjusteNecessidadesOrchestrator = () => {
     carregarGrupos: carregarGruposLogistica
   } = useNecessidadesLogistica();
 
-  // Hooks para semanas
-  const { opcoes: opcoesSemanasAbastecimento } = useSemanasAbastecimento();
-  const { opcoes: opcoesSemanasConsumo } = useSemanasConsumo(null, false, { aba: activeTab });
-
   // Dados baseados na aba ativa
   const getActiveData = () => {
     if (activeTab === 'nutricionista') {
@@ -111,6 +107,14 @@ export const useAjusteNecessidadesOrchestrator = () => {
   };
   
   const { necessidades, filtros, loading, error } = getActiveData();
+
+  // Hooks para semanas - passar filtros dinâmicos baseados na escola selecionada
+  const { opcoes: opcoesSemanasAbastecimento } = useSemanasAbastecimento();
+  const filtrosSemanasConsumo = {
+    aba: activeTab,
+    ...(filtros.escola_id && { escola_id: filtros.escola_id })
+  };
+  const { opcoes: opcoesSemanasConsumo } = useSemanasConsumo(null, false, filtrosSemanasConsumo);
 
   // Hook para ajustes locais
   const {

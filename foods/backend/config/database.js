@@ -7,13 +7,15 @@ const dbConfig = {
   password: process.env.DB_PASSWORD || 'foods123456',
   database: process.env.DB_NAME || 'foods_db',
   waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0,
+  connectionLimit: parseInt(process.env.DB_CONNECTION_LIMIT) || 75, // Aumentado para suportar muitos acessos simultâneos
+  queueLimit: 0, // Sem limite na fila (0 = ilimitado)
   charset: 'utf8mb4',
   timezone: '-03:00', // Timezone do Brasil (UTC-3)
   dateStrings: true, // Retorna datas como strings no formato YYYY-MM-DD
   supportBigNumbers: true,
   bigNumberStrings: true
+  // Nota: mysql2 gerencia timeouts automaticamente. Para queries longas,
+  // configure timeout diretamente nas queries quando necessário.
 };
 
 // Pool de conexões
