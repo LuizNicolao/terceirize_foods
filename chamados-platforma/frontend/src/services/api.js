@@ -5,7 +5,7 @@ const getBaseURL = () => {
   if (process.env.NODE_ENV === 'production') {
     return process.env.REACT_APP_API_URL || 'https://foods.terceirizemais.com.br/chamados/api';
   }
-  return process.env.REACT_APP_API_URL || 'http://localhost:3006/chamados/api';
+  return process.env.REACT_APP_API_URL || 'http://localhost:3007/chamados/api';
 };
 
 const api = axios.create({

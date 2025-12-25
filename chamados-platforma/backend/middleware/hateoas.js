@@ -4,7 +4,7 @@
  */
 
 // Configuração base da API
-const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:3006/chamados/api';
+const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:3007/chamados/api';
 
 // Links padrão da API
 const DEFAULT_LINKS = {

@@ -6,7 +6,7 @@ services:
     container_name: chamados_backend
     restart: always
     ports:
-      - "3006:3006"
+      - "3007:3007"
     environment:
       NODE_ENV: production
       DB_HOST: terceirize_mysql
@@ -24,7 +24,7 @@ services:
       - ./backend:/app
       - /app/node_modules
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3006/api/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:3007/api/health"]
       timeout: 10s
       retries: 5
       start_period: 30s
