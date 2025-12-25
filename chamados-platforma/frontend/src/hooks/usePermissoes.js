@@ -139,12 +139,12 @@ export const usePermissoes = () => {
       // Converter objeto de permissões para array
       const permissoesArray = Object.entries(editingPermissions).map(([tela, perms]) => {
         const basePerms = {
-          tela,
-          pode_visualizar: perms.pode_visualizar ? 1 : 0,
-          pode_criar: perms.pode_criar ? 1 : 0,
-          pode_editar: perms.pode_editar ? 1 : 0,
-          pode_excluir: perms.pode_excluir ? 1 : 0,
-          pode_movimentar: perms.pode_movimentar ? 1 : 0
+        tela,
+        pode_visualizar: perms.pode_visualizar ? 1 : 0,
+        pode_criar: perms.pode_criar ? 1 : 0,
+        pode_editar: perms.pode_editar ? 1 : 0,
+        pode_excluir: perms.pode_excluir ? 1 : 0,
+        pode_movimentar: perms.pode_movimentar ? 1 : 0
         };
         
         // Adicionar permissões específicas de chamados se a tela for 'chamados'

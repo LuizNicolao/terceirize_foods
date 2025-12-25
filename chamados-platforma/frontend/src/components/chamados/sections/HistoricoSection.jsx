@@ -11,7 +11,7 @@ const HistoricoSection = ({ chamado }) => {
       setHistorico([]);
       return;
     }
-
+    
     setLoading(true);
     try {
       const result = await ChamadosService.listarHistorico(chamado.id, { limit: 50 });
@@ -51,7 +51,7 @@ const HistoricoSection = ({ chamado }) => {
 
   const getValueLabel = (campo, valor) => {
     if (valor === null || valor === undefined || valor === '') return 'N/A';
-
+    
     const maps = {
       status: {
         aberto: 'Aberto',
@@ -104,7 +104,7 @@ const HistoricoSection = ({ chamado }) => {
                   {formatDate(item.data_alteracao)}
                 </span>
               </div>
-
+              
               {item.campo_alterado ? (
                 <div className="mt-2">
                   <p className="text-xs text-gray-600 mb-1">

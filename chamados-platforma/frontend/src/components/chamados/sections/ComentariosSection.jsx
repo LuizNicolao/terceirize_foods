@@ -198,24 +198,24 @@ const ComentariosSection = ({ chamado, isViewMode }) => {
               : comentarioTexto.substring(0, 200) + '...';
             
             return (
-              <div key={comentario.id} className="bg-white p-3 rounded border border-gray-200">
-                <div className="flex justify-between items-start mb-2">
+            <div key={comentario.id} className="bg-white p-3 rounded border border-gray-200">
+              <div className="flex justify-between items-start mb-2">
                   <div className="flex-1">
                     <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">
-                          {comentario.usuario_nome || 'Usuário'}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          {formatDate(comentario.data_criacao)}
-                        </p>
-                      </div>
-                      {comentario.tipo && comentario.tipo !== 'comentario' && (
-                        <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded">
-                          {comentario.tipo === 'resolucao' ? 'Resolução' : 'Atualização'}
-                        </span>
-                      )}
-                    </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-900">
+                    {comentario.usuario_nome || 'Usuário'}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {formatDate(comentario.data_criacao)}
+                  </p>
+                </div>
+                {comentario.tipo && comentario.tipo !== 'comentario' && (
+                  <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded">
+                    {comentario.tipo === 'resolucao' ? 'Resolução' : 'Atualização'}
+                  </span>
+                )}
+              </div>
                   </div>
                 </div>
                 <div className="text-sm text-gray-700 whitespace-pre-wrap">
@@ -237,7 +237,7 @@ const ComentariosSection = ({ chamado, isViewMode }) => {
                     )}
                   </button>
                 )}
-              </div>
+            </div>
             );
           })
         )}
@@ -325,7 +325,7 @@ const ComentariosSection = ({ chamado, isViewMode }) => {
           </p>
         </div>
       )}
-  </div>
+    </div>
   );
 };
 

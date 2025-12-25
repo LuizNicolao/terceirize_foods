@@ -2,12 +2,20 @@ import axios from 'axios';
 
 // Determinar a URL base da API baseado no ambiente
 const getBaseURL = () => {
+  // Se REACT_APP_API_URL estiver definido, usar ele (tem prioridade)
+  if (process.env.REACT_APP_API_URL) {
+    return process.env.REACT_APP_API_URL;
+  }
+  
   if (process.env.NODE_ENV === 'production') {
     // Em produção, usar o path /chamados/api com HTTPS
-    return process.env.REACT_APP_API_URL || 'https://foods.terceirizemais.com.br/chamados/api';
+    return 'https://foods.terceirizemais.com.br/chamados/api';
   }
-  // Em desenvolvimento, usar a URL padrão (igual aos outros sistemas)
-  return process.env.REACT_APP_API_URL || 'http://localhost:3007/chamados/api';
+  
+  // Em desenvolvimento, usar a URL completa (igual aos outros sistemas)
+  // O proxy no package.json funciona como fallback, mas não lida bem com caminhos prefixados
+  // Por isso usamos a URL completa diretamente
+  return 'http://localhost:3007/chamados/api';
 };
 
 const api = axios.create({

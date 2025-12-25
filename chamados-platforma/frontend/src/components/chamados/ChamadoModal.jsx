@@ -155,45 +155,45 @@ const ChamadoModal = ({
   const renderTabContent = () => {
     switch (activeTab) {
       case 'informacoes':
-        return (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <InformacoesBasicasForm
-              register={register}
-              setValue={setValue}
-              watch={watch}
+  return (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <InformacoesBasicasForm
+            register={register}
+            setValue={setValue}
+            watch={watch}
               errors={errors}
-              isViewMode={isViewMode}
-              handleSistemaChange={handleSistemaChange}
-              handleTelaChange={handleTelaChange}
-            />
+            isViewMode={isViewMode}
+            handleSistemaChange={handleSistemaChange}
+            handleTelaChange={handleTelaChange}
+          />
 
-            <StatusPrioridadeForm
-              register={register}
-              chamado={chamado}
-              isViewMode={isViewMode}
-              setValue={setValue}
-              watch={watch}
-            />
-          </div>
+          <StatusPrioridadeForm
+            register={register}
+            chamado={chamado}
+            isViewMode={isViewMode}
+            setValue={setValue}
+            watch={watch}
+          />
+        </div>
         );
 
       case 'problema':
         return (
           <>
-            <DescricaoForm
-              register={register}
+        <DescricaoForm
+          register={register}
               errors={errors}
-              isViewMode={isViewMode}
-            />
+          isViewMode={isViewMode}
+        />
             <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
               <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">
                 Anexos do Problema
               </h3>
               <div className="mt-3">
-                <AnexosSection
-                  chamado={chamado}
-                  isViewMode={isViewMode}
-                  onAnexosChange={handleAnexosChange}
+        <AnexosSection
+          chamado={chamado}
+          isViewMode={isViewMode}
+          onAnexosChange={handleAnexosChange}
                   tipoAnexo="problema"
                 />
               </div>
@@ -231,13 +231,13 @@ const ChamadoModal = ({
       case 'acompanhamento':
         return (
           <>
-            <ComentariosSection
-              chamado={chamado}
-              isViewMode={isViewMode}
-            />
-            <HistoricoSection
-              chamado={chamado}
-            />
+          <ComentariosSection
+            chamado={chamado}
+            isViewMode={isViewMode}
+          />
+          <HistoricoSection
+            chamado={chamado}
+          />
           </>
         );
 

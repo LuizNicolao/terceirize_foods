@@ -39,12 +39,12 @@ const atualizarPermissoesPorTipoNivel = async (usuarioId, tipoAcesso, nivelAcess
       
       const params = tela === 'chamados'
         ? [
-            usuarioId,
-            tela,
-            permissoesTela.visualizar ? 1 : 0,
-            permissoesTela.criar ? 1 : 0,
-            permissoesTela.editar ? 1 : 0,
-            permissoesTela.excluir ? 1 : 0,
+          usuarioId,
+          tela,
+          permissoesTela.visualizar ? 1 : 0,
+          permissoesTela.criar ? 1 : 0,
+          permissoesTela.editar ? 1 : 0,
+          permissoesTela.excluir ? 1 : 0,
             (permissoesTela.movimentar ? 1 : 0),
             permissoesTela.assumir ? 1 : 0,
             permissoesTela.concluir ? 1 : 0,
@@ -201,12 +201,12 @@ const sincronizarPermissoesUsuarios = async () => {
             
             const params = tela === 'chamados'
               ? [
-                  usuario.id,
-                  tela,
-                  permissoesTela.visualizar ? 1 : 0,
-                  permissoesTela.criar ? 1 : 0,
-                  permissoesTela.editar ? 1 : 0,
-                  permissoesTela.excluir ? 1 : 0,
+                usuario.id,
+                tela,
+                permissoesTela.visualizar ? 1 : 0,
+                permissoesTela.criar ? 1 : 0,
+                permissoesTela.editar ? 1 : 0,
+                permissoesTela.excluir ? 1 : 0,
                   (permissoesTela.movimentar ? 1 : 0),
                   permissoesTela.assumir ? 1 : 0,
                   permissoesTela.concluir ? 1 : 0,
@@ -300,13 +300,13 @@ const atualizarPermissoesUsuario = async (usuarioId, permissoes) => {
               permissao.pode_atribuir ? 1 : 0
             ]
           : [
-              usuarioId,
-              permissao.tela,
-              permissao.pode_visualizar ? 1 : 0,
-              permissao.pode_criar ? 1 : 0,
-              permissao.pode_editar ? 1 : 0,
-              permissao.pode_excluir ? 1 : 0,
-              permissao.pode_movimentar ? 1 : 0
+            usuarioId,
+            permissao.tela,
+            permissao.pode_visualizar ? 1 : 0,
+            permissao.pode_criar ? 1 : 0,
+            permissao.pode_editar ? 1 : 0,
+            permissao.pode_excluir ? 1 : 0,
+            permissao.pode_movimentar ? 1 : 0
             ];
         
         await executeQuery(query, params);

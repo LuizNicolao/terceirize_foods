@@ -305,8 +305,8 @@ export const useChamados = () => {
         if (result.unauthorized) {
           toast.error(result.error || 'Sessão expirada. Por favor, faça login novamente.');
           // Não redirecionar automaticamente, deixar o usuário decidir
-        } else {
-          toast.error(result.error || 'Erro ao buscar chamado');
+      } else {
+        toast.error(result.error || 'Erro ao buscar chamado');
         }
       }
     } catch (error) {
@@ -314,7 +314,7 @@ export const useChamados = () => {
       if (error.response?.status === 401) {
         toast.error('Sessão expirada. Por favor, faça login novamente.');
       } else {
-        toast.error('Erro ao buscar chamado');
+      toast.error('Erro ao buscar chamado');
       }
     }
   }, [baseEntity.handleEdit]);

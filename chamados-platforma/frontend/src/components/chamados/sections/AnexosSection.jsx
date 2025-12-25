@@ -392,19 +392,19 @@ const AnexosSection = ({ chamado, isViewMode, onAnexosChange, tipoAnexo = 'probl
                     {isImage ? (
                       <div className="relative">
                         {imageUrls[anexo.id] ? (
-                          <img
+                        <img
                             src={imageUrls[anexo.id]}
-                            alt={anexo.nome_arquivo}
-                            className="w-full h-24 object-cover rounded cursor-pointer"
+                          alt={anexo.nome_arquivo}
+                          className="w-full h-24 object-cover rounded cursor-pointer"
                             onClick={() => setPreviewImage(imageUrls[anexo.id])}
-                            onError={(e) => {
+                          onError={(e) => {
                               console.error('Erro ao carregar imagem:', e);
                               if (e.target.nextSibling) {
-                                e.target.style.display = 'none';
-                                e.target.nextSibling.style.display = 'flex';
+                            e.target.style.display = 'none';
+                            e.target.nextSibling.style.display = 'flex';
                               }
-                            }}
-                          />
+                          }}
+                        />
                         ) : (
                           <div className="w-full h-24 bg-gray-100 rounded flex items-center justify-center">
                             <FaImage className="text-2xl text-gray-400" />
