@@ -6,8 +6,8 @@ const getBaseURL = () => {
     // Em produção, usar o path /chamados/api com HTTPS
     return process.env.REACT_APP_API_URL || 'https://foods.terceirizemais.com.br/chamados/api';
   }
-  // Em desenvolvimento, usar a URL padrão (sem prefixo /chamados, o proxy redireciona)
-  return process.env.REACT_APP_API_URL || 'http://localhost:3007/api';
+  // Em desenvolvimento, usar a URL padrão (igual aos outros projetos)
+  return process.env.REACT_APP_API_URL || 'http://localhost:3007/chamados/api';
 };
 
 const api = axios.create({

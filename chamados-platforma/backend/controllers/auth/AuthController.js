@@ -20,30 +20,37 @@ class AuthController {
    */
   static async login(req, res) {
     try {
-      const { email, senha, rememberMe = false } = req.body;
+      // Aceitar tanto 'senha' quanto 'password' para compatibilidade
+      const { email, senha, password, rememberMe = false } = req.body;
+      const senhaFinal = senha || password;
+      const emailFinal = email || req.body.email_login;
       const now = Date.now();
 
+      if (!emailFinal || !senhaFinal) {
+        return res.status(400).json({ error: 'Email e senha são obrigatórios' });
+      }
+
       // Inicializar tentativas
-      if (!loginAttempts[email]) {
-        loginAttempts[email] = { count: 0, lastAttempt: now, blockedUntil: null };
+      if (!loginAttempts[emailFinal]) {
+        loginAttempts[emailFinal] = { count: 0, lastAttempt: now, blockedUntil: null };
       }
 
       // Verificar se está bloqueado temporariamente
-      if (loginAttempts[email].blockedUntil && now < loginAttempts[email].blockedUntil) {
+      if (loginAttempts[emailFinal] && loginAttempts[emailFinal].blockedUntil && now < loginAttempts[emailFinal].blockedUntil) {
         return res.status(403).json({ error: `Usuário temporariamente bloqueado por tentativas inválidas. Tente novamente em alguns minutos.` });
       }
 
       // Buscar usuário
       const usuarios = await executeQuery(
         'SELECT id, nome, email, senha, nivel_de_acesso, tipo_de_acesso, status FROM usuarios WHERE email = ?',
-        [email]
+        [emailFinal]
       );
 
       if (usuarios.length === 0) {
-        loginAttempts[email].count++;
-        loginAttempts[email].lastAttempt = now;
-        if (loginAttempts[email].count >= MAX_ATTEMPTS) {
-          loginAttempts[email].blockedUntil = now + BLOCK_TIME_MINUTES * 60 * 1000;
+        loginAttempts[emailFinal].count++;
+        loginAttempts[emailFinal].lastAttempt = now;
+        if (loginAttempts[emailFinal].count >= MAX_ATTEMPTS) {
+          loginAttempts[emailFinal].blockedUntil = now + BLOCK_TIME_MINUTES * 60 * 1000;
         }
         return res.status(401).json({ error: 'Email ou senha incorretos' });
       }
@@ -61,20 +68,20 @@ class AuthController {
       }
 
       // Verificar senha
-      const isValidPassword = await bcrypt.compare(senha, usuario.senha);
+      const isValidPassword = await bcrypt.compare(senhaFinal, usuario.senha);
 
       if (!isValidPassword) {
-        loginAttempts[email].count++;
-        loginAttempts[email].lastAttempt = now;
-        if (loginAttempts[email].count >= MAX_ATTEMPTS) {
-          loginAttempts[email].blockedUntil = now + BLOCK_TIME_MINUTES * 60 * 1000;
+        loginAttempts[emailFinal].count++;
+        loginAttempts[emailFinal].lastAttempt = now;
+        if (loginAttempts[emailFinal].count >= MAX_ATTEMPTS) {
+          loginAttempts[emailFinal].blockedUntil = now + BLOCK_TIME_MINUTES * 60 * 1000;
           return res.status(403).json({ error: 'Usuário temporariamente bloqueado por tentativas inválidas. Tente novamente em alguns minutos.' });
         }
         return res.status(401).json({ error: 'Email ou senha incorretos' });
       }
 
       // Login bem-sucedido: resetar tentativas
-      loginAttempts[email] = { count: 0, lastAttempt: now, blockedUntil: null };
+      loginAttempts[emailFinal] = { count: 0, lastAttempt: now, blockedUntil: null };
 
       // Gerar token com duração baseada na opção "Mantenha-me conectado"
       const tokenExpiration = rememberMe ? '30d' : '24h';

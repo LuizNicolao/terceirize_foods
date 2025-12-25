@@ -37,9 +37,18 @@ const routes = [
 // Aplicar prefixos de rota
 applyRoutePrefixes(app);
 
-// Registrar rotas
-routes.forEach(({ path, router }) => {
-  app.use(`/chamados/api${path}`, router);
+// Registrar rotas com ambos os prefixos (para desenvolvimento e produção)
+// Em desenvolvimento, aceita /api e /chamados/api
+// Em produção, aceita /chamados/api
+const prefixes = process.env.NODE_ENV === 'production' 
+  ? ['/chamados/api'] 
+  : ['/api', '/chamados/api'];
+
+prefixes.forEach(prefix => {
+  routes.forEach(({ path, router }) => {
+    const fullPath = `${prefix}${path}`;
+    app.use(fullPath, router);
+  });
 });
 
 // Rota de health check sem prefixo
@@ -62,11 +71,15 @@ const startServer = async () => {
     await testConnection();
     
     // Iniciar servidor
-    app.listen(PORT, () => {
+    app.listen(PORT, '0.0.0.0', () => {
       console.log(`🚀 Servidor rodando na porta ${PORT}`);
       console.log(`📡 Ambiente: ${process.env.NODE_ENV || 'development'}`);
       console.log(`🔗 Health check: http://localhost:${PORT}/health`);
-      console.log(`🔗 API: http://localhost:${PORT}/chamados/api`);
+      console.log(`🔗 API (produção): http://localhost:${PORT}/chamados/api`);
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`🔗 API (desenvolvimento): http://localhost:${PORT}/api`);
+      }
+      console.log(`🌐 Escutando em 0.0.0.0:${PORT} (aceita conexões de qualquer IP)`);
     });
   } catch (error) {
     console.error('❌ Erro ao iniciar servidor:', error);
