@@ -41,7 +41,7 @@ services:
     container_name: chamados_frontend
     restart: always
     ports:
-      - "3084:80"
+      - "3085:80"
     environment:
       REACT_APP_API_URL: https://foods.terceirizemais.com.br/chamados/api
       REACT_APP_BASE_URL: https://foods.terceirizemais.com.br

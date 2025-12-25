@@ -1,4 +1,4 @@
-erver {
+server {
 
     listen 80;
 
@@ -308,7 +308,7 @@ server {
 
     location /chamados {
 
-        proxy_pass http://127.0.0.1:3084/chamados;
+        proxy_pass http://127.0.0.1:3085/chamados;
 
         proxy_set_header Host $host;
 
