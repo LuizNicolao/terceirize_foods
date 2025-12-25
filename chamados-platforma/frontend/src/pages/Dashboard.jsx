@@ -44,9 +44,9 @@ const Dashboard = () => {
   };
 
   if (loading) {
-  return (
+    return (
       <div className="flex justify-center items-center h-screen bg-gray-50">
-        <LoadingSpinner />
+        <LoadingSpinner inline={true} />
       </div>
     );
   }
