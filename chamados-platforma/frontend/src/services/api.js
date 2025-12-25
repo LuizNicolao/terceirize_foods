@@ -12,10 +12,9 @@ const getBaseURL = () => {
     return 'https://foods.terceirizemais.com.br/chamados/api';
   }
   
-  // Em desenvolvimento, usar o proxy do React (package.json)
-  // O proxy do React redireciona requisições para o backend
-  // Se não estiver usando proxy, usar localhost diretamente
-  return '/chamados/api';
+  // Em desenvolvimento, usar localhost diretamente
+  // O backend deve estar rodando na porta 3007
+  return 'http://localhost:3007/chamados/api';
 };
 
 const api = axios.create({
